@@ -1,0 +1,192 @@
+package com.atom.wyz.worldwind
+
+import androidx.annotation.IntDef
+import com.atom.wyz.worldwind.util.MessageService
+import com.atom.wyz.worldwind.util.TaskService
+
+class WorldWind {
+    /**
+     * Altitude mode indicates how World Wind interprets a position's altitude component. Accepted values are [ ][.ABSOLUTE], [.CLAMP_TO_GROUND] and [.RELATIVE_TO_GROUND].
+     */
+    @IntDef(ABSOLUTE, CLAMP_TO_GROUND, RELATIVE_TO_GROUND)
+    @kotlin.annotation.Retention(AnnotationRetention.SOURCE)
+    public annotation class AltitudeMode
+
+    /**
+     * Path type indicates how World Wind create a geographic path between two locations. Accepted values are [ ][.GREAT_CIRCLE], [.LINEAR] and [.RHUMB_LINE].
+     */
+    @IntDef(GREAT_CIRCLE, LINEAR, RHUMB_LINE)
+    @kotlin.annotation.Retention(AnnotationRetention.SOURCE)
+    annotation class PathType
+
+
+    @IntDef(POSSIBLE, FAILED, RECOGNIZED, BEGAN, CHANGED, CANCELLED, ENDED)
+    @kotlin.annotation.Retention(AnnotationRetention.SOURCE)
+    annotation class GestureState
+
+
+    @IntDef(RELATIVE_TO_GLOBE, RELATIVE_TO_SCREEN)
+    @kotlin.annotation.Retention(AnnotationRetention.SOURCE)
+    annotation class OrientationMode
+
+
+    /**
+     * Offset mode indicates how World Wind interprets an offset's x and y values. Accepted values are [ ][.OFFSET_FRACTION], [.OFFSET_INSET_PIXELS] and [.OFFSET_PIXELS].
+     */
+    @IntDef(OFFSET_FRACTION, OFFSET_INSET_PIXELS, OFFSET_PIXELS)
+    @kotlin.annotation.Retention(AnnotationRetention.SOURCE)
+    annotation class OffsetMode
+
+    companion object {
+        /**
+         * Altitude mode constant indicating an altitude relative to the globe's ellipsoid. Ignores the elevation of the
+         * terrain directly beneath the position's latitude and longitude.
+         * <br/>
+         * 表示相对于地球椭球的高度，与地形的海拔无关。
+         */
+        const val ABSOLUTE: Int = 0
+
+        /**
+         * Altitude mode constant indicating an altitude on the terrain. Ignores a position's specified altitude, and always
+         * places the position on the terrain.
+         *  <br/>
+         * 忽略位置的指定高度，并始终将位置放置在地形上。
+         */
+        const val CLAMP_TO_GROUND: Int = 1
+
+        /**
+         * Altitude mode constant indicating an altitude relative to the terrain. The altitude indicates height above the
+         * terrain directly beneath the position's latitude and longitude.
+         *  <br/>
+         * 指示相对于地形的高度。 海拔高度表示该位置的经纬度正下方的地形上方的高度。
+         */
+        const val RELATIVE_TO_GROUND: Int = 2
+
+
+        ////////////////////////////////////////////////////////////////////////////////////////////
+        /**
+         * Path type constant indicating a great circle arc between two locations.
+         * 指示两个位置之间的大圆弧。
+         */
+        const val GREAT_CIRCLE = 0
+
+        /**
+         * Path type constant indicating simple linear interpolation between two locations.
+         *  表示两个位置之间的简单线性插值。
+         */
+        const val LINEAR = 1
+
+        /**
+         * Path type constant indicating a line of constant bearing between two locations.
+         * 指示两个位置之间的恒定方位线。
+         */
+        const val RHUMB_LINE = 2
+
+
+        ////////////////////////////////////////////////////////////////////////////////////////////
+        /**
+         * The POSSIBLE gesture recognizer state. Gesture recognizers in this state are idle when there is no input event to
+         * evaluate, or are evaluating input events to determine whether or not to transition into another state.
+         */
+        const val POSSIBLE = 0
+
+        /**
+         * The FAILED gesture recognizer state. Gesture recognizers transition to this state from the POSSIBLE state when
+         * the gesture cannot be recognized given the current input.
+         */
+        const val FAILED = 1
+
+        /**
+         * The RECOGNIZED gesture recognizer state. Discrete gesture recognizers transition to this state from the POSSIBLE
+         * state when the gesture is recognized.
+         */
+        const val RECOGNIZED = 2
+
+        /**
+         * The BEGAN gesture recognizer state. Continuous gesture recognizers transition to this state from the POSSIBLE
+         * state when the gesture is first recognized.
+         */
+        const val BEGAN = 3
+
+        /**
+         * The CHANGED gesture recognizer state. Continuous gesture recognizers transition to this state from the BEGAN
+         * state or the CHANGED state, whenever an input event indicates a change in the gesture.
+         */
+        const val CHANGED = 4
+
+        /**
+         * The CANCELLED gesture recognizer state. Continuous gesture recognizers may transition to this state from the
+         * BEGAN state or the CHANGED state when the touch events are cancelled.
+         */
+        const val CANCELLED = 5
+
+        /**
+         * The ENDED gesture recognizer state. Continuous gesture recognizers transition to this state from either the BEGAN
+         * state or the CHANGED state when the current input no longer represents the gesture.
+         */
+        const val ENDED = 6
+
+        ////////////////////////////////////////////////////////////////////////////////////////////
+
+        /**
+         * Notification constant requesting that World Window instances render a frame.
+         */
+        const val REQUEST_RENDER = "gov.nasa.worldwind.RequestRender"
+
+        /**
+         * WGS 84 reference value for the Earth ellipsoid's semi-major axis: 6378137.0.
+         */
+        const val WGS84_SEMI_MAJOR_AXIS = 6378137.0
+
+        /**
+         * WGS 84 reference value for the Earth ellipsoid's inverse flattening (1/f): 298.257223563.
+         */
+        const val WGS84_INVERSE_FLATTENING = 298.257223563
+
+        ////////////////////////////////////////////////////////////////////////////////////////////
+        /**
+         * {@link OrientationMode} constant indicating that the related value is specified relative to the globe.
+         */
+        const val RELATIVE_TO_GLOBE = 0
+        /**
+         * {@link OrientationMode} constant indicating that the related value is specified relative to the plane of the
+         * screen.
+         */
+        const val RELATIVE_TO_SCREEN = 1
+
+        ////////////////////////////////////////////////////////////////////////////////////////////
+
+        /**
+         * [OffsetMode] constant indicating that the associated parameters are fractional values of the virtual
+         * rectangle's width or height in the range [0, 1], where 0 indicates the rectangle's origin and 1 indicates the
+         * corner opposite its origin.
+         */
+        const val OFFSET_FRACTION = 0
+
+        /**
+         * [OffsetMode] constant indicating that the associated parameters are in units of pixels relative to the
+         * virtual rectangle's corner opposite its origin corner.
+         */
+        const val OFFSET_INSET_PIXELS = 1
+
+        /**
+         * [OffsetMode] constant indicating that the associated parameters are in units of pixels relative to the
+         * virtual rectangle's origin.
+         */
+        const val OFFSET_PIXELS = 2
+
+        val messageService = MessageService()
+
+        val taskService = TaskService()
+
+        /**
+         * Requests that all World Window instances render a frame. Internally, this dispaches a REQUEST_RENDER message to
+         * the World Wind message center.
+         */
+        fun requestRender() {
+            messageService.postMessage(REQUEST_RENDER, null, null) // specify null for no sender, no user properties
+        }
+
+    }
+
+}

@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical" android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:id="@+id/menu_activity">
+    <Button
+        android:id="@+id/base_activity"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="base_activity"
+        android:onClick="menuButton"/>
+
+    <Button
+        android:id="@+id/camera_activity"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="camera_activity"
+        android:onClick="menuButton"/>
+
+    <Button
+        android:id="@+id/camera_view_activity"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="camera_view_activity"
+        android:onClick="menuButton"/>
+
+    <Button
+        android:id="@+id/lookat_view_activity"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="lookat_view_activity"
+        android:onClick="menuButton"/>
+
+    <Button
+        android:id="@+id/day_light_activity"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="day_light_activity"
+        android:onClick="menuButton"/>
+
+    <Button
+        android:id="@+id/show_tessellation_activity"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="show_tessellation_activity"
+        android:onClick="menuButton"/>
+
+    <Button
+        android:id="@+id/surface_image_activity"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="surface_image_activity"
+        android:onClick="menuButton"/>
+
+    <Button
+        android:id="@+id/wms_activity"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="wms_activity"
+        android:onClick="menuButton"/>
+
+    <Button
+        android:id="@+id/wms2_activity"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="wms2_activity"
+        android:onClick="menuButton"/>
+
+    <Button
+        android:id="@+id/placemark_activity"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="placemark_activity"
+        android:onClick="menuButton"/>
+
+    <Button
+        android:id="@+id/placemark2_activity"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="placemark_2_activity"
+        android:onClick="menuButton"/>
+
+    <Button
+        android:id="@+id/placemark_stress_activity"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="placemark_stress_activity"
+        android:onClick="menuButton"/>
+</LinearLayout>
