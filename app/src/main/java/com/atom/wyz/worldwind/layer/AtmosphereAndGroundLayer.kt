@@ -178,6 +178,7 @@ class AtmosphereAndGroundLayer : AbstractLayer {
 
         GLES20.glDepthMask(false)
         GLES20.glFrontFace(GLES20.GL_CW)
+
         drawSkyTriangles(dc)
 
         GLES20.glDepthMask(true)

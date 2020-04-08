@@ -56,7 +56,7 @@ class PlacemarksActivity : BasicWorldWindActivity() , Runnable {
         ////////////////////
         // Stress Tests
         ////////////////////
-        Placemark.defaultEyeDistanceScalingThreshold = 1e7
+        Placemark.DEFAULT_EYE_DISTANCE_SCALING_THRESHOLD = 1e7
 
         // Create a random number generator with an arbitrary seed
         // that will generate the same numbers between runs.

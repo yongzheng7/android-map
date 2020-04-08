@@ -4,4 +4,5 @@ import com.atom.wyz.worldwind.render.DrawContext
 
 interface Drawable {
     fun draw(dc: DrawContext)
+    fun recycle()
 }

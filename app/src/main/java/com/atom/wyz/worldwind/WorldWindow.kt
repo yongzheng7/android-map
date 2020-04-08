@@ -8,16 +8,21 @@ import android.opengl.GLES20
 import android.opengl.GLSurfaceView
 import android.util.AttributeSet
 import android.view.MotionEvent
+import com.atom.wyz.worldwind.frame.BasicFrameController
+import com.atom.wyz.worldwind.frame.FrameController
+import com.atom.wyz.worldwind.frame.FrameMetrics
 import com.atom.wyz.worldwind.geom.Location
 import com.atom.wyz.worldwind.gesture.GestureGroup
 import com.atom.wyz.worldwind.gesture.GestureRecognizer
 import com.atom.wyz.worldwind.globe.Globe
 import com.atom.wyz.worldwind.globe.GlobeWgs84
 import com.atom.wyz.worldwind.layer.LayerList
-import com.atom.wyz.worldwind.render.*
-import com.atom.wyz.worldwind.util.RenderResourceCache
+import com.atom.wyz.worldwind.render.BasicSurfaceTileRenderer
+import com.atom.wyz.worldwind.render.DrawContext
+import com.atom.wyz.worldwind.render.SurfaceTileRenderer
 import com.atom.wyz.worldwind.util.Logger
 import com.atom.wyz.worldwind.util.MessageListener
+import com.atom.wyz.worldwind.util.RenderResourceCache
 import java.util.*
 import javax.microedition.khronos.egl.EGLConfig
 import javax.microedition.khronos.opengles.GL10
@@ -34,7 +39,8 @@ class WorldWindow : GLSurfaceView, GLSurfaceView.Renderer, MessageListener {
 
     var navigator: Navigator = BasicNavigator()
 
-    var frameController: FrameController = BasicFrameController(FrameStatistics())
+    var frameController: FrameController = BasicFrameController()
+    var frameMetrics = FrameMetrics()
 
     var worldWindowController: WorldWindowController = BasicWorldWindowController()
         set(value) {
@@ -89,10 +95,6 @@ class WorldWindow : GLSurfaceView, GLSurfaceView.Renderer, MessageListener {
         WorldWind.messageService.addListener(this)
     }
 
-    fun getFrameStatistics(): FrameStatistics {
-        return frameController.frameStatistics
-    }
-
     protected fun prepareToDrawFrame() {
         this.dc.resources = this.context.resources
         this.dc.globe = globe
@@ -118,12 +120,17 @@ class WorldWindow : GLSurfaceView, GLSurfaceView.Renderer, MessageListener {
     }
 
     override fun onDrawFrame(gl: GL10?) {
-
+        // 渲染数据
+        frameMetrics.beginRendering()
         prepareToDrawFrame() // 准备数据
+        frameController.renderFrame(dc) //渲染帧
+        frameMetrics.endRendering()
 
+        //绘制数据
+        frameMetrics.beginDrawing()
         frameController.drawFrame(dc) //绘制帧
-
         gpuObjectCache?.releaseEvictedResources(dc)
+        frameMetrics.endDrawing()
 
         if (dc.renderRequested) {
             requestRender()

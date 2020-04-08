@@ -36,10 +36,7 @@ class ShowTessellationLayer : AbstractLayer("Terrain Tessellation") {
         // 禁止写入OpenGL深度缓冲区。
         GLES20.glDepthMask(false)
 
-        this.offsetMvpMatrix
-                .set(dc.projection)
-                .offsetProjectionDepth(-1.0e-3)
-                .multiplyByMatrix(dc.modelview)
+        this.offsetMvpMatrix.set(dc.projection).offsetProjectionDepth(-1.0e-3).multiplyByMatrix(dc.modelview)
 
         // Get the draw context's tessellated terrain and modelview projection matrix.
 

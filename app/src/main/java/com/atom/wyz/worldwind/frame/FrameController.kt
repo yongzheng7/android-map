@@ -1,4 +1,4 @@
-package com.atom.wyz.worldwind
+package com.atom.wyz.worldwind.frame
 
 import com.atom.wyz.worldwind.render.DrawContext
 
@@ -6,8 +6,8 @@ import com.atom.wyz.worldwind.render.DrawContext
  * 帧控制
  */
 interface FrameController {
-    var frameStatistics : FrameStatistics
 
+    fun renderFrame(dc: DrawContext)
 
     fun drawFrame(dc: DrawContext)
 }

@@ -73,7 +73,7 @@ class PlacemarksStressTestActivity : BasicWorldWindActivity() , Runnable {
         ////////////////////
         // Stress Tests
         ////////////////////
-        Placemark.defaultEyeDistanceScalingThreshold = 1e7 
+        Placemark.DEFAULT_EYE_DISTANCE_SCALING_THRESHOLD = 1e7
         val random = Random(123)
         
         val attributes: PlacemarkAttributes = PlacemarkAttributes.withImage(ImageSource.fromResource(R.drawable.ic_menu_home))

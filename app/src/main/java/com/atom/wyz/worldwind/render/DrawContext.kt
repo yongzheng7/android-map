@@ -3,6 +3,8 @@ package com.atom.wyz.worldwind.render
 import android.content.res.Resources
 import android.graphics.Rect
 import android.opengl.GLES20
+import com.atom.wyz.worldwind.draw.Drawable
+import com.atom.wyz.worldwind.draw.DrawableQueue
 import com.atom.wyz.worldwind.geom.Frustum
 import com.atom.wyz.worldwind.geom.Matrix4
 import com.atom.wyz.worldwind.geom.Position
@@ -11,8 +13,8 @@ import com.atom.wyz.worldwind.globe.Globe
 import com.atom.wyz.worldwind.globe.Terrain
 import com.atom.wyz.worldwind.layer.Layer
 import com.atom.wyz.worldwind.layer.LayerList
-import com.atom.wyz.worldwind.util.RenderResourceCache
 import com.atom.wyz.worldwind.util.Logger
+import com.atom.wyz.worldwind.util.RenderResourceCache
 import com.atom.wyz.worldwind.util.WWMath
 import java.util.*
 
@@ -90,7 +92,7 @@ open class DrawContext {
 
     var textureId = IntArray(32)
 
-    protected var orderedRenderables = OrderedRenderableQueue(1000)
+    var drawableQueue: DrawableQueue = DrawableQueue()
 
     var screenProjection: Matrix4 = Matrix4()
 
@@ -106,26 +108,6 @@ open class DrawContext {
         return distance * pixelSizeFactor
     }
 
-    /**
-     * Projects a Cartesian point to screen coordinates. The resultant screen point is in OpenGL screen coordinates,
-     * with the origin in the bottom-left corner and axes that extend up and to the right from the origin.
-     *
-     *
-     * This stores the projected point in the result argument, and returns a boolean value indicating whether or not the
-     * projection is successful. This returns false if the Cartesian point is clipped by the near clipping plane or the
-     * far clipping plane.
-     *
-     * 将笛卡尔点投影到屏幕坐标。
-     * 最终的屏幕点在OpenGL屏幕坐标中，原点在左下角，轴从原点向上延伸到右侧。
-     * 这会将投影点存储在result参数中，并返回一个布尔值，该布尔值指示投影是否成功。
-     * 如果笛卡尔点被近裁剪平面或远裁剪平面裁剪，则返回false。
-     * @param modelPoint the Cartesian point to project
-     * @param result     a pre-allocated [Vec3] in which to return the projected point
-     *
-     * @return true if the transformation is successful, otherwise false
-     *
-     * @throws IllegalArgumentException If any argument is null
-     */
     open fun project(modelPoint: Vec3?, result: Vec3?): Boolean {
         if (modelPoint == null) {
             throw IllegalArgumentException(
@@ -171,43 +153,7 @@ open class DrawContext {
         return true
     }
 
-    /**
-     * Projects a Cartesian point to screen coordinates, applying an offset to the point's projected depth value. The
-     * resultant screen point is in OpenGL screen coordinates, with the origin in the bottom-left corner and axes that
-     * extend up and to the right from the origin.
-     *
-     *
-     * This stores the projected point in the result argument, and returns a boolean value indicating whether or not the
-     * projection is successful. This returns false if the Cartesian point is clipped by the near clipping plane or the
-     * far clipping plane.
-     *
-     *
-     * The depth offset may be any real number and is typically used to move the screenPoint slightly closer to the
-     * user's eye in order to give it visual priority over nearby objects or terrain. An offset of zero has no effect.
-     * An offset less than zero brings the screenPoint closer to the eye, while an offset greater than zero pushes the
-     * projected screen point away from the eye.
-     *
-     *
-     * Applying a non-zero depth offset has no effect on whether the model point is clipped by this method or by WebGL.
-     * Clipping is performed on the original model point, ignoring the depth offset. The final depth value after
-     * applying the offset is clamped to the range [0,1].
-     * 将笛卡尔点投影到屏幕坐标，将偏移量应用于该点的投影深度值。
-     * 最终的屏幕点在OpenGL屏幕坐标中，原点在左下角，轴从原点向上延伸到右侧。
-     * 这会将投影点存储在result参数中，并返回一个布尔值，该布尔值指示投影是否成功。
-     * 如果笛卡尔点被近裁剪平面或远裁剪平面裁剪，则返回false。
-     * 深度偏移可以是任何实数，通常用于将screenPoint稍微移近用户的眼睛，以使其在视觉上优先于附近的对象或地形。
-     * 零偏移量无效。小于零的偏移会使screenPoint靠近眼睛，而大于零的偏移会使投影的屏幕点远离眼睛。
-     * 应用非零深度偏移对通过此方法还是通过WebGL剪切模型点没有影响。剪切是在原始模型点上执行的，忽略了深度偏移。
-     * 应用偏移量后的最终深度值将被限制在[0,1]范围内。
-     *
-     * @param modelPoint  the Cartesian point to project
-     * @param depthOffset the amount of depth offset to apply
-     * @param result      a pre-allocated [Vec3] in which to return the projected point
-     *
-     * @return true if the transformation is successful, otherwise false
-     *
-     * @throws IllegalArgumentException If any argument is null
-     */
+
     open fun projectWithDepth(modelPoint: Vec3?, depthOffset: Double, result: Vec3?): Boolean {
         if (modelPoint == null) {
             throw IllegalArgumentException(
@@ -300,8 +246,7 @@ open class DrawContext {
         userProperties.clear()
 
         renderResourceCache = null
-        orderedRenderables.clearRenderables()
-
+        drawableQueue.recycle()
         pixelSizeFactor = 0.0
 
     }
@@ -382,79 +327,22 @@ open class DrawContext {
         renderResourceCache ?.put(imageSource, texture, texture.imageByteCount)
         return texture
     }
-
     open fun retrieveTexture(imageSource: ImageSource?): GpuTexture? {
         return renderResourceCache ?.retrieveTexture(imageSource)
     }
-
-    open fun offerOrderedRenderable(renderable: OrderedRenderable?, eyeDistance: Double) {
-        orderedRenderables.offerRenderable(renderable!!, eyeDistance)
+    open fun offerDrawable(drawable: Drawable, depth: Double) {
+        drawableQueue.offerDrawable(drawable, depth)
     }
 
-    open fun peekOrderedRenderble(): OrderedRenderable? {
-        return orderedRenderables.peekRenderable()
+    open fun peekDrawable(): Drawable? {
+        return drawableQueue.peekDrawable()
     }
 
-    open fun pollOrderedRenderable(): OrderedRenderable? {
-        return orderedRenderables.pollRenderable()
+    open fun pollDrawable(): Drawable? {
+        return drawableQueue.pollDrawable()
     }
 
-
-
-    ////////////////////////////////////////////////////////////////////////////////////////////////
-    // 垃圾箱
-
-
-
-
-//    open fun pixelSizeAtDistance(distance: Double): Double {
-//
-//        return pixelSizeScale * distance + pixelSizeOffset
-//    }
-
-
-//    open fun setModelviewProjection(modelview: Matrix4?, projection: Matrix4?) {
-//        if (modelview == null || projection == null) {
-//            throw IllegalArgumentException(
-//                    Logger.logMessage(Logger.ERROR, "DrawContext", "setModelview", "missingMatrix"))
-//        }
-//
-//        this.modelview.set(modelview)
-//        this.modelviewTranspose.transposeMatrix(modelview)
-//
-//        this.projection.set(projection)
-//        this.projectionInv.invertMatrix(projection)
-//
-//        this.modelviewProjection.setToMultiply(projection, modelview)
-//        this.modelviewProjectionInv.invertMatrix(modelviewProjection)
-//
-//        this.modelview.extractEyePoint(eyePoint)
-//
-//        this.frustum.setToProjectionMatrix(this.projection)
-//        this.frustum.transformByMatrix(modelviewTranspose)
-//        this.frustum.normalize()
-//
-//        val nbl = Vec3(-1.0, -1.0, -1.0)
-//        val ntr = Vec3(+1.0, +1.0, -1.0)
-//        val fbl = Vec3(-1.0, -1.0, +1.0)
-//        val ftr = Vec3(+1.0, +1.0, +1.0)
-//
-//        nbl.multiplyByMatrix(projectionInv)
-//        ntr.multiplyByMatrix(projectionInv)
-//        fbl.multiplyByMatrix(projectionInv)
-//        ftr.multiplyByMatrix(projectionInv)
-//
-//        val nrRectWidth: Double = Math.abs(ntr.x - nbl.x)
-//        val frRectWidth: Double = Math.abs(ftr.x - fbl.x)
-//        val nrDistance: Double = -nbl.z
-//        val frDistance: Double = -fbl.z
-//
-//        val frustumWidthScale = (frRectWidth - nrRectWidth) / (frDistance - nrDistance)
-//        val frustumWidthOffset = nrRectWidth - frustumWidthScale * nrDistance
-//
-//        pixelSizeScale = frustumWidthScale / viewport.width()
-//        pixelSizeOffset = frustumWidthOffset / viewport.height()
-//
-//    }
-
+    open fun sortDrawables() {
+        drawableQueue.sortBackToFront()
+    }
 }

@@ -90,7 +90,8 @@ class RenderResourceCache : LruMemoryCache<Any, RenderResource> {
         }
         if (imageSource.isBitmap()) {
             val texture = GpuTexture(imageSource.asBitmap())
-            return put(imageSource, texture, texture.imageByteCount) as GpuTexture?
+            put(imageSource, texture, texture.imageByteCount)
+            return texture
         }
         val texture = this.processPendingQueue(imageSource) as GpuTexture?
         if (texture != null) {

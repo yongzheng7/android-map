@@ -3,21 +3,21 @@ package com.atom.wyz.worldwind.render
 import android.graphics.Rect
 import com.atom.wyz.worldwind.WorldWind
 import com.atom.wyz.worldwind.draw.DrawablePlacemark
-import com.atom.wyz.worldwind.geom.*
+import com.atom.wyz.worldwind.geom.Color
+import com.atom.wyz.worldwind.geom.Position
+import com.atom.wyz.worldwind.geom.Vec2
+import com.atom.wyz.worldwind.geom.Vec3
 import com.atom.wyz.worldwind.shape.PlacemarkAttributes
 import com.atom.wyz.worldwind.util.Logger
 import com.atom.wyz.worldwind.util.WWMath
-import java.nio.ByteBuffer
-import java.nio.ByteOrder
-import java.nio.FloatBuffer
 
-open class Placemark : AbstractRenderable, OrderedRenderable {
+open class Placemark : AbstractRenderable{
 
     companion object {
 
-        var defaultEyeDistanceScalingThreshold = 1e6
+        var DEFAULT_EYE_DISTANCE_SCALING_THRESHOLD = 1e6
 
-        var defaultDepthOffset = -0.003
+        var DEFAULT_DEPTH_OFFSET = -0.003
 
         fun simple(position: Position?, color: Color?, pixelSize: Int): Placemark {
             val defaults = PlacemarkAttributes.defaults()
@@ -32,61 +32,6 @@ open class Placemark : AbstractRenderable, OrderedRenderable {
 
         fun simpleImageAndLabel(position: Position?, imageSource: ImageSource?, label: String?): Placemark {
             return Placemark(position, PlacemarkAttributes.withImageAndLabel(imageSource), label)
-        }
-
-
-        protected var cacheKeyPool = 0
-
-        private var unitQuadBuffer2: FloatBuffer? = null
-
-        private var unitQuadBuffer3: FloatBuffer? = null
-
-        private var leaderBuffer: FloatBuffer? = null
-
-        private var leaderPoints: FloatArray? = null
-
-        fun getUnitQuadBuffer2D(): FloatBuffer? {
-            if (unitQuadBuffer2 == null) {
-                val points = floatArrayOf(0f, 1f, 0f, 0f, 1f, 1f, 1f, 0f) // lower right corner
-                val size = points.size * 4
-                unitQuadBuffer2 = ByteBuffer.allocateDirect(size).order(ByteOrder.nativeOrder()).asFloatBuffer()
-                unitQuadBuffer2?.put(points)?.rewind()
-            }
-            return unitQuadBuffer2
-        }
-
-        fun getUnitQuadBuffer3D(): FloatBuffer? {
-            if (unitQuadBuffer3 == null) {
-                val points = floatArrayOf(0f, 1f, 0f, 0f, 0f, 0f, 1f, 1f, 0f, 1f, 0f, 0f) // lower right corner
-                val size = points.size * 4
-                unitQuadBuffer3 = ByteBuffer.allocateDirect(size).order(ByteOrder.nativeOrder()).asFloatBuffer()
-                unitQuadBuffer3?.put(points)?.rewind()
-            }
-            return unitQuadBuffer3
-        }
-
-        fun getLeaderBuffer(groundPoint: Vec3, placePoint: Vec3): FloatBuffer {
-            if (leaderBuffer == null) {
-                leaderPoints = FloatArray(6)
-                leaderBuffer = ByteBuffer.allocateDirect(leaderPoints!!.size * 4).order(ByteOrder.nativeOrder()).asFloatBuffer()
-            }
-            // TODO: consider whether these assignments should be inlined.
-            leaderPoints?.let {
-                it[0] = groundPoint.x.toFloat()
-                it[1] = groundPoint.y.toFloat()
-                it[2] = groundPoint.z.toFloat()
-                it[3] = placePoint.x.toFloat()
-                it[4] = placePoint.y.toFloat()
-                it[5] = placePoint.z.toFloat()
-            }
-
-            leaderBuffer?.put(leaderPoints)?.rewind()
-            return leaderBuffer!!
-        }
-
-
-        fun generateCacheKey(): String? {
-            return "OrderedPlacemark " + ++cacheKeyPool
         }
     }
 
@@ -109,6 +54,7 @@ open class Placemark : AbstractRenderable, OrderedRenderable {
     var attributes: PlacemarkAttributes
 
     var highlightAttributes: PlacemarkAttributes? = null
+    var activeAttributes: PlacemarkAttributes? = null
     var highlighted = false
 
     var eyeDistanceScaling: Boolean
@@ -117,9 +63,9 @@ open class Placemark : AbstractRenderable, OrderedRenderable {
 
     var altitudeMode: Int = WorldWind.ABSOLUTE
 
-    var enableLeaderLinePicking: Boolean
+    var enableLeaderLinePicking: Boolean = false
 
-    var imageRotation: Double
+    var imageRotation = 0.0
 
     var imageTilt = 0.0
 
@@ -131,7 +77,6 @@ open class Placemark : AbstractRenderable, OrderedRenderable {
     var imageTiltReference = 0
 
     var drawablePlacemark: DrawablePlacemark? = null
-
 
     constructor(position: Position?) : this(position, PlacemarkAttributes())
 
@@ -150,24 +95,22 @@ open class Placemark : AbstractRenderable, OrderedRenderable {
         label?.let { this.label = it }
         this.attributes = if (attributes != null) attributes else PlacemarkAttributes()
 
-        highlightAttributes = null
-        highlighted = false
 
         this.eyeDistanceScaling = eyeDistanceScaling
-        eyeDistanceScalingThreshold = defaultEyeDistanceScalingThreshold
+        eyeDistanceScalingThreshold = DEFAULT_EYE_DISTANCE_SCALING_THRESHOLD
         eyeDistanceScalingLabelThreshold = 1.5 * eyeDistanceScalingThreshold
 
-        enableLeaderLinePicking = false
-
-        imageRotation = 0.0
-        imageTilt = 0.0
         imageRotationReference = WorldWind.RELATIVE_TO_SCREEN
         imageTiltReference = WorldWind.RELATIVE_TO_SCREEN
 
     }
 
-    fun getActiveAttributes(dc: DrawContext): PlacemarkAttributes? {
-        return attributes
+    protected open fun determineActiveAttributes(dc: DrawContext) {
+        if (highlighted && highlightAttributes != null) {
+            activeAttributes = highlightAttributes
+        } else {
+            activeAttributes = attributes
+        }
     }
 
     protected fun makeDrawablePlacemark(dc: DrawContext?): DrawablePlacemark {
@@ -178,83 +121,73 @@ open class Placemark : AbstractRenderable, OrderedRenderable {
     }
 
     override fun doRender(dc: DrawContext) {
-        val activeAttributes: PlacemarkAttributes? = getActiveAttributes(dc)
-        // 计算 经纬度高程对呀的笛卡尔坐标系
+        determineActiveAttributes(dc)
+        val activeAttributes = this.activeAttributes ?: return
+
         placePoint = dc.globe!!.geographicToCartesian(position!!.latitude, position!!.longitude, position!!.altitude, placePoint)
-        // 眼睛的距离
+
         eyeDistance = dc.eyePoint.distanceTo(placePoint)
 
-        if (activeAttributes!!.drawLeaderLine) {
+        if (activeAttributes.drawLeaderLine) {
             if (groundPoint == null) {
                 groundPoint = Vec3()
             }
             groundPoint = dc.globe!!.geographicToCartesian(position!!.latitude, position!!.longitude, 0.0, groundPoint)
         }
-        // Get a drawable delegate this placemark.
+
         val drawable = this.makeDrawablePlacemark(dc)
 
         if (this.prepareDrawable(drawable, dc) && isVisible(drawable, dc)) {
-            dc.offerOrderedRenderable(this, eyeDistance)
+            drawable.program = dc.getProgram(BasicProgram.KEY) as BasicProgram?
+            if (drawable.program == null) {
+                drawable.program = dc.putProgram(BasicProgram.KEY, BasicProgram(dc.resources!!)) as BasicProgram
+            }
+            dc.offerDrawable(drawable , eyeDistance)
         }
 
     }
 
-    override fun renderOrdered(dc: DrawContext) {
-        drawablePlacemark!!.draw(dc)
-    }
-
     fun mustDrawLeaderLine(dc: DrawContext): Boolean {
-        val activeAttributes: PlacemarkAttributes = getActiveAttributes(dc) ?: return false
+        val activeAttributes = this.activeAttributes ?: return false ;
         return activeAttributes.drawLeaderLine && activeAttributes.leaderLineAttributes != null && (!dc.pickingMode || enableLeaderLinePicking)
     }
 
     fun mustDrawLabel(dc :DrawContext ): Boolean {
-        val activeAttributes: PlacemarkAttributes = getActiveAttributes(dc) ?: return false
+        val activeAttributes = this.activeAttributes ?: return false ;
         return label != null && !label!!.isEmpty() && activeAttributes.labelAttributes != null
     }
 
     fun isVisible(drawable: DrawablePlacemark, dc: DrawContext): Boolean {
+        val imageBounds: Rect? = drawable.imageTransform.let { WWMath.boundingRectForUnitSquare(drawable.imageTransform) }
+        return (imageBounds != null && Rect.intersects(imageBounds, dc.viewport) || mustDrawLeaderLine(dc) && dc.frustum.intersectsSegment(groundPoint, placePoint))
 
-        val imageBounds: Rect? = drawable.imageTransform?.let { WWMath.boundingRectForUnitSquare(drawable.imageTransform) }
-                ?: let { null }
-        val labelBounds: Rect? = drawable.labelTransform?.let { WWMath.boundingRectForUnitSquare(drawable.labelTransform) }
-                ?: let { null }
-
-        if (dc.pickingMode) {
-            return imageBounds != null && imageBounds.intersect(dc.viewport)
-        } else {
-            return (imageBounds != null && imageBounds.intersect(dc.viewport))
-                    || (mustDrawLabel(dc) && labelBounds != null && labelBounds.intersect(dc.viewport))
-                    || (mustDrawLeaderLine(dc) && dc.frustum.intersectsSegment(this.groundPoint, this.placePoint));
-        }
     }
 
     protected fun prepareDrawable(drawable: DrawablePlacemark, dc: DrawContext): Boolean { // Get a reference to the attributes to use in the next drawing pass.
 
-        val activeAttributes: PlacemarkAttributes = getActiveAttributes(dc) ?: return false
+        val activeAttributes = this.activeAttributes ?: return false
 
-        drawable.label = this.label
-        drawable.actualRotation = if (imageRotationReference == WorldWind.RELATIVE_TO_GLOBE) dc.heading - imageRotation else -imageRotation
-        drawable.actualTilt = if (imageTiltReference == WorldWind.RELATIVE_TO_GLOBE) dc.tilt + imageTilt else imageTilt
+        drawable.rotation = if (imageRotationReference == WorldWind.RELATIVE_TO_GLOBE) dc.heading - imageRotation else -imageRotation
+        drawable.tilt = if (imageTiltReference == WorldWind.RELATIVE_TO_GLOBE) dc.tilt + imageTilt else imageTilt
 
 
         // Prepare the image
         activeAttributes.imageColor?.let { drawable.imageColor.set(it) }
 
         activeAttributes.imageSource?.let {
-            drawable.activeTexture = dc.getTexture(it)
-            if (drawable.activeTexture == null) {
-                drawable.activeTexture = dc.retrieveTexture(it)
+            drawable.iconTexture = dc.getTexture(it)
+            if (drawable.iconTexture == null) {
+                drawable.iconTexture = dc.retrieveTexture(it)
             }
         } ?: let {
-            drawable.activeTexture = null
+            drawable.iconTexture = null
         }
 
-        var depthOffset: Double = defaultDepthOffset
+        var depthOffset: Double = DEFAULT_DEPTH_OFFSET
 
         if (eyeDistance < dc.horizonDistance) {
             var longestSide = 1.0
-            drawable.activeTexture?.let {
+            drawable.iconTexture?.let {
                 longestSide = Math.max(it.imageWidth, it.imageHeight).toDouble()
             }
             val metersPerPixel = dc.pixelSizeAtDistance(eyeDistance)
@@ -264,10 +197,14 @@ open class Placemark : AbstractRenderable, OrderedRenderable {
             return false
         }
 
-        //val visibilityScale: Double = if (this.eyeDistanceScaling) Math.max(activeAttributes.minimumImageScale, Math.min(1.0, this.eyeDistanceScalingThreshold / eyeDistance)) else 1.0
+        drawable.program = dc.getProgram(BasicProgram.KEY) as BasicProgram?
+        if (drawable.program == null) {
+            drawable.program = dc.putProgram(BasicProgram.KEY, BasicProgram(dc.resources!!)) as BasicProgram
+        }
+
         val visibilityScale: Double = if (this.eyeDistanceScaling) WWMath.clamp(value = this.eyeDistanceScalingThreshold / eyeDistance, min = activeAttributes.minimumImageScale, max = 1.0) else 1.0
 
-        drawable.activeTexture?.let {
+        drawable.iconTexture?.let {
             val w: Int = it.imageWidth
             val h: Int = it.imageHeight
             val s: Double = activeAttributes.imageScale * visibilityScale
@@ -305,35 +242,6 @@ open class Placemark : AbstractRenderable, OrderedRenderable {
 
             if (!dc.projectWithDepth(groundPoint, depthOffset, drawable.screenGroundPoint)) {
                 drawable.drawLeader = false
-            }
-        }
-        // Prepare the label
-        drawable.drawLabel = mustDrawLabel(dc)
-        if (drawable.drawLabel) {
-            if (drawable.labelColor == null) {
-                drawable.labelColor = Color(activeAttributes.labelAttributes?.color!!)
-            } else {
-                drawable.labelColor!!.set(activeAttributes.labelAttributes?.color!!)
-            }
-            val labelFont = attributes.labelAttributes!!.font
-            val labelKey = label + labelFont.toString()
-            drawable.labelTexture = dc.renderResourceCache?.get(labelKey) as GpuTexture?
-            if (drawable.labelTexture == null) {
-                //this.labelTexture = dc.createFontTexture(Placemark.this.displayName, labelFont, false);
-            }
-            if (drawable.labelTexture != null) {
-                if (drawable.labelTransform == null) {
-                    drawable.labelTransform = Matrix4()
-                }
-                val w: Int = drawable.labelTexture!!.imageWidth
-                val h: Int = drawable.labelTexture!!.imageHeight
-                val s = attributes.labelAttributes!!.scale * visibilityScale
-                val offset: Vec2 = attributes.labelAttributes!!.offset!!.offsetForSize(w.toDouble(), h.toDouble())
-                drawable.labelTransform!!.setTranslation(
-                        drawable.screenPlacePoint.x - offset.x * s,
-                        drawable.screenPlacePoint.y - offset.y * s,
-                        drawable.screenPlacePoint.z)
-                drawable.labelTransform!!.setScale(w * s, h * s, 1.0)
             }
         }
         return true
