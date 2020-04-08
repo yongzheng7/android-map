@@ -50,6 +50,9 @@ class MenuActivity : AppCompatActivity() {
             R.id.placemark_stress_activity -> {
                 startActivity(Intent(this, PlacemarksStressTestActivity::class.java))
             }
+            R.id.basic_performance_avtivity -> {
+                startActivity(Intent(this, BasicPerformanceBenchmarkActivity::class.java))
+            }
         }
     }
 
