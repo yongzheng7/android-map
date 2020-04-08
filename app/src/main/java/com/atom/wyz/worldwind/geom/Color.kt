@@ -96,6 +96,8 @@ class Color {
 
     var alpha = 1f
 
+    constructor():this(0f,0f,0f,0f)
+
     constructor(red: Float, green: Float, blue: Float, alpha: Float) {
         this.red = red
         this.green = green

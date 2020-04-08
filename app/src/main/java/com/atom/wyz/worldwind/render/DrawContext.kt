@@ -16,6 +16,8 @@ import com.atom.wyz.worldwind.layer.LayerList
 import com.atom.wyz.worldwind.util.Logger
 import com.atom.wyz.worldwind.util.RenderResourceCache
 import com.atom.wyz.worldwind.util.WWMath
+import java.nio.ByteBuffer
+import java.nio.ByteOrder
 import java.util.*
 
 /**
@@ -96,8 +98,11 @@ open class DrawContext {
 
     var screenProjection: Matrix4 = Matrix4()
 
+    protected var arrayBufferId = 0
 
-    private var orderedRenderablesIndex = 0
+    protected var elementArrayBufferId = 0
+
+    protected var unitQuadBufferId = 0
 
     open fun pixelSizeAtDistance(distance: Double): Double {
         if (pixelSizeFactor == 0.0) { // cache the scaling factor used to convert distances to pixel sizes
@@ -300,6 +305,9 @@ open class DrawContext {
     open fun contextLost() {
         programId = 0
         textureUnit = GLES20.GL_TEXTURE0
+        this.arrayBufferId = 0
+        this.elementArrayBufferId = 0
+        this.unitQuadBufferId = 0
         Arrays.fill(textureId, 0)
     }
 
@@ -330,8 +338,9 @@ open class DrawContext {
     open fun retrieveTexture(imageSource: ImageSource?): GpuTexture? {
         return renderResourceCache ?.retrieveTexture(imageSource)
     }
-    open fun offerDrawable(drawable: Drawable, depth: Double) {
-        drawableQueue.offerDrawable(drawable, depth)
+
+    open fun offerDrawable(drawable: Drawable?, groupId: Int, depth: Double) {
+        drawableQueue.offerDrawable(drawable!!, groupId, depth)
     }
 
     open fun peekDrawable(): Drawable? {
@@ -343,6 +352,50 @@ open class DrawContext {
     }
 
     open fun sortDrawables() {
-        drawableQueue.sortBackToFront()
+        drawableQueue.sortDrawables()
+    }
+
+    open fun currentBuffer(target: Int): Int {
+        return if (target == GLES20.GL_ARRAY_BUFFER) {
+            arrayBufferId
+        } else if (target == GLES20.GL_ELEMENT_ARRAY_BUFFER) {
+            elementArrayBufferId
+        } else {
+            0
+        }
+    }
+
+    open fun bindBuffer(target: Int, bufferId: Int) {
+        if (target == GLES20.GL_ARRAY_BUFFER && arrayBufferId != bufferId) {
+            arrayBufferId = bufferId
+            GLES20.glBindBuffer(target, bufferId)
+        } else if (target == GLES20.GL_ELEMENT_ARRAY_BUFFER && elementArrayBufferId != bufferId) {
+            elementArrayBufferId = bufferId
+            GLES20.glBindBuffer(target, bufferId)
+        } else {
+            GLES20.glBindBuffer(target, bufferId)
+        }
+    }
+
+    open fun unitQuadBuffer(): Int {
+        if (unitQuadBufferId != 0) {
+            return unitQuadBufferId
+        }
+        val newBuffer = IntArray(1)
+        GLES20.glGenBuffers(1, newBuffer, 0)
+        unitQuadBufferId = newBuffer[0]
+        val points = floatArrayOf(0f, 1f, 0f, 0f, 1f, 1f, 1f, 0f) // lower right corner
+        val size = points.size
+        val quadBuffer =
+            ByteBuffer.allocateDirect(size * 4).order(ByteOrder.nativeOrder()).asFloatBuffer()
+        quadBuffer.put(points).rewind()
+        val currentBuffer = currentBuffer(GLES20.GL_ARRAY_BUFFER)
+        try {
+            bindBuffer(GLES20.GL_ARRAY_BUFFER, unitQuadBufferId)
+            GLES20.glBufferData(GLES20.GL_ARRAY_BUFFER, size * 4, quadBuffer, GLES20.GL_STATIC_DRAW)
+        } finally {
+            bindBuffer(GLES20.GL_ARRAY_BUFFER, currentBuffer)
+        }
+        return unitQuadBufferId
     }
 }

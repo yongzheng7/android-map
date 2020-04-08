@@ -3,6 +3,8 @@ package com.atom.wyz.worldwind
 import androidx.annotation.IntDef
 import com.atom.wyz.worldwind.util.MessageService
 import com.atom.wyz.worldwind.util.TaskService
+import java.lang.annotation.Retention
+import java.lang.annotation.RetentionPolicy
 
 class WorldWind {
     /**
@@ -37,7 +39,40 @@ class WorldWind {
     @kotlin.annotation.Retention(AnnotationRetention.SOURCE)
     annotation class OffsetMode
 
+    /**
+     * Drawable group provides a standard set of group IDs for organizing World Window drawing into four phases:
+     * background, surface, shape, and screen. Accepted values are [.BACKGROUND_DRAWABLE], [ ][.SURFACE_DRAWABLE], [.SHAPE_DRAWABLE] and [.SCREEN_DRAWABLE].
+     */
+    @IntDef(BACKGROUND_DRAWABLE, SURFACE_DRAWABLE, SHAPE_DRAWABLE, SCREEN_DRAWABLE)
+    @kotlin.annotation.Retention(AnnotationRetention.SOURCE)
+    annotation class DrawableGroup
+
     companion object {
+        /**
+         * [DrawableGroup] constant indicating drawables displayed before everything else. This group is typically
+         * used to display atmosphere and stars before all other drawables.
+         */
+        const val BACKGROUND_DRAWABLE = 0
+
+        /**
+         * [DrawableGroup] constant indicating drawables displayed on the globe's surface. Surface drawables are
+         * displayed beneath shapes and screen drawables.
+         */
+        const val SURFACE_DRAWABLE = 1
+
+        /**
+         * [DrawableGroup] constant indicating shape drawables, such as placemarks, polygons and polylines. Shape
+         * drawables are displayed on top of surface drawables, but beneath screen drawables.
+         */
+        const val SHAPE_DRAWABLE = 2
+
+        /**
+         * [DrawableGroup] constant indicating drawables displayed in the plane of the screen. Screen drawables are
+         * displayed on top of everything else.
+         */
+        const val SCREEN_DRAWABLE = 3
+
+        ////////////////////////////////////////////////////
         /**
          * Altitude mode constant indicating an altitude relative to the globe's ellipsoid. Ignores the elevation of the
          * terrain directly beneath the position's latitude and longitude.
