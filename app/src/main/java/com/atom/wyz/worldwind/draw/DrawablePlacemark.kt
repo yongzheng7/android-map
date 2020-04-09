@@ -30,6 +30,7 @@ class DrawablePlacemark : Drawable {
     var enableIconDepthTest = true
     var iconTexture: GpuTexture? = null
     var iconMvpMatrix: Matrix4 = Matrix4()
+    var iconTexCoordMatrix: Matrix3 = Matrix3()
 
     var drawLeader = false
     var leaderColor: Color? = null
@@ -41,7 +42,6 @@ class DrawablePlacemark : Drawable {
 
     var program: BasicProgram? = null
 
-    var texCoordMatrix: Matrix3 = Matrix3()
     var enableDepthTest = true
     override fun draw(dc: DrawContext) {
 
@@ -73,9 +73,7 @@ class DrawablePlacemark : Drawable {
         iconTexture?.let {
             if (it.bindTexture(dc)) {
                 program!!.enableTexture(true)
-                texCoordMatrix.setToIdentity()
-                it.applyTexCoordTransform(texCoordMatrix)
-                program!!.loadTexCoordMatrix(texCoordMatrix)
+                program!!.loadTexCoordMatrix(this.iconTexCoordMatrix)
             }
         } ?:let{
             program!!.enableTexture(false)

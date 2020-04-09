@@ -10,5 +10,5 @@ interface SurfaceTile {
 
     fun bindTexture(dc: DrawContext ): Boolean
 
-    fun applyTexCoordTransform(dc: DrawContext, result: Matrix3?): Boolean
+    fun applyTexCoordTransform(dc: DrawContext, result: Matrix3): Boolean
 }

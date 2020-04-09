@@ -21,14 +21,15 @@ class ImageTile(sector: Sector?, level: Level?, row: Int, column: Int) : Tile(se
         } else false
     }
 
-    override fun applyTexCoordTransform(dc: DrawContext, result: Matrix3?): Boolean {
+    override fun applyTexCoordTransform(dc: DrawContext, result: Matrix3): Boolean {
         val texture: GpuTexture? = dc.getTexture(imageSource!!)
-        if (texture != null && texture.applyTexCoordTransform(result)) {
+        if (texture != null) {
+            result.multiplyByMatrix(texture.texCoordTransform)
             return true
         }
 
         if (fallbackTile != null && fallbackTile!!.applyTexCoordTransform(dc, result)) {
-            result!!.multiplyByTileTransform(sector, fallbackTile!!.sector)
+            result.multiplyByTileTransform(sector, fallbackTile!!.sector)
             return true
         }
 

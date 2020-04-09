@@ -28,19 +28,20 @@ class GpuTexture : RenderResource {
 
     var imageBitmap: Bitmap? = null
 
-    fun setBitmap(value : Bitmap?){
-        if (value == null || value.isRecycled) {
+    var texCoordTransform = Matrix3()
+
+    fun setBitmap(bitmap : Bitmap?){
+        if (bitmap == null || bitmap.isRecycled) {
             throw IllegalArgumentException(
                     Logger.logMessage(Logger.ERROR, "GpuTexture", "setImage", "invalidBitmap"))
         }
-        imageWidth = value.getWidth()
-        imageHeight = value.getHeight()
-        imageFormat = GLUtils.getInternalFormat(value)
-        imageByteCount = value.getByteCount()
-        imageBitmap = value
+        imageWidth = bitmap.getWidth()
+        imageHeight = bitmap.getHeight()
+        imageFormat = GLUtils.getInternalFormat(bitmap)
+        imageByteCount = bitmap.getByteCount()
+        imageBitmap = bitmap
+        texCoordTransform.setToVerticalFlip()
     }
-
-    constructor()
 
     constructor(bitmap: Bitmap?) {
         setBitmap(bitmap) ;

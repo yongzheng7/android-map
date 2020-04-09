@@ -10,9 +10,7 @@ class Matrix3 {
 
     val m = doubleArrayOf(1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0)
 
-    constructor() {
-    }
-
+    constructor()
     constructor(m11: Double, m12: Double, m13: Double,
                 m21: Double, m22: Double, m23: Double,
                 m31: Double, m32: Double, m33: Double) {
@@ -309,9 +307,13 @@ class Matrix3 {
         // This is equivalent to the following operation, but is potentially much faster:
         //
         // multiplyByMatrix(
-        //     1, 0, 0
-        //     0, -1, 1,
-        //     0, 0, 1);
+        //  1  0  0     1, 0, 0      1  0  0
+        //  0  1  0     0, -1, 1,    0  -1  1
+        //  0  0  1     0, 0, 1);    0  0   1
+        //  1  0  0     1   0   0
+        //  0  1  0     0  -1  1
+        //  0  0  1     0   0   1
+
         //
         // This inline version eliminates unnecessary multiplication by 1 and 0 in the matrix's components, reducing
         // the total number of primitive operations from 63 to 6.
@@ -392,6 +394,15 @@ class Matrix3 {
         }
         val ma = m
         val mb: DoubleArray = matrix.m
+        /**
+         * ma   ma0  ma1  ma2
+         *      ma3  ma4  ma5
+         *      ma6  ma7  ma8
+         *
+         * mb   mb0  mb1  mb2
+         *      mb3  mb4  mb5
+         *      mb6  mb7  mb8
+         */
         var ma0: Double
         var ma1: Double
         var ma2: Double
@@ -401,15 +412,15 @@ class Matrix3 {
         ma[0] = ma0 * mb[0] + ma1 * mb[3] + ma2 * mb[6]
         ma[1] = ma0 * mb[1] + ma1 * mb[4] + ma2 * mb[7]
         ma[2] = ma0 * mb[2] + ma1 * mb[5] + ma2 * mb[8]
-        ma0 = ma[4]
-        ma1 = ma[5]
-        ma2 = ma[6]
+        ma0 = ma[3]
+        ma1 = ma[4]
+        ma2 = ma[5]
         ma[3] = ma0 * mb[0] + ma1 * mb[3] + ma2 * mb[6]
         ma[4] = ma0 * mb[1] + ma1 * mb[4] + ma2 * mb[7]
         ma[5] = ma0 * mb[2] + ma1 * mb[5] + ma2 * mb[8]
-        ma0 = ma[8]
-        ma1 = ma[9]
-        ma2 = ma[10]
+        ma0 = ma[6]
+        ma1 = ma[7]
+        ma2 = ma[8]
         ma[6] = ma0 * mb[0] + ma1 * mb[3] + ma2 * mb[6]
         ma[7] = ma0 * mb[1] + ma1 * mb[4] + ma2 * mb[7]
         ma[8] = ma0 * mb[2] + ma1 * mb[5] + ma2 * mb[8]

@@ -227,6 +227,8 @@ open class Placemark : AbstractRenderable {
                 this.screenPlacePoint.z
             )
             drawable.iconMvpMatrix.setScale(w * s, h * s, 1.0)
+            drawable.iconTexCoordMatrix.set(it.texCoordTransform)
+
         } ?: let {
             val size: Double = activeAttributes.imageScale * visibilityScale
             val offset: Vec2 = activeAttributes.imageOffset!!.offsetForSize(size, size)

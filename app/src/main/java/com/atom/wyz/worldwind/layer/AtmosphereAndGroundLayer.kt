@@ -119,9 +119,13 @@ class AtmosphereAndGroundLayer : AbstractLayer {
             program.loadModelviewProjection(mvpMatrix)
 
             if (textureBound) {
-                texCoordMatrix.setToIdentity()
-                texture!!.applyTexCoordTransform(texCoordMatrix)
-                terrain.applyTexCoordTransform(idx, fullSphereSector, texCoordMatrix)
+                texCoordMatrix.apply {
+                    this.set(texture!!.texCoordTransform)
+                    this.multiplyByTileTransform(terrain.getTileSector(idx), fullSphereSector)
+                }
+//                texCoordMatrix.setToIdentity()
+//                texture!!.applyTexCoordTransform(texCoordMatrix)
+//                terrain.applyTexCoordTransform(idx, fullSphereSector, texCoordMatrix)
                 program.loadTexCoordMatrix(texCoordMatrix)
             }
 

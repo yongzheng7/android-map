@@ -43,9 +43,13 @@ class SurfaceImage : AbstractRenderable, SurfaceTile {
         return texture != null && texture.bindTexture(dc)
     }
 
-    override fun applyTexCoordTransform(dc: DrawContext, result: Matrix3?): Boolean {
+    override fun applyTexCoordTransform(dc: DrawContext, result: Matrix3): Boolean {
         val texture: GpuTexture? = dc.getTexture(imageSource!!)
-        return texture != null && texture.applyTexCoordTransform(result)
+        if (texture != null && texture.hasTexture()) {
+            result.multiplyByMatrix(texture.texCoordTransform)
+            return true
+        }
+        return false
     }
 
 }
