@@ -3,7 +3,7 @@ package com.atom.wyz.worldwind.globe
 import com.atom.wyz.worldwind.geom.Sector
 import com.atom.wyz.worldwind.geom.Vec3
 import com.atom.wyz.worldwind.util.Level
-import com.atom.wyz.worldwind.render.DrawContext
+import com.atom.wyz.worldwind.DrawContext
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
 import java.nio.FloatBuffer

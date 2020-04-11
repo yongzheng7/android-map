@@ -6,8 +6,7 @@ import com.atom.wyz.worldwind.draw.Drawable
 import com.atom.wyz.worldwind.geom.Camera
 import com.atom.wyz.worldwind.geom.Matrix4
 import com.atom.wyz.worldwind.globe.Tessellator
-import com.atom.wyz.worldwind.render.DrawContext
-import com.atom.wyz.worldwind.render.OrderedRenderable
+import com.atom.wyz.worldwind.DrawContext
 import com.atom.wyz.worldwind.util.Logger
 
 

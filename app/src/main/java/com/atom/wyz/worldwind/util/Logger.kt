@@ -69,6 +69,8 @@ class Logger {
             "errorReadingProgramSource" to "Error reading program sources",
             "missingPathName" to "The path name is null",
             "missingFrameStatistics" to "The frame metrics argument is null",
+            "invalidCapacity" to "The capacity is less than 1",
+            "missingColor" to "The color is null",
             "missingGlobe" to "The globe is null"
         )
 

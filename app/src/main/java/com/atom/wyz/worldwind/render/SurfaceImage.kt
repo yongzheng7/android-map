@@ -1,5 +1,6 @@
 package com.atom.wyz.worldwind.render
 
+import com.atom.wyz.worldwind.DrawContext
 import com.atom.wyz.worldwind.geom.Matrix3
 import com.atom.wyz.worldwind.geom.Sector
 import com.atom.wyz.worldwind.util.Logger

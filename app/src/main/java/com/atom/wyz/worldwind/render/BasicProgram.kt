@@ -2,6 +2,7 @@ package com.atom.wyz.worldwind.render
 
 import android.content.res.Resources
 import android.opengl.GLES20
+import com.atom.wyz.worldwind.DrawContext
 import com.atom.wyz.worldwind.R
 import com.atom.wyz.worldwind.geom.Color
 import com.atom.wyz.worldwind.geom.Matrix3
@@ -37,7 +38,7 @@ class BasicProgram(resources: Resources) : GpuProgram() {
         }
     }
 
-    override fun initProgram( dc:DrawContext) {
+    override fun initProgram( dc: DrawContext) {
         this.enableTextureId = GLES20.glGetUniformLocation(programId, "enableTexture")
         GLES20.glUniform1i(this.enableTextureId, 0)
 

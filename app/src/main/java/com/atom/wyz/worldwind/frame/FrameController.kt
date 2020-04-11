@@ -1,6 +1,6 @@
 package com.atom.wyz.worldwind.frame
 
-import com.atom.wyz.worldwind.render.DrawContext
+import com.atom.wyz.worldwind.DrawContext
 
 /**
  * 帧控制

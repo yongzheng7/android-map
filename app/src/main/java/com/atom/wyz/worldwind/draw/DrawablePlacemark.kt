@@ -1,12 +1,14 @@
 package com.atom.wyz.worldwind.draw
 
 import android.opengl.GLES20
+import com.atom.wyz.worldwind.DrawContext
 import com.atom.wyz.worldwind.geom.Color
 import com.atom.wyz.worldwind.geom.Matrix3
 import com.atom.wyz.worldwind.geom.Matrix4
 import com.atom.wyz.worldwind.render.BasicProgram
-import com.atom.wyz.worldwind.render.DrawContext
 import com.atom.wyz.worldwind.render.GpuTexture
+import com.atom.wyz.worldwind.util.pool.Pool
+import com.atom.wyz.worldwind.util.pool.Pools
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
 import java.nio.FloatBuffer
@@ -24,7 +26,12 @@ class DrawablePlacemark : Drawable {
             leaderBuffer!!.put(points).flip()
             return leaderBuffer
         }
+
+        protected val pool: Pool<DrawablePlacemark> = Pools.newSynchronizedPool() // acquire and are release called in separate threads
+        fun obtain() = pool.acquire() ?: DrawablePlacemark()
     }
+
+
 
     var iconColor: Color = Color(Color.WHITE)
     var enableIconDepthTest = true
@@ -134,5 +141,6 @@ class DrawablePlacemark : Drawable {
     override fun recycle() {
         program = null
         iconTexture = null
+        pool.release(this)
     }
 }

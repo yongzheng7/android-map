@@ -1,6 +1,6 @@
 package com.atom.wyz.worldwind.layer
 
-import com.atom.wyz.worldwind.render.DrawContext
+import com.atom.wyz.worldwind.DrawContext
 import java.util.HashMap
 
 interface Layer {

@@ -3,7 +3,7 @@ package com.atom.wyz.worldwind.globe
 import com.atom.wyz.worldwind.geom.BoundingBox
 import com.atom.wyz.worldwind.geom.Frustum
 import com.atom.wyz.worldwind.geom.Sector
-import com.atom.wyz.worldwind.render.DrawContext
+import com.atom.wyz.worldwind.DrawContext
 import com.atom.wyz.worldwind.util.Level
 import com.atom.wyz.worldwind.util.Logger
 import com.atom.wyz.worldwind.util.LruMemoryCache

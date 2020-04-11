@@ -1,6 +1,7 @@
 package com.atom.wyz.worldwind.render
 
 import android.graphics.Rect
+import com.atom.wyz.worldwind.DrawContext
 import com.atom.wyz.worldwind.WorldWind
 import com.atom.wyz.worldwind.draw.DrawablePlacemark
 import com.atom.wyz.worldwind.geom.*
@@ -16,18 +17,18 @@ open class Placemark : AbstractRenderable {
 
         var DEFAULT_DEPTH_OFFSET = -0.003
 
-        fun simple(position: Position?, color: Color?, pixelSize: Int): Placemark {
+        fun simple(position: Position, color: Color?, pixelSize: Int): Placemark {
             val defaults = PlacemarkAttributes.defaults()
             defaults.imageColor = color
             defaults.imageScale = pixelSize.toDouble()
             return Placemark(position, defaults)
         }
 
-        fun simpleImage(position: Position?, imageSource: ImageSource?): Placemark {
+        fun simpleImage(position: Position, imageSource: ImageSource?): Placemark {
             return Placemark(position, PlacemarkAttributes.withImage(imageSource))
         }
 
-        fun simpleImageAndLabel(position: Position?, imageSource: ImageSource?, label: String?): Placemark {
+        fun simpleImageAndLabel(position: Position, imageSource: ImageSource?, label: String?): Placemark {
             return Placemark(position, PlacemarkAttributes.withImageAndLabel(imageSource), label)
         }
     }
@@ -76,25 +77,13 @@ open class Placemark : AbstractRenderable {
 
     var drawablePlacemark: DrawablePlacemark? = null
 
-    constructor(position: Position?) : this(position, PlacemarkAttributes())
+    constructor(position: Position) : this(position, PlacemarkAttributes())
 
-    constructor(position: Position?, attributes: PlacemarkAttributes?) : this(position, attributes, "Label")
+    constructor(position: Position, attributes: PlacemarkAttributes) : this(position, attributes, null , null)
 
-    constructor(position: Position?, attributes: PlacemarkAttributes?, label: String?) : this(
-        position,
-        attributes,
-        label,
-        "Label",
-        false
-    )
+    constructor(position: Position, attributes: PlacemarkAttributes, label: String?) : this(position, attributes, label, null)
 
-    constructor(
-        position: Position?,
-        attributes: PlacemarkAttributes?,
-        displayName: String?,
-        label: String?,
-        eyeDistanceScaling: Boolean
-    ) {
+    constructor(position: Position?, attributes: PlacemarkAttributes?, displayName: String?, label: String?) {
         if (position == null) {
             throw IllegalArgumentException(
                 Logger.logMessage(Logger.ERROR, "Placemark", "constructor", "missingPosition")
@@ -107,7 +96,7 @@ open class Placemark : AbstractRenderable {
         this.attributes = if (attributes != null) attributes else PlacemarkAttributes()
 
 
-        this.eyeDistanceScaling = eyeDistanceScaling
+        this.eyeDistanceScaling = false
         eyeDistanceScalingThreshold = DEFAULT_EYE_DISTANCE_SCALING_THRESHOLD
         eyeDistanceScalingLabelThreshold = 1.5 * eyeDistanceScalingThreshold
 
@@ -122,13 +111,6 @@ open class Placemark : AbstractRenderable {
         } else {
             activeAttributes = attributes
         }
-    }
-
-    protected fun makeDrawablePlacemark(dc: DrawContext?): DrawablePlacemark {
-        if (this.drawablePlacemark == null) {
-            this.drawablePlacemark = DrawablePlacemark()
-        }
-        return this.drawablePlacemark!!
     }
 
     override fun doRender(dc: DrawContext) {
@@ -150,7 +132,7 @@ open class Placemark : AbstractRenderable {
             return
         }
 
-        val drawable = this.makeDrawablePlacemark(dc)
+        val drawable = DrawablePlacemark.obtain();
 
         this.prepareDrawableIcon(dc, drawable)
 
@@ -179,7 +161,7 @@ open class Placemark : AbstractRenderable {
             if (drawable.program == null) {
                 drawable.program = dc.putProgram(BasicProgram.KEY, BasicProgram(dc.resources!!)) as BasicProgram
             }
-            dc.offerDrawable(drawable, WorldWind.SHAPE_DRAWABLE, eyeDistance)
+            dc.offerShapeDrawable(drawable,  eyeDistance)
         } else {
             drawable.recycle()
         }

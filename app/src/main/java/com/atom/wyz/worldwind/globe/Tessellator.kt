@@ -1,7 +1,6 @@
 package com.atom.wyz.worldwind.globe
 
-import com.atom.wyz.worldwind.globe.Terrain
-import com.atom.wyz.worldwind.render.DrawContext
+import com.atom.wyz.worldwind.DrawContext
 
 /**
  * 镶嵌器

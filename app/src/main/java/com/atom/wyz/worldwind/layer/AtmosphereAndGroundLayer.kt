@@ -1,9 +1,9 @@
 package com.atom.wyz.worldwind.layer
 
 import android.opengl.GLES20
+import com.atom.wyz.worldwind.DrawContext
 import com.atom.wyz.worldwind.R
 import com.atom.wyz.worldwind.geom.*
-import com.atom.wyz.worldwind.globe.Terrain
 import com.atom.wyz.worldwind.render.*
 import java.nio.ByteBuffer
 import java.nio.ByteOrder

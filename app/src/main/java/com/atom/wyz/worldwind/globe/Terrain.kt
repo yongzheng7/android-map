@@ -4,7 +4,7 @@ import com.atom.wyz.worldwind.WorldWind
 import com.atom.wyz.worldwind.geom.Matrix3
 import com.atom.wyz.worldwind.geom.Sector
 import com.atom.wyz.worldwind.geom.Vec3
-import com.atom.wyz.worldwind.render.DrawContext
+import com.atom.wyz.worldwind.DrawContext
 
 /**
  * 地面 地形 包含多个瓦片

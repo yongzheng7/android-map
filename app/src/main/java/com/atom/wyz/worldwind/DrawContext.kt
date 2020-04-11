@@ -1,4 +1,4 @@
-package com.atom.wyz.worldwind.render
+package com.atom.wyz.worldwind
 
 import android.content.res.Resources
 import android.graphics.Rect
@@ -13,6 +13,10 @@ import com.atom.wyz.worldwind.globe.Globe
 import com.atom.wyz.worldwind.globe.Terrain
 import com.atom.wyz.worldwind.layer.Layer
 import com.atom.wyz.worldwind.layer.LayerList
+import com.atom.wyz.worldwind.render.GpuProgram
+import com.atom.wyz.worldwind.render.GpuTexture
+import com.atom.wyz.worldwind.render.ImageSource
+import com.atom.wyz.worldwind.render.SurfaceTileRenderer
 import com.atom.wyz.worldwind.util.Logger
 import com.atom.wyz.worldwind.util.RenderResourceCache
 import com.atom.wyz.worldwind.util.WWMath
@@ -339,8 +343,14 @@ open class DrawContext {
         return renderResourceCache ?.retrieveTexture(imageSource)
     }
 
-    open fun offerDrawable(drawable: Drawable?, groupId: Int, depth: Double) {
-        drawableQueue.offerDrawable(drawable!!, groupId, depth)
+    open fun offerDrawable(drawable: Drawable, groupId: Int, depth: Double) {
+        drawableQueue.offerDrawable(drawable, groupId, depth)
+    }
+    open fun offerSurfaceDrawable(drawable: Drawable, zOrder: Double) {
+        drawableQueue.offerDrawable(drawable, WorldWind.SURFACE_DRAWABLE, zOrder)
+    }
+    open fun offerShapeDrawable(drawable: Drawable, eyeDistance: Double) {
+        drawableQueue.offerDrawable(drawable, WorldWind.SHAPE_DRAWABLE, -eyeDistance) // order by descending eye distance
     }
 
     open fun peekDrawable(): Drawable? {

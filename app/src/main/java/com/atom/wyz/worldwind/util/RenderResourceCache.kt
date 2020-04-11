@@ -2,7 +2,7 @@ package com.atom.wyz.worldwind.util
 
 import android.content.res.Resources
 import android.graphics.Bitmap
-import android.util.Log
+import com.atom.wyz.worldwind.DrawContext
 import com.atom.wyz.worldwind.WorldWind
 import com.atom.wyz.worldwind.render.*
 import java.net.SocketTimeoutException

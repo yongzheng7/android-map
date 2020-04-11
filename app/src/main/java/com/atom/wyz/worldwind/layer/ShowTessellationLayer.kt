@@ -5,7 +5,7 @@ import com.atom.wyz.worldwind.geom.Matrix4
 import com.atom.wyz.worldwind.geom.Vec3
 import com.atom.wyz.worldwind.globe.Terrain
 import com.atom.wyz.worldwind.render.BasicProgram
-import com.atom.wyz.worldwind.render.DrawContext
+import com.atom.wyz.worldwind.DrawContext
 
 class ShowTessellationLayer : AbstractLayer("Terrain Tessellation") {
 

@@ -16,9 +16,9 @@ class DrawableQueue {
                     -1
                 } else if (lhs.groupId > rhs.groupId) { // rhs group is first; sort rhs before lhs
                     1
-                } else if (lhs.depth > rhs.depth) { // lhs is farther than rhs; sort lhs before rhs
+                } else if (lhs.order > rhs.order) { // lhs is farther than rhs; sort lhs before rhs
                     -1
-                } else if (lhs.depth < rhs.depth) { // lhs is closer than rhs; sort rhs before lhs
+                } else if (lhs.order < rhs.order) { // lhs is closer than rhs; sort rhs before lhs
                     1
                 } else { // lhs and rhs have the same depth; sort by insertion order
                     lhs.ordinal - rhs.ordinal
@@ -40,9 +40,10 @@ class DrawableQueue {
     }
 
     fun offerDrawable(drawable: Drawable, groupId: Int, depth: Double) {
-        if (entries.size <= size) {
-            val newArray = arrayOfNulls<Entry>(size + (size shr 1))
-            System.arraycopy(entries, 0, newArray, 0, size)
+        val capacity = entries.size
+        if (capacity == size) {
+            val newArray = arrayOfNulls<Entry>(capacity + (capacity shr 1))
+            System.arraycopy(entries, 0, newArray, 0, capacity)
             entries = newArray
         }
         if (entries[size] == null) {
@@ -81,13 +82,13 @@ class DrawableQueue {
 
     protected class Entry {
         var drawable: Drawable? = null
-        var depth = 0.0
+        var order = 0.0
         var groupId = 0
         var ordinal = 0
-        operator fun set(drawable: Drawable?, groupId: Int, depth: Double, ordinal: Int) {
+        operator fun set(drawable: Drawable?, groupId: Int, order: Double, ordinal: Int) {
             this.drawable = drawable
             this.groupId = groupId
-            this.depth = depth
+            this.order = order
             this.ordinal = ordinal
         }
 

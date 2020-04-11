@@ -18,7 +18,6 @@ import com.atom.wyz.worldwind.globe.Globe
 import com.atom.wyz.worldwind.globe.GlobeWgs84
 import com.atom.wyz.worldwind.layer.LayerList
 import com.atom.wyz.worldwind.render.BasicSurfaceTileRenderer
-import com.atom.wyz.worldwind.render.DrawContext
 import com.atom.wyz.worldwind.render.SurfaceTileRenderer
 import com.atom.wyz.worldwind.util.Logger
 import com.atom.wyz.worldwind.util.MessageListener
@@ -55,7 +54,8 @@ class WorldWindow : GLSurfaceView, GLSurfaceView.Renderer, MessageListener {
 
     var gpuObjectCache: RenderResourceCache? = null
 
-    var dc: DrawContext = DrawContext()
+    var dc: DrawContext =
+        DrawContext()
 
     var surfaceTileRenderer: SurfaceTileRenderer = BasicSurfaceTileRenderer()
 

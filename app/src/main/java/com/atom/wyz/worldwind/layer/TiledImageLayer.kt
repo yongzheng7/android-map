@@ -4,7 +4,7 @@ import com.atom.wyz.worldwind.geom.Sector
 import com.atom.wyz.worldwind.globe.Tile
 import com.atom.wyz.worldwind.globe.TileFactory
 import com.atom.wyz.worldwind.globe.TileUrlFactory
-import com.atom.wyz.worldwind.render.DrawContext
+import com.atom.wyz.worldwind.DrawContext
 import com.atom.wyz.worldwind.render.GpuTexture
 import com.atom.wyz.worldwind.render.ImageSource
 import com.atom.wyz.worldwind.render.ImageTile

@@ -1,9 +1,8 @@
 package com.atom.wyz.worldwind.util
 
-import android.util.Log
-import androidx.core.util.Pools
 import com.atom.wyz.worldwind.WorldWind
-import java.util.concurrent.Executor
+import com.atom.wyz.worldwind.util.pool.Pool
+import com.atom.wyz.worldwind.util.pool.Pools
 import java.util.concurrent.RejectedExecutionException
 
 abstract class AbstractRetriever<K, V>(maxSimultaneousRetrievals: Int) : Retriever<K, V> {
@@ -13,12 +12,12 @@ abstract class AbstractRetriever<K, V>(maxSimultaneousRetrievals: Int) : Retriev
 
     protected var asyncTaskSet: HashSet<K>
 
-    protected var asyncTaskPool: Pools.Pool<AsyncTask<K, V>>
+    protected var asyncTaskPool: Pool<AsyncTask<K, V>>
 
     init {
         maxAsyncTasks = maxSimultaneousRetrievals
         this.asyncTaskSet = HashSet<K>()
-        asyncTaskPool = Pools.SimplePool(maxSimultaneousRetrievals)
+        asyncTaskPool = Pools.newPool(maxSimultaneousRetrievals)
     }
 
     /**

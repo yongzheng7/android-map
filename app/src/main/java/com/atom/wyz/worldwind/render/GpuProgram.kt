@@ -1,6 +1,7 @@
 package com.atom.wyz.worldwind.render
 
 import android.opengl.GLES20
+import com.atom.wyz.worldwind.DrawContext
 import com.atom.wyz.worldwind.util.Logger
 
 open class GpuProgram() : RenderResource {
@@ -65,7 +66,7 @@ open class GpuProgram() : RenderResource {
         return programId != 0
     }
 
-    protected open fun buildProgram(dc: DrawContext , programSource: Array<String>, attribBindings: Array<String>?) {
+    protected open fun buildProgram(dc: DrawContext, programSource: Array<String>, attribBindings: Array<String>?) {
         val status = IntArray(1)
         val vs = GLES20.glCreateShader(GLES20.GL_VERTEX_SHADER)
         GLES20.glShaderSource(vs, programSource[VERTEX_SHADER])

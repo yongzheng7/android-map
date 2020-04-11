@@ -1,12 +1,8 @@
 package com.atom.wyz.worldwind
 
-import android.graphics.Rect
 import com.atom.wyz.worldwind.geom.Camera
 import com.atom.wyz.worldwind.geom.LookAt
-import com.atom.wyz.worldwind.geom.Matrix4
-import com.atom.wyz.worldwind.geom.Position
 import com.atom.wyz.worldwind.globe.Globe
-import com.atom.wyz.worldwind.render.DrawContext
 import com.atom.wyz.worldwind.util.Logger
 
 /**
