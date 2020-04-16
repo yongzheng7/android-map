@@ -12,7 +12,7 @@ import com.atom.wyz.worldwind.util.WWUtil
 
  class BasicProgram(resources: Resources) : GpuProgram() {
     companion object {
-        val KEY: Any = BasicProgram::class.java.name
+        val KEY: Any = BasicProgram::class
     }
 
     var mvpMatrixId = 0

@@ -2,7 +2,6 @@ package com.atom.wyz.worldwind.layer
 
 import com.atom.wyz.worldwind.DrawContext
 import com.atom.wyz.worldwind.R
-import com.atom.wyz.worldwind.WorldWind
 import com.atom.wyz.worldwind.draw.DrawableGroundAtmosphere
 import com.atom.wyz.worldwind.draw.DrawableSkyAtmosphere
 import com.atom.wyz.worldwind.geom.Location
@@ -11,9 +10,6 @@ import com.atom.wyz.worldwind.render.GpuTexture
 import com.atom.wyz.worldwind.render.GroundProgram
 import com.atom.wyz.worldwind.render.ImageSource
 import com.atom.wyz.worldwind.render.SkyProgram
-import java.nio.ByteBuffer
-import java.nio.ByteOrder
-import java.nio.ShortBuffer
 
 class AtmosphereLayer : AbstractLayer {
 
@@ -77,7 +73,7 @@ class AtmosphereLayer : AbstractLayer {
             program = dc.putProgram(SkyProgram.KEY, SkyProgram(dc.resources!!)) as SkyProgram
         }
         val drawable = DrawableSkyAtmosphere.obtain(dc.getDrawablePool(DrawableSkyAtmosphere::class.java)).set(program, activeLightDirection)
-        dc.offerDrawable(drawable, WorldWind.BACKGROUND_DRAWABLE, 0.0 /*z-order*/)
+        dc.offerSurfaceDrawable(drawable, Double.POSITIVE_INFINITY)
     }
 
 }

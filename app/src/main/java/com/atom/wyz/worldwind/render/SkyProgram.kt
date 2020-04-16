@@ -7,7 +7,7 @@ import com.atom.wyz.worldwind.util.WWUtil
 
 class SkyProgram(resources: Resources) : AtmosphereProgram() {
     companion object {
-        val KEY: Any = SkyProgram::class.java.name
+        val KEY: Any = SkyProgram::class
     }
 
     init {

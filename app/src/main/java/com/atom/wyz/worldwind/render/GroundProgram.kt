@@ -7,7 +7,7 @@ import com.atom.wyz.worldwind.util.WWUtil
 
 class GroundProgram(resources: Resources) : AtmosphereProgram() {
     companion object{
-        val KEY: Any = GroundProgram::class.java.name
+        val KEY: Any = GroundProgram::class
     }
     init {
         try {
