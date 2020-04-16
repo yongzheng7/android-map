@@ -91,12 +91,19 @@ class WWMath {
         /**
          * 将转换矩阵应用于正方形的四个角后，计算该正方形的边界矩形。
          */
-        fun boundingRectForUnitSquare(unitSquareTransform: Matrix4?): Rect {
+        fun boundingRectForUnitSquare(unitSquareTransform: Matrix4? ,  result : Rect? ): Rect {
             if (unitSquareTransform == null) {
                 throw IllegalArgumentException(
                         Logger.logMessage(Logger.ERROR, "WWMath", "boundingRectForUnitSquare", "missingMatrix"))
             }
-            val result = Rect();
+            requireNotNull(result) {
+                Logger.logMessage(
+                    Logger.ERROR,
+                    "WWMath",
+                    "boundingRectForUnitQuad",
+                    "missingResult"
+                )
+            }
             val m: DoubleArray = unitSquareTransform.m
             // transform of (0, 0)
             // 0  1  2  3

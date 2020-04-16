@@ -31,11 +31,6 @@ interface Terrain {
     fun getTileVertexOrigin(index: Int): Vec3?
 
     /**
-     * 申请Texcoord进行变换
-     */
-    fun applyTexCoordTransform(index: Int, dst: Sector?, result: Matrix3?)
-
-    /**
      * 加载绘制顶点缓存
      */
     fun useVertexPointAttrib(dc: DrawContext?, index: Int, attribLocation: Int)

@@ -1,6 +1,7 @@
 package com.atom.wyz.worldwind.geom
 
 import com.atom.wyz.worldwind.WorldWind
+import com.atom.wyz.worldwind.util.Logger
 
 class Offset {
 
@@ -104,7 +105,12 @@ class Offset {
                 '}'
     }
 
-    fun offsetForSize(width: Double, height: Double): Vec2 {
+    fun offsetForSize(width: Double, height: Double  , result : Vec2? ): Vec2 {
+        if (result == null) {
+            throw IllegalArgumentException(
+                Logger.logMessage(Logger.ERROR, "Offset", "offsetForSize", "missingResult")
+            )
+        }
         val x: Double
         val y: Double
         x = if (xUnits == WorldWind.OFFSET_FRACTION) {
@@ -121,7 +127,7 @@ class Offset {
         } else { // default to OFFSET_PIXELS
             this.y
         }
-        return Vec2(x, y)
+        return result.set(x ,y)
     }
 
 }

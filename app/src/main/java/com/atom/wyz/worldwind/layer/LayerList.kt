@@ -101,7 +101,18 @@ class LayerList() : Iterable<Layer> {
             this.layers.add(layer)
         }
     }
-
+    fun addAllLayers(layerList: LayerList?) {
+        requireNotNull(layerList) { Logger.logMessage(Logger.ERROR, "LayerList", "addAllLayers", "missingList") }
+        val thisList = layers
+        val thatList = layerList.layers
+        thisList.ensureCapacity(thatList.size)
+        var idx = 0
+        val len = thatList.size
+        while (idx < len) {
+            thisList.add(thatList[idx]) // we know the contents of layerList.layers is valid
+            idx++
+        }
+    }
     fun removeLayer(layer: Layer?): Boolean {
         if (layer == null) {
             throw java.lang.IllegalArgumentException(

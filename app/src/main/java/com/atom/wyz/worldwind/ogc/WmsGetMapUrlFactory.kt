@@ -47,18 +47,6 @@ class WmsGetMapUrlFactory : TileUrlFactory {
      */
      var timeString: String? = null
 
-    /**
-     * Constructs a WMS Get Map URL builder with specified WMS service parameters.
-     *
-     * @param serviceAddress the WMS service address
-     * @param wmsVersion     the WMS protocol version
-     * @param layerNames     comma-separated list of WMS layer names
-     * @param styleNames     comma-separated list of WMS style names, may be null in which case the default style is
-     * assumed
-     *
-     * @throws IllegalArgumentException If any of the service address, the WMS protocol version, or the layer names are
-     * null
-     */
     constructor(serviceAddress: String?, wmsVersion: String?, layerNames: String?, styleNames: String?) {
         if (serviceAddress == null) {
             throw IllegalArgumentException(
@@ -78,15 +66,6 @@ class WmsGetMapUrlFactory : TileUrlFactory {
         this.styleNames = styleNames
     }
 
-    /**
-     * Constructs a level set with a specified configuration. The configuration's service address, WMS protocol version,
-     * layer names and coordinate reference system must be non-null. The style names may be null, in which case the
-     * default style is assumed. The time string may be null, in which case no time parameter is included.
-     *
-     * @param config the configuration for this URL builder
-     *
-     * @throws IllegalArgumentException If the configuration is null, or if any configuration value is invalid
-     */
     constructor(config: WmsLayerConfig?) {
         if (config == null) {
             throw IllegalArgumentException(

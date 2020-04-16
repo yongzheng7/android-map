@@ -5,7 +5,7 @@ import com.atom.wyz.worldwind.R
 import com.atom.wyz.worldwind.util.Logger
 import com.atom.wyz.worldwind.util.WWUtil
 
-class GroundProgram(resources: Resources) : AtmosphereAndGroundProgram() {
+class GroundProgram(resources: Resources) : AtmosphereProgram() {
     companion object{
         val KEY: Any = GroundProgram::class.java.name
     }

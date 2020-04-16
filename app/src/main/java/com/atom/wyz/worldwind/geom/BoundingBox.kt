@@ -10,10 +10,18 @@ import java.util.*
  * 界限框
  */
 class BoundingBox() {
-    
-    companion object{
+
+    companion object {
         // Internal. Intentionally not documented.
-         fun adjustExtremes(r: Vec3, rExtremes: DoubleArray, s: Vec3, sExtremes: DoubleArray, t: Vec3, tExtremes: DoubleArray, p: Vec3) {
+        fun adjustExtremes(
+            r: Vec3,
+            rExtremes: DoubleArray,
+            s: Vec3,
+            sExtremes: DoubleArray,
+            t: Vec3,
+            tExtremes: DoubleArray,
+            p: Vec3
+        ) {
             val pdr: Double = p.dot(r)
             if (rExtremes[0] > pdr) {
                 rExtremes[0] = pdr
@@ -49,61 +57,37 @@ class BoundingBox() {
             aExtremes[1] = bExtremes[1]
             bExtremes[1] = tmp
         }
-
-        // Internal. Intentionally not documented.
-        private fun intersectsAt(plane: Plane, effRadius: Double, endPoint1: Vec3, endPoint2: Vec3): Double { // Test the distance from the first end-point.
-            val dq1: Double = plane.dot(endPoint1)
-            val bq1 = dq1 <= -effRadius
-            // Test the distance from the second end-point.
-            val dq2: Double = plane.dot(endPoint2)
-            val bq2 = dq2 <= -effRadius
-            if (bq1 && bq2) { // endpoints more distant from plane than effective radius; box is on neg. side of plane
-                return (-1).toDouble()
-            }
-            if (bq1 == bq2) { // endpoints less distant from plane than effective radius; can't draw any conclusions
-                return 0.0
-            }
-            // Compute and return the endpoints of the box on the positive side of the plane
-            val tmpPoint: Vec3 = Vec3(endPoint1)
-            tmpPoint.subtract(endPoint2)
-            val t: Double = (effRadius + dq1) / plane.normal.dot(tmpPoint)
-            tmpPoint.set(endPoint2)
-            tmpPoint.subtract(endPoint1)
-            tmpPoint.multiply(t)
-            tmpPoint.add(endPoint1)
-            // Truncate the line to only that in the positive halfspace, e.g., inside the frustum.
-            if (bq1) {
-                endPoint1.set(tmpPoint)
-            } else {
-                endPoint2.set(tmpPoint)
-            }
-            return t
-        }
     }
 
-    var center: Vec3 = Vec3(0.0, 0.0, 0.0)
+    protected var center: Vec3 = Vec3(0.0, 0.0, 0.0)
 
-    var bottomCenter: Vec3 = Vec3(-0.5, 0.0, 0.0)
+    protected var bottomCenter: Vec3 = Vec3(-0.5, 0.0, 0.0)
 
-    var topCenter: Vec3 = Vec3(0.5, 0.0, 0.0)
+    protected var topCenter: Vec3 = Vec3(0.5, 0.0, 0.0)
 
-    var r: Vec3 = Vec3(1.0, 0.0, 0.0)
+    protected var r: Vec3 = Vec3(1.0, 0.0, 0.0)
 
-    var s: Vec3 = Vec3(0.0, 1.0, 0.0)
+    protected var s: Vec3 = Vec3(0.0, 1.0, 0.0)
 
-    var t: Vec3 = Vec3(0.0, 0.0, 1.0)
+    protected var t: Vec3 = Vec3(0.0, 0.0, 1.0)
 
-    var radius = Math.sqrt(3.0)
+    protected var radius = Math.sqrt(3.0)
+
+    private val endPoint1 = Vec3()
+
+    private val endPoint2 = Vec3()
 
 
     fun setToSector(sector: Sector?, globe: Globe?, minElevation: Double, maxElevation: Double): BoundingBox? {
         if (sector == null) {
             throw IllegalArgumentException(
-                    Logger.logMessage(Logger.ERROR, "BoundingBox", "setToSector", "missingSector"))
+                Logger.logMessage(Logger.ERROR, "BoundingBox", "setToSector", "missingSector")
+            )
         }
         if (globe == null) {
             throw IllegalArgumentException(
-                    Logger.logMessage(Logger.ERROR, "BoundingBox", "setToSector", "missingGlobe"))
+                Logger.logMessage(Logger.ERROR, "BoundingBox", "setToSector", "missingGlobe")
+            )
         }
         val numLat = 3
         val numLon = 3
@@ -127,18 +111,20 @@ class BoundingBox() {
         elevations[0] = elevations[2]
 
         val points = ByteBuffer.allocateDirect(count * stride * 4).order(ByteOrder.nativeOrder()).asFloatBuffer()
-        globe.geographicToCartesianGrid(sector, numLat, numLon, elevations, null, points, stride).rewind() // points中是经过转换的点
+        globe.geographicToCartesianGrid(sector, numLat, numLon, elevations, null, points, stride)
+            .rewind() // points中是经过转换的点
 
         val centroidLat: Double = sector.centroidLatitude()
         val centroidLon: Double = sector.centroidLongitude()
 
         //
-        val matrix: Matrix4 = globe.geographicToCartesianTransform(centroidLat, centroidLon, 0.0, Matrix4()) ?:return null;
+        val matrix: Matrix4 =
+            globe.geographicToCartesianTransform(centroidLat, centroidLon, 0.0, Matrix4()) ?: return null;
         val m: DoubleArray = matrix.m
 
-        this.r.set(m[0],m[4],m[8])
-        this.s.set(m[1],m[5],m[9])
-        this.t.set(m[2],m[6],m[10])
+        this.r.set(m[0], m[4], m[8])
+        this.s.set(m[1], m[5], m[9])
+        this.t.set(m[2], m[6], m[10])
 
         // Find the extremes along each axis.
         val rExtremes = doubleArrayOf(Double.POSITIVE_INFINITY, Double.NEGATIVE_INFINITY)
@@ -153,7 +139,7 @@ class BoundingBox() {
 
             u.set(coords[0].toDouble(), coords[1].toDouble(), coords[2].toDouble())
 
-           adjustExtremes(r, rExtremes, s, sExtremes, t, tExtremes, u)
+            adjustExtremes(r, rExtremes, s, sExtremes, t, tExtremes, u)
         }
         // Sort the axes from most prominent to least prominent. The frustum intersection methods in WWBoundingBox assume
         // that the axes are defined in this way.
@@ -196,40 +182,67 @@ class BoundingBox() {
     /**
      * 指示此边界框是否与指定的视锥相交。
      */
-    fun intersectsFrustum(frustum: Frustum?) : Boolean{
+    fun intersectsFrustum(frustum: Frustum?): Boolean {
         if (frustum == null) {
             throw IllegalArgumentException(
-                    Logger.logMessage(Logger.ERROR, "BoundingBox", "intersectsFrustum", "missingFrustum"))
+                Logger.logMessage(Logger.ERROR, "BoundingBox", "intersectsFrustum", "missingFrustum")
+            )
         }
+        endPoint1.set(bottomCenter)
+        endPoint2.set(topCenter)
 
-        val tmp1 = Vec3(bottomCenter)
-        val tmp2 = Vec3(topCenter)
-
-        if (this.intersectionPoint(frustum.near, tmp1, tmp2) < 0) {
+        if (this.intersectsAt(frustum.near) < 0) {
             return false
         }
-        if (this.intersectionPoint(frustum.far, tmp1, tmp2) < 0) {
+        if (this.intersectsAt(frustum.far) < 0) {
             return false
         }
-        if (this.intersectionPoint(frustum.left, tmp1, tmp2) < 0) {
+        if (this.intersectsAt(frustum.left) < 0) {
             return false
         }
-        if (this.intersectionPoint(frustum.right, tmp1, tmp2) < 0) {
+        if (this.intersectsAt(frustum.right) < 0) {
             return false
         }
-        if (this.intersectionPoint(frustum.top, tmp1, tmp2) < 0) {
+        if (this.intersectsAt(frustum.top) < 0) {
             return false
         }
-        return if (this.intersectionPoint(frustum.bottom, tmp1, tmp2) < 0) {
+        return if (this.intersectsAt(frustum.bottom) < 0) {
             return false
         } else true
     }
 
     // Internal. Intentionally not documented.
-    private fun intersectionPoint(plane:Plane, endPoint1:Vec3, endPoint2:Vec3): Double {
-        val n:Vec3 = plane.normal
+    private fun intersectsAt(plane: Plane): Double {
+        val n: Vec3 = plane.normal
         val effectiveRadius = 0.5 * (Math.abs(s.dot(n)) + Math.abs(t.dot(n)))
-        return intersectsAt(plane, effectiveRadius, endPoint1, endPoint2)
+
+        val dq1: Double = plane.dot(endPoint1)
+        val bq1 = dq1 <= -effectiveRadius
+        // Test the distance from the second end-point.
+        val dq2: Double = plane.dot(endPoint2)
+        val bq2 = dq2 <= -effectiveRadius
+        if (bq1 && bq2) { // endpoints more distant from plane than effective radius; box is on neg. side of plane
+            return (-1).toDouble()
+        }
+        if (bq1 == bq2) { // endpoints less distant from plane than effective radius; can't draw any conclusions
+            return 0.0
+        }
+        // Compute and return the endpoints of the box on the positive side of the plane
+        // Compute and return the endpoints of the box on the positive side of the plane
+        val dot =
+            n.x * (endPoint1.x - endPoint2.x) + n.y * (endPoint1.y - endPoint2.y) + n.z * (endPoint1.z - endPoint2.z)
+        val t: Double = (effectiveRadius + dq1) / dot
+
+        // Truncate the line to only that in the positive halfspace, e.g., inside the frustum.
+        val x = (endPoint2.x - endPoint1.x) * t + endPoint1.x
+        val y = (endPoint2.y - endPoint1.y) * t + endPoint1.y
+        val z = (endPoint2.z - endPoint1.z) * t + endPoint1.z
+        if (bq1) {
+            endPoint1.set(x, y, z)
+        } else {
+            endPoint2.set(x, y, z)
+        }
+        return t
     }
 
     /**

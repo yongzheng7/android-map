@@ -16,13 +16,15 @@ import com.atom.wyz.worldwind.layer.LayerList
 import com.atom.wyz.worldwind.render.GpuProgram
 import com.atom.wyz.worldwind.render.GpuTexture
 import com.atom.wyz.worldwind.render.ImageSource
-import com.atom.wyz.worldwind.render.SurfaceTileRenderer
 import com.atom.wyz.worldwind.util.Logger
 import com.atom.wyz.worldwind.util.RenderResourceCache
 import com.atom.wyz.worldwind.util.WWMath
+import com.atom.wyz.worldwind.util.pool.Pool
+import com.atom.wyz.worldwind.util.pool.SynchronizedPool
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
 import java.util.*
+import kotlin.collections.HashMap
 
 /**
  * 绘画环境
@@ -90,8 +92,6 @@ open class DrawContext {
 
     protected var userProperties: HashMap<Any, Any> = HashMap<Any, Any>()
 
-    var surfaceTileRenderer: SurfaceTileRenderer? = null
-
     var programId = 0
 
     var textureUnit = GLES20.GL_TEXTURE0
@@ -107,6 +107,8 @@ open class DrawContext {
     protected var elementArrayBufferId = 0
 
     protected var unitQuadBufferId = 0
+
+    protected var drawablePools = HashMap<Any , Pool<*>?>()
 
     open fun pixelSizeAtDistance(distance: Double): Double {
         if (pixelSizeFactor == 0.0) { // cache the scaling factor used to convert distances to pixel sizes
@@ -264,7 +266,7 @@ open class DrawContext {
         return renderResourceCache?.let { it[key] as GpuProgram? }
     }
 
-    open fun putProgram(key: Any, program: GpuProgram): GpuProgram? {
+    open fun putProgram(key: Any, program: GpuProgram): GpuProgram {
         renderResourceCache ?.put(key, program, program.programLength )
         return program
     }
@@ -363,6 +365,15 @@ open class DrawContext {
 
     open fun sortDrawables() {
         drawableQueue.sortDrawables()
+    }
+
+    open fun <T : Drawable> getDrawablePool(key: Class<T>): Pool<T> {
+        var pool = drawablePools.get(key) as Pool<T>?
+        if (pool == null) {
+            pool = SynchronizedPool() // use SynchronizedPool; acquire and are release may be called in separate threads
+            drawablePools.put(key, pool)
+        }
+        return pool
     }
 
     open fun currentBuffer(target: Int): Int {

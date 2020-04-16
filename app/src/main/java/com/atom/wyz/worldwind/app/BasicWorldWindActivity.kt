@@ -4,7 +4,7 @@ import android.annotation.SuppressLint
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import com.atom.wyz.worldwind.WorldWindow
-import com.atom.wyz.worldwind.layer.AtmosphereAndGroundLayer
+import com.atom.wyz.worldwind.layer.AtmosphereLayer
 import com.atom.wyz.worldwind.layer.BackgroundLayer
 import com.atom.wyz.worldwind.layer.BlueMarbleLandsatLayer
 
@@ -24,7 +24,7 @@ open class BasicWorldWindActivity : AppCompatActivity() {
 
         wwd.layers.addLayer(BackgroundLayer())
         wwd.layers.addLayer(BlueMarbleLandsatLayer())
-        wwd.layers.addLayer(AtmosphereAndGroundLayer())
+        wwd.layers.addLayer(AtmosphereLayer())
 
 
     }

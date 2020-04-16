@@ -356,14 +356,18 @@ class Matrix3 {
             throw java.lang.IllegalArgumentException(
                     Logger.logMessage(Logger.ERROR, "Sector", "multiplyByTileTransform", "missingSector"))
         }
+        //源纬度跨度  经度跨度
         val srcDeltaLat: Double = src.deltaLatitude()
         val srcDeltaLon: Double = src.deltaLongitude()
+        // 目标纬度跨度 经度跨度
         val dstDeltaLat: Double = dst.deltaLatitude()
         val dstDeltaLon: Double = dst.deltaLongitude()
-        val xs = srcDeltaLon / dstDeltaLon
+        // 得到比例
         val ys = srcDeltaLat / dstDeltaLat
-        val xt: Double = (src.minLongitude - dst.minLongitude) / dstDeltaLon
+        val xs = srcDeltaLon / dstDeltaLon
+
         val yt: Double = (src.minLatitude - dst.minLatitude) / dstDeltaLat
+        val xt: Double = (src.minLongitude - dst.minLongitude) / dstDeltaLon
         // This is equivalent to the following operation, but is potentially much faster:
         //
         // multiplyByMatrix(

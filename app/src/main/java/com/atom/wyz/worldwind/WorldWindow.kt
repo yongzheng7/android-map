@@ -8,6 +8,7 @@ import android.opengl.GLES20
 import android.opengl.GLSurfaceView
 import android.util.AttributeSet
 import android.view.MotionEvent
+import android.view.SurfaceHolder
 import com.atom.wyz.worldwind.frame.BasicFrameController
 import com.atom.wyz.worldwind.frame.FrameController
 import com.atom.wyz.worldwind.frame.FrameMetrics
@@ -17,8 +18,6 @@ import com.atom.wyz.worldwind.gesture.GestureRecognizer
 import com.atom.wyz.worldwind.globe.Globe
 import com.atom.wyz.worldwind.globe.GlobeWgs84
 import com.atom.wyz.worldwind.layer.LayerList
-import com.atom.wyz.worldwind.render.BasicSurfaceTileRenderer
-import com.atom.wyz.worldwind.render.SurfaceTileRenderer
 import com.atom.wyz.worldwind.util.Logger
 import com.atom.wyz.worldwind.util.MessageListener
 import com.atom.wyz.worldwind.util.RenderResourceCache
@@ -57,8 +56,6 @@ class WorldWindow : GLSurfaceView, GLSurfaceView.Renderer, MessageListener {
     var dc: DrawContext =
         DrawContext()
 
-    var surfaceTileRenderer: SurfaceTileRenderer = BasicSurfaceTileRenderer()
-
 
     constructor(context: Context) : super(context) {
         this.init(null)
@@ -92,9 +89,17 @@ class WorldWindow : GLSurfaceView, GLSurfaceView.Renderer, MessageListener {
         this.setRenderer(this)
         this.renderMode = RENDERMODE_WHEN_DIRTY // must be called after setRenderer
 
+    }
+
+    override fun surfaceCreated(holder: SurfaceHolder?) {
+        super.surfaceCreated(holder)
         WorldWind.messageService.addListener(this)
     }
 
+    override fun surfaceDestroyed(holder: SurfaceHolder?) {
+        super.surfaceDestroyed(holder)
+        WorldWind.messageService.removeListener(this)
+    }
     protected fun prepareToDrawFrame() {
         this.dc.resources = this.context.resources
         this.dc.globe = globe
@@ -110,8 +115,6 @@ class WorldWindow : GLSurfaceView, GLSurfaceView.Renderer, MessageListener {
         this.dc.viewport = viewport
         this.dc.renderResourceCache = gpuObjectCache
         this.dc.renderResourceCache?.resources = this.context.resources
-
-        this.dc.surfaceTileRenderer = surfaceTileRenderer
     }
 
     @SuppressLint("ClickableViewAccessibility")
@@ -135,7 +138,6 @@ class WorldWindow : GLSurfaceView, GLSurfaceView.Renderer, MessageListener {
         if (dc.renderRequested) {
             requestRender()
         }
-
         dc.resetFrameProperties()
     }
 

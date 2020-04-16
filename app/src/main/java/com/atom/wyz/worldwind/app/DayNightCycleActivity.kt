@@ -4,14 +4,14 @@ import android.os.Bundle
 import android.os.Handler
 import com.atom.wyz.worldwind.Navigator
 import com.atom.wyz.worldwind.geom.Location
-import com.atom.wyz.worldwind.layer.AtmosphereAndGroundLayer
+import com.atom.wyz.worldwind.layer.AtmosphereLayer
 import com.atom.wyz.worldwind.layer.LayerList
 
 class DayNightCycleActivity : BasicWorldWindActivity() ,  Runnable {
 
     protected var sunLocation: Location = Location(0.0, -100.0)
 
-    protected var atmosphereLayer: AtmosphereAndGroundLayer? = null
+    protected var atmosphereLayer: AtmosphereLayer? = null
 
     protected var dayNightHandler = Handler()
 
@@ -22,7 +22,7 @@ class DayNightCycleActivity : BasicWorldWindActivity() ,  Runnable {
         // Initialize the Atmosphere layer's light location to our custom location. By default the light location is
         // always behind the viewer.
         val layers: LayerList = getWorldWindow().layers
-        atmosphereLayer = layers.getLayer(layers.indexOfLayerNamed("Atmosphere")) as AtmosphereAndGroundLayer
+        atmosphereLayer = layers.getLayer(layers.indexOfLayerNamed("Atmosphere")) as AtmosphereLayer
         atmosphereLayer!!.lightLocation = sunLocation
 
         // Initialize the Navigator so that the sun is behind the viewer.

@@ -39,7 +39,7 @@ class DrawableQueue {
         position = 0
     }
 
-    fun offerDrawable(drawable: Drawable, groupId: Int, depth: Double) {
+    fun offerDrawable(drawable: Drawable, groupId: Int, order: Double) {
         val capacity = entries.size
         if (capacity == size) {
             val newArray = arrayOfNulls<Entry>(capacity + (capacity shr 1))
@@ -49,7 +49,7 @@ class DrawableQueue {
         if (entries[size] == null) {
             entries[size] = Entry()
         }
-        entries[size]!!.set(drawable, groupId, depth, size)
+        entries[size]!!.set(drawable, groupId, order, size)
         size++
     }
 

@@ -23,7 +23,7 @@ class BlueMarbleLandsatLayer : WmsLayer, TileUrlFactory {
             throw IllegalArgumentException(
                     Logger.logMessage(Logger.ERROR, "BlueMarbleLandsatLayer", "constructor", "missingServiceAddress"))
         }
-        val blueMarbleConfig: WmsLayerConfig = WmsLayerConfig()
+        val blueMarbleConfig = WmsLayerConfig()
         blueMarbleConfig.serviceAddress = serviceAddress
         blueMarbleConfig.wmsVersion = "1.3.0"
         blueMarbleConfig.layerNames = "BlueMarble-200405"
@@ -32,7 +32,7 @@ class BlueMarbleLandsatLayer : WmsLayer, TileUrlFactory {
 
         blueMarbleUrlFactory = WmsGetMapUrlFactory(blueMarbleConfig)
 
-        val landsatConfig: WmsLayerConfig = WmsLayerConfig()
+        val landsatConfig  = WmsLayerConfig()
         landsatConfig.serviceAddress = serviceAddress
         landsatConfig.wmsVersion = "1.3.0"
         landsatConfig.layerNames = "BlueMarble-200405,esat" // composite the esat layer over the BlueMarble layer
@@ -44,10 +44,10 @@ class BlueMarbleLandsatLayer : WmsLayer, TileUrlFactory {
 
         val metersPerPixel = 15.0
         val radiansPerPixel: Double = metersPerPixel / WorldWind.WGS84_SEMI_MAJOR_AXIS
-        val levelsConfig: LevelSetConfig = LevelSetConfig()
+        val levelsConfig = LevelSetConfig()
         levelsConfig.numLevels = levelsConfig.numLevelsForResolution(radiansPerPixel)
 
-        this.levelSet = (LevelSet(levelsConfig))
+        this.levelSet = LevelSet(levelsConfig)
         this.tileUrlFactory = this
         this.imageFormat = ("image/png")
     }

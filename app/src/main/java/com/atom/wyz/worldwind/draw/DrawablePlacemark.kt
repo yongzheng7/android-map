@@ -8,7 +8,6 @@ import com.atom.wyz.worldwind.geom.Matrix4
 import com.atom.wyz.worldwind.render.BasicProgram
 import com.atom.wyz.worldwind.render.GpuTexture
 import com.atom.wyz.worldwind.util.pool.Pool
-import com.atom.wyz.worldwind.util.pool.Pools
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
 import java.nio.FloatBuffer
@@ -27,11 +26,11 @@ class DrawablePlacemark : Drawable {
             return leaderBuffer
         }
 
-        protected val pool: Pool<DrawablePlacemark> = Pools.newSynchronizedPool() // acquire and are release called in separate threads
-        fun obtain() = pool.acquire() ?: DrawablePlacemark()
+        fun obtain(pool: Pool<DrawablePlacemark>): DrawablePlacemark {
+            val instance = pool.acquire() // get an instance from the pool
+            return if (instance != null) instance.setPool(pool) else DrawablePlacemark().setPool(pool)
+        }
     }
-
-
 
     var iconColor: Color = Color(Color.WHITE)
     var enableIconDepthTest = true
@@ -40,19 +39,22 @@ class DrawablePlacemark : Drawable {
     var iconTexCoordMatrix: Matrix3 = Matrix3()
 
     var drawLeader = false
-    var leaderColor: Color? = null
+    var leaderColor = Color()
     var enableLeaderDepthTest = true
     var leaderWidth = 1f
     var enableLeaderPicking = false
-    var leaderMvpMatrix: Matrix4? = null
-    var leaderVertexPoint: FloatArray? = null
+    var leaderMvpMatrix: Matrix4? = Matrix4()
+    var leaderVertexPoint: FloatArray? = FloatArray(6)
 
     var program: BasicProgram? = null
 
     var enableDepthTest = true
+
+    private var pool: Pool<DrawablePlacemark>? = null
+
     override fun draw(dc: DrawContext) {
 
-        if(this.program == null) {
+        if (this.program == null) {
             return
         }
         val program = this.program as BasicProgram
@@ -75,6 +77,7 @@ class DrawablePlacemark : Drawable {
 
 
     }
+
     protected fun drawIcon(dc: DrawContext) { // Set up a 2D unit quad as the source of vertex points and texture coordinates.
         dc.activeTextureUnit(GLES20.GL_TEXTURE0)
         iconTexture?.let {
@@ -82,7 +85,7 @@ class DrawablePlacemark : Drawable {
                 program!!.enableTexture(true)
                 program!!.loadTexCoordMatrix(this.iconTexCoordMatrix)
             }
-        } ?:let{
+        } ?: let {
             program!!.enableTexture(false)
         }
         program!!.loadColor(iconColor)
@@ -106,12 +109,13 @@ class DrawablePlacemark : Drawable {
 
         GLES20.glDisableVertexAttribArray(1)
     }
+
     protected fun drawLeader(dc: DrawContext) {
         program!!.enableTexture(false)
 
         program!!.loadColor(leaderColor!!)
 
-        this.leaderMvpMatrix ?.let{
+        this.leaderMvpMatrix?.let {
             program!!.loadModelviewProjection(it)
         }
 
@@ -119,12 +123,13 @@ class DrawablePlacemark : Drawable {
 
         GLES20.glLineWidth(leaderWidth)
 
-        leaderVertexPoint ?.let{
+        leaderVertexPoint?.let {
             GLES20.glVertexAttribPointer(0, 3, GLES20.GL_FLOAT, false, 0, getLeaderBuffer(it))
             GLES20.glDrawArrays(GLES20.GL_LINES, 0, 2)
         }
 
     }
+
     protected fun enableDepthTest(enable: Boolean) {
         if (enableDepthTest != enable) {
             enableDepthTest = enable
@@ -138,9 +143,15 @@ class DrawablePlacemark : Drawable {
         }
     }
 
+    private fun setPool(pool: Pool<DrawablePlacemark>): DrawablePlacemark {
+        this.pool = pool
+        return this
+    }
+
     override fun recycle() {
         program = null
         iconTexture = null
-        pool.release(this)
+        pool?.release(this)
+        pool = null
     }
 }

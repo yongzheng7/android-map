@@ -10,7 +10,7 @@ import com.atom.wyz.worldwind.geom.Matrix4
 import com.atom.wyz.worldwind.util.Logger
 import com.atom.wyz.worldwind.util.WWUtil
 
-class BasicProgram(resources: Resources) : GpuProgram() {
+ class BasicProgram(resources: Resources) : GpuProgram() {
     companion object {
         val KEY: Any = BasicProgram::class.java.name
     }

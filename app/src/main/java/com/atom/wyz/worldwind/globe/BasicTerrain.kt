@@ -84,26 +84,6 @@ class BasicTerrain() : Terrain {
         return tiles[index].tileOrigin
     }
 
-    override fun applyTexCoordTransform(index: Int, dst: Sector?, result: Matrix3?) {
-        if (index < 0 || index >= tiles.size) {
-            throw java.lang.IllegalArgumentException(
-                    Logger.logMessage(Logger.ERROR, "BasicTerrain", "applyTexCoordTransform", "invalidIndex"))
-        }
-
-        if (dst == null) {
-            throw java.lang.IllegalArgumentException(
-                    Logger.logMessage(Logger.ERROR, "BasicTerrain", "applyTexCoordTransform", "missingSector"))
-        }
-
-        if (result == null) {
-            throw java.lang.IllegalArgumentException(
-                    Logger.logMessage(Logger.ERROR, "BasicTerrain", "applyTexCoordTransform", "missingResult"))
-        }
-
-        val src: Sector = tiles[index].sector
-        result.multiplyByTileTransform(src, dst)
-    }
-
     override fun useVertexPointAttrib(dc: DrawContext?, index: Int, attribLocation: Int) {
         if (index < 0 || index >= tiles.size) {
             throw java.lang.IllegalArgumentException(

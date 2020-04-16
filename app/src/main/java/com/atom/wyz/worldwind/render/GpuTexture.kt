@@ -10,7 +10,7 @@ import com.atom.wyz.worldwind.util.WWMath
 
 class GpuTexture : RenderResource {
 
-    var textureId = 0
+    var textureId = IntArray(1)
 
     var textureWidth = 0
 
@@ -50,7 +50,8 @@ class GpuTexture : RenderResource {
 
     override fun release(dc: DrawContext) {
         this.deleteTexture(dc)
-        imageBitmap = null
+        recycle()
+        //imageBitmap = null
     }
 
     fun recycle(){
@@ -59,31 +60,32 @@ class GpuTexture : RenderResource {
                 it.recycle()
             }
         }
-        imageBitmap = null ;
+        imageBitmap = null
     }
 
     fun hasTexture(): Boolean {
-        return textureId != 0 || imageBitmap != null
+        return textureId[0] != 0 || imageBitmap != null
     }
 
     fun bindTexture(dc: DrawContext): Boolean {
         if (imageBitmap != null) {
             this.loadImageBitmap(dc)
-            imageBitmap = null
+            imageBitmap = null // TODO 换成回收
         }
-        if (textureId != 0) {
-            dc.bindTexture(this.textureId)
+        if (textureId[0] != 0) {
+            dc.bindTexture(this.textureId[0])
         }
-        return textureId != 0
+        return textureId[0] != 0
     }
-
+    // bitmap 不为空
+    // 三步走 1 创建一个textureid  2 绑定上textureid  3 和bitmap连起来  4 绑定回去
     protected fun loadImageBitmap(dc: DrawContext) {
         val currentTexture = dc.currentTexture()
         try {
-            if (textureId == 0) {
+            if (textureId[0] == 0) {
                 this.createTexture(dc)
             }
-            dc.bindTexture(textureId)
+            dc.bindTexture(textureId[0])
             this.loadTexImage(dc)
         } catch (e: java.lang.Exception) {
             this.deleteTexture(dc)
@@ -94,15 +96,13 @@ class GpuTexture : RenderResource {
     }
 
     protected fun createTexture(dc: DrawContext) {
-        val newTexture = IntArray(1)
-        GLES20.glGenTextures(1, newTexture, 0)
-        textureId = newTexture[0]
+        GLES20.glGenTextures(1, textureId, 0)
     }
 
     protected fun deleteTexture(dc: DrawContext) {
-        if (textureId != 0) {
-            GLES20.glDeleteTextures(1, intArrayOf(textureId), 0)
-            textureId = 0
+        if (textureId[0] != 0) {
+            GLES20.glDeleteTextures(1, textureId, 0)
+            textureId[0] = 0
         }
     }
 
@@ -123,16 +123,5 @@ class GpuTexture : RenderResource {
         if (isPowerOfTwo) {
             GLES20.glGenerateMipmap(GLES20.GL_TEXTURE_2D)
         }
-    }
-
-    fun applyTexCoordTransform(result: Matrix3?): Boolean {
-        if (result == null) {
-            throw java.lang.IllegalArgumentException(
-                    Logger.logMessage(Logger.ERROR, "GpuTexture", "applyTexCoordTransform", "missingResult"))
-        }
-        if (textureId != 0) {
-            result.multiplyByVerticalFlip()
-        }
-        return textureId != 0
     }
 }

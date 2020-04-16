@@ -36,23 +36,23 @@ open class GpuProgram() : RenderResource {
     protected var shaderId = IntArray(2)
     protected var mustBuildProgram = true
 
-
+    //使用program
     open fun useProgram(dc: DrawContext): Boolean {
         if (mustBuildProgram) {
-            // Clear the program's build dirty bit.
             mustBuildProgram = false
-            // Remove any existing GLSL program.
+            // 初始化
             if (programId != 0) {
                 this.deleteProgram(dc)
             }
-            // Compile and link the GLSL program sources.
+            // 加载着色器代码并绑定上
             if (programSources != null) {
                 this.buildProgram(dc, programSources!!, attribBindings)
             }
-            // Give subclasses an opportunity to initialize default GLSL uniform values.
+            // 判断加载上了
             if (programId != 0) {
                 val currProgram: Int = dc.currentProgram()
                 try {
+                    // 分两步  1 加载GLES20.glUseProgram(id)  2 通过programid 加载变量
                     dc.useProgram(programId)
                     initProgram(dc)
                 } finally {

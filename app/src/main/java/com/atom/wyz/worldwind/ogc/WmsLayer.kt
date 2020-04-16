@@ -31,7 +31,7 @@ open class WmsLayer : TiledImageLayer {
         this.setConfiguration(sector, metersPerPixel, config)
     }
 
-    open fun WmsLayer(sector: Sector?, globe: Globe?, metersPerPixel: Double, config: WmsLayerConfig?) {
+    constructor(sector: Sector?, globe: Globe?, metersPerPixel: Double, config: WmsLayerConfig?) {
         if (sector == null) {
             throw java.lang.IllegalArgumentException(
                     Logger.logMessage(Logger.ERROR, "WmsLayer", "constructor", "missingSector"))
@@ -48,11 +48,12 @@ open class WmsLayer : TiledImageLayer {
             throw java.lang.IllegalArgumentException(
                     Logger.logMessage(Logger.ERROR, "WmsLayer", "constructor", "missingConfig"))
         }
-        init()
+        this.init()
         this.setConfiguration(sector, metersPerPixel, config)
     }
 
-    protected open fun init() {
+    override fun init() {
+        super.init()
         this.displayName = ("WMS Layer")
         this.imageFormat = ("image/png")
     }
@@ -71,7 +72,7 @@ open class WmsLayer : TiledImageLayer {
                     Logger.logMessage(Logger.ERROR, "WmsLayer", "setConfiguration", "missingConfig"))
         }
         val radiansPerPixel: Double = metersPerPixel / WorldWind.WGS84_SEMI_MAJOR_AXIS
-        val levelsConfig: LevelSetConfig = LevelSetConfig()
+        val levelsConfig = LevelSetConfig()
         levelsConfig.sector?.set(sector)
         levelsConfig.numLevels = levelsConfig.numLevelsForResolution(radiansPerPixel)
         this.levelSet = (LevelSet(levelsConfig))

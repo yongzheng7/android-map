@@ -1,6 +1,6 @@
 package com.atom.wyz.worldwind.util.pool
 
-open class BasicPool<T>(initialCapacity: Int) : Pool<T> {
+open class BasicPool<T>(initialCapacity: Int = 10) : Pool<T> {
     companion object{
         const val MIN_CAPACITY_INCREMENT = 12
     }

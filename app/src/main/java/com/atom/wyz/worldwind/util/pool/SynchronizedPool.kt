@@ -1,6 +1,6 @@
 package com.atom.wyz.worldwind.util.pool
 
-class SynchronizedPool<T>(initialCapacity: Int) : BasicPool<T>(initialCapacity) {
+class SynchronizedPool<T>(initialCapacity: Int = 10) : BasicPool<T>(initialCapacity) {
     protected val lock = Any()
     override fun acquire(): T? {
         synchronized(lock) { return super.acquire() }

@@ -3,11 +3,13 @@ package com.atom.wyz.worldwind.render
 import android.graphics.Rect
 import com.atom.wyz.worldwind.DrawContext
 import com.atom.wyz.worldwind.WorldWind
-import com.atom.wyz.worldwind.draw.DrawablePlacemark
+import com.atom.wyz.worldwind.draw.DrawableLines
+import com.atom.wyz.worldwind.draw.DrawableQuad
 import com.atom.wyz.worldwind.geom.*
 import com.atom.wyz.worldwind.shape.PlacemarkAttributes
 import com.atom.wyz.worldwind.util.Logger
 import com.atom.wyz.worldwind.util.WWMath
+import com.atom.wyz.worldwind.util.pool.Pool
 
 open class Placemark : AbstractRenderable {
 
@@ -31,6 +33,13 @@ open class Placemark : AbstractRenderable {
         fun simpleImageAndLabel(position: Position, imageSource: ImageSource?, label: String?): Placemark {
             return Placemark(position, PlacemarkAttributes.withImageAndLabel(imageSource), label)
         }
+
+        private var placePoint = Vec3()
+        private val screenPlacePoint = Vec3()
+        private var groundPoint = Vec3()
+        private val offset: Vec2 = Vec2()
+        private val unitQuadBounds = Rect()
+        private val unitQuadTransform: Matrix4 = Matrix4()
     }
 
     var position: Position?
@@ -45,16 +54,15 @@ open class Placemark : AbstractRenderable {
         }
     private var eyeDistance = 0.0
 
-    private var placePoint = Vec3()
-    private val screenPlacePoint = Vec3()
 
-
-    private var groundPoint: Vec3? = null
-    private var screenGroundPoint: Vec3? = null
     var attributes: PlacemarkAttributes
 
     var highlightAttributes: PlacemarkAttributes? = null
     var activeAttributes: PlacemarkAttributes? = null
+
+    var activeTexture: GpuTexture? = null
+
+
     var highlighted = false
 
     var eyeDistanceScaling: Boolean
@@ -75,13 +83,17 @@ open class Placemark : AbstractRenderable {
     @WorldWind.OrientationMode
     var imageTiltReference = 0
 
-    var drawablePlacemark: DrawablePlacemark? = null
 
     constructor(position: Position) : this(position, PlacemarkAttributes())
 
-    constructor(position: Position, attributes: PlacemarkAttributes) : this(position, attributes, null , null)
+    constructor(position: Position, attributes: PlacemarkAttributes) : this(position, attributes, null, null)
 
-    constructor(position: Position, attributes: PlacemarkAttributes, label: String?) : this(position, attributes, label, null)
+    constructor(position: Position, attributes: PlacemarkAttributes, label: String?) : this(
+        position,
+        attributes,
+        label,
+        null
+    )
 
     constructor(position: Position?, attributes: PlacemarkAttributes?, displayName: String?, label: String?) {
         if (position == null) {
@@ -131,58 +143,101 @@ open class Placemark : AbstractRenderable {
         if (!dc.projectWithDepth(placePoint, depthOffset, screenPlacePoint)) {
             return
         }
-
-        val drawable = DrawablePlacemark.obtain();
-
-        this.prepareDrawableIcon(dc, drawable)
-
-        drawable.drawLeader = mustDrawLeaderLine(dc)
-        if (drawable.drawLeader) {
+        if (mustDrawLeaderLine(dc)) {
             groundPoint = globe.geographicToCartesian(
                 position.latitude,
                 position.longitude,
                 0.0,
-                if (groundPoint != null) groundPoint else Vec3()
+                groundPoint
             )
-
-            if (screenGroundPoint == null) {
-                screenGroundPoint = Vec3()
-            }
-            if (!dc.projectWithDepth(groundPoint, depthOffset, screenGroundPoint)) {
-                drawable.drawLeader = false
-            }
-            if (drawable.drawLeader) {
-                this.prepareDrawableLeader(dc, drawable)
+            if (dc.frustum.intersectsSegment(groundPoint, placePoint)) {
+                val pool: Pool<DrawableLines> = dc.getDrawablePool(DrawableLines::class.java)
+                val drawable = DrawableLines.obtain(pool)
+                prepareDrawableLeader(dc, drawable)
+                dc.offerShapeDrawable(drawable, eyeDistance)
             }
         }
+        this.determineActiveTexture(dc)
 
-        if (isVisible(dc, drawable)) {
-            drawable.program = dc.getProgram(BasicProgram.KEY) as BasicProgram?
-            if (drawable.program == null) {
-                drawable.program = dc.putProgram(BasicProgram.KEY, BasicProgram(dc.resources!!)) as BasicProgram
-            }
-            dc.offerShapeDrawable(drawable,  eyeDistance)
-        } else {
-            drawable.recycle()
+        val iconBounds: Rect = WWMath.boundingRectForUnitSquare(unitQuadTransform, unitQuadBounds) // TODO allocation
+
+        if (Rect.intersects(iconBounds, dc.viewport)) {
+            val pool: Pool<DrawableQuad> = dc.getDrawablePool(DrawableQuad::class.java)
+            val drawable: DrawableQuad = DrawableQuad.obtain(pool)
+            prepareDrawableIcon(dc, drawable)
+            dc.offerShapeDrawable(drawable, eyeDistance)
         }
+
+        activeTexture = null
+
 
     }
 
     protected open fun prepareDrawableIcon(
         dc: DrawContext,
-        drawable: DrawablePlacemark
+        drawable: DrawableQuad
     ) {
         val activeAttributes = this.activeAttributes ?: return
 
-        activeAttributes.imageColor?.let { drawable.iconColor.set(it) }
+        drawable.program = dc.getProgram(BasicProgram.KEY) as BasicProgram?
+        if (drawable.program == null) {
+            drawable.program = dc.putProgram(BasicProgram.KEY, BasicProgram(dc.resources!!)) as BasicProgram
+        }
 
-        activeAttributes.imageSource?.let {
-            drawable.iconTexture = dc.getTexture(it)
-            if (drawable.iconTexture == null) {
-                drawable.iconTexture = dc.retrieveTexture(it)
+        drawable.mvpMatrix.setToMultiply(dc.screenProjection, unitQuadTransform)
+
+        drawable.color.set(activeAttributes.imageColor!!)
+        drawable.enableDepthTest = activeAttributes.depthTest
+        drawable.texture = activeTexture
+    }
+
+    protected open fun prepareDrawableLeader(
+        dc: DrawContext,
+        drawable: DrawableLines
+    ) {
+
+        val activeAttributes = this.activeAttributes ?: return
+
+        // Use the basic GLSL program to draw the placemark's leader line.
+        drawable.program = dc.getProgram(BasicProgram.KEY) as BasicProgram?
+        if (drawable.program == null) {
+            drawable.program = dc.putProgram(BasicProgram.KEY, BasicProgram(dc.resources!!)) as BasicProgram
+        }
+
+        drawable.vertexPoints[0] = 0f // groundPoint.x - groundPoint.x
+        drawable.vertexPoints[1] = 0f // groundPoint.y - groundPoint.y
+        drawable.vertexPoints[2] = 0f // groundPoint.z - groundPoint.z
+
+        drawable.vertexPoints[3] = (placePoint.x - groundPoint.x).toFloat()
+        drawable.vertexPoints[4] = (placePoint.y - groundPoint.y).toFloat()
+        drawable.vertexPoints[5] = (placePoint.z - groundPoint.z).toFloat()
+
+        drawable.mvpMatrix.set(dc.modelviewProjection)
+        drawable.mvpMatrix.multiplyByTranslation(groundPoint.x, groundPoint.y, groundPoint.z)
+
+        drawable.color.set(activeAttributes.leaderLineAttributes!!.outlineColor!!)
+        drawable.lineWidth = activeAttributes.leaderLineAttributes!!.outlineWidth
+        drawable.enableDepthTest = activeAttributes.leaderLineAttributes!!.depthTest
+
+    }
+
+    protected open fun mustDrawLeaderLine(dc: DrawContext): Boolean {
+        return (activeAttributes!!.drawLeaderLine && activeAttributes!!.leaderLineAttributes != null && (enableLeaderLinePicking || !dc.pickingMode))
+    }
+
+    protected open fun mustDrawLabel(dc: DrawContext?): Boolean {
+        return (label != null && !label!!.isEmpty() && activeAttributes!!.labelAttributes != null)
+    }
+
+    protected open fun determineActiveTexture(dc: DrawContext) {
+        val activeAttributes = this.activeAttributes ?: return
+        if (activeAttributes.imageSource != null) {
+            activeTexture = dc.getTexture(activeAttributes.imageSource!!) // try to get the texture from the cache
+            if (activeTexture == null) {
+                activeTexture = dc.retrieveTexture(activeAttributes.imageSource) // puts retrieved textures in the cache
             }
-        } ?: let {
-            drawable.iconTexture = null
+        } else {
+            activeTexture = null // there is no imageSource; draw a simple colored square
         }
 
         val visibilityScale: Double = if (this.eyeDistanceScaling) WWMath.clamp(
@@ -191,96 +246,42 @@ open class Placemark : AbstractRenderable {
             max = 1.0
         ) else 1.0
 
-        drawable.program = dc.getProgram(BasicProgram.KEY) as BasicProgram?
-        if (drawable.program == null) {
-            drawable.program = dc.putProgram(BasicProgram.KEY, BasicProgram(dc.resources!!)) as BasicProgram
-        }
+        unitQuadTransform.setToIdentity()
 
-        drawable.iconMvpMatrix.set(dc.screenProjection)
-
-        drawable.iconTexture?.let {
-            val w: Int = it.imageWidth
-            val h: Int = it.imageHeight
-            val s: Double = activeAttributes.imageScale * visibilityScale
-            val offset: Vec2 = activeAttributes.imageOffset!!.offsetForSize(w.toDouble(), h.toDouble())
-            drawable.iconMvpMatrix.setTranslation(
-                this.screenPlacePoint.x - offset.x * s,
-                this.screenPlacePoint.y - offset.y * s,
-                this.screenPlacePoint.z
+        if (activeTexture != null) {
+            val activeTexture = this.activeTexture!!
+            val w: Int = activeTexture.imageWidth
+            val h: Int = activeTexture.imageHeight
+            val s = activeAttributes.imageScale * visibilityScale
+            val offset =
+                activeAttributes.imageOffset!!.offsetForSize(w.toDouble(), h.toDouble(), offset) // TODO allocation
+            unitQuadTransform.multiplyByTranslation(
+                screenPlacePoint.x - offset.x * s,
+                screenPlacePoint.y - offset.y * s,
+                screenPlacePoint.z
             )
-            drawable.iconMvpMatrix.setScale(w * s, h * s, 1.0)
-            drawable.iconTexCoordMatrix.set(it.texCoordTransform)
-
-        } ?: let {
-            val size: Double = activeAttributes.imageScale * visibilityScale
-            val offset: Vec2 = activeAttributes.imageOffset!!.offsetForSize(size, size)
-            drawable.iconMvpMatrix.setTranslation(
-                this.screenPlacePoint.x - offset.x,
-                this.screenPlacePoint.y - offset.y,
-                this.screenPlacePoint.z
+            unitQuadTransform.multiplyByScale(w * s, h * s, 1.0)
+        } else {
+            val size = activeAttributes.imageScale * visibilityScale
+            val offset = activeAttributes.imageOffset!!.offsetForSize(size, size, offset) // TODO allocation
+            unitQuadTransform.multiplyByTranslation(
+                screenPlacePoint.x - offset.x,
+                screenPlacePoint.y - offset.y,
+                screenPlacePoint.z
             )
-            drawable.iconMvpMatrix.setScale(size, size, 1.0)
+            unitQuadTransform.multiplyByScale(size, size, 1.0)
         }
-
         if (imageRotation != 0.0) {
             val rotation =
                 if (imageRotationReference == WorldWind.RELATIVE_TO_GLOBE) dc.heading - imageRotation else -imageRotation
-            drawable.iconMvpMatrix.multiplyByTranslation(0.5, 0.5, 0.0)
-            drawable.iconMvpMatrix.multiplyByRotation(0.0, 0.0, 1.0, rotation)
-            drawable.iconMvpMatrix.multiplyByTranslation(-0.5, -0.5, 0.0)
+            unitQuadTransform.multiplyByTranslation(0.5, 0.5, 0.0)
+            unitQuadTransform.multiplyByRotation(0.0, 0.0, 1.0, rotation)
+            unitQuadTransform.multiplyByTranslation(-0.5, -0.5, 0.0)
         }
-
         if (imageTilt != 0.0) {
-            val tilt = if (imageTiltReference == WorldWind.RELATIVE_TO_GLOBE) dc.tilt + imageTilt else imageTilt
-            drawable.iconMvpMatrix.multiplyByRotation((-1).toDouble(), 0.0, 0.0, tilt)
+            val tilt =
+                if (imageTiltReference == WorldWind.RELATIVE_TO_GLOBE) dc.tilt + imageTilt else imageTilt
+            unitQuadTransform.multiplyByRotation(-1.0, 0.0, 0.0, tilt)
         }
-    }
-
-    protected open fun prepareDrawableLeader(
-        dc: DrawContext,
-        drawable: DrawablePlacemark
-    ) {
-        val activeAttributes = this.activeAttributes ?: return
-        val screenGroundPoint = this.screenGroundPoint ?: return
-
-        if (drawable.leaderColor == null) {
-            drawable.leaderColor = Color()
-        }
-
-        if (drawable.leaderMvpMatrix == null) {
-            drawable.leaderMvpMatrix = Matrix4()
-        }
-
-        if (drawable.leaderVertexPoint == null) {
-            drawable.leaderVertexPoint = FloatArray(6)
-        }
-
-        drawable.leaderWidth = activeAttributes.leaderLineAttributes?.outlineWidth!!
-        drawable.leaderColor!!.set(activeAttributes.leaderLineAttributes!!.outlineColor!!)
-
-        drawable.enableLeaderDepthTest = this.activeAttributes!!.leaderLineAttributes!!.depthTest
-        drawable.enableLeaderPicking = this.enableLeaderLinePicking
-
-        drawable.leaderMvpMatrix!!.set(dc.modelviewProjection)
-        drawable.leaderMvpMatrix!!.multiplyByTranslation(groundPoint!!.x, groundPoint!!.y, groundPoint!!.z)
-
-        drawable.leaderVertexPoint!![0] = screenGroundPoint.x.toFloat()
-        drawable.leaderVertexPoint!![1] = screenGroundPoint.y.toFloat()
-        drawable.leaderVertexPoint!![2] = screenGroundPoint.z.toFloat()
-        drawable.leaderVertexPoint!![3] = screenPlacePoint.x.toFloat()
-        drawable.leaderVertexPoint!![4] = screenPlacePoint.y.toFloat()
-        drawable.leaderVertexPoint!![5] = screenPlacePoint.z.toFloat()
-
-    }
-
-    fun mustDrawLeaderLine(dc: DrawContext): Boolean {
-        val activeAttributes = this.activeAttributes ?: return false
-        return activeAttributes.drawLeaderLine && activeAttributes.leaderLineAttributes != null && (!dc.pickingMode || enableLeaderLinePicking)
-    }
-
-    fun isVisible(dc: DrawContext, drawable: DrawablePlacemark): Boolean {
-        val imageBounds = WWMath.boundingRectForUnitSquare(drawable.iconMvpMatrix)
-        return Rect.intersects(imageBounds, dc.viewport) ||
-                (mustDrawLeaderLine(dc) && dc.frustum.intersectsSegment(groundPoint, placePoint))
     }
 }

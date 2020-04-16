@@ -1,12 +1,13 @@
 package com.atom.wyz.worldwind.frame
 
 import android.opengl.GLES20
+import com.atom.wyz.worldwind.DrawContext
 import com.atom.wyz.worldwind.WorldWind
 import com.atom.wyz.worldwind.draw.Drawable
 import com.atom.wyz.worldwind.geom.Camera
 import com.atom.wyz.worldwind.geom.Matrix4
 import com.atom.wyz.worldwind.globe.Tessellator
-import com.atom.wyz.worldwind.DrawContext
+import com.atom.wyz.worldwind.layer.LayerList
 import com.atom.wyz.worldwind.util.Logger
 
 
@@ -17,6 +18,13 @@ class BasicFrameController: FrameController {
     protected var matrix: Matrix4 = Matrix4()
 
     override fun drawFrame(dc: DrawContext) {
+        clearFrame(dc)
+        drawDrawables(dc)
+    }
+    protected fun clearFrame(dc: DrawContext) {
+        GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT or GLES20.GL_DEPTH_BUFFER_BIT)
+    }
+    protected fun drawDrawables(dc: DrawContext) {
         dc.sortDrawables()
         var next: Drawable?
         while (dc.pollDrawable().also { next = it } != null) {
@@ -32,19 +40,16 @@ class BasicFrameController: FrameController {
     }
 
     override fun renderFrame(dc: DrawContext) {
-        clearFrame(dc)
         createViewingState(dc)
         createTerrain(dc)
         renderLayers(dc)
     }
-    protected fun clearFrame(dc: DrawContext) {
-        GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT or GLES20.GL_DEPTH_BUFFER_BIT)
-    }
     protected fun renderLayers(dc: DrawContext) {
-        for (layer in dc.layers) {
+        val layers: LayerList = dc.layers
+        for (layer in layers) {
             dc.currentLayer = layer
             try {
-                layer.render(dc)
+                dc.currentLayer ?.render(dc)
             } catch (e: java.lang.Exception) {
                 Logger.logMessage(
                     Logger.ERROR,
