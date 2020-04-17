@@ -155,12 +155,10 @@ open class Tile {
         return this.sector.intersects(sector)
     }
     /**
-     * Indicates whether this tile should be subdivided based on the current navigation state and a specified detail
-     * factor.
-     * 指示是否应基于当前导航状态和指定的详细信息细分此图块。
+     * 根据眼睛和图块的距离判断是否需要细分
      */
     open fun mustSubdivide(dc: DrawContext, detailFactor: Double): Boolean {
-        val distance = getExtent(dc).distanceTo(dc.eyePoint) //获取此图块和眼睛的距离
+        val distance = getExtent(dc).distanceTo(dc.eyePoint) //获取此图块和眼睛的距离 笛卡尔
         val texelSize: Double = level.texelHeight * dc.globe?.equatorialRadius!!
         val pixelSize = dc.pixelSizeAtDistance(distance)
 

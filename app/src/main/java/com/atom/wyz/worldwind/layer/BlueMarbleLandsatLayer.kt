@@ -52,10 +52,8 @@ class BlueMarbleLandsatLayer : WmsLayer, TileUrlFactory {
         this.imageFormat = ("image/png")
     }
 
-    override fun urlForTile(tile: Tile?, imageFormat: String?): String? {
-        val radiansPerPixel = tile!!.level.texelHeight
-        val metersPerPixel: Double = radiansPerPixel * WorldWind.WGS84_SEMI_MAJOR_AXIS
-
+    override fun urlForTile(tile: Tile?, imageFormat: String?): String {
+        val metersPerPixel: Double = tile!!.level.texelHeight * WorldWind.WGS84_SEMI_MAJOR_AXIS
         return if (metersPerPixel < 2.0e3) { // switch to Landsat at 2km resolution
             landsatUrlFactory.urlForTile(tile, imageFormat)
         } else {

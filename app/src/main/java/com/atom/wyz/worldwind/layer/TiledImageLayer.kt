@@ -1,5 +1,6 @@
 package com.atom.wyz.worldwind.layer
 
+import android.util.Log
 import com.atom.wyz.worldwind.DrawContext
 import com.atom.wyz.worldwind.draw.Drawable
 import com.atom.wyz.worldwind.draw.DrawableSurfaceTexture
@@ -60,8 +61,9 @@ open class TiledImageLayer : AbstractLayer, TileFactory {
     }
 
     override fun doRender(dc: DrawContext) {
-        if (dc.terrain?.getTileCount() ?: return == 0) {
-            return
+        val terrain = dc.terrain ?: return
+        if (terrain.sector.isEmpty()) {
+            return  // no terrain surface to render on
         }
 
         this.determineActiveProgram(dc)
@@ -74,7 +76,6 @@ open class TiledImageLayer : AbstractLayer, TileFactory {
 
 
     protected fun assembleTiles(dc: DrawContext) {
-
         if (topLevelTiles.isEmpty()) {
             this.createTopLevelTiles()
         }
@@ -142,7 +143,7 @@ open class TiledImageLayer : AbstractLayer, TileFactory {
             this.ancestorTexCoordMatrix.multiplyByTileTransform(tile.sector, this.ancestorTile!!.sector)
             val pool: Pool<DrawableSurfaceTexture> = dc.getDrawablePool(DrawableSurfaceTexture::class.java)
             val drawable: Drawable = DrawableSurfaceTexture.obtain(pool)
-                .set(this.activeProgram, tile.sector, this.ancestorTexture, this.ancestorTexCoordMatrix)
+                .set(this.activeProgram, tile.sector, this.ancestorTexture, ancestorTexture?.texCoordTransform)
             dc.offerSurfaceDrawable(drawable, 0.0 /*z-order*/)
         }
     }
@@ -151,6 +152,8 @@ open class TiledImageLayer : AbstractLayer, TileFactory {
         val tile = ImageTile(sector, level, row, column)
         if (tileUrlFactory != null && this.imageFormat != null) {
             tile.imageSource = ImageSource.fromUrl(tileUrlFactory!!.urlForTile(tile, imageFormat))
+            Log.e("createTile" , "level > ${level?.levelNumber}  imagesource > ${tile.imageSource?.asUrl()}")
+
         }
         return tile
     }

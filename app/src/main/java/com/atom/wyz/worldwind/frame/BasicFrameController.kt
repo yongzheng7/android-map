@@ -70,20 +70,20 @@ class BasicFrameController: FrameController {
 
         val near = dc.eyePosition.altitude * 0.75
         val far = dc.globe!!.horizonDistance(dc.eyePosition.altitude, 160000.0)
-
+        // 获取相机的动作
         this.camera.set(dc.eyePosition.latitude, dc.eyePosition.longitude, dc.eyePosition.altitude,
             WorldWind.ABSOLUTE, dc.heading, dc.tilt, dc.roll)
-
+        // 相机和地球 变换为地球的笛卡尔变换矩阵 ，旋转 远近位移等操作
         dc.globe!!.cameraToCartesianTransform(camera, dc.modelview)!!.invertOrthonormal()
-
+        // 通过该矩阵获取眼睛的笛卡尔位置
         dc.modelview.extractEyePoint(dc.eyePoint)
-
+        // 创建投影空间
         dc.projection.setToPerspectiveProjection(dc.viewport.width().toDouble(), dc.viewport.height().toDouble(), dc.fieldOfView, near, far)
-
+        // 将变换和投影空间合并
         dc.modelviewProjection.setToMultiply(dc.projection, dc.modelview)
-
+        // 屏幕投影
         dc.screenProjection.setToScreenProjection(dc.viewport.width().toDouble(), dc.viewport.height().toDouble())
-
+        // 投影空间设置
         dc.frustum.setToProjectionMatrix(dc.projection)
         dc.frustum.transformByMatrix(this.matrix.transposeMatrix(dc.modelview))
         dc.frustum.normalize()

@@ -164,7 +164,6 @@ class BasicNavigator() : Navigator {
         }
         getAsCamera(globe, this.scratchCamera)
         globe.cameraToLookAt(this.scratchCamera, result)
-
         return result
     }
 

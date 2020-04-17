@@ -97,6 +97,9 @@ class ProjectionWgs84() : GeographicProjection {
         return result.normalize()
     }
 
+    /**
+     * 地理>>转变>>笛卡尔
+     */
     override fun geographicToCartesianTransform(globe: Globe?, latitude: Double, longitude: Double, altitude: Double, offset: Vec3?, result: Matrix4?): Matrix4 {
         if (globe == null) {
             throw java.lang.IllegalArgumentException(

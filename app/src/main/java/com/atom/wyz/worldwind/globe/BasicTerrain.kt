@@ -44,9 +44,6 @@ class BasicTerrain() : Terrain {
             field = value
         }
 
-    /**
-     * 添加地形瓦片
-     */
     fun addTile(tile: TerrainTile?) {
         if (tile == null) {
             throw IllegalArgumentException(
@@ -56,9 +53,6 @@ class BasicTerrain() : Terrain {
         sector.union(tile.sector)
     }
 
-    /**
-     * 清除瓦片
-     */
     fun clearTiles() {
         tiles.clear()
         sector.setEmpty()

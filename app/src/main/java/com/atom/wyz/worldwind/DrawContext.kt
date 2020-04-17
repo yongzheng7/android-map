@@ -4,7 +4,9 @@ import android.content.res.Resources
 import android.graphics.Rect
 import android.opengl.GLES20
 import com.atom.wyz.worldwind.draw.Drawable
+import com.atom.wyz.worldwind.draw.DrawableList
 import com.atom.wyz.worldwind.draw.DrawableQueue
+import com.atom.wyz.worldwind.draw.DrawableTerrain
 import com.atom.wyz.worldwind.geom.Frustum
 import com.atom.wyz.worldwind.geom.Matrix4
 import com.atom.wyz.worldwind.geom.Position
@@ -90,7 +92,7 @@ open class DrawContext {
 
     var renderResourceCache: RenderResourceCache? = null
 
-    protected var userProperties: HashMap<Any, Any> = HashMap<Any, Any>()
+    private var userProperties: HashMap<Any, Any> = HashMap<Any, Any>()
 
     var programId = 0
 
@@ -100,6 +102,8 @@ open class DrawContext {
 
     var drawableQueue: DrawableQueue = DrawableQueue()
 
+    var drawableTerrain: DrawableList = DrawableList()
+
     var screenProjection: Matrix4 = Matrix4()
 
     protected var arrayBufferId = 0
@@ -108,7 +112,7 @@ open class DrawContext {
 
     protected var unitQuadBufferId = 0
 
-    protected var drawablePools = HashMap<Any , Pool<*>?>()
+    protected var drawablePools = HashMap<Any, Pool<*>?>()
 
     open fun pixelSizeAtDistance(distance: Double): Double {
         if (pixelSizeFactor == 0.0) { // cache the scaling factor used to convert distances to pixel sizes
@@ -122,11 +126,13 @@ open class DrawContext {
     open fun project(modelPoint: Vec3?, result: Vec3?): Boolean {
         if (modelPoint == null) {
             throw IllegalArgumentException(
-                    Logger.logMessage(Logger.ERROR, "DrawContext", "project", "missingPoint"))
+                Logger.logMessage(Logger.ERROR, "DrawContext", "project", "missingPoint")
+            )
         }
         if (result == null) {
             throw IllegalArgumentException(
-                    Logger.logMessage(Logger.ERROR, "DrawContext", "project", "missingResult"))
+                Logger.logMessage(Logger.ERROR, "DrawContext", "project", "missingResult")
+            )
         }
         // Transform the model point from model coordinates to eye coordinates then to clip coordinates. This
         // inverts the Z axis and stores the negative of the eye coordinate Z value in the W coordinate.
@@ -164,15 +170,16 @@ open class DrawContext {
         return true
     }
 
-
     open fun projectWithDepth(modelPoint: Vec3?, depthOffset: Double, result: Vec3?): Boolean {
         if (modelPoint == null) {
             throw IllegalArgumentException(
-                    Logger.logMessage(Logger.ERROR, "DrawContext", "projectWithDepth", "missingPoint"))
+                Logger.logMessage(Logger.ERROR, "DrawContext", "projectWithDepth", "missingPoint")
+            )
         }
         if (result == null) {
             throw IllegalArgumentException(
-                    Logger.logMessage(Logger.ERROR, "DrawContext", "projectWithDepth", "missingResult"))
+                Logger.logMessage(Logger.ERROR, "DrawContext", "projectWithDepth", "missingResult")
+            )
         }
 
         val mx: Double = modelPoint.x
@@ -258,54 +265,9 @@ open class DrawContext {
 
         renderResourceCache = null
         drawableQueue.recycle()
+        drawableTerrain.clearDrawables()
         pixelSizeFactor = 0.0
 
-    }
-
-    open fun getProgram(key: Any): GpuProgram? {
-        return renderResourceCache?.let { it[key] as GpuProgram? }
-    }
-
-    open fun putProgram(key: Any, program: GpuProgram): GpuProgram {
-        renderResourceCache ?.put(key, program, program.programLength )
-        return program
-    }
-
-    open fun currentProgram(): Int {
-        return programId
-    }
-    open fun useProgram(programId: Int) {
-        if (this.programId != programId) {
-            this.programId = programId
-            GLES20.glUseProgram(programId)
-        }
-    }
-
-    open fun currentTextureUnit(): Int {
-        return textureUnit
-    }
-
-    open fun activeTextureUnit(textureUnit: Int) {
-        if (this.textureUnit != textureUnit) {
-            this.textureUnit = textureUnit
-            GLES20.glActiveTexture(textureUnit)
-        }
-    }
-    open fun currentTexture(): Int {
-        val textureUnitIndex = textureUnit - GLES20.GL_TEXTURE0
-        return textureId[textureUnitIndex]
-    }
-    open fun currentTexture(textureUnit: Int): Int {
-        val textureUnitIndex = textureUnit - GLES20.GL_TEXTURE0
-        return textureId[textureUnitIndex]
-    }
-
-    open fun bindTexture(textureId: Int) {
-        val textureUnitIndex = textureUnit - GLES20.GL_TEXTURE0
-        if (this.textureId[textureUnitIndex] != textureId) {
-            this.textureId[textureUnitIndex] = textureId
-            GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, textureId)
-        }
     }
 
     open fun contextLost() {
@@ -316,6 +278,28 @@ open class DrawContext {
         this.unitQuadBufferId = 0
         Arrays.fill(textureId, 0)
     }
+
+
+    open fun getProgram(key: Any): GpuProgram? {
+        return renderResourceCache?.let { it[key] as GpuProgram? }
+    }
+
+    open fun putProgram(key: Any, program: GpuProgram): GpuProgram {
+        renderResourceCache?.put(key, program, program.programLength)
+        return program
+    }
+
+    open fun currentProgram(): Int {
+        return programId
+    }
+
+    open fun useProgram(programId: Int) {
+        if (this.programId != programId) {
+            this.programId = programId
+            GLES20.glUseProgram(programId)
+        }
+    }
+
 
     open fun getUserProperty(key: Any?): Any? {
         return userProperties[key]
@@ -333,26 +317,64 @@ open class DrawContext {
         return userProperties.containsKey(key)
     }
 
+
     open fun getTexture(imageSource: ImageSource): GpuTexture? {
-        return renderResourceCache ?.get(imageSource) as GpuTexture?
+        return renderResourceCache?.get(imageSource) as GpuTexture?
     }
 
     open fun putTexture(imageSource: ImageSource, texture: GpuTexture): GpuTexture? {
-        renderResourceCache ?.put(imageSource, texture, texture.imageByteCount)
+        renderResourceCache?.put(imageSource, texture, texture.imageByteCount)
         return texture
     }
+
     open fun retrieveTexture(imageSource: ImageSource?): GpuTexture? {
-        return renderResourceCache ?.retrieveTexture(imageSource)
+        return renderResourceCache?.retrieveTexture(imageSource)
     }
+
+    open fun currentTextureUnit(): Int {
+        return textureUnit
+    }
+
+    open fun activeTextureUnit(textureUnit: Int) {
+        if (this.textureUnit != textureUnit) {
+            this.textureUnit = textureUnit
+            GLES20.glActiveTexture(textureUnit)
+        }
+    }
+
+    open fun currentTexture(): Int {
+        val textureUnitIndex = textureUnit - GLES20.GL_TEXTURE0
+        return textureId[textureUnitIndex]
+    }
+
+    open fun currentTexture(textureUnit: Int): Int {
+        val textureUnitIndex = textureUnit - GLES20.GL_TEXTURE0
+        return textureId[textureUnitIndex]
+    }
+
+    open fun bindTexture(textureId: Int) {
+        val textureUnitIndex = textureUnit - GLES20.GL_TEXTURE0
+        if (this.textureId[textureUnitIndex] != textureId) {
+            this.textureId[textureUnitIndex] = textureId
+            GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, textureId)
+        }
+    }
+
 
     open fun offerDrawable(drawable: Drawable, groupId: Int, depth: Double) {
         drawableQueue.offerDrawable(drawable, groupId, depth)
     }
+
     open fun offerSurfaceDrawable(drawable: Drawable, zOrder: Double) {
         drawableQueue.offerDrawable(drawable, WorldWind.SURFACE_DRAWABLE, zOrder)
     }
+
     open fun offerShapeDrawable(drawable: Drawable, eyeDistance: Double) {
-        drawableQueue.offerDrawable(drawable, WorldWind.SHAPE_DRAWABLE, -eyeDistance) // order by descending eye distance
+        drawableQueue.offerDrawable(
+            drawable,
+            WorldWind.SHAPE_DRAWABLE,
+            -eyeDistance
+        ) // order by descending eye distance
     }
 
     open fun peekDrawable(): Drawable? {
@@ -418,5 +440,16 @@ open class DrawContext {
             bindBuffer(GLES20.GL_ARRAY_BUFFER, currentBuffer)
         }
         return unitQuadBufferId
+    }
+
+    open fun offerTerrainDrawable(drawable: DrawableTerrain?) {
+        drawableTerrain.offerDrawable(drawable)
+    }
+    open fun getTerrainDrawableCount(): Int {
+        return drawableTerrain.count()
+    }
+
+    open fun getTerrainDrawable(index: Int): DrawableTerrain? {
+        return drawableTerrain.getDrawable(index) as DrawableTerrain?
     }
 }

@@ -103,10 +103,10 @@ class BasicTessellator : Tessellator, TileFactory {
      *  判断是否是最底层瓦片和是否需要细分（若需要则开始细分）并将瓦片加到地形中
      */
     protected fun addTileOrDescendants(dc: DrawContext, tile: TerrainTile) {
-        if (!tile.intersectsSector(this.levelSet.sector) || !tile.intersectsFrustum(dc, dc.frustum)) {
+        if (!tile.intersectsFrustum(dc, dc.frustum)) {
             return
         }
-        if ( tile.level.isLastLevel() || !tile.mustSubdivide(dc, detailControl)) {
+        if (tile.level.isLastLevel() || !tile.mustSubdivide(dc, detailControl)) {
             addTile(dc, tile)
             return  // 如果不需要细分，请使用图块
         }

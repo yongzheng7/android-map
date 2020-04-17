@@ -15,15 +15,15 @@ class RenderResourceCache : LruMemoryCache<Any, RenderResource> {
             field = value
             imageRetriever.resources = value
         }
+    // 回收队列
     protected var evictionQueue = ConcurrentLinkedQueue<Entry<out Any, out RenderResource>>()
-
+    // 陈俄共队列
     protected var pendingQueue = ConcurrentLinkedQueue<Entry<out Any, out RenderResource>>()
 
     protected var imageRetriever = ImageRetriever()
 
     protected var imageRetrieverCallback = object : Retriever.Callback<ImageSource, Bitmap> {
         override fun retrievalSucceeded(retriever: Retriever<ImageSource, Bitmap>?, key: ImageSource?, value: Bitmap?) {
-           // Log.e("Image_retrieval" , "retrievalSucceeded $key")
             val texture = GpuTexture(value)
             val entry = Entry(key!!, texture, texture.imageByteCount)
             pendingQueue.offer(entry)
@@ -34,10 +34,9 @@ class RenderResourceCache : LruMemoryCache<Any, RenderResource> {
         }
 
         override fun retrievalFailed(retriever: Retriever<ImageSource, Bitmap>?, key: ImageSource?, ex: Throwable?) {
-            //Log.e("Image_retrieval" , "retrievalFailed $key")
-            if (ex is SocketTimeoutException) { // log socket timeout exceptions while suppressing the stack trace
+            if (ex is SocketTimeoutException) {
                 Logger.log(Logger.ERROR, "Socket timeout retrieving image \'$key\'")
-            } else if (ex != null) { // log checked exceptions with the entire stack trace
+            } else if (ex != null) {
                 Logger.log(Logger.ERROR, "Image retrieval failed with exception \'$key\'")
             } else {
                 Logger.log(Logger.ERROR, "Image retrieval failed \'$key\'")
@@ -45,7 +44,6 @@ class RenderResourceCache : LruMemoryCache<Any, RenderResource> {
         }
 
         override fun retrievalRejected(retriever: Retriever<ImageSource, Bitmap>?, key: ImageSource?) {
-            //Log.e("Image_retrieval" , "retrievalRejected $key")
             if (Logger.isLoggable(Logger.DEBUG)) {
                 Logger.log(Logger.DEBUG, "Image retrieval rejected \'$key\'")
             }
@@ -56,7 +54,7 @@ class RenderResourceCache : LruMemoryCache<Any, RenderResource> {
     constructor(capacity: Int) : super(capacity)
 
 
-    fun contextLost(dc: DrawContext?) {
+    fun contextLost(dc: DrawContext) {
         entries.clear() // the cache entries are invalid; clear but don't call entryRemoved
         evictionQueue.clear() // the eviction queue no longer needs to be processed
         pendingQueue.clear()
@@ -64,21 +62,15 @@ class RenderResourceCache : LruMemoryCache<Any, RenderResource> {
     }
 
     fun releaseEvictedResources(dc: DrawContext) {
-        var evicted: Entry<out Any, out RenderResource> ?= null
-        while (evictionQueue.poll().also { it ?.let { evicted = it } } != null) {
+        var evicted: Entry<out Any, out RenderResource>? = null
+        while (evictionQueue.poll().also { it?.let { evicted = it } } != null) {
             try {
-                if (Logger.isLoggable(Logger.DEBUG)) {
-                    Logger.log(Logger.DEBUG, "Released render resource \'" + evicted ?.key + "\'")
-                }
-                evicted ?.value ?.release(dc) // TODO rename as dispose as release
+                evicted?.value?.release(dc) // TODO rename as dispose as release
             } catch (ignored: Exception) {
-                if (Logger.isLoggable(Logger.DEBUG)) {
-                    Logger.log(Logger.DEBUG, "Exception releasing render resource \'" + evicted ?.key + "\'", ignored)
-                }
+
             }
         }
     }
-
 
     override fun entryRemoved(entry: Entry<Any, RenderResource>) {
         evictionQueue.offer(entry)
@@ -103,16 +95,16 @@ class RenderResourceCache : LruMemoryCache<Any, RenderResource> {
 
     protected fun processPendingQueue(key: Any): RenderResource? {
         var match: Entry<out Any, out RenderResource>? = null
-        var pending: Entry< Any,  RenderResource>
-        var poll = pendingQueue.poll() ?.let { it as  Entry< Any,  RenderResource> }
+        var pending: Entry<Any, RenderResource>
+        var poll = pendingQueue.poll()?.let { it as Entry<Any, RenderResource> }
         while (poll != null) {
             pending = poll
             if (match == null && pending.key == key) {
                 match = pending
             }
             putEntry(pending)
-            poll = pendingQueue.poll() ?.let { it as  Entry< Any,  RenderResource> }
+            poll = pendingQueue.poll()?.let { it as Entry<Any, RenderResource> }
         }
-        return if (match != null) match.value else null
+        return match?.value
     }
 }

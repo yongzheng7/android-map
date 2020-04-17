@@ -13,17 +13,18 @@ import com.atom.wyz.worldwind.util.pool.Pool
 
 class DrawableGroundAtmosphere : Drawable {
     companion object {
-
         fun obtain( pool : Pool<DrawableGroundAtmosphere>): DrawableGroundAtmosphere {
             return  pool.acquire()?.setPool(pool) ?: DrawableGroundAtmosphere().setPool(pool) // get an instance from the pool
         }
     }
 
-    protected var program: GroundProgram? = null
+     var program: GroundProgram? = null
 
-    protected var lightDirection = Vec3()
+    var globeRadius = 0.0
 
-    protected var nightTexture: GpuTexture? = null
+    var lightDirection = Vec3()
+
+     var nightTexture: GpuTexture? = null
 
     protected var mvpMatrix: Matrix4 = Matrix4()
 
@@ -40,7 +41,7 @@ class DrawableGroundAtmosphere : Drawable {
             return  // program failed to build
         }
 
-        program.loadGlobeRadius(dc.globe!!.equatorialRadius) // TODO the Globe is rendering state
+        program.loadGlobeRadius(this.globeRadius) // TODO the Globe is rendering state
 
         program.loadEyePoint(dc.eyePoint)
 
@@ -89,20 +90,6 @@ class DrawableGroundAtmosphere : Drawable {
 
     fun setPool(pool : Pool<DrawableGroundAtmosphere>) : DrawableGroundAtmosphere {
         this.pool = pool
-        return this
-    }
-    operator fun set(
-        program: GroundProgram?,
-        lightDirection: Vec3?,
-        nightTexture: GpuTexture?
-    ): DrawableGroundAtmosphere {
-        this.program = program
-        this.nightTexture = nightTexture
-        if (lightDirection != null) {
-            this.lightDirection.set(lightDirection)
-        } else {
-            this.lightDirection.set(0.0, 0.0, 1.0)
-        }
         return this
     }
     override fun recycle() {

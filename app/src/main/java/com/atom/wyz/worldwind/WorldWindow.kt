@@ -100,6 +100,7 @@ class WorldWindow : GLSurfaceView, GLSurfaceView.Renderer, MessageListener {
         super.surfaceDestroyed(holder)
         WorldWind.messageService.removeListener(this)
     }
+
     protected fun prepareToDrawFrame() {
         this.dc.resources = this.context.resources
         this.dc.globe = globe
@@ -153,13 +154,12 @@ class WorldWindow : GLSurfaceView, GLSurfaceView.Renderer, MessageListener {
         GLES20.glEnable(GLES20.GL_CULL_FACE)
         // 深度测试
         GLES20.glEnable(GLES20.GL_DEPTH_TEST)
-        //在世界窗口渲染期间默认情况下启用GL顶点属性数组0
-        //Enabled GL vertex attrib array 0 by default during World Window rendering
-        GLES20.glEnableVertexAttribArray(0)
         // 混合因子
         GLES20.glBlendFunc(GLES20.GL_ONE, GLES20.GL_ONE_MINUS_SRC_ALPHA)
         // 深度小或相等的时候也渲染 （GL_LESS = 深度小的时候才渲染）
         GLES20.glDepthFunc(GLES20.GL_LEQUAL)
+        //在世界窗口渲染期间默认情况下启用GL顶点属性数组0
+        GLES20.glEnableVertexAttribArray(0)
 
         this.dc.contextLost()
         this.gpuObjectCache?.contextLost(this.dc);
@@ -167,8 +167,7 @@ class WorldWindow : GLSurfaceView, GLSurfaceView.Renderer, MessageListener {
 
     /**
      * distance = 视角的高度
-     * distance * 视角的一半的tan *2 == 该高度下视角的可使范围
-     * 可视范围的高度和 此时视窗的高度之比
+     * 获取到可视的水平面长度和手机屏幕的比例
      */
     fun pixelSizeAtDistance(distance: Double): Double {
         val fovyDegrees: Double = navigator.getFieldOfView()
@@ -181,7 +180,6 @@ class WorldWindow : GLSurfaceView, GLSurfaceView.Renderer, MessageListener {
 
     /**
      * 返回使地球范围在此世界窗口中可见所需的距地球表面的最小距离。
-     *
      */
     fun distanceToViewGlobeExtents(): Double {
         val fovyDegrees: Double = navigator.getFieldOfView()

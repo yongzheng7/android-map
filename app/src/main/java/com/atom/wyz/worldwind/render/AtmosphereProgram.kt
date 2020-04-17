@@ -25,7 +25,7 @@ open class AtmosphereProgram() : GpuProgram() {
         const val FRAGMODE_GROUND_PRIMARY_TEX_BLEND = 4
     }
 
-    var altitude = 0.0
+    var altitude = 160000.0
 
     protected var fragModeId = 0
 
@@ -78,8 +78,7 @@ open class AtmosphereProgram() : GpuProgram() {
 
     override fun initProgram(dc: DrawContext) {
 
-        altitude = 160000.0
-        val invWavelength: Vec3 = Vec3(
+        val invWavelength = Vec3(
             1 / Math.pow(0.650, 4.0),  // 650 nm for red
             1 / Math.pow(0.570, 4.0),  // 570 nm for green
             1 / Math.pow(0.475, 4.0)

@@ -23,7 +23,7 @@ open class BasicWorldWindActivity : AppCompatActivity() {
         this.setContentView(wwd)
 
         wwd.layers.addLayer(BackgroundLayer())
-        wwd.layers.addLayer(BlueMarbleLandsatLayer())
+        //wwd.layers.addLayer(BlueMarbleLandsatLayer())
         wwd.layers.addLayer(AtmosphereLayer())
 
 

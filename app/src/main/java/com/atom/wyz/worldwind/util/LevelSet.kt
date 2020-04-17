@@ -39,29 +39,33 @@ class LevelSet {
     constructor(sector: Sector?, firstLevelDelta: Double, numLevels: Int, tileWidth: Int, tileHeight: Int) {
         if (sector == null) {
             throw IllegalArgumentException(
-                    Logger.logMessage(Logger.ERROR, "LevelSet", "constructor", "missingSector"))
+                Logger.logMessage(Logger.ERROR, "LevelSet", "constructor", "missingSector")
+            )
         }
 
         if (firstLevelDelta <= 0) {
             throw IllegalArgumentException(
-                    Logger.logMessage(Logger.ERROR, "LevelSet", "constructor", "invalidTileDelta"))
+                Logger.logMessage(Logger.ERROR, "LevelSet", "constructor", "invalidTileDelta")
+            )
         }
 
         if (numLevels < 1) {
             throw IllegalArgumentException(
-                    Logger.logMessage(Logger.ERROR, "LevelSet", "constructor", "invalidNumLevels"))
+                Logger.logMessage(Logger.ERROR, "LevelSet", "constructor", "invalidNumLevels")
+            )
         }
 
         if (tileWidth < 1 || tileHeight < 1) {
             throw IllegalArgumentException(
-                    Logger.logMessage(Logger.ERROR, "LevelSet", "constructor", "invalidWidthOrHeight"))
+                Logger.logMessage(Logger.ERROR, "LevelSet", "constructor", "invalidWidthOrHeight")
+            )
         }
 
         this.sector = sector
         this.firstLevelDelta = firstLevelDelta
         this.tileWidth = tileWidth
         this.tileHeight = tileHeight
-        levels = arrayOfNulls<Level>(numLevels)
+        levels = arrayOfNulls(numLevels)
         this.assembleLevels()
     }
 
@@ -69,23 +73,28 @@ class LevelSet {
     constructor(config: LevelSetConfig?) {
         if (config == null) {
             throw java.lang.IllegalArgumentException(
-                    Logger.logMessage(Logger.ERROR, "LevelSet", "constructor", "missingConfig"))
+                Logger.logMessage(Logger.ERROR, "LevelSet", "constructor", "missingConfig")
+            )
         }
         if (config.sector == null) {
             throw java.lang.IllegalArgumentException(
-                    Logger.logMessage(Logger.ERROR, "LevelSet", "constructor", "missingSector"))
+                Logger.logMessage(Logger.ERROR, "LevelSet", "constructor", "missingSector")
+            )
         }
         if (config.firstLevelDelta <= 0) {
             throw java.lang.IllegalArgumentException(
-                    Logger.logMessage(Logger.ERROR, "LevelSet", "constructor", "invalidTileDelta"))
+                Logger.logMessage(Logger.ERROR, "LevelSet", "constructor", "invalidTileDelta")
+            )
         }
         if (config.numLevels < 1) {
             throw java.lang.IllegalArgumentException(
-                    Logger.logMessage(Logger.ERROR, "LevelSet", "constructor", "invalidNumLevels"))
+                Logger.logMessage(Logger.ERROR, "LevelSet", "constructor", "invalidNumLevels")
+            )
         }
         if (config.tileWidth < 1 || config.tileHeight < 1) {
             throw java.lang.IllegalArgumentException(
-                    Logger.logMessage(Logger.ERROR, "LevelSet", "constructor", "invalidWidthOrHeight"))
+                Logger.logMessage(Logger.ERROR, "LevelSet", "constructor", "invalidWidthOrHeight")
+            )
         }
         sector.set(config.sector)
         firstLevelDelta = config.firstLevelDelta
@@ -99,13 +108,16 @@ class LevelSet {
      * 组装等级 及其分辨率 等
      */
     protected fun assembleLevels() {
-        var i = 0
-        val len = levels.size
-        while (i < len) {
-            val n = Math.pow(2.0, i.toDouble())
+        // 0   1    90/1 单位 度
+        // 1   2    90/2
+        // 2   4    90/4
+        // 3   8    90/8
+        // 4  16    90/16
+        // ...
+        for (idx in 0 until levels.size) {
+            val n = Math.pow(2.0, idx.toDouble())
             val delta = firstLevelDelta / n
-            levels[i] = Level(this, i, delta)
-            i++
+            levels[idx] = Level(this, idx, delta)
         }
     }
 
@@ -163,7 +175,8 @@ class LevelSet {
     open fun levelForResolution(radiansPerPixel: Double): Level? {
         if (radiansPerPixel <= 0) {
             throw java.lang.IllegalArgumentException(
-                    Logger.logMessage(Logger.ERROR, "LevelSetConfig", "levelForResolution", "invalidResolution"))
+                Logger.logMessage(Logger.ERROR, "LevelSetConfig", "levelForResolution", "invalidResolution")
+            )
         }
         if (levels.size == 0) {
             return null // this level set is empty
