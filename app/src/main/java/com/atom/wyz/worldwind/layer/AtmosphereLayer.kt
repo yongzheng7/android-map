@@ -50,9 +50,6 @@ class AtmosphereLayer : AbstractLayer {
 
     protected var activeLightDirection = Vec3()
 
-    private val skyWidth = 128
-
-    private val skyHeight = 128
 
     private val fullSphereSector: Sector = Sector().setFullSphere()
 
@@ -84,7 +81,7 @@ class AtmosphereLayer : AbstractLayer {
 
     protected fun drawGround(dc: DrawContext) {
         val terrain = dc.terrain?.apply {
-            if (this.getTileCount() == 0) {
+            if (this.sector.isEmpty()) {
                 return  // no terrain surface to render on
             }
         } ?: return
@@ -120,8 +117,9 @@ class AtmosphereLayer : AbstractLayer {
         drawable.lightDirection.set(activeLightDirection)
         drawable.globeRadius = dc.globe!!.equatorialRadius
 
+        val size = 128
         if (drawable.vertexPoints == null) {
-            val count = skyWidth * skyHeight
+            val count = size * size
             val array = DoubleArray(count)
             drawable.program?.let {
                 Arrays.fill(array, it.altitude)
@@ -129,8 +127,8 @@ class AtmosphereLayer : AbstractLayer {
             drawable.vertexPoints = ByteBuffer.allocateDirect(count * 12).order(ByteOrder.nativeOrder()).asFloatBuffer()
             dc.globe!!.geographicToCartesianGrid(
                 fullSphereSector,
-                skyWidth,
-                skyHeight,
+                size,
+                size,
                 array,
                 null,
                 drawable.vertexPoints,
@@ -139,7 +137,7 @@ class AtmosphereLayer : AbstractLayer {
         }
 
         if (drawable.triStripElements == null) {
-            drawable.triStripElements = AtmosphereLayer.assembleTriStripElements(skyWidth, skyHeight)
+            drawable.triStripElements = AtmosphereLayer.assembleTriStripElements(size, size)
         }
 
         dc.offerSurfaceDrawable(drawable, Double.POSITIVE_INFINITY)

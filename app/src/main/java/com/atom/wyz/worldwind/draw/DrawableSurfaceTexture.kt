@@ -4,15 +4,15 @@ import android.opengl.GLES20
 import com.atom.wyz.worldwind.DrawContext
 import com.atom.wyz.worldwind.geom.Matrix3
 import com.atom.wyz.worldwind.geom.Sector
-import com.atom.wyz.worldwind.geom.Vec3
 import com.atom.wyz.worldwind.render.GpuTexture
 import com.atom.wyz.worldwind.render.SurfaceTexture
 import com.atom.wyz.worldwind.render.SurfaceTextureProgram
 import com.atom.wyz.worldwind.util.pool.Pool
+import java.util.*
 
 class DrawableSurfaceTexture : Drawable, SurfaceTexture {
     companion object {
-         fun obtain(pool: Pool<DrawableSurfaceTexture>): DrawableSurfaceTexture {
+        fun obtain(pool: Pool<DrawableSurfaceTexture>): DrawableSurfaceTexture {
             return pool.acquire()?.setPool(pool) ?: DrawableSurfaceTexture().setPool(pool)
         }
     }
@@ -72,6 +72,7 @@ class DrawableSurfaceTexture : Drawable, SurfaceTexture {
         if (!program.useProgram(dc)) {
             return  // program failed to build
         }
+
         try {
             program.addSurfaceTexture(this)
 
@@ -90,53 +91,55 @@ class DrawableSurfaceTexture : Drawable, SurfaceTexture {
     }
 
     protected fun drawSurfaceTextures(dc: DrawContext) {
-        val terrain = dc.terrain ?: return
         val program = program ?: return
 
         GLES20.glEnableVertexAttribArray(1)
-        terrain.useVertexTexCoordAttrib(dc, 1)
 
         dc.activeTextureUnit(GLES20.GL_TEXTURE0)
 
-        var idx = 0
-        val len: Int = terrain.getTileCount()
-        while (idx < len) {
-            // Get the terrain tile's sector, and keep a flag to ensure we apply the terrain tile's state at most once.
-            val terrainSector = terrain.getTileSector(idx) ?: continue
-            var usingTerrainTileState = false
-            var jidx = 0
-            val jlen = program.surfaceTextures.size
-            while (jidx < jlen) {
+        for (idx in 0 until dc.getDrawableTerrainCount()) {
+            // Get the drawable terrain associated with the draw context.
+            val terrain = dc.getDrawableTerrain(idx) ?: continue
 
-                val texture = program.surfaceTextures[jidx]
+            // Get the terrain's attributes, and keep a flag to ensure we apply the terrain's attributes at most once.
+            val terrainSector = terrain.sector
+            val terrainOrigin = terrain.vertexOrigin
+            var usingTerrainAttrs = false
+
+            for (i in 0 until program.surfaceTextures.size) {
+                // Get the surface texture and its sector.
+                val texture = program.surfaceTextures.get(i)
                 val textureSector = texture.sector
-                if (!textureSector.intersects(terrainSector)) {
-                    jidx++
-                    continue
-                }
-                if (!texture.bindTexture(dc)) {
-                    jidx++
-                    continue
-                }
-                if (!usingTerrainTileState) {
 
-                    val terrainOrigin: Vec3 = terrain.getTileVertexOrigin(idx) ?: continue
-                    program.mvpMatrix.set(dc.modelviewProjection)
-                    program.mvpMatrix.multiplyByTranslation(terrainOrigin.x, terrainOrigin.y, terrainOrigin.z)
-                    program.loadModelviewProjection()
-                    terrain.useVertexPointAttrib(dc, idx, 0)
-                    usingTerrainTileState = true
+                if (!textureSector.intersects(terrainSector)) {
+                    continue  // texture does not intersect the terrain
                 }
+
+                if (!texture.bindTexture(dc)) {
+                    continue  // texture failed to bind
+                }
+
+                if (!usingTerrainAttrs) { // Use the draw context's modelview projection matrix, transformed to terrain local coordinates.
+                    this.program!!.mvpMatrix.set(dc.modelviewProjection)
+                    this.program!!.mvpMatrix.multiplyByTranslation(terrainOrigin.x, terrainOrigin.y, terrainOrigin.z)
+                    this.program!!.loadModelviewProjection()
+                    // Use the terrain's vertex point attribute and vertex tex coord attribute.
+                    terrain.useVertexPointAttrib(dc, 0 /*vertexPoint*/)
+                    terrain.useVertexTexCoordAttrib(dc, 1 /*vertexTexCoord*/)
+                    // Suppress subsequent tile state application until the next terrain.
+                    usingTerrainAttrs = true
+                }
+
                 program.texCoordMatrix[0].set(texture.texCoordTransform)
                 program.texCoordMatrix[0].multiplyByTileTransform(terrainSector, textureSector)
                 program.texCoordMatrix[1].setToTileTransform(terrainSector, textureSector)
                 program.loadTexCoordMatrix()
 
-                terrain.drawTileTriangles(dc, idx)
-                jidx++
+                terrain.drawTriangles(dc)
             }
-            idx++
+
         }
+
         GLES20.glDisableVertexAttribArray(1)
     }
 

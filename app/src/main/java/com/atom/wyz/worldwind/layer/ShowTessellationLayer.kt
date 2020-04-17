@@ -13,7 +13,7 @@ class ShowTessellationLayer : AbstractLayer("Terrain Tessellation") {
 
     override fun doRender(dc: DrawContext) {
         val terrain = dc.terrain ?: return
-        if (terrain.getTileCount() == 0) {
+        if (terrain.sector.isEmpty()) {
             return
         }
         var program: BasicProgram? = dc.getProgram(BasicProgram.KEY) as BasicProgram?

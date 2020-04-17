@@ -442,14 +442,14 @@ open class DrawContext {
         return unitQuadBufferId
     }
 
-    open fun offerTerrainDrawable(drawable: DrawableTerrain?) {
+    open fun offerDrawableTerrain(drawable: DrawableTerrain?) {
         drawableTerrain.offerDrawable(drawable)
     }
-    open fun getTerrainDrawableCount(): Int {
+    open fun getDrawableTerrainCount(): Int {
         return drawableTerrain.count()
     }
 
-    open fun getTerrainDrawable(index: Int): DrawableTerrain? {
+    open fun getDrawableTerrain(index: Int): DrawableTerrain? {
         return drawableTerrain.getDrawable(index) as DrawableTerrain?
     }
 }

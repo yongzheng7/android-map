@@ -1,11 +1,13 @@
 package com.atom.wyz.worldwind.globe
 
-import com.atom.wyz.worldwind.geom.Sector
 import com.atom.wyz.worldwind.DrawContext
+import com.atom.wyz.worldwind.geom.Sector
+import com.atom.wyz.worldwind.geom.Vec3
 import com.atom.wyz.worldwind.util.Level
 import com.atom.wyz.worldwind.util.LevelSet
 import com.atom.wyz.worldwind.util.Logger
 import com.atom.wyz.worldwind.util.LruMemoryCache
+import com.atom.wyz.worldwind.util.pool.Pool
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
 import java.nio.FloatBuffer
@@ -15,20 +17,24 @@ import java.util.*
 class BasicTessellator : Tessellator, TileFactory {
 
     var levelSet: LevelSet = LevelSet(Sector().setFullSphere(), 90.0, 20, 32, 32)
-    set(value) {
-        field = value
-        this.invalidateTiles()
-    }
+        set(value) {
+            field = value
+            this.invalidateTiles()
+        }
 
     var topLevelTiles = ArrayList<Tile>()
 
     protected var currentTerrain: BasicTerrain = BasicTerrain()
-    /**
-     * 缓存每个key 对应的四个瓦片
-     */
+
     protected var tileCache: LruMemoryCache<String?, Array<Tile?>?> = LruMemoryCache(300) // cache for 300 tiles
 
     var detailControl = 80.0
+
+    var tileVertexTexCoords: FloatBuffer? = null
+
+    var tileLineElements: ShortBuffer? = null
+
+    var tileTriStripElements: ShortBuffer? = null
 
     constructor() {
     }
@@ -36,15 +42,18 @@ class BasicTessellator : Tessellator, TileFactory {
     constructor(topLevelDelta: Double, numLevels: Int, tileWidth: Int, tileHeight: Int) {
         if (topLevelDelta <= 0) {
             throw IllegalArgumentException(
-                    Logger.logMessage(Logger.ERROR, "BasicTessellator", "constructor", "invalidTileDelta"))
+                Logger.logMessage(Logger.ERROR, "BasicTessellator", "constructor", "invalidTileDelta")
+            )
         }
         if (numLevels < 1) {
             throw IllegalArgumentException(
-                    Logger.logMessage(Logger.ERROR, "BasicTessellator", "constructor", "invalidNumLevels"))
+                Logger.logMessage(Logger.ERROR, "BasicTessellator", "constructor", "invalidNumLevels")
+            )
         }
         if (tileWidth < 1 || tileHeight < 1) {
             throw IllegalArgumentException(
-                    Logger.logMessage(Logger.ERROR, "BasicTessellator", "constructor", "invalidWidthOrHeight"))
+                Logger.logMessage(Logger.ERROR, "BasicTessellator", "constructor", "invalidWidthOrHeight")
+            )
         }
         levelSet = LevelSet(Sector().setFullSphere(), topLevelDelta, numLevels, tileWidth, tileHeight)
     }
@@ -52,10 +61,8 @@ class BasicTessellator : Tessellator, TileFactory {
     /**
      * 获取棋盘地形
      */
-    override fun tessellate(dc: DrawContext): Terrain? {
+    override fun tessellate(dc: DrawContext) {
         this.assembleTiles(dc)
-        this.assembleSharedBuffers()
-        return currentTerrain
     }
 
     /**
@@ -72,6 +79,9 @@ class BasicTessellator : Tessellator, TileFactory {
         topLevelTiles.clear()
         currentTerrain.clearTiles()
         tileCache.clear()
+        tileVertexTexCoords = null
+        tileLineElements = null
+        tileTriStripElements = null
     }
 
     /**
@@ -90,6 +100,7 @@ class BasicTessellator : Tessellator, TileFactory {
         for (tile in topLevelTiles) {
             addTileOrDescendants(dc, tile as TerrainTile)
         }
+        dc.terrain = currentTerrain
     }
 
     protected fun createTopLevelTiles() {
@@ -115,39 +126,69 @@ class BasicTessellator : Tessellator, TileFactory {
         }
     }
 
-    protected fun addTile(dc: DrawContext, tile: TerrainTile) {
-        if (tile.mustAssembleTileVertices(dc)) {
-            tile.assembleTileVertices(dc) // build the tile's geometry when necessary
-        }
-        currentTerrain.addTile(tile) //只添加最后等级的图块 或者 无需再次细分的图块
+    fun mustAssembleVertexPoints(dc: DrawContext, tile: TerrainTile): Boolean {
+        return tile.vertexPoints == null
     }
 
-    /**
-     * 组装 纹理顶点， 顶点索引 ， 线顶点
-     */
-    protected fun assembleSharedBuffers() {
+    protected fun addTile(dc: DrawContext, tile: TerrainTile) {
         val numLat = levelSet.tileHeight
         val numLon = levelSet.tileWidth
-        // 瓦片的纹理顶点
-        if (currentTerrain.tileTexCoords == null) {
-            val buffer = ByteBuffer.allocateDirect(numLat * numLon * 2 * 4).order(ByteOrder.nativeOrder()).asFloatBuffer()
-            assembleTexCoords(numLat, numLon, buffer, 2).rewind()
-            currentTerrain.tileTexCoords = buffer
+
+        if (this.mustAssembleVertexPoints(dc, tile)) {
+            this.assembleVertexPoints(dc, tile)
         }
-        if (currentTerrain.tileTriStripIndices == null) {
-            val buffer = assembleTriStripIndices(numLat, numLon)
-            currentTerrain.tileTriStripIndices = buffer
+        // Assemble the shared vertex tex coord buffer.
+        if (tileVertexTexCoords == null) {
+            tileVertexTexCoords = ByteBuffer.allocateDirect(numLat * numLon * 8).order(ByteOrder.nativeOrder())
+                .asFloatBuffer()
+            tileVertexTexCoords?.let {
+                this.assembleVertexTexCoords(numLat, numLon, it, 2).rewind()
+            }
         }
-        if (currentTerrain.tileLineIndices == null) {
-            val buffer = assembleLineIndices(numLat, numLon)
-            currentTerrain.tileLineIndices = buffer
+
+        if (tileLineElements == null) {
+            tileLineElements = this.assembleLineElements(numLat, numLon)
         }
+
+        // Assemble the shared triangle strip element buffer.
+        if (tileTriStripElements == null) {
+            tileTriStripElements = this.assembleTriStripElements(numLat, numLon)
+        }
+        currentTerrain.addTile(tile) //只添加最后等级的图块 或者 无需再次细分的图块
+
+        val pool: Pool<BasicDrawableTerrain> = dc.getDrawablePool(BasicDrawableTerrain::class.java)
+        val drawable: BasicDrawableTerrain = BasicDrawableTerrain.obtain(pool)
+        drawable.sector.set(tile.sector)
+        drawable.vertexOrigin.set(tile.vertexOrigin)
+        drawable.vertexPoints = tile.vertexPoints
+        drawable.vertexTexCoords = tileVertexTexCoords
+        drawable.triStripElements = tileTriStripElements
+        drawable.lineElements = tileLineElements
+        dc.offerDrawableTerrain(drawable)
+    }
+
+    protected fun assembleVertexPoints(dc: DrawContext, tile: TerrainTile) {
+        val globe = dc.globe ?: return
+
+        val numLat = tile.level.tileWidth
+        val numLon = tile.level.tileHeight
+        val origin = tile.vertexOrigin
+
+        var buffer: FloatBuffer? = tile.vertexPoints
+        if (buffer == null) {
+            buffer = ByteBuffer.allocateDirect(numLat * numLon * 12).order(ByteOrder.nativeOrder()).asFloatBuffer()
+        }
+
+        globe.geographicToCartesian(tile.sector.centroidLatitude(), tile.sector.centroidLongitude(), 0.0, origin)
+        globe.geographicToCartesianGrid(tile.sector, numLat, numLon, null, origin, buffer, 3).rewind()
+        tile.vertexOrigin.set(origin)
+        tile.vertexPoints = buffer
     }
 
     /**
      * 组装纹理顶点缓存
      */
-    protected fun assembleTexCoords(numLat: Int, numLon: Int, result: FloatBuffer, stride: Int): FloatBuffer {
+    protected fun assembleVertexTexCoords(numLat: Int, numLon: Int, result: FloatBuffer, stride: Int): FloatBuffer {
         val ds = 1f / if (numLon > 1) numLon - 1 else 1
         val dt = 1f / if (numLat > 1) numLat - 1 else 1
         val st = FloatArray(2)
@@ -185,7 +226,10 @@ class BasicTessellator : Tessellator, TileFactory {
     /**
      * 顶点的索引 通过索引法进行绘制
      */
-    protected fun assembleTriStripIndices(numLat: Int, numLon: Int): ShortBuffer { // Allocate a buffer to hold the indices.
+    protected fun assembleTriStripElements(
+        numLat: Int,
+        numLon: Int
+    ): ShortBuffer { // Allocate a buffer to hold the indices.
         val count = ((numLat - 1) * numLon + (numLat - 2)) * 2
         val result = ByteBuffer.allocateDirect(count * 2).order(ByteOrder.nativeOrder()).asShortBuffer()
         val index = ShortArray(2)
@@ -215,7 +259,10 @@ class BasicTessellator : Tessellator, TileFactory {
     /**
      * 组装纹理的线索引
      */
-    protected fun assembleLineIndices(numLat: Int, numLon: Int): ShortBuffer { // Allocate a buffer to hold the indices.
+    protected fun assembleLineElements(
+        numLat: Int,
+        numLon: Int
+    ): ShortBuffer { // Allocate a buffer to hold the indices.
         val count = (numLat * (numLon - 1) + numLon * (numLat - 1)) * 2
         val result = ByteBuffer.allocateDirect(count * 2).order(ByteOrder.nativeOrder()).asShortBuffer()
         val index = ShortArray(2)

@@ -16,39 +16,6 @@ interface Terrain {
     var sector: Sector
 
     /**
-     * 获取瓦片总数
-     */
-    fun getTileCount(): Int
-
-    /**
-     * 获取指定瓦片的区域
-     */
-    fun getTileSector(index: Int): Sector?
-
-    /**
-     * 获取指定瓦片的笛卡尔数 笛卡尔中心
-     */
-    fun getTileVertexOrigin(index: Int): Vec3?
-
-    /**
-     * 加载绘制顶点缓存
-     */
-    fun useVertexPointAttrib(dc: DrawContext?, index: Int, attribLocation: Int)
-    /**
-     * 加载纹理顶点缓存
-     */
-    fun useVertexTexCoordAttrib(dc: DrawContext?, attribLocation: Int)
-    /**
-     * 绘制瓦片的三角形
-     */
-    fun drawTileTriangles(dc: DrawContext?, index: Int)
-
-    /**
-     * 绘制瓦片的线
-     */
-    fun drawTileLines(dc: DrawContext?, index: Int)
-
-    /**
      * 地理坐标到笛卡尔积
      */
     fun geographicToCartesian(latitude: Double, longitude: Double, altitude: Double,

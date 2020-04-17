@@ -59,18 +59,18 @@ class DrawableTessellation : Drawable {
         // 乘上变换矩阵
         offsetMvpMatrix.multiplyByMatrix(dc.modelview)
 
-        val terrain = dc.terrain ?: return
-        var idx = 0
-        val len: Int = terrain.getTileCount()
-        while (idx < len) {
 
-            val terrainOrigin: Vec3 = terrain.getTileVertexOrigin(idx) ?: continue
+        for (idx in 0 until dc.getDrawableTerrainCount()) {
+
+            // Get the drawable terrain associated with the draw context.
+            val terrain = dc.getDrawableTerrain(idx) ?: continue
+
+            val terrainOrigin: Vec3 = terrain.vertexOrigin
             mvpMatrix.set(offsetMvpMatrix)
             mvpMatrix.multiplyByTranslation(terrainOrigin.x, terrainOrigin.y, terrainOrigin.z)
             program.loadModelviewProjection(mvpMatrix)
-            terrain.useVertexPointAttrib(dc, idx, 0)
-            terrain.drawTileLines(dc, idx)
-            idx++
+            terrain.useVertexPointAttrib(dc, 0)
+            terrain.drawLines(dc)
         }
         GLES20.glDepthMask(true)
     }

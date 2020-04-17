@@ -6,9 +6,9 @@ import com.atom.wyz.worldwind.geom.Vec3
 
 interface DrawableTerrain : Drawable {
 
-    fun getSector(): Sector
+    var sector : Sector
 
-    fun getVertexOrigin(): Vec3
+    var vertexOrigin : Vec3
 
     fun useVertexPointAttrib(dc: DrawContext, attribLocation: Int)
 
