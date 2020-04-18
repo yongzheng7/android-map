@@ -27,7 +27,7 @@ class BasicFrameController : FrameController {
     }
 
     protected fun drawDrawables(dc: DrawContext) {
-        dc.sortDrawables()
+        dc.rewindDrawables()
         var next: Drawable?
         while (dc.pollDrawable().also { next = it } != null) {
             try {
@@ -42,10 +42,16 @@ class BasicFrameController : FrameController {
     }
 
     override fun renderFrame(rc: RenderContext) {
-        createViewingState(rc)
-        createTerrain(rc)
+        prepareViewingState(rc)
+        tessellateTerrain(rc)
         renderLayers(rc)
+        prepareDrawables(rc)
     }
+
+    protected fun prepareDrawables(rc: RenderContext) {
+        rc.sortDrawables()
+    }
+
 
     protected fun renderLayers(rc: RenderContext) {
         val layers: LayerList = rc.layers
@@ -66,11 +72,11 @@ class BasicFrameController : FrameController {
         rc.currentLayer = null
     }
 
-    protected fun createTerrain(rc: RenderContext) {
+    protected fun tessellateTerrain(rc: RenderContext) {
         rc.globe?.tessellator?.tessellate(rc)
     }
 
-    protected fun createViewingState(rc: RenderContext) {
+    protected fun prepareViewingState(rc: RenderContext) {
 
         val near = rc.eyePosition.altitude * 0.75
         val far = rc.globe!!.horizonDistance(rc.eyePosition.altitude, 160000.0)
@@ -93,8 +99,6 @@ class BasicFrameController : FrameController {
         )
         // 将变换和投影空间合并
         rc.modelviewProjection.setToMultiply(rc.projection, rc.modelview)
-        // 屏幕投影
-        rc.screenProjection.setToScreenProjection(rc.viewport.width().toDouble(), rc.viewport.height().toDouble())
         // 投影空间设置
         rc.frustum.setToProjectionMatrix(rc.projection)
         rc.frustum.transformByMatrix(this.matrix.transposeMatrix(rc.modelview))

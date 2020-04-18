@@ -1,6 +1,5 @@
 package com.atom.wyz.worldwind
 
-import android.graphics.Rect
 import android.opengl.GLES20
 import com.atom.wyz.worldwind.draw.Drawable
 import com.atom.wyz.worldwind.draw.DrawableList
@@ -13,7 +12,6 @@ import java.nio.ByteOrder
 import java.util.*
 
 class DrawContext {
-    var viewport = Rect()
 
     var modelview: Matrix4 = Matrix4()
 
@@ -45,7 +43,6 @@ class DrawContext {
 
 
     fun reset() {
-        viewport.setEmpty()
         modelview.setToIdentity()
         projection.setToIdentity()
         modelviewProjection.setToIdentity()
@@ -65,10 +62,8 @@ class DrawContext {
         Arrays.fill(textureId, 0)
     }
 
-    fun sortDrawables() {
-        if (drawableQueue != null) {
-            drawableQueue!!.sortDrawables()
-        }
+    fun rewindDrawables() {
+        drawableQueue?.sortDrawables()
     }
 
     fun peekDrawable(): Drawable? {

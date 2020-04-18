@@ -27,84 +27,84 @@ class BasicNavigator() : Navigator {
 
     protected var _roll = 0.0
 
-    @Synchronized
+    
     override fun getLatitude(): Double {
         return _latitude
     }
 
-    @Synchronized
+    
     override fun setLatitude(latitude: Double): Navigator {
         _latitude = latitude
         return this
     }
 
-    @Synchronized
+    
     override fun getLongitude(): Double {
         return _longitude
     }
 
-    @Synchronized
+    
     override fun setLongitude(longitude: Double): Navigator {
         _longitude = longitude
         return this
     }
 
-    @Synchronized
+    
     override fun getAltitude(): Double {
         return _altitude
     }
 
-    @Synchronized
+    
     override fun setAltitude(altitude: Double): Navigator {
         _altitude = altitude
         return this
     }
 
-    @Synchronized
+    
     override fun getHeading(): Double {
         return _heading
     }
 
-    @Synchronized
+    
     override fun setHeading(headingDegrees: Double): Navigator {
         _heading = headingDegrees
         return this
     }
 
-    @Synchronized
+    
     override fun getTilt(): Double {
         return _tilt
     }
 
-    @Synchronized
+    
     override fun setTilt(tiltDegrees: Double): Navigator {
         _tilt = tiltDegrees
         return this
     }
 
-    @Synchronized
+    
     override fun getRoll(): Double {
         return _roll
     }
 
-    @Synchronized
+    
     override fun setRoll(rollDegrees: Double): Navigator {
         _roll = rollDegrees
         return this
     }
 
-    @Synchronized
+    
     override fun getFieldOfView(): Double {
         return _fieldOfView
     }
 
-    @Synchronized
+    
     override fun setFieldOfView(fovyDegrees: Double): Navigator {
         _fieldOfView = fovyDegrees
         return this
     }
 
-    @Synchronized
+    
     override fun getAsCamera(globe: Globe?, result: Camera?): Camera {
         if (globe == null) {
             throw IllegalArgumentException(
@@ -127,7 +127,7 @@ class BasicNavigator() : Navigator {
         return result
     }
 
-    @Synchronized
+    
     override fun setAsCamera(globe: Globe?, camera: Camera?): Navigator {
         if (globe == null) {
             throw java.lang.IllegalArgumentException(
@@ -151,7 +151,7 @@ class BasicNavigator() : Navigator {
         return this
     }
 
-    @Synchronized
+    
     override fun getAsLookAt(globe: Globe?, result: LookAt?): LookAt {
         if (globe == null) {
             throw java.lang.IllegalArgumentException(
@@ -167,7 +167,7 @@ class BasicNavigator() : Navigator {
         return result
     }
 
-    @Synchronized
+    
     override fun setAsLookAt(globe: Globe?, lookAt: LookAt?): Navigator {
         if (globe == null) {
             throw java.lang.IllegalArgumentException(

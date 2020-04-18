@@ -78,6 +78,7 @@ class DrawableQueue {
 
     fun sortDrawables() {
         Arrays.sort(entries, 0, size, sortComparator)
+        position = 0
     }
 
     protected class Entry {

@@ -2,7 +2,6 @@ package com.atom.wyz.worldwind
 
 import android.content.res.Resources
 import android.graphics.Rect
-import android.opengl.GLES20
 import com.atom.wyz.worldwind.draw.Drawable
 import com.atom.wyz.worldwind.draw.DrawableList
 import com.atom.wyz.worldwind.draw.DrawableQueue
@@ -23,10 +22,6 @@ import com.atom.wyz.worldwind.util.RenderResourceCache
 import com.atom.wyz.worldwind.util.WWMath
 import com.atom.wyz.worldwind.util.pool.Pool
 import com.atom.wyz.worldwind.util.pool.SynchronizedPool
-import java.nio.ByteBuffer
-import java.nio.ByteOrder
-import java.util.*
-import kotlin.collections.HashMap
 
 /**
  * 绘画环境
@@ -52,7 +47,6 @@ open class RenderContext {
     var viewport = Rect()
         set(value) {
             field.set(value)
-            this.screenProjection.setToScreenProjection(value.width().toDouble(), value.height().toDouble())
         }
 
     var modelview: Matrix4 = Matrix4()
@@ -92,8 +86,6 @@ open class RenderContext {
 
     var renderResourceCache: RenderResourceCache? = null
 
-    var screenProjection: Matrix4 = Matrix4()
-
     protected var drawablePools = HashMap<Any, Pool<*>?>()
 
     private var userProperties: HashMap<Any, Any> = HashMap<Any, Any>()
@@ -119,7 +111,6 @@ open class RenderContext {
         modelview.setToIdentity()
         projection.setToIdentity()
         modelviewProjection.setToIdentity()
-        screenProjection.setToIdentity()
         eyePoint.set(0.0, 0.0, 0.0)
         frustum.setToUnitFrustum()
         renderResourceCache = null
@@ -304,10 +295,14 @@ open class RenderContext {
             -eyeDistance
         ) // order by descending eye distance
     }
+    open fun sortDrawables() {
+        drawableQueue?.sortDrawables()
+    }
 
     open fun offerDrawableTerrain(drawable: DrawableTerrain?) {
         drawableTerrain?.offerDrawable(drawable)
     }
+
 
     open fun <T : Drawable> getDrawablePool(key: Class<T>): Pool<T> {
         var pool = drawablePools.get(key) as Pool<T>?

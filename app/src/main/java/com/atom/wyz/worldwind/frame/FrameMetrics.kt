@@ -41,99 +41,92 @@ class FrameMetrics {
         return Math.sqrt(`var`)
     }
 
-    // TODO rename as frame metrics
-    private val lock = Any()
-
     protected var renderMetrics: Metrics = Metrics()
 
     protected var drawMetrics: Metrics = Metrics()
 
     fun getRenderTime(): Long {
-        synchronized(lock) { return renderMetrics.time }
+        return renderMetrics.time
     }
 
     fun getRenderTimeAverage(): Double {
-        synchronized(lock) { return computeTimeAverage(renderMetrics) }
+        return computeTimeAverage(renderMetrics)
     }
 
     fun getRenderTimeStdDev(): Double {
-        synchronized(lock) { return computeTimeStdDev(renderMetrics) }
+        return computeTimeStdDev(renderMetrics)
     }
 
     fun getRenderTimeTotal(): Long {
-        synchronized(lock) { return renderMetrics.timeSum }
+        return renderMetrics.timeSum
     }
 
     fun getRenderCount(): Long {
-        synchronized(lock) { return renderMetrics.count }
+        return renderMetrics.count
     }
 
     fun getDrawTime(): Long {
-        synchronized(lock) { return drawMetrics.time }
+        return drawMetrics.time
     }
 
     fun getDrawTimeAverage(): Double {
-        synchronized(lock) { return computeTimeAverage(drawMetrics) }
+        return computeTimeAverage(drawMetrics)
     }
 
     fun getDrawTimeStdDev(): Double {
-        synchronized(lock) { return computeTimeStdDev(drawMetrics) }
+        return computeTimeStdDev(drawMetrics)
     }
 
     fun getDrawTimeTotal(): Long {
-        synchronized(lock) { return drawMetrics.timeSum }
+        return drawMetrics.timeSum
     }
 
     fun getDrawCount(): Long {
-        synchronized(lock) { return drawMetrics.count }
+        return drawMetrics.count
     }
 
     fun beginRendering() {
         val now = System.currentTimeMillis()
-        synchronized(lock) { markBegin(renderMetrics, now) }
+        markBegin(renderMetrics, now)
     }
 
     fun endRendering() {
         val now = System.currentTimeMillis()
-        synchronized(lock) { markEnd(renderMetrics, now) }
+        markEnd(renderMetrics, now)
     }
 
     fun beginDrawing() {
         val now = System.currentTimeMillis()
-        synchronized(lock) { markBegin(drawMetrics, now) }
+        markBegin(drawMetrics, now)
     }
 
     fun endDrawing() {
         val now = System.currentTimeMillis()
-        synchronized(lock) { markEnd(drawMetrics, now) }
+        markEnd(drawMetrics, now)
     }
 
     fun reset() {
-        synchronized(lock) {
-            resetMetrics(renderMetrics)
-            resetMetrics(drawMetrics)
-        }
+        resetMetrics(renderMetrics)
+        resetMetrics(drawMetrics)
     }
 
     override fun toString(): String {
         val sb = StringBuilder("FrameStatistics")
         sb.append("{\n")
-        synchronized(lock) {
-            sb.append("renderTime=").append(renderMetrics.time)
-            sb.append(", renderTimeTotal=").append(renderMetrics.timeSum)
-            sb.append(", renderCount=").append(renderMetrics.count)
-            sb.append(", renderTimeAvg=")
-                .append(String.format("%.1f", computeTimeAverage(renderMetrics)))
-            sb.append(", renderTimeStdDev=")
-                .append(String.format("%.1f", computeTimeStdDev(renderMetrics)))
-            sb.append("\n")
-            sb.append("drawTime=").append(drawMetrics.time)
-            sb.append(", drawTimeTotal=").append(drawMetrics.timeSum)
-            sb.append(", drawCount=").append(drawMetrics.count)
-            sb.append(", drawTimeAvg=").append(String.format("%.1f", computeTimeAverage(drawMetrics)))
-            sb.append(", drawTimeStdDev=")
-                .append(String.format("%.1f", computeTimeStdDev(drawMetrics)))
-        }
+        sb.append("renderTime=").append(renderMetrics.time)
+        sb.append(", renderTimeTotal=").append(renderMetrics.timeSum)
+        sb.append(", renderCount=").append(renderMetrics.count)
+        sb.append(", renderTimeAvg=")
+            .append(String.format("%.1f", computeTimeAverage(renderMetrics)))
+        sb.append(", renderTimeStdDev=")
+            .append(String.format("%.1f", computeTimeStdDev(renderMetrics)))
+        sb.append("\n")
+        sb.append("drawTime=").append(drawMetrics.time)
+        sb.append(", drawTimeTotal=").append(drawMetrics.timeSum)
+        sb.append(", drawCount=").append(drawMetrics.count)
+        sb.append(", drawTimeAvg=").append(String.format("%.1f", computeTimeAverage(drawMetrics)))
+        sb.append(", drawTimeStdDev=")
+            .append(String.format("%.1f", computeTimeStdDev(drawMetrics)))
         sb.append("\n}")
         return sb.toString()
     }

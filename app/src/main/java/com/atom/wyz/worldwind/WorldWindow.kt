@@ -9,9 +9,8 @@ import android.opengl.GLSurfaceView
 import android.util.AttributeSet
 import android.view.MotionEvent
 import android.view.SurfaceHolder
-import com.atom.wyz.worldwind.draw.DrawableList
-import com.atom.wyz.worldwind.draw.DrawableQueue
 import com.atom.wyz.worldwind.frame.BasicFrameController
+import com.atom.wyz.worldwind.frame.Frame
 import com.atom.wyz.worldwind.frame.FrameController
 import com.atom.wyz.worldwind.frame.FrameMetrics
 import com.atom.wyz.worldwind.geom.Location
@@ -23,6 +22,8 @@ import com.atom.wyz.worldwind.layer.LayerList
 import com.atom.wyz.worldwind.util.Logger
 import com.atom.wyz.worldwind.util.MessageListener
 import com.atom.wyz.worldwind.util.RenderResourceCache
+import com.atom.wyz.worldwind.util.pool.Pool
+import com.atom.wyz.worldwind.util.pool.SynchronizedPool
 import java.util.*
 import javax.microedition.khronos.egl.EGLConfig
 import javax.microedition.khronos.opengles.GL10
@@ -57,9 +58,9 @@ class WorldWindow : GLSurfaceView, GLSurfaceView.Renderer, MessageListener {
 
     var rc = RenderContext()
     var dc = DrawContext()
-    var drawableQueue: DrawableQueue = DrawableQueue()
 
-    var drawableTerrain: DrawableList = DrawableList()
+    protected var framePool: Pool<Frame> = SynchronizedPool()
+
 
     constructor(context: Context) : super(context) {
         this.init(null)
@@ -112,43 +113,41 @@ class WorldWindow : GLSurfaceView, GLSurfaceView.Renderer, MessageListener {
     }
 
     override fun onDrawFrame(gl: GL10?) {
-        // 渲染数据
-        frameMetrics.beginRendering()
-        prepareToRenderFrame() // 准备数据
-        frameController.renderFrame(rc) //渲染帧
-        frameMetrics.endRendering()
+        val frame = Frame.obtain(framePool)
+
+        renderFrame(frame)
+
+        drawFrame(frame)
+
+        frame.recycle()
+
+    }
+
+    protected fun renderFrame(frame: Frame) {
+        this.willRenderFrame(frame)
+        frameController.renderFrame(rc)
+        this.didRenderFrame(frame)
+    }
+
+    private fun didRenderFrame(frame: Frame) {
+        frame.viewport.set(viewport)
+        frame.modelview.set(rc.modelview)
+        frame.projection.set(rc.projection)
+
 
         if (rc.renderRequested) {
             requestRender() // inherited from GLSurfaceView
         }
 
-        this.prepareToDrawFrame()
-
         rc.reset()
         //绘制数据
-        frameMetrics.beginDrawing()
-        frameController.drawFrame(dc) //绘制帧
-        renderResourceCache?.releaseEvictedResources(dc)
-        dc.reset()
-        frameMetrics.endDrawing()
-
-        // Clear the drawables accumulated and processed during this frame.
-        drawableQueue.clearDrawables()
-        drawableTerrain.clearDrawables()
+        frameMetrics.endRendering()
     }
 
-    private fun prepareToDrawFrame() {
-        this.dc.viewport.set(rc.viewport)
-        this.dc.modelview.set(rc.modelview)
-        this.dc.projection.set(rc.projection)
-        this.dc.modelviewProjection.set(rc.modelviewProjection)
-        this.dc.screenProjection.set(rc.screenProjection)
-        this.dc.eyePoint.set(rc.eyePoint)
-        this.dc.drawableQueue = drawableQueue
-        this.dc.drawableTerrain = drawableTerrain
-    }
+    private fun willRenderFrame(frame: Frame) {
+        // 渲染数据
+        frameMetrics.beginRendering()
 
-    private fun prepareToRenderFrame() {
         rc.globe = globe
         rc.layers.addAllLayers(layers)
         rc.verticalExaggeration = verticalExaggeration
@@ -161,14 +160,42 @@ class WorldWindow : GLSurfaceView, GLSurfaceView.Renderer, MessageListener {
         rc.tilt = navigator.getTilt()
         rc.roll = navigator.getRoll()
         rc.fieldOfView = navigator.getFieldOfView()
-        rc.horizonDistance = globe.horizonDistance(rc.eyePosition.altitude)
+        rc.horizonDistance = globe.horizonDistance(this.navigator.getAltitude())
         rc.viewport.set(viewport)
         rc.renderResourceCache = this.renderResourceCache
         rc.renderResourceCache?.resources = (this.context.resources)
         rc.resources = this.context.resources
-        rc.drawableQueue = drawableQueue
-        rc.drawableTerrain = drawableTerrain
+        rc.drawableQueue = frame.drawableQueue
+        rc.drawableTerrain = frame.drawableTerrain
     }
+
+    protected fun drawFrame(frame: Frame) {
+        this.willDrawFrame(frame)
+        frameController.drawFrame(dc)
+        this.didDrawFrame(frame)
+    }
+
+    protected fun willDrawFrame(frame: Frame) {
+        frameMetrics.beginDrawing()
+
+        dc.modelview.set(frame.modelview)
+        dc.projection.set(frame.projection)
+        dc.modelview.extractEyePoint(dc.eyePoint)
+        dc.modelviewProjection.setToMultiply(frame.projection, frame.modelview)
+        dc.screenProjection.setToScreenProjection(
+            frame.viewport.width().toDouble(),
+            frame.viewport.height().toDouble()
+        )
+        dc.drawableQueue = frame.drawableQueue
+        dc.drawableTerrain = frame.drawableTerrain
+    }
+
+    protected fun didDrawFrame(frame: Frame) {
+        renderResourceCache!!.releaseEvictedResources(dc)
+        dc.reset()
+        frameMetrics.endDrawing()
+    }
+
 
     override fun onSurfaceChanged(gl: GL10?, width: Int, height: Int) {
         GLES20.glViewport(0, 0, width, height)
