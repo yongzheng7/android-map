@@ -22,8 +22,7 @@ class SurfaceImageActivity : BasicWorldWindActivity() {
         val layer = RenderableLayer("Surface Image")
         layer.addRenderable(surfaceImageResource)
         layer.addRenderable(surfaceImageUrl)
-        val index: Int = getWorldWindow().layers.indexOfLayerNamed("Atmosphere")
-        getWorldWindow().layers.addLayer(index, layer)
+        getWorldWindow().layers.addLayer(layer)
 
         getWorldWindow().navigator.setLatitude(37.46543388598137)
         getWorldWindow().navigator.setLongitude(14.97980511744455)

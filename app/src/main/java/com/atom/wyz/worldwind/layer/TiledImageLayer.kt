@@ -1,7 +1,6 @@
 package com.atom.wyz.worldwind.layer
 
-import android.util.Log
-import com.atom.wyz.worldwind.DrawContext
+import com.atom.wyz.worldwind.RenderContext
 import com.atom.wyz.worldwind.draw.Drawable
 import com.atom.wyz.worldwind.draw.DrawableSurfaceTexture
 import com.atom.wyz.worldwind.geom.Matrix3
@@ -60,14 +59,14 @@ open class TiledImageLayer : AbstractLayer, TileFactory {
         this.pickEnabled = false
     }
 
-    override fun doRender(dc: DrawContext) {
-        val terrain = dc.terrain ?: return
+    override fun doRender(rc: RenderContext) {
+        val terrain = rc.terrain ?: return
         if (terrain.sector.isEmpty()) {
             return  // no terrain surface to render on
         }
 
-        this.determineActiveProgram(dc)
-        this.assembleTiles(dc)
+        this.determineActiveProgram(rc)
+        this.assembleTiles(rc)
 
         this.activeProgram = null // clear the active program to avoid leaking render resources
         this.ancestorTile = null // clear the ancestor tile and texture
@@ -75,20 +74,20 @@ open class TiledImageLayer : AbstractLayer, TileFactory {
     }
 
 
-    protected fun assembleTiles(dc: DrawContext) {
+    protected fun assembleTiles(rc: RenderContext) {
         if (topLevelTiles.isEmpty()) {
             this.createTopLevelTiles()
         }
         for (tile in topLevelTiles) {
-            this.addTileOrDescendants(dc, tile as ImageTile)
+            this.addTileOrDescendants(rc, tile as ImageTile)
         }
     }
 
-    protected open fun determineActiveProgram(dc: DrawContext) {
-        this.activeProgram = dc.getProgram(SurfaceTextureProgram.KEY) as SurfaceTextureProgram
+    protected open fun determineActiveProgram(rc: RenderContext) {
+        this.activeProgram = rc.getProgram(SurfaceTextureProgram.KEY) as SurfaceTextureProgram
         if (this.activeProgram == null) {
             this.activeProgram =
-                dc.putProgram(SurfaceTextureProgram.KEY, SurfaceTextureProgram(dc.resources!!)) as SurfaceTextureProgram
+                rc.putProgram(SurfaceTextureProgram.KEY, SurfaceTextureProgram(rc.resources!!)) as SurfaceTextureProgram
         }
     }
 
@@ -97,54 +96,54 @@ open class TiledImageLayer : AbstractLayer, TileFactory {
         Tile.assembleTilesForLevel(firstLevel, this, topLevelTiles)
     }
 
-    protected open fun fetchTileTexture(dc: DrawContext, tile: ImageTile): GpuTexture? {
-        var texture: GpuTexture? = dc.getTexture(tile.imageSource!!)
+    protected open fun fetchTileTexture(rc: RenderContext, tile: ImageTile): GpuTexture? {
+        var texture: GpuTexture? = rc.getTexture(tile.imageSource!!)
         if (texture == null) {
-            texture = dc.retrieveTexture(tile.imageSource!!)
+            texture = rc.retrieveTexture(tile.imageSource!!)
         }
         return texture
     }
 
-    protected fun addTileOrDescendants(dc: DrawContext, tile: ImageTile) {
-        if (!tile.intersectsSector(this.levelSet.sector) || !tile.intersectsFrustum(dc, dc.frustum)) {
+    protected fun addTileOrDescendants(rc: RenderContext, tile: ImageTile) {
+        if (!tile.intersectsSector(this.levelSet.sector) || !tile.intersectsFrustum(rc, rc.frustum)) {
             return  // ignore the tile and its descendants if it's not visible
         }
-        if (tile.level.isLastLevel() || !tile.mustSubdivide(dc, detailControl)) {
-            addTile(dc, tile)
+        if (tile.level.isLastLevel() || !tile.mustSubdivide(rc, detailControl)) {
+            addTile(rc, tile)
             return  // use the tile if it does not need to be subdivided
         }
 
         val currentAncestorTile = ancestorTile
         val currentAncestorTexture = ancestorTexture
 
-        val tileTexture = fetchTileTexture(dc, tile)
+        val tileTexture = fetchTileTexture(rc, tile)
         if (tileTexture != null) { // use it as a fallback tile for descendants
             ancestorTile = tile
             ancestorTexture = tileTexture
         }
 
         for (child in tile.subdivideToCache(this, tileCache, 4)!!) { // each tile has a cached size of 1
-            addTileOrDescendants(dc, child as ImageTile) // recursively process the tile's children
+            addTileOrDescendants(rc, child as ImageTile) // recursively process the tile's children
         }
 
         ancestorTile = currentAncestorTile // restore the last fallback tile, even if it was null
         ancestorTexture = currentAncestorTexture
     }
 
-    protected fun addTile(dc: DrawContext, tile: ImageTile) {
-        val texture = fetchTileTexture(dc, tile)
+    protected fun addTile(rc: RenderContext, tile: ImageTile) {
+        val texture = fetchTileTexture(rc, tile)
         if (texture != null) { // use the tile's own texture
-            val pool: Pool<DrawableSurfaceTexture> = dc.getDrawablePool(DrawableSurfaceTexture::class.java)
+            val pool: Pool<DrawableSurfaceTexture> = rc.getDrawablePool(DrawableSurfaceTexture::class.java)
             val drawable = DrawableSurfaceTexture.obtain(pool)
                 .set(this.activeProgram, tile.sector, texture, texture.texCoordTransform)
-            dc.offerSurfaceDrawable(drawable, 0.0 /*z-order*/)
+            rc.offerSurfaceDrawable(drawable, 0.0 /*z-order*/)
         } else if (this.ancestorTile != null) { // use the ancestor tile's texture, transformed to fill the tile sector
             this.ancestorTexCoordMatrix.set(this.ancestorTexture!!.texCoordTransform)
             this.ancestorTexCoordMatrix.multiplyByTileTransform(tile.sector, this.ancestorTile!!.sector)
-            val pool: Pool<DrawableSurfaceTexture> = dc.getDrawablePool(DrawableSurfaceTexture::class.java)
+            val pool: Pool<DrawableSurfaceTexture> = rc.getDrawablePool(DrawableSurfaceTexture::class.java)
             val drawable: Drawable = DrawableSurfaceTexture.obtain(pool)
                 .set(this.activeProgram, tile.sector, this.ancestorTexture, ancestorTexture?.texCoordTransform)
-            dc.offerSurfaceDrawable(drawable, 0.0 /*z-order*/)
+            rc.offerSurfaceDrawable(drawable, 0.0 /*z-order*/)
         }
     }
 
@@ -152,8 +151,6 @@ open class TiledImageLayer : AbstractLayer, TileFactory {
         val tile = ImageTile(sector, level, row, column)
         if (tileUrlFactory != null && this.imageFormat != null) {
             tile.imageSource = ImageSource.fromUrl(tileUrlFactory!!.urlForTile(tile, imageFormat))
-            Log.e("createTile" , "level > ${level?.levelNumber}  imagesource > ${tile.imageSource?.asUrl()}")
-
         }
         return tile
     }

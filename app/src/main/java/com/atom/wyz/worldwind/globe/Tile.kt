@@ -3,7 +3,7 @@ package com.atom.wyz.worldwind.globe
 import com.atom.wyz.worldwind.geom.BoundingBox
 import com.atom.wyz.worldwind.geom.Frustum
 import com.atom.wyz.worldwind.geom.Sector
-import com.atom.wyz.worldwind.DrawContext
+import com.atom.wyz.worldwind.RenderContext
 import com.atom.wyz.worldwind.util.Level
 import com.atom.wyz.worldwind.util.Logger
 import com.atom.wyz.worldwind.util.LruMemoryCache
@@ -139,12 +139,12 @@ open class Tile {
     /**
      * 指示此图块是否与指定的视锥相交。
      */
-    open fun intersectsFrustum(dc: DrawContext, frustum: Frustum?): Boolean {
+    open fun intersectsFrustum(rc: RenderContext, frustum: Frustum?): Boolean {
         if (frustum == null) {
             throw java.lang.IllegalArgumentException(
                     Logger.logMessage(Logger.ERROR, "Tile", "intersectsFrustum", "missingFrustum"))
         }
-        return this.getExtent(dc).intersectsFrustum(frustum);
+        return this.getExtent(rc).intersectsFrustum(frustum);
     }
 
     open fun intersectsSector(sector: Sector?): Boolean {
@@ -157,10 +157,10 @@ open class Tile {
     /**
      * 根据眼睛和图块的距离判断是否需要细分
      */
-    open fun mustSubdivide(dc: DrawContext, detailFactor: Double): Boolean {
-        val distance = getExtent(dc).distanceTo(dc.eyePoint) //获取此图块和眼睛的距离 笛卡尔
-        val texelSize: Double = level.texelHeight * dc.globe?.equatorialRadius!!
-        val pixelSize = dc.pixelSizeAtDistance(distance)
+    open fun mustSubdivide(rc: RenderContext, detailFactor: Double): Boolean {
+        val distance = getExtent(rc).distanceTo(rc.eyePoint) //获取此图块和眼睛的距离 笛卡尔
+        val texelSize: Double = level.texelHeight * rc.globe?.equatorialRadius!!
+        val pixelSize = rc.pixelSizeAtDistance(distance)
 
         return texelSize > pixelSize * detailFactor
     }
@@ -247,9 +247,9 @@ open class Tile {
     /**
      * 获取范围  获取该图块的 边界框
      */
-    protected open fun getExtent(dc: DrawContext): BoundingBox {
+    protected open fun getExtent(rc: RenderContext): BoundingBox {
         if (extent == null) {
-            extent = BoundingBox().setToSector(sector, dc.globe, 0.0, 0.0)
+            extent = BoundingBox().setToSector(sector, rc.globe, 0.0, 0.0)
         }
         return extent!!
     }

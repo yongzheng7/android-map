@@ -6,7 +6,6 @@ import com.atom.wyz.worldwind.geom.Color
 import com.atom.wyz.worldwind.geom.Matrix4
 import com.atom.wyz.worldwind.render.BasicProgram
 import com.atom.wyz.worldwind.util.pool.Pool
-import java.nio.Buffer
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
 import java.nio.FloatBuffer

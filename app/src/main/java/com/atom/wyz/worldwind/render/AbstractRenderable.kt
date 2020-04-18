@@ -1,6 +1,6 @@
 package com.atom.wyz.worldwind.render
 
-import com.atom.wyz.worldwind.DrawContext
+import com.atom.wyz.worldwind.RenderContext
 
 abstract class AbstractRenderable(displayer: String) : Renderable {
 
@@ -34,13 +34,13 @@ abstract class AbstractRenderable(displayer: String) : Renderable {
         return userProperties != null && userProperties!!.containsKey(key)
     }
 
-    override fun render(dc: DrawContext) {
+    override fun render(rc: RenderContext) {
         if (!enabled) {
             return
         }
 
-        this.doRender(dc)
+        this.doRender(rc)
     }
 
-    protected abstract fun doRender(dc: DrawContext)
+    protected abstract fun doRender(rc: RenderContext)
 }

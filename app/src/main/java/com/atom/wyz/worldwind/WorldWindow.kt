@@ -9,6 +9,8 @@ import android.opengl.GLSurfaceView
 import android.util.AttributeSet
 import android.view.MotionEvent
 import android.view.SurfaceHolder
+import com.atom.wyz.worldwind.draw.DrawableList
+import com.atom.wyz.worldwind.draw.DrawableQueue
 import com.atom.wyz.worldwind.frame.BasicFrameController
 import com.atom.wyz.worldwind.frame.FrameController
 import com.atom.wyz.worldwind.frame.FrameMetrics
@@ -51,11 +53,13 @@ class WorldWindow : GLSurfaceView, GLSurfaceView.Renderer, MessageListener {
 
     var viewport = Rect()
 
-    var gpuObjectCache: RenderResourceCache? = null
+    var renderResourceCache: RenderResourceCache? = null
 
-    var dc: DrawContext =
-        DrawContext()
+    var rc = RenderContext()
+    var dc = DrawContext()
+    var drawableQueue: DrawableQueue = DrawableQueue()
 
+    var drawableTerrain: DrawableList = DrawableList()
 
     constructor(context: Context) : super(context) {
         this.init(null)
@@ -82,7 +86,7 @@ class WorldWindow : GLSurfaceView, GLSurfaceView.Renderer, MessageListener {
         val am = this.context.getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
         val memoryClass = am.memoryClass as Int? ?: DEFAULT_MEMORY_CLASS // default to 16 MB class
         val gpuCacheSize = memoryClass / 2 * 1024 * 1024
-        gpuObjectCache = RenderResourceCache(gpuCacheSize)
+        renderResourceCache = RenderResourceCache(gpuCacheSize)
 
         this.setEGLConfigChooser(configChooser)
         this.setEGLContextClientVersion(2) // must be called before setRenderer
@@ -97,26 +101,10 @@ class WorldWindow : GLSurfaceView, GLSurfaceView.Renderer, MessageListener {
     }
 
     override fun surfaceDestroyed(holder: SurfaceHolder?) {
-        super.surfaceDestroyed(holder)
         WorldWind.messageService.removeListener(this)
+        super.surfaceDestroyed(holder)
     }
 
-    protected fun prepareToDrawFrame() {
-        this.dc.resources = this.context.resources
-        this.dc.globe = globe
-        this.dc.layers = layers
-        this.dc.verticalExaggeration = verticalExaggeration
-        this.dc.horizonDistance = globe.horizonDistance(dc.eyePosition.altitude)
-
-        this.dc.eyePosition.set(this.navigator.getLatitude(), this.navigator.getLongitude(), this.navigator.getAltitude())
-        this.dc.heading = this.navigator.getHeading()
-        this.dc.tilt = this.navigator.getTilt()
-        this.dc.roll = this.navigator.getRoll()
-        this.dc.fieldOfView = this.navigator.getFieldOfView()
-        this.dc.viewport = viewport
-        this.dc.renderResourceCache = gpuObjectCache
-        this.dc.renderResourceCache?.resources = this.context.resources
-    }
 
     @SuppressLint("ClickableViewAccessibility")
     override fun onTouchEvent(event: MotionEvent): Boolean {
@@ -126,20 +114,60 @@ class WorldWindow : GLSurfaceView, GLSurfaceView.Renderer, MessageListener {
     override fun onDrawFrame(gl: GL10?) {
         // 渲染数据
         frameMetrics.beginRendering()
-        prepareToDrawFrame() // 准备数据
-        frameController.renderFrame(dc) //渲染帧
+        prepareToRenderFrame() // 准备数据
+        frameController.renderFrame(rc) //渲染帧
         frameMetrics.endRendering()
 
+        if (rc.renderRequested) {
+            requestRender() // inherited from GLSurfaceView
+        }
+
+        this.prepareToDrawFrame()
+
+        rc.reset()
         //绘制数据
         frameMetrics.beginDrawing()
         frameController.drawFrame(dc) //绘制帧
-        gpuObjectCache?.releaseEvictedResources(dc)
+        renderResourceCache?.releaseEvictedResources(dc)
+        dc.reset()
         frameMetrics.endDrawing()
 
-        if (dc.renderRequested) {
-            requestRender()
-        }
-        dc.resetFrameProperties()
+        // Clear the drawables accumulated and processed during this frame.
+        drawableQueue.clearDrawables()
+        drawableTerrain.clearDrawables()
+    }
+
+    private fun prepareToDrawFrame() {
+        this.dc.viewport.set(rc.viewport)
+        this.dc.modelview.set(rc.modelview)
+        this.dc.projection.set(rc.projection)
+        this.dc.modelviewProjection.set(rc.modelviewProjection)
+        this.dc.screenProjection.set(rc.screenProjection)
+        this.dc.eyePoint.set(rc.eyePoint)
+        this.dc.drawableQueue = drawableQueue
+        this.dc.drawableTerrain = drawableTerrain
+    }
+
+    private fun prepareToRenderFrame() {
+        rc.globe = globe
+        rc.layers.addAllLayers(layers)
+        rc.verticalExaggeration = verticalExaggeration
+        rc.eyePosition.set(
+            this.navigator.getLatitude(),
+            this.navigator.getLongitude(),
+            this.navigator.getAltitude()
+        )
+        rc.heading = navigator.getHeading()
+        rc.tilt = navigator.getTilt()
+        rc.roll = navigator.getRoll()
+        rc.fieldOfView = navigator.getFieldOfView()
+        rc.horizonDistance = globe.horizonDistance(rc.eyePosition.altitude)
+        rc.viewport.set(viewport)
+        rc.renderResourceCache = this.renderResourceCache
+        rc.renderResourceCache?.resources = (this.context.resources)
+        rc.resources = this.context.resources
+        rc.drawableQueue = drawableQueue
+        rc.drawableTerrain = drawableTerrain
     }
 
     override fun onSurfaceChanged(gl: GL10?, width: Int, height: Int) {
@@ -162,7 +190,7 @@ class WorldWindow : GLSurfaceView, GLSurfaceView.Renderer, MessageListener {
         GLES20.glEnableVertexAttribArray(0)
 
         this.dc.contextLost()
-        this.gpuObjectCache?.contextLost(this.dc);
+        this.renderResourceCache?.clear();
     }
 
     /**
@@ -198,7 +226,8 @@ class WorldWindow : GLSurfaceView, GLSurfaceView.Renderer, MessageListener {
     fun addGestureRecognizer(recognizer: GestureRecognizer?) {
         if (recognizer == null) {
             throw IllegalArgumentException(
-                    Logger.logMessage(Logger.ERROR, "WorldWindow", "addGestureRecognizer", "missingRecognizer"))
+                Logger.logMessage(Logger.ERROR, "WorldWindow", "addGestureRecognizer", "missingRecognizer")
+            )
         }
         gestureGroup.addRecognizer(recognizer)
     }
@@ -206,7 +235,8 @@ class WorldWindow : GLSurfaceView, GLSurfaceView.Renderer, MessageListener {
     fun removeGestureRecognizer(recognizer: GestureRecognizer?) {
         if (recognizer == null) {
             throw IllegalArgumentException(
-                    Logger.logMessage(Logger.ERROR, "WorldWindow", "removeGestureRecognizer", "missingRecognizer"))
+                Logger.logMessage(Logger.ERROR, "WorldWindow", "removeGestureRecognizer", "missingRecognizer")
+            )
         }
         gestureGroup.removeRecognizer(recognizer)
     }

@@ -54,10 +54,9 @@ class RenderResourceCache : LruMemoryCache<Any, RenderResource> {
     constructor(capacity: Int) : super(capacity)
 
 
-    fun contextLost(dc: DrawContext) {
+    override fun clear() {
         entries.clear() // the cache entries are invalid; clear but don't call entryRemoved
         evictionQueue.clear() // the eviction queue no longer needs to be processed
-        pendingQueue.clear()
         usedCapacity = 0
     }
 

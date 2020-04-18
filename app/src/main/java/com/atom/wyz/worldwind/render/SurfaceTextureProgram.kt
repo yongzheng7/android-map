@@ -3,13 +3,12 @@ package com.atom.wyz.worldwind.render
 import android.content.res.Resources
 import android.opengl.GLES20
 import com.atom.wyz.worldwind.DrawContext
+import com.atom.wyz.worldwind.RenderContext
 import com.atom.wyz.worldwind.R
 import com.atom.wyz.worldwind.geom.Matrix3
 import com.atom.wyz.worldwind.geom.Matrix4
-import com.atom.wyz.worldwind.globe.Terrain
 import com.atom.wyz.worldwind.util.Logger
 import com.atom.wyz.worldwind.util.WWUtil
-import java.util.*
 
 class SurfaceTextureProgram(resources: Resources) : GpuProgram() {
     companion object {
@@ -31,8 +30,6 @@ class SurfaceTextureProgram(resources: Resources) : GpuProgram() {
     private var mvpMatrixArray = FloatArray(16)
 
     private var texCoordMatrixArray = FloatArray(9 * 2)
-
-    val surfaceTextures = ArrayList<SurfaceTexture>()
 
     init {
         try {
@@ -61,12 +58,6 @@ class SurfaceTextureProgram(resources: Resources) : GpuProgram() {
 
         texSamplerId = GLES20.glGetUniformLocation(programId, "texSampler")
         GLES20.glUniform1i(texSamplerId, 0) // GL_TEXTURE0
-    }
-
-    fun addSurfaceTexture(surfaceTexture: SurfaceTexture?) {
-        if (surfaceTexture != null) {
-            surfaceTextures.add(surfaceTexture)
-        }
     }
 
 

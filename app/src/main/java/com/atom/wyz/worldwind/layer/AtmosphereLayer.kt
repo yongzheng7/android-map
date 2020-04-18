@@ -1,6 +1,6 @@
 package com.atom.wyz.worldwind.layer
 
-import com.atom.wyz.worldwind.DrawContext
+import com.atom.wyz.worldwind.RenderContext
 import com.atom.wyz.worldwind.R
 import com.atom.wyz.worldwind.draw.DrawableGroundAtmosphere
 import com.atom.wyz.worldwind.draw.DrawableSkyAtmosphere
@@ -57,65 +57,65 @@ class AtmosphereLayer : AbstractLayer {
         nightImageSource = ImageSource.fromResource(R.drawable.gov_nasa_worldwind_night)
     }
 
-    override fun doRender(dc: DrawContext) {
-        determineLightDirection(dc)
-        drawSky(dc)
-        drawGround(dc)
+    override fun doRender(rc: RenderContext) {
+        determineLightDirection(rc)
+        drawSky(rc)
+        drawGround(rc)
     }
 
-    protected fun determineLightDirection(dc: DrawContext) {
+    protected fun determineLightDirection(rc: RenderContext) {
         if (lightLocation != null) {
-            dc.globe!!.geographicToCartesianNormal(
+            rc.globe!!.geographicToCartesianNormal(
                 lightLocation!!.latitude,
                 lightLocation!!.longitude,
                 activeLightDirection
             )
         } else {
-            dc.globe!!.geographicToCartesianNormal(
-                dc.eyePosition.latitude,
-                dc.eyePosition.longitude,
+            rc.globe!!.geographicToCartesianNormal(
+                rc.eyePosition.latitude,
+                rc.eyePosition.longitude,
                 activeLightDirection
             )
         }
     }
 
-    protected fun drawGround(dc: DrawContext) {
-        val terrain = dc.terrain?.apply {
+    protected fun drawGround(rc: RenderContext) {
+        val terrain = rc.terrain?.apply {
             if (this.sector.isEmpty()) {
                 return  // no terrain surface to render on
             }
         } ?: return
 
-        val drawable = DrawableGroundAtmosphere.obtain(dc.getDrawablePool(DrawableGroundAtmosphere::class.java))
+        val drawable = DrawableGroundAtmosphere.obtain(rc.getDrawablePool(DrawableGroundAtmosphere::class.java))
 
-        drawable.program = dc.getProgram(GroundProgram.KEY) as GroundProgram?
+        drawable.program = rc.getProgram(GroundProgram.KEY) as GroundProgram?
         if (drawable.program == null) {
-            drawable.program = dc.putProgram(GroundProgram.KEY, GroundProgram(dc.resources!!)) as GroundProgram
+            drawable.program = rc.putProgram(GroundProgram.KEY, GroundProgram(rc.resources!!)) as GroundProgram
         }
         drawable.lightDirection.set(activeLightDirection)
-        drawable.globeRadius = dc.globe!!.equatorialRadius
+        drawable.globeRadius = rc.globe!!.equatorialRadius
 
         if (nightImageSource != null && lightLocation != null) {
-            drawable.nightTexture = dc.getTexture(nightImageSource!!)
+            drawable.nightTexture = rc.getTexture(nightImageSource!!)
             if (drawable.nightTexture == null) {
-                drawable.nightTexture = dc.retrieveTexture(nightImageSource)
+                drawable.nightTexture = rc.retrieveTexture(nightImageSource)
             }
         } else {
             drawable.nightTexture = null
         }
 
-        dc.offerSurfaceDrawable(drawable, Double.POSITIVE_INFINITY)
+        rc.offerSurfaceDrawable(drawable, Double.POSITIVE_INFINITY)
     }
 
-    protected fun drawSky(dc: DrawContext) {
-        val drawable = DrawableSkyAtmosphere.obtain(dc.getDrawablePool(DrawableSkyAtmosphere::class.java))
+    protected fun drawSky(rc: RenderContext) {
+        val drawable = DrawableSkyAtmosphere.obtain(rc.getDrawablePool(DrawableSkyAtmosphere::class.java))
 
-        drawable.program = dc.getProgram(SkyProgram.KEY) as SkyProgram?
+        drawable.program = rc.getProgram(SkyProgram.KEY) as SkyProgram?
         if (drawable.program == null) {
-            drawable.program = dc.putProgram(SkyProgram.KEY, SkyProgram(dc.resources!!)) as SkyProgram
+            drawable.program = rc.putProgram(SkyProgram.KEY, SkyProgram(rc.resources!!)) as SkyProgram
         }
         drawable.lightDirection.set(activeLightDirection)
-        drawable.globeRadius = dc.globe!!.equatorialRadius
+        drawable.globeRadius = rc.globe!!.equatorialRadius
 
         val size = 128
         if (drawable.vertexPoints == null) {
@@ -125,7 +125,7 @@ class AtmosphereLayer : AbstractLayer {
                 Arrays.fill(array, it.altitude)
             }
             drawable.vertexPoints = ByteBuffer.allocateDirect(count * 12).order(ByteOrder.nativeOrder()).asFloatBuffer()
-            dc.globe!!.geographicToCartesianGrid(
+            rc.globe!!.geographicToCartesianGrid(
                 fullSphereSector,
                 size,
                 size,
@@ -140,6 +140,6 @@ class AtmosphereLayer : AbstractLayer {
             drawable.triStripElements = AtmosphereLayer.assembleTriStripElements(size, size)
         }
 
-        dc.offerSurfaceDrawable(drawable, Double.POSITIVE_INFINITY)
+        rc.offerSurfaceDrawable(drawable, Double.POSITIVE_INFINITY)
     }
 }

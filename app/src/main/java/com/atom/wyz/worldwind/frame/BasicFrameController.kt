@@ -2,11 +2,11 @@ package com.atom.wyz.worldwind.frame
 
 import android.opengl.GLES20
 import com.atom.wyz.worldwind.DrawContext
+import com.atom.wyz.worldwind.RenderContext
 import com.atom.wyz.worldwind.WorldWind
 import com.atom.wyz.worldwind.draw.Drawable
 import com.atom.wyz.worldwind.geom.Camera
 import com.atom.wyz.worldwind.geom.Matrix4
-import com.atom.wyz.worldwind.globe.Tessellator
 import com.atom.wyz.worldwind.layer.LayerList
 import com.atom.wyz.worldwind.util.Logger
 
@@ -41,18 +41,18 @@ class BasicFrameController : FrameController {
         }
     }
 
-    override fun renderFrame(dc: DrawContext) {
-        createViewingState(dc)
-        createTerrain(dc)
-        renderLayers(dc)
+    override fun renderFrame(rc: RenderContext) {
+        createViewingState(rc)
+        createTerrain(rc)
+        renderLayers(rc)
     }
 
-    protected fun renderLayers(dc: DrawContext) {
-        val layers: LayerList = dc.layers
+    protected fun renderLayers(rc: RenderContext) {
+        val layers: LayerList = rc.layers
         for (layer in layers) {
-            dc.currentLayer = layer
+            rc.currentLayer = layer
             try {
-                dc.currentLayer?.render(dc)
+                rc.currentLayer?.render(rc)
             } catch (e: java.lang.Exception) {
                 Logger.logMessage(
                     Logger.ERROR,
@@ -63,42 +63,42 @@ class BasicFrameController : FrameController {
                 )
             }
         }
-        dc.currentLayer = null
+        rc.currentLayer = null
     }
 
-    protected fun createTerrain(dc: DrawContext) {
-        dc.globe?.tessellator?.tessellate(dc)
+    protected fun createTerrain(rc: RenderContext) {
+        rc.globe?.tessellator?.tessellate(rc)
     }
 
-    protected fun createViewingState(dc: DrawContext) {
+    protected fun createViewingState(rc: RenderContext) {
 
-        val near = dc.eyePosition.altitude * 0.75
-        val far = dc.globe!!.horizonDistance(dc.eyePosition.altitude, 160000.0)
+        val near = rc.eyePosition.altitude * 0.75
+        val far = rc.globe!!.horizonDistance(rc.eyePosition.altitude, 160000.0)
         // 获取相机的动作
         this.camera.set(
-            dc.eyePosition.latitude, dc.eyePosition.longitude, dc.eyePosition.altitude,
-            WorldWind.ABSOLUTE, dc.heading, dc.tilt, dc.roll
+            rc.eyePosition.latitude, rc.eyePosition.longitude, rc.eyePosition.altitude,
+            WorldWind.ABSOLUTE, rc.heading, rc.tilt, rc.roll
         )
         // 相机和地球 变换为地球的笛卡尔变换矩阵 ，旋转 远近位移等操作
-        dc.globe!!.cameraToCartesianTransform(camera, dc.modelview)!!.invertOrthonormal()
+        rc.globe!!.cameraToCartesianTransform(camera, rc.modelview)!!.invertOrthonormal()
         // 通过该矩阵获取眼睛的笛卡尔位置
-        dc.modelview.extractEyePoint(dc.eyePoint)
+        rc.modelview.extractEyePoint(rc.eyePoint)
         // 创建投影空间
-        dc.projection.setToPerspectiveProjection(
-            dc.viewport.width().toDouble(),
-            dc.viewport.height().toDouble(),
-            dc.fieldOfView,
+        rc.projection.setToPerspectiveProjection(
+            rc.viewport.width().toDouble(),
+            rc.viewport.height().toDouble(),
+            rc.fieldOfView,
             near,
             far
         )
         // 将变换和投影空间合并
-        dc.modelviewProjection.setToMultiply(dc.projection, dc.modelview)
+        rc.modelviewProjection.setToMultiply(rc.projection, rc.modelview)
         // 屏幕投影
-        dc.screenProjection.setToScreenProjection(dc.viewport.width().toDouble(), dc.viewport.height().toDouble())
+        rc.screenProjection.setToScreenProjection(rc.viewport.width().toDouble(), rc.viewport.height().toDouble())
         // 投影空间设置
-        dc.frustum.setToProjectionMatrix(dc.projection)
-        dc.frustum.transformByMatrix(this.matrix.transposeMatrix(dc.modelview))
-        dc.frustum.normalize()
+        rc.frustum.setToProjectionMatrix(rc.projection)
+        rc.frustum.transformByMatrix(this.matrix.transposeMatrix(rc.modelview))
+        rc.frustum.normalize()
     }
 
 

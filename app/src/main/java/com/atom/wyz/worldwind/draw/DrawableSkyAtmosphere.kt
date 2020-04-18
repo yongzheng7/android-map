@@ -2,16 +2,12 @@ package com.atom.wyz.worldwind.draw
 
 import android.opengl.GLES20
 import com.atom.wyz.worldwind.DrawContext
-import com.atom.wyz.worldwind.geom.Sector
 import com.atom.wyz.worldwind.geom.Vec3
 import com.atom.wyz.worldwind.render.AtmosphereProgram
 import com.atom.wyz.worldwind.render.SkyProgram
 import com.atom.wyz.worldwind.util.pool.Pool
-import java.nio.ByteBuffer
-import java.nio.ByteOrder
 import java.nio.FloatBuffer
 import java.nio.ShortBuffer
-import java.util.*
 
 class DrawableSkyAtmosphere : Drawable {
     companion object {

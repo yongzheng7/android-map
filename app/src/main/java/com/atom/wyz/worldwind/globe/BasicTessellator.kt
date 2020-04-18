@@ -1,8 +1,8 @@
 package com.atom.wyz.worldwind.globe
 
-import com.atom.wyz.worldwind.DrawContext
+import com.atom.wyz.worldwind.RenderContext
+import com.atom.wyz.worldwind.draw.BasicDrawableTerrain
 import com.atom.wyz.worldwind.geom.Sector
-import com.atom.wyz.worldwind.geom.Vec3
 import com.atom.wyz.worldwind.util.Level
 import com.atom.wyz.worldwind.util.LevelSet
 import com.atom.wyz.worldwind.util.Logger
@@ -61,8 +61,8 @@ class BasicTessellator : Tessellator, TileFactory {
     /**
      * 获取棋盘地形
      */
-    override fun tessellate(dc: DrawContext) {
-        this.assembleTiles(dc)
+    override fun tessellate(rc: RenderContext) {
+        this.assembleTiles(rc)
     }
 
     /**
@@ -90,7 +90,7 @@ class BasicTessellator : Tessellator, TileFactory {
      * 2 判断顶层瓦片集合是否为空 （若为空开始组装顶层瓦片）
      * 3 迭代顶层瓦片，并逐层迭代知道最低曾瓦片位置
      */
-    protected fun assembleTiles(dc: DrawContext) {
+    protected fun assembleTiles(rc: RenderContext) {
         // 地形清除瓦片
         currentTerrain.clearTiles() // 1
 
@@ -98,9 +98,9 @@ class BasicTessellator : Tessellator, TileFactory {
             createTopLevelTiles()
         }
         for (tile in topLevelTiles) {
-            addTileOrDescendants(dc, tile as TerrainTile)
+            addTileOrDescendants(rc, tile as TerrainTile)
         }
-        dc.terrain = currentTerrain
+        rc.terrain = currentTerrain
     }
 
     protected fun createTopLevelTiles() {
@@ -113,29 +113,25 @@ class BasicTessellator : Tessellator, TileFactory {
      *  判断是否在视锥体内
      *  判断是否是最底层瓦片和是否需要细分（若需要则开始细分）并将瓦片加到地形中
      */
-    protected fun addTileOrDescendants(dc: DrawContext, tile: TerrainTile) {
-        if (!tile.intersectsFrustum(dc, dc.frustum)) {
+    protected fun addTileOrDescendants(rc: RenderContext, tile: TerrainTile) {
+        if (!tile.intersectsFrustum(rc, rc.frustum)) {
             return
         }
-        if (tile.level.isLastLevel() || !tile.mustSubdivide(dc, detailControl)) {
-            addTile(dc, tile)
+        if (tile.level.isLastLevel() || !tile.mustSubdivide(rc, detailControl)) {
+            addTile(rc, tile)
             return  // 如果不需要细分，请使用图块
         }
         for (child in tile.subdivideToCache(this, tileCache, 4)!!) { // each tile has a cached size of 1每个图块的缓存大小为1
-            addTileOrDescendants(dc, child as TerrainTile) // 递归处理磁贴的子代
+            addTileOrDescendants(rc, child as TerrainTile) // 递归处理磁贴的子代
         }
     }
 
-    fun mustAssembleVertexPoints(dc: DrawContext, tile: TerrainTile): Boolean {
-        return tile.vertexPoints == null
-    }
-
-    protected fun addTile(dc: DrawContext, tile: TerrainTile) {
+    protected fun addTile(rc: RenderContext, tile: TerrainTile) {
         val numLat = levelSet.tileHeight
         val numLon = levelSet.tileWidth
 
-        if (this.mustAssembleVertexPoints(dc, tile)) {
-            this.assembleVertexPoints(dc, tile)
+        if (tile.vertexPoints == null) {
+            this.assembleVertexPoints(rc, tile)
         }
         // Assemble the shared vertex tex coord buffer.
         if (tileVertexTexCoords == null) {
@@ -156,7 +152,8 @@ class BasicTessellator : Tessellator, TileFactory {
         }
         currentTerrain.addTile(tile) //只添加最后等级的图块 或者 无需再次细分的图块
 
-        val pool: Pool<BasicDrawableTerrain> = dc.getDrawablePool(BasicDrawableTerrain::class.java)
+        val pool: Pool<BasicDrawableTerrain> = rc.getDrawablePool(
+            BasicDrawableTerrain::class.java)
         val drawable: BasicDrawableTerrain = BasicDrawableTerrain.obtain(pool)
         drawable.sector.set(tile.sector)
         drawable.vertexOrigin.set(tile.vertexOrigin)
@@ -164,10 +161,10 @@ class BasicTessellator : Tessellator, TileFactory {
         drawable.vertexTexCoords = tileVertexTexCoords
         drawable.triStripElements = tileTriStripElements
         drawable.lineElements = tileLineElements
-        dc.offerDrawableTerrain(drawable)
+        rc.offerDrawableTerrain(drawable)
     }
 
-    protected fun assembleVertexPoints(dc: DrawContext, tile: TerrainTile) {
+    protected fun assembleVertexPoints(dc: RenderContext, tile: TerrainTile) {
         val globe = dc.globe ?: return
 
         val numLat = tile.level.tileWidth

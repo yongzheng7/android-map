@@ -38,9 +38,8 @@ class PlacemarksStressTestActivity : BasicWorldWindActivity() , Runnable {
 
         // Add a Renderable layer for the placemarks before the Atmosphere layer
         val layers: LayerList = getWorldWindow().layers
-        val index: Int = layers.indexOfLayerNamed("Atmosphere")
         val placemarksLayer: RenderableLayer = RenderableLayer("Placemarks")
-        getWorldWindow().layers.addLayer(index, placemarksLayer)
+        getWorldWindow().layers.addLayer(placemarksLayer)
 
         // Create some placemarks at a known locations
         var withImageAndLabel = PlacemarkAttributes.withImageAndLabel(ImageSource.fromResource(R.drawable.air_fixwing))

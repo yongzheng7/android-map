@@ -8,7 +8,6 @@ import com.atom.wyz.worldwind.render.GpuTexture
 import com.atom.wyz.worldwind.render.SurfaceTexture
 import com.atom.wyz.worldwind.render.SurfaceTextureProgram
 import com.atom.wyz.worldwind.util.pool.Pool
-import java.util.*
 
 class DrawableSurfaceTexture : Drawable, SurfaceTexture {
     companion object {
@@ -73,20 +72,23 @@ class DrawableSurfaceTexture : Drawable, SurfaceTexture {
             return  // program failed to build
         }
 
+
+        val scratchList = dc.scratchList()
+
         try {
-            program.addSurfaceTexture(this)
+
+            scratchList.add(this)
 
             var next: Drawable?
             while (dc.peekDrawable().also { next = it } != null
                 && this.canBatchWith(next!!)) {
-                program.addSurfaceTexture(dc.pollDrawable() as SurfaceTexture?) // take it off the queue
+                scratchList.add(dc.pollDrawable() as SurfaceTexture?) // take it off the queue
             }
             // Draw the accumulated  surface textures.
             this.drawSurfaceTextures(dc)
 
         } finally {
-            // Clear the program's accumulated surface textures.
-            this.program!!.surfaceTextures.clear()
+            scratchList.clear()
         }
     }
 
@@ -97,6 +99,8 @@ class DrawableSurfaceTexture : Drawable, SurfaceTexture {
 
         dc.activeTextureUnit(GLES20.GL_TEXTURE0)
 
+        val scratchList = dc.scratchList()
+
         for (idx in 0 until dc.getDrawableTerrainCount()) {
             // Get the drawable terrain associated with the draw context.
             val terrain = dc.getDrawableTerrain(idx) ?: continue
@@ -106,9 +110,9 @@ class DrawableSurfaceTexture : Drawable, SurfaceTexture {
             val terrainOrigin = terrain.vertexOrigin
             var usingTerrainAttrs = false
 
-            for (i in 0 until program.surfaceTextures.size) {
+            for (i in 0 until scratchList.size) {
                 // Get the surface texture and its sector.
-                val texture = program.surfaceTextures.get(i)
+                val texture = scratchList.get(i) as SurfaceTexture? ?:continue
                 val textureSector = texture.sector
 
                 if (!textureSector.intersects(terrainSector)) {

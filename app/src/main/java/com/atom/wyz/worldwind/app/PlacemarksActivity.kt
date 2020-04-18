@@ -26,11 +26,10 @@ class PlacemarksActivity : BasicWorldWindActivity() , Runnable {
 
         val layers: LayerList = getWorldWindow().layers
         layers.addLayer(ShowTessellationLayer())
-        
-        val index: Int = layers.indexOfLayerNamed("Atmosphere")
+
 
         val placemarksLayer = RenderableLayer("Placemarks")
-        getWorldWindow().layers.addLayer(index, placemarksLayer)
+        getWorldWindow().layers.addLayer(placemarksLayer)
 
         // Create some placemarks at a known locations
         val origin: Placemark = Placemark(Position.fromDegrees(0.0, 0.0, 0.0))

@@ -1,6 +1,6 @@
 package com.atom.wyz.worldwind.layer
 
-import com.atom.wyz.worldwind.DrawContext
+import com.atom.wyz.worldwind.RenderContext
 import com.atom.wyz.worldwind.render.Renderable
 import com.atom.wyz.worldwind.util.Logger
 
@@ -143,10 +143,10 @@ open class RenderableLayer(displayName: String) : AbstractLayer(displayName), It
         renderables.clear()
     }
 
-    override fun doRender(dc: DrawContext) {
+    override fun doRender(rc: RenderContext) {
         for (renderable in renderables) {
             try {
-                renderable.render(dc)
+                renderable.render(rc)
             } catch (e: Exception) {
                 Logger.logMessage(Logger.ERROR, "RenderableLayer", "doRender",
                         "Exception while rendering shape \'" + renderable.displayName + "\'", e)

@@ -98,7 +98,7 @@ open class LruMemoryCache<K, V> {
         return entries.containsKey(key)
     }
 
-    fun clear() {
+    open fun clear() {
         for (entry in entries.values) {
             entryRemoved(entry)
         }

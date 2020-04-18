@@ -1,10 +1,10 @@
 package com.atom.wyz.worldwind.render
 
 import android.graphics.Rect
-import com.atom.wyz.worldwind.DrawContext
+import com.atom.wyz.worldwind.RenderContext
 import com.atom.wyz.worldwind.WorldWind
 import com.atom.wyz.worldwind.draw.DrawableLines
-import com.atom.wyz.worldwind.draw.DrawableQuad
+import com.atom.wyz.worldwind.draw.DrawableScreenTexture
 import com.atom.wyz.worldwind.geom.*
 import com.atom.wyz.worldwind.shape.PlacemarkAttributes
 import com.atom.wyz.worldwind.util.Logger
@@ -38,8 +38,8 @@ open class Placemark : AbstractRenderable {
         private val screenPlacePoint = Vec3()
         private var groundPoint = Vec3()
         private val offset: Vec2 = Vec2()
-        private val unitQuadBounds = Rect()
-        private val unitQuadTransform: Matrix4 = Matrix4()
+        private val screenBounds = Rect()
+        private val unitSquareTransform: Matrix4 = Matrix4()
     }
 
     var position: Position?
@@ -117,7 +117,7 @@ open class Placemark : AbstractRenderable {
 
     }
 
-    protected open fun determineActiveAttributes(dc: DrawContext) {
+    protected open fun determineActiveAttributes(dc: RenderContext) {
         if (highlighted && highlightAttributes != null) {
             activeAttributes = highlightAttributes
         } else {
@@ -125,47 +125,47 @@ open class Placemark : AbstractRenderable {
         }
     }
 
-    override fun doRender(dc: DrawContext) {
-        determineActiveAttributes(dc)
+    override fun doRender(rc: RenderContext) {
+        determineActiveAttributes(rc)
 
         val position = this.position ?: return
-        val globe = dc.globe ?: return
+        val globe = rc.globe ?: return
 
         globe.geographicToCartesian(position.latitude, position.longitude, position.altitude, placePoint)
 
-        eyeDistance = dc.eyePoint.distanceTo(placePoint)
+        eyeDistance = rc.eyePoint.distanceTo(placePoint)
 
         var depthOffset = 0.0
-        if (eyeDistance < dc.horizonDistance) {
+        if (eyeDistance < rc.horizonDistance) {
             depthOffset = DEFAULT_DEPTH_OFFSET
         }
 
-        if (!dc.projectWithDepth(placePoint, depthOffset, screenPlacePoint)) {
+        if (!rc.projectWithDepth(placePoint, depthOffset, screenPlacePoint)) {
             return
         }
-        if (mustDrawLeaderLine(dc)) {
+        if (mustDrawLeaderLine(rc)) {
             groundPoint = globe.geographicToCartesian(
                 position.latitude,
                 position.longitude,
                 0.0,
                 groundPoint
             )
-            if (dc.frustum.intersectsSegment(groundPoint, placePoint)) {
-                val pool: Pool<DrawableLines> = dc.getDrawablePool(DrawableLines::class.java)
+            if (rc.frustum.intersectsSegment(groundPoint, placePoint)) {
+                val pool: Pool<DrawableLines> = rc.getDrawablePool(DrawableLines::class.java)
                 val drawable = DrawableLines.obtain(pool)
-                prepareDrawableLeader(dc, drawable)
-                dc.offerShapeDrawable(drawable, eyeDistance)
+                prepareDrawableLeader(rc, drawable)
+                rc.offerShapeDrawable(drawable, eyeDistance)
             }
         }
-        this.determineActiveTexture(dc)
+        this.determineActiveTexture(rc)
 
-        val iconBounds: Rect = WWMath.boundingRectForUnitSquare(unitQuadTransform, unitQuadBounds) // TODO allocation
+        val iconBounds: Rect = WWMath.boundingRectForUnitSquare(unitSquareTransform, screenBounds) // TODO allocation
 
-        if (Rect.intersects(iconBounds, dc.viewport)) {
-            val pool: Pool<DrawableQuad> = dc.getDrawablePool(DrawableQuad::class.java)
-            val drawable: DrawableQuad = DrawableQuad.obtain(pool)
-            prepareDrawableIcon(dc, drawable)
-            dc.offerShapeDrawable(drawable, eyeDistance)
+        if (Rect.intersects(iconBounds, rc.viewport)) {
+            val pool: Pool<DrawableScreenTexture> = rc.getDrawablePool(DrawableScreenTexture::class.java)
+            val drawable: DrawableScreenTexture = DrawableScreenTexture.obtain(pool)
+            prepareDrawableIcon(rc, drawable)
+            rc.offerShapeDrawable(drawable, eyeDistance)
         }
 
         activeTexture = null
@@ -174,34 +174,34 @@ open class Placemark : AbstractRenderable {
     }
 
     protected open fun prepareDrawableIcon(
-        dc: DrawContext,
-        drawable: DrawableQuad
+        rc: RenderContext,
+        drawable: DrawableScreenTexture
     ) {
         val activeAttributes = this.activeAttributes ?: return
 
-        drawable.program = dc.getProgram(BasicProgram.KEY) as BasicProgram?
+        drawable.program = rc.getProgram(BasicProgram.KEY) as BasicProgram?
         if (drawable.program == null) {
-            drawable.program = dc.putProgram(BasicProgram.KEY, BasicProgram(dc.resources!!)) as BasicProgram
+            drawable.program = rc.putProgram(BasicProgram.KEY, BasicProgram(rc.resources!!)) as BasicProgram
         }
 
-        drawable.mvpMatrix.setToMultiply(dc.screenProjection, unitQuadTransform)
 
+        drawable.unitSquareTransform.set(unitSquareTransform)
         drawable.color.set(activeAttributes.imageColor!!)
         drawable.enableDepthTest = activeAttributes.depthTest
         drawable.texture = activeTexture
     }
 
     protected open fun prepareDrawableLeader(
-        dc: DrawContext,
+        rc: RenderContext,
         drawable: DrawableLines
     ) {
 
         val activeAttributes = this.activeAttributes ?: return
 
         // Use the basic GLSL program to draw the placemark's leader line.
-        drawable.program = dc.getProgram(BasicProgram.KEY) as BasicProgram?
+        drawable.program = rc.getProgram(BasicProgram.KEY) as BasicProgram?
         if (drawable.program == null) {
-            drawable.program = dc.putProgram(BasicProgram.KEY, BasicProgram(dc.resources!!)) as BasicProgram
+            drawable.program = rc.putProgram(BasicProgram.KEY, BasicProgram(rc.resources!!)) as BasicProgram
         }
 
         drawable.vertexPoints[0] = 0f // groundPoint.x - groundPoint.x
@@ -212,7 +212,7 @@ open class Placemark : AbstractRenderable {
         drawable.vertexPoints[4] = (placePoint.y - groundPoint.y).toFloat()
         drawable.vertexPoints[5] = (placePoint.z - groundPoint.z).toFloat()
 
-        drawable.mvpMatrix.set(dc.modelviewProjection)
+        drawable.mvpMatrix.set(rc.modelviewProjection)
         drawable.mvpMatrix.multiplyByTranslation(groundPoint.x, groundPoint.y, groundPoint.z)
 
         drawable.color.set(activeAttributes.leaderLineAttributes!!.outlineColor!!)
@@ -221,20 +221,20 @@ open class Placemark : AbstractRenderable {
 
     }
 
-    protected open fun mustDrawLeaderLine(dc: DrawContext): Boolean {
+    protected open fun mustDrawLeaderLine(dc: RenderContext): Boolean {
         return (activeAttributes!!.drawLeaderLine && activeAttributes!!.leaderLineAttributes != null && (enableLeaderLinePicking || !dc.pickingMode))
     }
 
-    protected open fun mustDrawLabel(dc: DrawContext?): Boolean {
+    protected open fun mustDrawLabel(rc: RenderContext): Boolean {
         return (label != null && !label!!.isEmpty() && activeAttributes!!.labelAttributes != null)
     }
 
-    protected open fun determineActiveTexture(dc: DrawContext) {
+    protected open fun determineActiveTexture(rc: RenderContext) {
         val activeAttributes = this.activeAttributes ?: return
         if (activeAttributes.imageSource != null) {
-            activeTexture = dc.getTexture(activeAttributes.imageSource!!) // try to get the texture from the cache
+            activeTexture = rc.getTexture(activeAttributes.imageSource!!) // try to get the texture from the cache
             if (activeTexture == null) {
-                activeTexture = dc.retrieveTexture(activeAttributes.imageSource) // puts retrieved textures in the cache
+                activeTexture = rc.retrieveTexture(activeAttributes.imageSource) // puts retrieved textures in the cache
             }
         } else {
             activeTexture = null // there is no imageSource; draw a simple colored square
@@ -246,7 +246,7 @@ open class Placemark : AbstractRenderable {
             max = 1.0
         ) else 1.0
 
-        unitQuadTransform.setToIdentity()
+        unitSquareTransform.setToIdentity()
 
         if (activeTexture != null) {
             val activeTexture = this.activeTexture!!
@@ -255,33 +255,33 @@ open class Placemark : AbstractRenderable {
             val s = activeAttributes.imageScale * visibilityScale
             val offset =
                 activeAttributes.imageOffset!!.offsetForSize(w.toDouble(), h.toDouble(), offset) // TODO allocation
-            unitQuadTransform.multiplyByTranslation(
+            unitSquareTransform.multiplyByTranslation(
                 screenPlacePoint.x - offset.x * s,
                 screenPlacePoint.y - offset.y * s,
                 screenPlacePoint.z
             )
-            unitQuadTransform.multiplyByScale(w * s, h * s, 1.0)
+            unitSquareTransform.multiplyByScale(w * s, h * s, 1.0)
         } else {
             val size = activeAttributes.imageScale * visibilityScale
             val offset = activeAttributes.imageOffset!!.offsetForSize(size, size, offset) // TODO allocation
-            unitQuadTransform.multiplyByTranslation(
+            unitSquareTransform.multiplyByTranslation(
                 screenPlacePoint.x - offset.x,
                 screenPlacePoint.y - offset.y,
                 screenPlacePoint.z
             )
-            unitQuadTransform.multiplyByScale(size, size, 1.0)
+            unitSquareTransform.multiplyByScale(size, size, 1.0)
         }
         if (imageRotation != 0.0) {
             val rotation =
-                if (imageRotationReference == WorldWind.RELATIVE_TO_GLOBE) dc.heading - imageRotation else -imageRotation
-            unitQuadTransform.multiplyByTranslation(0.5, 0.5, 0.0)
-            unitQuadTransform.multiplyByRotation(0.0, 0.0, 1.0, rotation)
-            unitQuadTransform.multiplyByTranslation(-0.5, -0.5, 0.0)
+                if (imageRotationReference == WorldWind.RELATIVE_TO_GLOBE) rc.heading - imageRotation else -imageRotation
+            unitSquareTransform.multiplyByTranslation(0.5, 0.5, 0.0)
+            unitSquareTransform.multiplyByRotation(0.0, 0.0, 1.0, rotation)
+            unitSquareTransform.multiplyByTranslation(-0.5, -0.5, 0.0)
         }
         if (imageTilt != 0.0) {
             val tilt =
-                if (imageTiltReference == WorldWind.RELATIVE_TO_GLOBE) dc.tilt + imageTilt else imageTilt
-            unitQuadTransform.multiplyByRotation(-1.0, 0.0, 0.0, tilt)
+                if (imageTiltReference == WorldWind.RELATIVE_TO_GLOBE) rc.tilt + imageTilt else imageTilt
+            unitSquareTransform.multiplyByRotation(-1.0, 0.0, 0.0, tilt)
         }
     }
 }

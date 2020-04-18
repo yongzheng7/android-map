@@ -3,10 +3,10 @@ package com.atom.wyz.worldwind.render
 import android.opengl.GLES20
 import androidx.annotation.IntDef
 import com.atom.wyz.worldwind.DrawContext
+import com.atom.wyz.worldwind.RenderContext
 import com.atom.wyz.worldwind.geom.Matrix3
 import com.atom.wyz.worldwind.geom.Matrix4
 import com.atom.wyz.worldwind.geom.Vec3
-import com.atom.wyz.worldwind.globe.Globe
 import java.util.*
 
 open class AtmosphereProgram() : GpuProgram() {

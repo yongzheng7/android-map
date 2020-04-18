@@ -1,6 +1,6 @@
 package com.atom.wyz.worldwind.layer
 
-import com.atom.wyz.worldwind.DrawContext
+import com.atom.wyz.worldwind.RenderContext
 import java.util.*
 
 abstract class AbstractLayer : Layer {
@@ -42,26 +42,26 @@ abstract class AbstractLayer : Layer {
         return userProperties != null && userProperties!!.containsKey(key)
     }
 
-    override fun render(dc: DrawContext) {
+    override fun render(rc: RenderContext) {
         if (!this.enabled) {
             return
         }
 
-        if (dc.pickingMode && !this.pickEnabled) {
+        if (rc.pickingMode && !this.pickEnabled) {
             return
         }
 
-        if (!isWithinActiveAltitudes(dc)) {
+        if (!isWithinActiveAltitudes(rc)) {
             return
         }
 
-        this.doRender(dc)
+        this.doRender(rc)
     }
 
-    override fun isWithinActiveAltitudes(dc: DrawContext): Boolean {
-        val eyeAltitude: Double = dc.eyePosition.altitude
+    override fun isWithinActiveAltitudes(rc: RenderContext): Boolean {
+        val eyeAltitude: Double = rc.eyePosition.altitude
         return eyeAltitude >= minActiveAltitude && eyeAltitude <= maxActiveAltitude
     }
 
-    protected abstract fun doRender(dc: DrawContext)
+    protected abstract fun doRender(rc: RenderContext)
 }

@@ -1,6 +1,6 @@
 package com.atom.wyz.worldwind.render
 
-import com.atom.wyz.worldwind.DrawContext
+import com.atom.wyz.worldwind.RenderContext
 
 interface Renderable {
 
@@ -16,5 +16,5 @@ interface Renderable {
 
     fun hasUserProperty(key: Any): Boolean
 
-    fun render(dc: DrawContext)
+    fun render(rc: RenderContext)
 }

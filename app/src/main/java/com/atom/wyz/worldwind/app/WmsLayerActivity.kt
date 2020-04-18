@@ -18,7 +18,7 @@ class WmsLayerActivity : BasicWorldWindActivity() {
         val layer: WmsLayer = WmsLayer(Sector().setFullSphere(), 1e3, config) // 1km resolution
 
 
-        val index: Int = getWorldWindow().layers.indexOfLayerNamed("Atmosphere")
-        getWorldWindow().layers.addLayer(index, layer)
+        // Add the WMS layer to the World Window.
+        getWorldWindow().layers.addLayer(layer)
     }
 }

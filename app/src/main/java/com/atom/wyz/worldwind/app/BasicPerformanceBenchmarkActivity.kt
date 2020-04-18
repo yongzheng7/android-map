@@ -145,8 +145,7 @@ class BasicPerformanceBenchmarkActivity : BasicWorldWindActivity() {
         wwd.worldWindowController = (NoOpWorldWindowController())
         // Add a layer containing a large number of placemarks.
         val layers: LayerList = getWorldWindow().layers
-        val index: Int = layers.indexOfLayerNamed("Atmosphere")
-        layers.addLayer(index, createPlacemarksLayer())
+        layers.addLayer(createPlacemarksLayer())
         // Create location objects for the places used in this test.
         val arc = Location(37.415229, -122.06265)
         val gsfc = Location(38.996944, -76.848333)

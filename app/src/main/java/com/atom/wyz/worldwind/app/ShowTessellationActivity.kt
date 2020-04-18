@@ -9,7 +9,6 @@ class ShowTessellationActivity : BasicWorldWindActivity() {
         super.onCreate(savedInstanceState)
 
         val layer = ShowTessellationLayer()
-        val index: Int = getWorldWindow().layers.indexOfLayerNamed("Atmosphere")
-        getWorldWindow().layers.addLayer(index, layer)
+        getWorldWindow().layers.addLayer(layer)
     }
 }

@@ -1,14 +1,8 @@
 package com.atom.wyz.worldwind.globe
 
-import android.opengl.GLES20
-import com.atom.wyz.worldwind.geom.Matrix3
 import com.atom.wyz.worldwind.geom.Sector
 import com.atom.wyz.worldwind.geom.Vec3
-import com.atom.wyz.worldwind.DrawContext
 import com.atom.wyz.worldwind.util.Logger
-import java.nio.Buffer
-import java.nio.FloatBuffer
-import java.nio.ShortBuffer
 import java.util.*
 
 /**

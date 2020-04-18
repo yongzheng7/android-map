@@ -1,6 +1,6 @@
 package com.atom.wyz.worldwind.layer
 
-import com.atom.wyz.worldwind.DrawContext
+import com.atom.wyz.worldwind.RenderContext
 import java.util.HashMap
 
 interface Layer {
@@ -12,9 +12,9 @@ interface Layer {
     var maxActiveAltitude: Double
     var userProperties: HashMap<Any, Any>?
 
-    fun render(dc: DrawContext);
+    fun render(rc: RenderContext);
 
-    fun isWithinActiveAltitudes(dc: DrawContext): Boolean;
+    fun isWithinActiveAltitudes(rc: RenderContext): Boolean;
 
     fun getUserProperty(key: Any): Any?
 

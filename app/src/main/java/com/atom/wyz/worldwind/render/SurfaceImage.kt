@@ -1,7 +1,6 @@
 package com.atom.wyz.worldwind.render
 
-import com.atom.wyz.worldwind.DrawContext
-import com.atom.wyz.worldwind.draw.Drawable
+import com.atom.wyz.worldwind.RenderContext
 import com.atom.wyz.worldwind.draw.DrawableSurfaceTexture
 import com.atom.wyz.worldwind.geom.Sector
 import com.atom.wyz.worldwind.util.Logger
@@ -25,26 +24,26 @@ class SurfaceImage : AbstractRenderable {
         this.imageSource = imageSource
     }
 
-    override fun doRender(dc: DrawContext) {
+    override fun doRender(rc: RenderContext) {
         if (sector.isEmpty()) {
             return
         }
-        if (dc.terrain == null || !dc.terrain!!.sector.intersects(sector)) {
+        if (rc.terrain == null || !rc.terrain!!.sector.intersects(sector)) {
             return  // nothing to render on
         }
-        var texture: GpuTexture? = dc.getTexture(imageSource!!)
+        var texture: GpuTexture? = rc.getTexture(imageSource!!)
         if (texture == null) {
-            texture = dc.retrieveTexture(imageSource)
+            texture = rc.retrieveTexture(imageSource)
         }
         if (texture == null) {
             return  // no texture to draw
         }
-        val program = this.getShaderProgram(dc)
-        val drawable = DrawableSurfaceTexture.obtain(dc.getDrawablePool(DrawableSurfaceTexture::class.java)).set(program, sector, texture , texture.texCoordTransform)
-        dc.offerSurfaceDrawable(drawable, 0.0 /*z-order*/)
+        val program = this.getShaderProgram(rc)
+        val drawable = DrawableSurfaceTexture.obtain(rc.getDrawablePool(DrawableSurfaceTexture::class.java)).set(program, sector, texture , texture.texCoordTransform)
+        rc.offerSurfaceDrawable(drawable, 0.0 /*z-order*/)
     }
 
-    protected fun getShaderProgram(dc: DrawContext): SurfaceTextureProgram? {
+    protected fun getShaderProgram(dc: RenderContext): SurfaceTextureProgram? {
         var program: SurfaceTextureProgram? = dc.getProgram(SurfaceTextureProgram.KEY) as SurfaceTextureProgram?
         if (program == null) {
             program = dc.putProgram(

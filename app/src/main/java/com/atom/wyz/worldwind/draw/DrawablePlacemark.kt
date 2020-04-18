@@ -2,6 +2,7 @@ package com.atom.wyz.worldwind.draw
 
 import android.opengl.GLES20
 import com.atom.wyz.worldwind.DrawContext
+import com.atom.wyz.worldwind.RenderContext
 import com.atom.wyz.worldwind.geom.Color
 import com.atom.wyz.worldwind.geom.Matrix3
 import com.atom.wyz.worldwind.geom.Matrix4
@@ -96,7 +97,7 @@ class DrawablePlacemark : Drawable {
 
         GLES20.glDepthMask(false)
 
-        dc.bindBuffer(GLES20.GL_ARRAY_BUFFER, dc.unitQuadBuffer())
+        dc.bindBuffer(GLES20.GL_ARRAY_BUFFER, dc.unitSquareBuffer())
 
         GLES20.glEnableVertexAttribArray(1)
         GLES20.glVertexAttribPointer(0, 2, GLES20.GL_FLOAT, false, 0, 0)
@@ -113,7 +114,7 @@ class DrawablePlacemark : Drawable {
     protected fun drawLeader(dc: DrawContext) {
         program!!.enableTexture(false)
 
-        program!!.loadColor(leaderColor!!)
+        program!!.loadColor(leaderColor)
 
         this.leaderMvpMatrix?.let {
             program!!.loadModelviewProjection(it)

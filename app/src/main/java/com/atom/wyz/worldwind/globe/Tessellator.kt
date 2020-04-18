@@ -1,10 +1,10 @@
 package com.atom.wyz.worldwind.globe
 
-import com.atom.wyz.worldwind.DrawContext
+import com.atom.wyz.worldwind.RenderContext
 
 /**
  * 镶嵌器
  */
 interface Tessellator {
-    fun tessellate(dc : DrawContext)
+    fun tessellate(rc : RenderContext)
 }
