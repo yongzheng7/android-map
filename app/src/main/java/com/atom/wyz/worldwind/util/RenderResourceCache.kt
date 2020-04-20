@@ -4,7 +4,10 @@ import android.content.res.Resources
 import android.graphics.Bitmap
 import com.atom.wyz.worldwind.DrawContext
 import com.atom.wyz.worldwind.WorldWind
-import com.atom.wyz.worldwind.render.*
+import com.atom.wyz.worldwind.render.GpuTexture
+import com.atom.wyz.worldwind.render.ImageRetriever
+import com.atom.wyz.worldwind.render.ImageSource
+import com.atom.wyz.worldwind.render.RenderResource
 import java.net.SocketTimeoutException
 import java.util.concurrent.ConcurrentLinkedQueue
 
@@ -27,7 +30,7 @@ class RenderResourceCache : LruMemoryCache<Any, RenderResource> {
             val texture = GpuTexture(value)
             val entry = Entry(key!!, texture, texture.imageByteCount)
             pendingQueue.offer(entry)
-            WorldWind.requestRender()
+            WorldWind.requestRedraw()
             if (Logger.isLoggable(Logger.DEBUG)) {
                 Logger.log(Logger.DEBUG, "Image retrieval succeeded \'$key\'")
             }

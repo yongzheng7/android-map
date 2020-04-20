@@ -6,7 +6,11 @@ import android.content.Context
 import android.graphics.Rect
 import android.opengl.GLES20
 import android.opengl.GLSurfaceView
+import android.os.Handler
+import android.os.Looper
 import android.util.AttributeSet
+import android.view.Choreographer
+import android.view.Choreographer.FrameCallback
 import android.view.MotionEvent
 import android.view.SurfaceHolder
 import com.atom.wyz.worldwind.frame.BasicFrameController
@@ -14,6 +18,7 @@ import com.atom.wyz.worldwind.frame.Frame
 import com.atom.wyz.worldwind.frame.FrameController
 import com.atom.wyz.worldwind.frame.FrameMetrics
 import com.atom.wyz.worldwind.geom.Location
+import com.atom.wyz.worldwind.geom.Matrix4
 import com.atom.wyz.worldwind.gesture.GestureGroup
 import com.atom.wyz.worldwind.gesture.GestureRecognizer
 import com.atom.wyz.worldwind.globe.Globe
@@ -25,12 +30,18 @@ import com.atom.wyz.worldwind.util.RenderResourceCache
 import com.atom.wyz.worldwind.util.pool.Pool
 import com.atom.wyz.worldwind.util.pool.SynchronizedPool
 import java.util.*
+import java.util.concurrent.ConcurrentLinkedQueue
+import java.util.concurrent.TimeUnit
 import javax.microedition.khronos.egl.EGLConfig
 import javax.microedition.khronos.opengles.GL10
 
-class WorldWindow : GLSurfaceView, GLSurfaceView.Renderer, MessageListener {
+class WorldWindow : GLSurfaceView, GLSurfaceView.Renderer, MessageListener, FrameCallback {
 
-    val DEFAULT_MEMORY_CLASS = 16
+    companion object {
+        const val DEFAULT_MEMORY_CLASS = 16
+
+        const val MAX_FRAME_QUEUE_SIZE = 2
+    }
 
     var globe: Globe = GlobeWgs84()
 
@@ -39,6 +50,11 @@ class WorldWindow : GLSurfaceView, GLSurfaceView.Renderer, MessageListener {
     var verticalExaggeration: Double = 1.0
 
     var navigator: Navigator = BasicNavigator()
+
+
+     var navigatorEvents = NavigatorEventSupport(this)
+
+    var currentMvpMatrix: Matrix4? = null
 
     var frameController: FrameController = BasicFrameController()
     var frameMetrics = FrameMetrics()
@@ -61,6 +77,19 @@ class WorldWindow : GLSurfaceView, GLSurfaceView.Renderer, MessageListener {
 
     protected var framePool: Pool<Frame> = SynchronizedPool()
 
+    protected var frameQueue =
+        ConcurrentLinkedQueue<Frame>()
+
+    protected var currentFrame: Frame? = null
+
+    protected var waitingForRedraw = false
+
+    protected var mainLoopHandler =
+        Handler(Looper.getMainLooper(), Handler.Callback {
+            requestRedraw()
+            false
+
+        })
 
     constructor(context: Context) : super(context) {
         this.init(null)
@@ -102,51 +131,53 @@ class WorldWindow : GLSurfaceView, GLSurfaceView.Renderer, MessageListener {
     }
 
     override fun surfaceDestroyed(holder: SurfaceHolder?) {
-        WorldWind.messageService.removeListener(this)
         super.surfaceDestroyed(holder)
+        WorldWind.messageService.removeListener(this)
+        // Reset this WorldWindow's internal state.
+        reset()
+    }
+
+    override fun surfaceChanged(holder: SurfaceHolder?, format: Int, w: Int, h: Int) {
+        super.surfaceChanged(holder, format, w, h)
+        viewport.set(0, 0, w, h)
     }
 
 
     @SuppressLint("ClickableViewAccessibility")
     override fun onTouchEvent(event: MotionEvent): Boolean {
-        return super.onTouchEvent(event) || this.gestureGroup.onTouchEvent(event)
+        if (super.onTouchEvent(event)) {
+            return true
+        }
+
+        // Let the WorldWindow's gestures handle the event.
+        if (gestureGroup.onTouchEvent(event)) {
+            navigatorEvents.onTouchEvent(event)
+        }
+        return true
     }
 
     override fun onDrawFrame(gl: GL10?) {
-        val frame = Frame.obtain(framePool)
+        val nextFrame = frameQueue.poll()
+        if (nextFrame != null) {
+            currentFrame?.recycle()
+            currentFrame = nextFrame
 
-        renderFrame(frame)
+            super.requestRender()
+        }
+        // Process and display the Drawables accumulated during the render phase.
+        if (currentFrame != null) {
+            beforeDrawFrame()
+            drawFrame(currentFrame!!)
+            afterDrawFrame()
+        }
 
-        drawFrame(frame)
-
-        frame.recycle()
-
+        // Continue processing the frame queue on the OpenGL thread until the queue is empty.
+        if (!frameQueue.isEmpty()) {
+            super.requestRender()
+        }
     }
 
     protected fun renderFrame(frame: Frame) {
-        this.willRenderFrame(frame)
-        frameController.renderFrame(rc)
-        this.didRenderFrame(frame)
-    }
-
-    private fun didRenderFrame(frame: Frame) {
-        frame.viewport.set(viewport)
-        frame.modelview.set(rc.modelview)
-        frame.projection.set(rc.projection)
-
-
-        if (rc.renderRequested) {
-            requestRender() // inherited from GLSurfaceView
-        }
-
-        rc.reset()
-        //绘制数据
-        frameMetrics.endRendering()
-    }
-
-    private fun willRenderFrame(frame: Frame) {
-        // 渲染数据
-        frameMetrics.beginRendering()
 
         rc.globe = globe
         rc.layers.addAllLayers(layers)
@@ -167,17 +198,31 @@ class WorldWindow : GLSurfaceView, GLSurfaceView.Renderer, MessageListener {
         rc.resources = this.context.resources
         rc.drawableQueue = frame.drawableQueue
         rc.drawableTerrain = frame.drawableTerrain
+
+        frameController.renderFrame(rc)
+
+        // Assign the frame's Cartesian modelview matrix and eye coordinate projection matrix.
+        frame.viewport.set(viewport)
+        frame.modelview.set(rc.modelview)
+        frame.projection.set(rc.projection)
+    }
+
+    private fun afterRenderFrame() {
+        if (rc.redrawRequested) {
+            requestRender() // inherited from GLSurfaceView
+        }
+
+        navigatorEvents.onFrameRendered(rc)
+        rc.reset()
+        //绘制数据
+        frameMetrics.endRendering()
+    }
+
+    private fun beforeRenderFrame() {
+        frameMetrics.beginRendering()
     }
 
     protected fun drawFrame(frame: Frame) {
-        this.willDrawFrame(frame)
-        frameController.drawFrame(dc)
-        this.didDrawFrame(frame)
-    }
-
-    protected fun willDrawFrame(frame: Frame) {
-        frameMetrics.beginDrawing()
-
         dc.modelview.set(frame.modelview)
         dc.projection.set(frame.projection)
         dc.modelview.extractEyePoint(dc.eyePoint)
@@ -188,9 +233,14 @@ class WorldWindow : GLSurfaceView, GLSurfaceView.Renderer, MessageListener {
         )
         dc.drawableQueue = frame.drawableQueue
         dc.drawableTerrain = frame.drawableTerrain
+        frameController.drawFrame(dc)
     }
 
-    protected fun didDrawFrame(frame: Frame) {
+    protected fun beforeDrawFrame() {
+        frameMetrics.beginDrawing()
+    }
+
+    protected fun afterDrawFrame() {
         renderResourceCache!!.releaseEvictedResources(dc)
         dc.reset()
         frameMetrics.endDrawing()
@@ -199,7 +249,8 @@ class WorldWindow : GLSurfaceView, GLSurfaceView.Renderer, MessageListener {
 
     override fun onSurfaceChanged(gl: GL10?, width: Int, height: Int) {
         GLES20.glViewport(0, 0, width, height)
-        this.viewport.set(0, 0, width, height)
+
+        requestRedraw()
     }
 
     override fun onSurfaceCreated(gl: GL10?, config: EGLConfig?) {
@@ -217,7 +268,7 @@ class WorldWindow : GLSurfaceView, GLSurfaceView.Renderer, MessageListener {
         GLES20.glEnableVertexAttribArray(0)
 
         this.dc.contextLost()
-        this.renderResourceCache?.clear();
+
     }
 
     /**
@@ -245,7 +296,7 @@ class WorldWindow : GLSurfaceView, GLSurfaceView.Renderer, MessageListener {
     }
 
     override fun onMessage(name: String?, sender: Any?, userProperties: Map<Any?, Any?>?) {
-        if (name == WorldWind.REQUEST_RENDER) {
+        if (name == WorldWind.REQUEST_REDRAW) {
             requestRender() // inherited from GLSurfaceView; may be called on any thread
         }
     }
@@ -270,5 +321,95 @@ class WorldWindow : GLSurfaceView, GLSurfaceView.Renderer, MessageListener {
 
     fun getGestureRecognizers(): List<GestureRecognizer?>? {
         return gestureGroup.getRecognizers()
+    }
+
+    fun addNavigatorListener(listener: NavigatorListener?) {
+        requireNotNull(listener) {
+            Logger.logMessage(
+                Logger.ERROR,
+                "WorldWindow",
+                "addNavigatorListener",
+                "missingListener"
+            )
+        }
+        navigatorEvents.addNavigatorListener(listener)
+    }
+
+    fun removeNavigatorListener(listener: NavigatorListener?) {
+        requireNotNull(listener) {
+            Logger.logMessage(
+                Logger.ERROR,
+                "WorldWindow",
+                "removeNavigatorListener",
+                "missingListener"
+            )
+        }
+        navigatorEvents.addNavigatorListener(listener)
+    }
+
+    fun getNavigatorStoppedDelay(): Long {
+        return navigatorEvents.stoppedEventDelay
+    }
+
+    fun setNavigatorStoppedDelay(delay: Long, unit: TimeUnit?) {
+        navigatorEvents.setNavigatorStoppedDelay(delay, unit!!)
+    }
+
+    fun requestRedraw() { // Forward calls to requestRedraw to the main thread.
+        if (Thread.currentThread() !== Looper.getMainLooper().thread) {
+            mainLoopHandler.sendEmptyMessage(0);
+            return
+        }
+        // Suppress duplicate requests for redraw.
+        if (!waitingForRedraw &&  !this.viewport.isEmpty()) {
+            Choreographer.getInstance().postFrameCallback(this)
+            waitingForRedraw = true
+        }
+    }
+
+    override fun doFrame(frameTimeNanos: Long) {
+        if (frameQueue.size >= MAX_FRAME_QUEUE_SIZE) {
+            Choreographer.getInstance().postFrameCallback(this)
+            return
+        }
+        waitingForRedraw = false
+
+        val frame = Frame.obtain(framePool)
+        this.beforeRenderFrame()
+        renderFrame(frame)
+        frameQueue.offer(frame)
+        super.requestRender()
+        this.afterRenderFrame()
+
+    }
+    /**
+     * Resets this WorldWindow to its initial internal state.
+     */
+    protected fun reset() { // Reset any state associated with navigator events.
+        navigatorEvents.reset()
+        // Clear the render resource cache; it's entries are now invalid.
+        renderResourceCache?.clear()
+        // Clear the viewport dimensions.
+        viewport.setEmpty()
+        // Clear the frame queue and recycle pending frames back into the frame pool.
+        clearFrameQueue()
+        // Cancel any outstanding request redraw messages.
+        Choreographer.getInstance().removeFrameCallback(this)
+        this.mainLoopHandler.removeMessages(0 /*what*/)
+        waitingForRedraw = false
+    }
+
+    protected fun clearFrameQueue() { // Clear the frame queue and recycle pending frames back into the frame pool.
+        var frame = frameQueue.poll()
+        while (frame != null) {
+            frame.recycle()
+            frame = frameQueue.poll()
+        }
+        frameQueue.clear()
+        // Recycle the current frame back into the frame pool.
+        if (currentFrame != null) {
+            currentFrame!!.recycle()
+            currentFrame = null
+        }
     }
 }

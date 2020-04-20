@@ -28,9 +28,10 @@ class GestureGroup() {
     }
 
     fun onTouchEvent(event: MotionEvent): Boolean {
+        var eventRecognized = false
         for (recognizer in recognizerList) {
-            recognizer.onTouchEvent(event)
+            eventRecognized = eventRecognized or recognizer.onTouchEvent(event)
         }
-        return true // TODO
+        return eventRecognized // TODO
     }
 }

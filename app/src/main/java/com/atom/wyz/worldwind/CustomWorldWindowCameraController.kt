@@ -56,7 +56,7 @@ class CustomWorldWindowCameraController : BasicWorldWindowController() {
             }
             //this.camera.heading = WWMath.normalizeAngle360(heading + sideDegrees * 1000);
             wwd.navigator.setAsCamera(wwd.globe, camera)
-            wwd.requestRender()
+            wwd.requestRedraw()
         } else if (state == WorldWind.ENDED || state == WorldWind.CANCELLED) {
             gestureDidEnd()
         }
@@ -73,7 +73,7 @@ class CustomWorldWindowCameraController : BasicWorldWindowController() {
                 camera.altitude = camera.altitude + if (scale > 1) scale * 1000 else -1 / scale * 1000
                 this.applyLimits(camera)
                 wwd.navigator.setAsCamera(wwd.globe, camera)
-                wwd.requestRender()
+                wwd.requestRedraw()
             }
         } else if (state == WorldWind.ENDED || state == WorldWind.CANCELLED) {
             gestureDidEnd()
@@ -92,7 +92,7 @@ class CustomWorldWindowCameraController : BasicWorldWindowController() {
             camera.heading = WWMath.normalizeAngle360(camera.heading + headingDegrees)
             lastRotation = rotation
             wwd.navigator.setAsCamera(wwd.globe, camera)
-            wwd.requestRender()
+            wwd.requestRedraw()
         } else if (state == WorldWind.ENDED || state == WorldWind.CANCELLED) {
             gestureDidEnd()
         }
@@ -112,7 +112,7 @@ class CustomWorldWindowCameraController : BasicWorldWindowController() {
             camera.heading = WWMath.normalizeAngle360(beginCamera.heading + headingDegrees)
             camera.tilt = beginCamera.tilt + tiltDegrees
             wwd.navigator.setAsCamera(wwd.globe, camera)
-            wwd.requestRender()
+            wwd.requestRedraw()
         } else if (state == WorldWind.ENDED || state == WorldWind.CANCELLED) {
             gestureDidEnd()
         }

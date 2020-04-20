@@ -84,7 +84,7 @@ open class TiledImageLayer : AbstractLayer, TileFactory {
     }
 
     protected open fun determineActiveProgram(rc: RenderContext) {
-        this.activeProgram = rc.getProgram(SurfaceTextureProgram.KEY) as SurfaceTextureProgram
+        this.activeProgram = rc.getProgram(SurfaceTextureProgram.KEY) as SurfaceTextureProgram?
         if (this.activeProgram == null) {
             this.activeProgram =
                 rc.putProgram(SurfaceTextureProgram.KEY, SurfaceTextureProgram(rc.resources!!)) as SurfaceTextureProgram

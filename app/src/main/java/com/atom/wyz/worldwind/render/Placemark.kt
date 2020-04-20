@@ -6,12 +6,13 @@ import com.atom.wyz.worldwind.WorldWind
 import com.atom.wyz.worldwind.draw.DrawableLines
 import com.atom.wyz.worldwind.draw.DrawableScreenTexture
 import com.atom.wyz.worldwind.geom.*
+import com.atom.wyz.worldwind.shape.Highlightable
 import com.atom.wyz.worldwind.shape.PlacemarkAttributes
 import com.atom.wyz.worldwind.util.Logger
 import com.atom.wyz.worldwind.util.WWMath
 import com.atom.wyz.worldwind.util.pool.Pool
 
-open class Placemark : AbstractRenderable {
+open class Placemark : AbstractRenderable , Highlightable {
 
     companion object {
 
@@ -19,19 +20,19 @@ open class Placemark : AbstractRenderable {
 
         var DEFAULT_DEPTH_OFFSET = -0.003
 
-        fun simple(position: Position, color: Color?, pixelSize: Int): Placemark {
+        fun createSimple(position: Position, color: Color?, pixelSize: Int): Placemark {
             val defaults = PlacemarkAttributes.defaults()
             defaults.imageColor = color
             defaults.imageScale = pixelSize.toDouble()
             return Placemark(position, defaults)
         }
 
-        fun simpleImage(position: Position, imageSource: ImageSource?): Placemark {
+        fun createSimpleImage(position: Position, imageSource: ImageSource?): Placemark {
             return Placemark(position, PlacemarkAttributes.withImage(imageSource))
         }
 
-        fun simpleImageAndLabel(position: Position, imageSource: ImageSource?, label: String?): Placemark {
-            return Placemark(position, PlacemarkAttributes.withImageAndLabel(imageSource), label)
+        fun createSimpleImageAndLabel(position: Position, imageSource: ImageSource?, label: String?): Placemark {
+            return Placemark(position, PlacemarkAttributes.withImage(imageSource), label)
         }
 
         private var placePoint = Vec3()
@@ -44,14 +45,6 @@ open class Placemark : AbstractRenderable {
 
     var position: Position?
 
-    var label: String? = null
-        get() {
-            if (field == null) {
-                return this.displayName
-            } else {
-                return field
-            }
-        }
     private var eyeDistance = 0.0
 
 
@@ -63,7 +56,7 @@ open class Placemark : AbstractRenderable {
     var activeTexture: GpuTexture? = null
 
 
-    var highlighted = false
+    var _highlighted = false
 
     var eyeDistanceScaling: Boolean
     var eyeDistanceScalingThreshold: Double
@@ -71,7 +64,7 @@ open class Placemark : AbstractRenderable {
 
     var altitudeMode: Int = WorldWind.ABSOLUTE
 
-    var enableLeaderLinePicking: Boolean = false
+    var enableLeaderPicking: Boolean = false
 
     var imageRotation = 0.0
     var imageTilt = 0.0
@@ -84,18 +77,11 @@ open class Placemark : AbstractRenderable {
     var imageTiltReference = 0
 
 
-    constructor(position: Position) : this(position, PlacemarkAttributes())
+    constructor(position: Position) : this(position, PlacemarkAttributes.defaults())
 
-    constructor(position: Position, attributes: PlacemarkAttributes) : this(position, attributes, null, null)
+    constructor(position: Position, attributes: PlacemarkAttributes) : this(position, attributes, null)
 
-    constructor(position: Position, attributes: PlacemarkAttributes, label: String?) : this(
-        position,
-        attributes,
-        label,
-        null
-    )
-
-    constructor(position: Position?, attributes: PlacemarkAttributes?, displayName: String?, label: String?) {
+    constructor(position: Position?, attributes: PlacemarkAttributes?, displayName: String?) {
         if (position == null) {
             throw IllegalArgumentException(
                 Logger.logMessage(Logger.ERROR, "Placemark", "constructor", "missingPosition")
@@ -103,8 +89,7 @@ open class Placemark : AbstractRenderable {
         }
         this.position = position
         this.altitudeMode = WorldWind.ABSOLUTE
-        displayName?.let { this.displayName = it }
-        label?.let { this.label = it }
+        displayName?.let { this.displayName = it } ?:let { this.displayName  = "Placemark" }
         this.attributes = if (attributes != null) attributes else PlacemarkAttributes()
 
 
@@ -118,7 +103,7 @@ open class Placemark : AbstractRenderable {
     }
 
     protected open fun determineActiveAttributes(dc: RenderContext) {
-        if (highlighted && highlightAttributes != null) {
+        if (_highlighted && highlightAttributes != null) {
             activeAttributes = highlightAttributes
         } else {
             activeAttributes = attributes
@@ -215,19 +200,16 @@ open class Placemark : AbstractRenderable {
         drawable.mvpMatrix.set(rc.modelviewProjection)
         drawable.mvpMatrix.multiplyByTranslation(groundPoint.x, groundPoint.y, groundPoint.z)
 
-        drawable.color.set(activeAttributes.leaderLineAttributes!!.outlineColor!!)
-        drawable.lineWidth = activeAttributes.leaderLineAttributes!!.outlineWidth
-        drawable.enableDepthTest = activeAttributes.leaderLineAttributes!!.depthTest
+        drawable.color.set(activeAttributes.leaderAttributes!!.outlineColor!!)
+        drawable.lineWidth = activeAttributes.leaderAttributes!!.outlineWidth
+        drawable.enableDepthTest = activeAttributes.leaderAttributes!!.depthTest
 
     }
 
     protected open fun mustDrawLeaderLine(dc: RenderContext): Boolean {
-        return (activeAttributes!!.drawLeaderLine && activeAttributes!!.leaderLineAttributes != null && (enableLeaderLinePicking || !dc.pickingMode))
+        return (activeAttributes!!.drawLeader && activeAttributes!!.leaderAttributes != null && (enableLeaderPicking || !dc.pickingMode))
     }
 
-    protected open fun mustDrawLabel(rc: RenderContext): Boolean {
-        return (label != null && !label!!.isEmpty() && activeAttributes!!.labelAttributes != null)
-    }
 
     protected open fun determineActiveTexture(rc: RenderContext) {
         val activeAttributes = this.activeAttributes ?: return
@@ -283,5 +265,13 @@ open class Placemark : AbstractRenderable {
                 if (imageTiltReference == WorldWind.RELATIVE_TO_GLOBE) rc.tilt + imageTilt else imageTilt
             unitSquareTransform.multiplyByRotation(-1.0, 0.0, 0.0, tilt)
         }
+    }
+
+    override fun isHighlighted(): Boolean {
+         return _highlighted
+    }
+
+    override fun setHighlighted(highlighted: Boolean) {
+        this._highlighted = highlighted
     }
 }

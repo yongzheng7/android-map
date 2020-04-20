@@ -34,7 +34,7 @@ class Placemarks2Activity : BasicWorldWindActivity() {
         getWorldWindow().layers.addLayer(index, placemarksLayer)
 
 
-        val ventura = Placemark.simple(Position.fromDegrees(34.281, -119.293, 0.0), Color.CYAN, 20)
+        val ventura = Placemark.createSimple(Position.fromDegrees(34.281, -119.293, 0.0), Color.CYAN, 20)
 
 
         val airplane = Placemark(Position.fromDegrees(34.260, -119.2, 5000.0), PlacemarkAttributes.withImageAndLeaderLine(ImageSource.fromResource(R.drawable.air_fixwing)).apply {

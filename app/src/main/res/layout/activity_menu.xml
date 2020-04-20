@@ -95,6 +95,13 @@
                     android:layout_height="wrap_content"
                     android:text="basic_performance_avtivity"
                     android:onClick="menuButton"/>
+
+            <Button
+                    android:id="@+id/navigator_event_activity"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="navigator_event_activity"
+                    android:onClick="menuButton"/>
         </LinearLayout>
     </ScrollView>
 

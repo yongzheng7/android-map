@@ -53,6 +53,9 @@ class MenuActivity : AppCompatActivity() {
             R.id.basic_performance_avtivity -> {
                 startActivity(Intent(this, BasicPerformanceBenchmarkActivity::class.java))
             }
+            R.id.navigator_event_activity -> {
+                startActivity(Intent(this, NavigatorEventActivity::class.java))
+            }
         }
     }
 

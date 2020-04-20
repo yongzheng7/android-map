@@ -3,8 +3,6 @@ package com.atom.wyz.worldwind
 import androidx.annotation.IntDef
 import com.atom.wyz.worldwind.util.MessageService
 import com.atom.wyz.worldwind.util.TaskService
-import java.lang.annotation.Retention
-import java.lang.annotation.RetentionPolicy
 
 class WorldWind {
     /**
@@ -46,6 +44,16 @@ class WorldWind {
     @IntDef(BACKGROUND_DRAWABLE, SURFACE_DRAWABLE, SHAPE_DRAWABLE, SCREEN_DRAWABLE)
     @kotlin.annotation.Retention(AnnotationRetention.SOURCE)
     annotation class DrawableGroup
+
+
+    /**
+     * Navigator event type indicates the reason a NavigatorEvent has been generated.
+     *
+     * Accepted values are [.NAVIGATOR_MOVED] and [.NAVIGATOR_STOPPED].
+     */
+    @IntDef(NAVIGATOR_MOVED, NAVIGATOR_STOPPED)
+    @kotlin.annotation.Retention(AnnotationRetention.SOURCE)
+    annotation class NavigatorAction
 
     companion object {
         /**
@@ -166,7 +174,7 @@ class WorldWind {
         /**
          * Notification constant requesting that World Window instances render a frame.
          */
-        const val REQUEST_RENDER = "gov.nasa.worldwind.RequestRender"
+        const val REQUEST_REDRAW = "gov.nasa.worldwind.RequestRedraw"
 
         /**
          * WGS 84 reference value for the Earth ellipsoid's semi-major axis: 6378137.0.
@@ -190,6 +198,18 @@ class WorldWind {
         const val RELATIVE_TO_SCREEN = 1
 
         ////////////////////////////////////////////////////////////////////////////////////////////
+
+        /**
+         * [NavigatorAction] constant indicating that the navigator has moved.
+         */
+        const val NAVIGATOR_MOVED = 0
+
+        /**
+         * [NavigatorAction] constant indicating that the navigator has stopped moving.
+         */
+        const val NAVIGATOR_STOPPED = 1
+
+        ///////////////////////////////////////////////////////////////////////////////////////////////
 
         /**
          * [OffsetMode] constant indicating that the associated parameters are fractional values of the virtual
@@ -218,8 +238,8 @@ class WorldWind {
          * Requests that all World Window instances render a frame. Internally, this dispaches a REQUEST_RENDER message to
          * the World Wind message center.
          */
-        fun requestRender() {
-            messageService.postMessage(REQUEST_RENDER, null, null) // specify null for no sender, no user properties
+        fun requestRedraw() {
+            messageService.postMessage(REQUEST_REDRAW, null, null) // specify null for no sender, no user properties
         }
 
     }

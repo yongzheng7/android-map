@@ -12,27 +12,6 @@ class PlacemarkAttributes {
             return PlacemarkAttributes()
         }
 
-        fun defaultsAndLabel(): PlacemarkAttributes {
-            val placemarkAttributes = PlacemarkAttributes()
-            placemarkAttributes.labelAttributes =  TextAttributes()
-            return placemarkAttributes
-        }
-
-        fun defaultsAndLeaderLine(): PlacemarkAttributes {
-            val placemarkAttributes = PlacemarkAttributes()
-            placemarkAttributes.leaderLineAttributes = ShapeAttributes()
-            placemarkAttributes.drawLeaderLine = true
-            return placemarkAttributes // TODO: implement
-        }
-
-        fun defaultsAndLabelAndLeaderLine(): PlacemarkAttributes {
-            val placemarkAttributes = PlacemarkAttributes()
-            placemarkAttributes.labelAttributes = TextAttributes()
-            placemarkAttributes.leaderLineAttributes = ShapeAttributes()
-            placemarkAttributes.drawLeaderLine = true  ;
-            return placemarkAttributes ;
-        }
-
         fun withImage(imageSource: ImageSource?): PlacemarkAttributes {
             val placemarkAttributes = PlacemarkAttributes()
             placemarkAttributes.imageSource = imageSource
@@ -49,8 +28,8 @@ class PlacemarkAttributes {
         fun withImageAndLeaderLine(imageSource: ImageSource?): PlacemarkAttributes {
             val placemarkAttributes = PlacemarkAttributes()
             placemarkAttributes.imageSource = imageSource
-            placemarkAttributes.leaderLineAttributes = ShapeAttributes()
-            placemarkAttributes.drawLeaderLine = true  ;
+            placemarkAttributes.leaderAttributes = ShapeAttributes()
+            placemarkAttributes.drawLeader = true  ;
             return placemarkAttributes
         }
 
@@ -58,8 +37,8 @@ class PlacemarkAttributes {
             val placemarkAttributes = PlacemarkAttributes()
             placemarkAttributes.imageSource = imageSource
             placemarkAttributes.labelAttributes = TextAttributes()
-            placemarkAttributes.leaderLineAttributes = ShapeAttributes()
-            placemarkAttributes.drawLeaderLine = true
+            placemarkAttributes.leaderAttributes = ShapeAttributes()
+            placemarkAttributes.drawLeader = true
             return placemarkAttributes
         }
     }
@@ -73,8 +52,8 @@ class PlacemarkAttributes {
 
 
 
-    var drawLeaderLine = false
-    var leaderLineAttributes: ShapeAttributes? = null
+    var drawLeader = false
+    var leaderAttributes: ShapeAttributes? = null
 
     var minimumImageScale = 0.0
 
@@ -85,9 +64,9 @@ class PlacemarkAttributes {
         imageOffset = Offset(Offset.CENTER)
         imageScale = 1.0
         imageSource = null
-        this.labelAttributes = null
-        leaderLineAttributes = null
-        drawLeaderLine = false
+        labelAttributes = TextAttributes()
+        leaderAttributes = ShapeAttributes()
+        drawLeader = false
         depthTest = true
     }
 
@@ -100,8 +79,8 @@ class PlacemarkAttributes {
         depthTest = copy.depthTest
         copy.labelAttributes ?.let { labelAttributes = TextAttributes(it) } ?:let { labelAttributes = null }
 
-        drawLeaderLine = copy.drawLeaderLine
-        copy.leaderLineAttributes ?.let { leaderLineAttributes = ShapeAttributes(it) } ?:let { leaderLineAttributes = null }
+        drawLeader = copy.drawLeader
+        copy.leaderAttributes ?.let { leaderAttributes = ShapeAttributes(it) } ?:let { leaderAttributes = null }
 
     }
 
@@ -126,15 +105,15 @@ class PlacemarkAttributes {
             labelAttributes = null
         }
 
-        drawLeaderLine = attributes.drawLeaderLine
-        if (attributes.leaderLineAttributes != null) {
-            if (leaderLineAttributes == null) {
-                leaderLineAttributes = ShapeAttributes(attributes.leaderLineAttributes!!)
+        drawLeader = attributes.drawLeader
+        if (attributes.leaderAttributes != null) {
+            if (leaderAttributes == null) {
+                leaderAttributes = ShapeAttributes(attributes.leaderAttributes!!)
             } else {
-                leaderLineAttributes!!.set(attributes.leaderLineAttributes!!)
+                leaderAttributes!!.set(attributes.leaderAttributes!!)
             }
         } else {
-            leaderLineAttributes = null
+            leaderAttributes = null
         }
         return this
     }
@@ -145,11 +124,11 @@ class PlacemarkAttributes {
         val that: PlacemarkAttributes = other as PlacemarkAttributes
         if (java.lang.Double.compare(that.imageScale, imageScale) != 0) return false
         if (depthTest != that.depthTest) return false
-        if (drawLeaderLine != that.drawLeaderLine) return false
+        if (drawLeader != that.drawLeader) return false
         if (if (imageColor != null) imageColor != that.imageColor else that.imageColor != null) return false
         if (if (imageOffset != null) imageOffset != that.imageOffset else that.imageOffset != null) return false
         if (if (imageSource != null) imageSource != that.imageSource else that.imageSource != null) return false
-        return if (if (labelAttributes != null) labelAttributes != that.labelAttributes else that.labelAttributes != null) false else !if (leaderLineAttributes != null) leaderLineAttributes != that.leaderLineAttributes else that.leaderLineAttributes != null
+        return if (if (labelAttributes != null) labelAttributes != that.labelAttributes else that.labelAttributes != null) false else !if (leaderAttributes != null) leaderAttributes != that.leaderAttributes else that.leaderAttributes != null
     }
 
     override fun hashCode(): Int {
@@ -162,8 +141,8 @@ class PlacemarkAttributes {
         result = 31 * result + if (imageSource != null) imageSource.hashCode() else 0
         result = 31 * result + if (depthTest) 1 else 0
         result = 31 * result + if (labelAttributes != null) labelAttributes.hashCode() else 0
-        result = 31 * result + if (drawLeaderLine) 1 else 0
-        result = 31 * result + if (leaderLineAttributes != null) leaderLineAttributes.hashCode() else 0
+        result = 31 * result + if (drawLeader) 1 else 0
+        result = 31 * result + if (leaderAttributes != null) leaderAttributes.hashCode() else 0
         return result
     }
 

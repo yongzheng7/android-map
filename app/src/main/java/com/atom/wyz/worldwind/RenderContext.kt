@@ -82,7 +82,7 @@ open class RenderContext {
 
     var pickingMode = false
 
-    var renderRequested = false
+    var redrawRequested = false
 
     var renderResourceCache: RenderResourceCache? = null
 
@@ -115,7 +115,7 @@ open class RenderContext {
         frustum.setToUnitFrustum()
         renderResourceCache = null
         resources = null
-        renderRequested = false
+        redrawRequested = false
         pixelSizeFactor = 0.0
         drawableQueue = null
         drawableTerrain = null

@@ -108,7 +108,7 @@ open class BasicWorldWindowController : WorldWindowController, GestureListener {
             }
 
             wwd.navigator.setAsLookAt(wwd.globe, lookAt)
-            wwd.requestRender()
+            wwd.requestRedraw()
             lastX = dx
             lastY = dy
         } else if (state == WorldWind.ENDED || state == WorldWind.CANCELLED) {
@@ -129,7 +129,7 @@ open class BasicWorldWindowController : WorldWindowController, GestureListener {
                 this.lookAt.range = beginLookAt.range / scale
                 this.applyLimits(lookAt)
                 wwd.navigator.setAsLookAt(wwd.globe, lookAt)
-                wwd.requestRender()
+                wwd.requestRedraw()
             }
         } else if (state == WorldWind.ENDED || state == WorldWind.CANCELLED) {
             gestureDidEnd()
@@ -151,7 +151,7 @@ open class BasicWorldWindowController : WorldWindowController, GestureListener {
             lastRotation = rotation
 
             wwd.navigator.setAsLookAt(wwd.globe, lookAt)
-            wwd.requestRender()
+            wwd.requestRedraw()
         } else if (state == WorldWind.ENDED || state == WorldWind.CANCELLED) {
             gestureDidEnd()
         }
@@ -175,7 +175,7 @@ open class BasicWorldWindowController : WorldWindowController, GestureListener {
             this.applyLimits(lookAt)
 
             wwd.navigator.setAsLookAt(wwd.globe, lookAt)
-            wwd.requestRender()
+            wwd.requestRedraw()
         } else if (state == WorldWind.ENDED || state == WorldWind.CANCELLED) {
             gestureDidEnd()
         }

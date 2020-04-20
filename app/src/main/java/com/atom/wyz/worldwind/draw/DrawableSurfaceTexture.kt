@@ -71,14 +71,9 @@ class DrawableSurfaceTexture : Drawable, SurfaceTexture {
         if (!program.useProgram(dc)) {
             return  // program failed to build
         }
-
-
         val scratchList = dc.scratchList()
-
         try {
-
             scratchList.add(this)
-
             var next: Drawable?
             while (dc.peekDrawable().also { next = it } != null
                 && this.canBatchWith(next!!)) {

@@ -3,6 +3,9 @@ package com.atom.wyz.worldwind.app
 import android.annotation.SuppressLint
 import android.os.Bundle
 import android.os.Handler
+import android.view.Choreographer
+import android.view.Choreographer.FrameCallback
+import com.atom.wyz.worldwind.Navigator
 import com.atom.wyz.worldwind.R
 import com.atom.wyz.worldwind.geom.Offset
 import com.atom.wyz.worldwind.geom.Position
@@ -15,13 +18,14 @@ import com.atom.wyz.worldwind.shape.PlacemarkAttributes
 import java.util.*
 
 @SuppressLint("Registered")
-class PlacemarksStressTestActivity : BasicWorldWindActivity() , Runnable {
+class PlacemarksStressTestActivity : BasicWorldWindActivity() , FrameCallback {
 
-    protected var animationHandler = Handler()
 
-    protected var pauseHandler = false
+    protected var activityPaused = false
 
-    val DELAY_TIME = 100
+    protected var cameraDegreesPerSecond = 2.0
+
+    protected var lastFrameTimeNanos: Long = 0
 
     val NUM_PLACEMARKS = 10000
 
@@ -89,24 +93,34 @@ class PlacemarksStressTestActivity : BasicWorldWindActivity() , Runnable {
         }
     }
 
-    override fun run() { // Move the navigator to simulate the Earth's rotation about its axis.
-        val navigator = getWorldWindow().navigator
-        navigator.setLongitude(navigator.getLongitude() - 0.03)
-        // Redraw the World Window to display the above changes.
-        getWorldWindow().requestRender()
-        if (!pauseHandler) { // stop running when this activity is paused; the Handler is resumed in onResume
-            animationHandler.postDelayed(this, 30)
-        }
-    }
 
     override fun onPause() {
         super.onPause()
-        pauseHandler = true
-    }
+        activityPaused = true
+        lastFrameTimeNanos = 0    }
 
     override fun onResume() {
         super.onResume()
-        pauseHandler = false
-        animationHandler.postDelayed(this, DELAY_TIME.toLong())
+        activityPaused = false
+        lastFrameTimeNanos = 0
+        Choreographer.getInstance().postFrameCallback(this)
+    }
+
+    override fun doFrame(frameTimeNanos: Long) {
+        if (lastFrameTimeNanos != 0L) { // Compute the frame duration in seconds.
+            val frameDurationSeconds = (frameTimeNanos - lastFrameTimeNanos) * 1.0e-9
+            val cameraDegrees = frameDurationSeconds * cameraDegreesPerSecond
+            // Move the navigator to simulate the Earth's rotation about its axis.
+            val navigator: Navigator = getWorldWindow().navigator
+            navigator.setLongitude(navigator.getLongitude() - cameraDegrees)
+            // Redraw the World Window to display the above changes.
+            getWorldWindow().requestRedraw()
+        }
+
+        if (!activityPaused) { // stop animating when this Activity is paused
+            Choreographer.getInstance().postFrameCallback(this)
+        }
+
+        lastFrameTimeNanos = frameTimeNanos
     }
 }
