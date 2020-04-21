@@ -113,21 +113,21 @@ open class TiledImageLayer : AbstractLayer, TileFactory {
             return  // use the tile if it does not need to be subdivided
         }
 
-        val currentAncestorTile = ancestorTile
-        val currentAncestorTexture = ancestorTexture
+        val currentAncestorTile = this.ancestorTile
+        val currentAncestorTexture = this.ancestorTexture
 
-        val tileTexture = fetchTileTexture(rc, tile)
+        val tileTexture = rc.getTexture(tile.imageSource!!)
         if (tileTexture != null) { // use it as a fallback tile for descendants
-            ancestorTile = tile
-            ancestorTexture = tileTexture
+            this.ancestorTile = tile
+            this.ancestorTexture = tileTexture
         }
 
         for (child in tile.subdivideToCache(this, tileCache, 4)!!) { // each tile has a cached size of 1
             addTileOrDescendants(rc, child as ImageTile) // recursively process the tile's children
         }
 
-        ancestorTile = currentAncestorTile // restore the last fallback tile, even if it was null
-        ancestorTexture = currentAncestorTexture
+        this.ancestorTile = currentAncestorTile // restore the last fallback tile, even if it was null
+        this.ancestorTexture = currentAncestorTexture
     }
 
     protected fun addTile(rc: RenderContext, tile: ImageTile) {
@@ -137,14 +137,18 @@ open class TiledImageLayer : AbstractLayer, TileFactory {
             val drawable = DrawableSurfaceTexture.obtain(pool)
                 .set(this.activeProgram, tile.sector, texture, texture.texCoordTransform)
             rc.offerSurfaceDrawable(drawable, 0.0 /*z-order*/)
-        } else if (this.ancestorTile != null) { // use the ancestor tile's texture, transformed to fill the tile sector
-            this.ancestorTexCoordMatrix.set(this.ancestorTexture!!.texCoordTransform)
-            this.ancestorTexCoordMatrix.multiplyByTileTransform(tile.sector, this.ancestorTile!!.sector)
-            val pool: Pool<DrawableSurfaceTexture> = rc.getDrawablePool(DrawableSurfaceTexture::class.java)
-            val drawable: Drawable = DrawableSurfaceTexture.obtain(pool)
-                .set(this.activeProgram, tile.sector, this.ancestorTexture, ancestorTexture?.texCoordTransform)
-            rc.offerSurfaceDrawable(drawable, 0.0 /*z-order*/)
         }
+
+//        else if (this.ancestorTile != null) {
+//            // use the ancestor tile's texture, transformed to fill the tile sector
+//            this.ancestorTexCoordMatrix.set(this.ancestorTexture!!.texCoordTransform)
+//            this.ancestorTexCoordMatrix.multiplyByTileTransform(tile.sector, this.ancestorTile!!.sector)
+//
+//            val pool: Pool<DrawableSurfaceTexture> = rc.getDrawablePool(DrawableSurfaceTexture::class.java)
+//            val drawable: Drawable = DrawableSurfaceTexture.obtain(pool)
+//                .set(this.activeProgram, tile.sector, this.ancestorTexture, ancestorTexture?.texCoordTransform)
+//            rc.offerSurfaceDrawable(drawable, 0.0 /*z-order*/)
+//        }
     }
 
     override fun createTile(sector: Sector?, level: Level?, row: Int, column: Int): Tile {

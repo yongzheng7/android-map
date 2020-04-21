@@ -20,8 +20,6 @@ class DrawableSurfaceTexture : Drawable, SurfaceTexture {
 
     protected var texture: GpuTexture? = null
 
-    protected var texCoordMatrix = Matrix3()
-
     override var sector: Sector = Sector()
         get() = field
         set(value) {
@@ -53,9 +51,9 @@ class DrawableSurfaceTexture : Drawable, SurfaceTexture {
             this.sector.setEmpty()
         }
         if (texCoordMatrix != null) {
-            this.texCoordMatrix.set(texCoordMatrix)
+            this.texCoordTransform.set(texCoordMatrix)
         } else {
-            this.texCoordMatrix.setToIdentity()
+            this.texCoordTransform.setToIdentity()
         }
         return this
     }
@@ -88,10 +86,8 @@ class DrawableSurfaceTexture : Drawable, SurfaceTexture {
     }
 
     protected fun drawSurfaceTextures(dc: DrawContext) {
-        val program = program ?: return
 
         GLES20.glEnableVertexAttribArray(1)
-
         dc.activeTextureUnit(GLES20.GL_TEXTURE0)
 
         val scratchList = dc.scratchList()
@@ -129,10 +125,10 @@ class DrawableSurfaceTexture : Drawable, SurfaceTexture {
                     usingTerrainAttrs = true
                 }
 
-                program.texCoordMatrix[0].set(texture.texCoordTransform)
-                program.texCoordMatrix[0].multiplyByTileTransform(terrainSector, textureSector)
-                program.texCoordMatrix[1].setToTileTransform(terrainSector, textureSector)
-                program.loadTexCoordMatrix()
+                program!!.texCoordMatrix[0].set(texture.texCoordTransform)
+                program!!.texCoordMatrix[0].multiplyByTileTransform(terrainSector, textureSector)
+                program!!.texCoordMatrix[1].setToTileTransform(terrainSector, textureSector)
+                program!!.loadTexCoordMatrix()
 
                 terrain.drawTriangles(dc)
             }

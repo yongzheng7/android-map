@@ -161,7 +161,6 @@ class WorldWindow : GLSurfaceView, GLSurfaceView.Renderer, MessageListener, Fram
         if (nextFrame != null) {
             currentFrame?.recycle()
             currentFrame = nextFrame
-
             super.requestRender()
         }
         // Process and display the Drawables accumulated during the render phase.
@@ -178,7 +177,6 @@ class WorldWindow : GLSurfaceView, GLSurfaceView.Renderer, MessageListener, Fram
     }
 
     protected fun renderFrame(frame: Frame) {
-
         rc.globe = globe
         rc.layers.addAllLayers(layers)
         rc.verticalExaggeration = verticalExaggeration
@@ -205,21 +203,6 @@ class WorldWindow : GLSurfaceView, GLSurfaceView.Renderer, MessageListener, Fram
         frame.viewport.set(viewport)
         frame.modelview.set(rc.modelview)
         frame.projection.set(rc.projection)
-    }
-
-    private fun afterRenderFrame() {
-        if (rc.redrawRequested) {
-            requestRender() // inherited from GLSurfaceView
-        }
-
-        navigatorEvents.onFrameRendered(rc)
-        rc.reset()
-        //绘制数据
-        frameMetrics.endRendering()
-    }
-
-    private fun beforeRenderFrame() {
-        frameMetrics.beginRendering()
     }
 
     protected fun drawFrame(frame: Frame) {
@@ -373,15 +356,18 @@ class WorldWindow : GLSurfaceView, GLSurfaceView.Renderer, MessageListener, Fram
             return
         }
         waitingForRedraw = false
-
         val frame = Frame.obtain(framePool)
-        this.beforeRenderFrame()
+        frameMetrics.beginRendering()
+
         renderFrame(frame)
         frameQueue.offer(frame)
         super.requestRender()
-        this.afterRenderFrame()
+        navigatorEvents.onFrameRendered(rc)
+        rc.reset()
 
+        frameMetrics.endRendering()
     }
+
     /**
      * Resets this WorldWindow to its initial internal state.
      */
@@ -398,7 +384,6 @@ class WorldWindow : GLSurfaceView, GLSurfaceView.Renderer, MessageListener, Fram
         this.mainLoopHandler.removeMessages(0 /*what*/)
         waitingForRedraw = false
     }
-
     protected fun clearFrameQueue() { // Clear the frame queue and recycle pending frames back into the frame pool.
         var frame = frameQueue.poll()
         while (frame != null) {

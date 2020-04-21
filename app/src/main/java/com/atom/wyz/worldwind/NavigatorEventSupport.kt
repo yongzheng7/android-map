@@ -77,15 +77,13 @@ class NavigatorEventSupport(wwd: WorldWindow) {
 
     fun onFrameRendered(rc: RenderContext) {
         if (listeners.isEmpty()) {
-            return  // no listeners to notify; ignore the event
+            return
         }
-        if (lastModelview == null) { // this is the first frame; copy the frame's modelview
+        if (lastModelview == null) {
             lastModelview = Matrix4(rc.modelview)
-        } else if (!lastModelview!!.equals(rc.modelview)) { // the frame's modelview has changed
+        } else if (!lastModelview!!.equals(rc.modelview)) {
             lastModelview!!.set(rc.modelview)
-            // Notify the listeners of a navigator moved event.
             onNavigatorMoved()
-            // Schedule a navigator stopped event after a specified delay in milliseconds.
             stopHandler.removeMessages(0 /*what*/)
             stopHandler.sendEmptyMessageDelayed(0 /*what*/, stoppedEventDelay)
         }

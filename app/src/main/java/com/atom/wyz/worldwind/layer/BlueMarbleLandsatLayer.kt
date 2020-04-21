@@ -16,7 +16,7 @@ class BlueMarbleLandsatLayer : WmsLayer, TileUrlFactory {
 
     protected var landsatUrlFactory: TileUrlFactory
     
-    constructor():this("https://worldwind25.arc.nasa.gov/wms")
+    constructor():this("http://worldwind25.arc.nasa.gov/wms")
 
     constructor(serviceAddress: String?) :super("Blue Marble & Landsat") {
         if (serviceAddress == null) {

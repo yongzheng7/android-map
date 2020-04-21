@@ -152,6 +152,7 @@ class DrawContext {
         GLES20.glGenBuffers(1, newBuffer, 0)
         unitSquareBufferId = newBuffer[0]
         val points = floatArrayOf(0f, 1f, 0f, 0f, 1f, 1f, 1f, 0f) // lower right corner
+//        val points = floatArrayOf(0f, 0f, 0f, 1f, 0f, 1f, 1f, 1f) // lower right corner
         val size = points.size
         val quadBuffer =
             ByteBuffer.allocateDirect(size * 4).order(ByteOrder.nativeOrder()).asFloatBuffer()

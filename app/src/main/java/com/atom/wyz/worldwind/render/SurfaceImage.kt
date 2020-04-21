@@ -36,7 +36,7 @@ class SurfaceImage : AbstractRenderable {
             texture = rc.retrieveTexture(imageSource)
         }
         if (texture == null) {
-            return  // no texture to draw
+            return
         }
         val program = this.getShaderProgram(rc)
         val drawable = DrawableSurfaceTexture.obtain(rc.getDrawablePool(DrawableSurfaceTexture::class.java)).set(program, sector, texture , texture.texCoordTransform)
