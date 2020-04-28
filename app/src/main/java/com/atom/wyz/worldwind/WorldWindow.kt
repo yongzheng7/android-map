@@ -3,6 +3,7 @@ package com.atom.wyz.worldwind
 import android.annotation.SuppressLint
 import android.app.ActivityManager
 import android.content.Context
+import android.graphics.PointF
 import android.graphics.Rect
 import android.opengl.GLES20
 import android.opengl.GLSurfaceView
@@ -17,10 +18,7 @@ import com.atom.wyz.worldwind.frame.BasicFrameController
 import com.atom.wyz.worldwind.frame.Frame
 import com.atom.wyz.worldwind.frame.FrameController
 import com.atom.wyz.worldwind.frame.FrameMetrics
-import com.atom.wyz.worldwind.geom.Location
-import com.atom.wyz.worldwind.geom.Matrix4
-import com.atom.wyz.worldwind.gesture.GestureGroup
-import com.atom.wyz.worldwind.gesture.GestureRecognizer
+import com.atom.wyz.worldwind.geom.*
 import com.atom.wyz.worldwind.globe.Globe
 import com.atom.wyz.worldwind.globe.GlobeWgs84
 import com.atom.wyz.worldwind.layer.LayerList
@@ -49,12 +47,23 @@ class WorldWindow : GLSurfaceView, GLSurfaceView.Renderer, MessageListener, Fram
 
     var verticalExaggeration: Double = 1.0
 
-    var navigator: Navigator = BasicNavigator()
+    var navigator = Navigator()
 
+    var fieldOfView = 45.0
+        get() = field
+        set(value) {
+            require(!(value <= 0 || value >= 180)) {
+                Logger.logMessage(
+                    Logger.ERROR,
+                    "WorldWindow",
+                    "setFieldOfView",
+                    "invalidFieldOfView"
+                )
+            }
+            field = value
+        }
 
-     var navigatorEvents = NavigatorEventSupport(this)
-
-    var currentMvpMatrix: Matrix4? = null
+    var navigatorEvents = NavigatorEventSupport(this)
 
     var frameController: FrameController = BasicFrameController()
     var frameMetrics = FrameMetrics()
@@ -65,8 +74,6 @@ class WorldWindow : GLSurfaceView, GLSurfaceView.Renderer, MessageListener, Fram
             field = value
             field.worldWindow = (this)
         }
-
-    var gestureGroup: GestureGroup = GestureGroup()
 
     var viewport = Rect()
 
@@ -107,9 +114,9 @@ class WorldWindow : GLSurfaceView, GLSurfaceView.Renderer, MessageListener, Fram
         val initLocation: Location = Location.fromTimeZone(TimeZone.getDefault())
         val initAltitude: Double = this.distanceToViewGlobeExtents() * 1.1
 
-        navigator.setLatitude(initLocation.latitude)
-        navigator.setLongitude(initLocation.longitude)
-        navigator.setAltitude(initAltitude)
+        navigator.latitude = initLocation.latitude
+        navigator.longitude = initLocation.longitude
+        navigator.altitude = initAltitude
 
         this.worldWindowController.worldWindow = this
 
@@ -145,13 +152,10 @@ class WorldWindow : GLSurfaceView, GLSurfaceView.Renderer, MessageListener, Fram
 
     @SuppressLint("ClickableViewAccessibility")
     override fun onTouchEvent(event: MotionEvent): Boolean {
-        if (super.onTouchEvent(event)) {
-            return true
-        }
-
-        // Let the WorldWindow's gestures handle the event.
-        if (gestureGroup.onTouchEvent(event)) {
-            navigatorEvents.onTouchEvent(event)
+        if (!super.onTouchEvent(event)) {
+            if (worldWindowController.onTouchEvent(event)) { // let the controller try to handle the event
+                navigatorEvents.onTouchEvent(event) // the controller handled the event; notify navigator events
+            }
         }
         return true
     }
@@ -176,24 +180,53 @@ class WorldWindow : GLSurfaceView, GLSurfaceView.Renderer, MessageListener, Fram
         }
     }
 
-    protected fun renderFrame(frame: Frame) {
-        rc.globe = globe
-        rc.layers.addAllLayers(layers)
-        rc.verticalExaggeration = verticalExaggeration
-        rc.eyePosition.set(
-            this.navigator.getLatitude(),
-            this.navigator.getLongitude(),
-            this.navigator.getAltitude()
+    protected fun computeViewingTransform(
+        viewport: Rect,
+        projection: Matrix4,
+        modelview: Matrix4?
+    ) {
+        val near = navigator.altitude * 0.75
+        val far = globe.horizonDistance(navigator.altitude, 160000.0)
+        viewport.set(this.viewport)
+        projection.setToPerspectiveProjection(
+            viewport.width().toDouble(),
+            viewport.height().toDouble(),
+            fieldOfView,
+            near,
+            far
         )
-        rc.heading = navigator.getHeading()
-        rc.tilt = navigator.getTilt()
-        rc.roll = navigator.getRoll()
-        rc.fieldOfView = navigator.getFieldOfView()
-        rc.horizonDistance = globe.horizonDistance(this.navigator.getAltitude())
+        navigator.getAsCamera(globe, scratchCamera)
+        globe.cameraToCartesianTransform(scratchCamera, modelview)!!.invertOrthonormal()
+    }
+
+    protected fun renderFrame(frame: Frame) {
+
+        rc.globe = globe
+        rc.layers = layers
+        rc.verticalExaggeration = verticalExaggeration
+        rc.fieldOfView = fieldOfView
+        rc.horizonDistance = globe.horizonDistance(this.navigator.altitude)
         rc.viewport.set(viewport)
+        rc.camera = this.navigator.getAsCamera(this.globe, this.rc.camera);
+        rc.cameraPoint = globe.geographicToCartesian(
+            rc.camera.latitude,
+            rc.camera.longitude,
+            rc.camera.altitude,
+            rc.cameraPoint
+        )
         rc.renderResourceCache = this.renderResourceCache
         rc.renderResourceCache?.resources = (this.context.resources)
         rc.resources = this.context.resources
+
+        computeViewingTransform(frame.viewport, frame.projection, frame.modelview)
+        rc.viewport.set(frame.viewport)
+        rc.projection.set(frame.projection)
+        rc.modelview.set(frame.modelview)
+        rc.modelviewProjection.setToMultiply(frame.projection, frame.modelview)
+        rc.frustum.setToProjectionMatrix(frame.projection)
+        rc.frustum.transformByMatrix(scratchModelview.transposeMatrix(frame.modelview))
+        rc.frustum.normalize()
+
         rc.drawableQueue = frame.drawableQueue
         rc.drawableTerrain = frame.drawableTerrain
 
@@ -205,17 +238,22 @@ class WorldWindow : GLSurfaceView, GLSurfaceView.Renderer, MessageListener, Fram
         frame.projection.set(rc.projection)
     }
 
+
     protected fun drawFrame(frame: Frame) {
-        dc.modelview.set(frame.modelview)
+
+        dc.eyePoint = frame.modelview.extractEyePoint(dc.eyePoint)
         dc.projection.set(frame.projection)
-        dc.modelview.extractEyePoint(dc.eyePoint)
+        dc.modelview.set(frame.modelview)
+
         dc.modelviewProjection.setToMultiply(frame.projection, frame.modelview)
         dc.screenProjection.setToScreenProjection(
             frame.viewport.width().toDouble(),
             frame.viewport.height().toDouble()
         )
+
         dc.drawableQueue = frame.drawableQueue
         dc.drawableTerrain = frame.drawableTerrain
+
         frameController.drawFrame(dc)
     }
 
@@ -259,9 +297,8 @@ class WorldWindow : GLSurfaceView, GLSurfaceView.Renderer, MessageListener, Fram
      * 获取到可视的水平面长度和手机屏幕的比例
      */
     fun pixelSizeAtDistance(distance: Double): Double {
-        val fovyDegrees: Double = navigator.getFieldOfView()
         // 视角一半的tan
-        val tanfovy_2 = Math.tan(Math.toRadians(fovyDegrees * 0.5))
+        val tanfovy_2 = Math.tan(Math.toRadians(fieldOfView * 0.5))
 
         val frustumHeight = 2 * distance * tanfovy_2
         return frustumHeight / this.height
@@ -271,8 +308,7 @@ class WorldWindow : GLSurfaceView, GLSurfaceView.Renderer, MessageListener, Fram
      * 返回使地球范围在此世界窗口中可见所需的距地球表面的最小距离。
      */
     fun distanceToViewGlobeExtents(): Double {
-        val fovyDegrees: Double = navigator.getFieldOfView()
-        val sinfovy_2 = Math.sin(Math.toRadians(fovyDegrees * 0.5))
+        val sinfovy_2 = Math.sin(Math.toRadians(fieldOfView * 0.5))
 
         val radius: Double = globe.equatorialRadius
         return radius / sinfovy_2 - radius
@@ -284,27 +320,6 @@ class WorldWindow : GLSurfaceView, GLSurfaceView.Renderer, MessageListener, Fram
         }
     }
 
-    fun addGestureRecognizer(recognizer: GestureRecognizer?) {
-        if (recognizer == null) {
-            throw IllegalArgumentException(
-                Logger.logMessage(Logger.ERROR, "WorldWindow", "addGestureRecognizer", "missingRecognizer")
-            )
-        }
-        gestureGroup.addRecognizer(recognizer)
-    }
-
-    fun removeGestureRecognizer(recognizer: GestureRecognizer?) {
-        if (recognizer == null) {
-            throw IllegalArgumentException(
-                Logger.logMessage(Logger.ERROR, "WorldWindow", "removeGestureRecognizer", "missingRecognizer")
-            )
-        }
-        gestureGroup.removeRecognizer(recognizer)
-    }
-
-    fun getGestureRecognizers(): List<GestureRecognizer?>? {
-        return gestureGroup.getRecognizers()
-    }
 
     fun addNavigatorListener(listener: NavigatorListener?) {
         requireNotNull(listener) {
@@ -338,13 +353,12 @@ class WorldWindow : GLSurfaceView, GLSurfaceView.Renderer, MessageListener, Fram
         navigatorEvents.setNavigatorStoppedDelay(delay, unit!!)
     }
 
-    fun requestRedraw() { // Forward calls to requestRedraw to the main thread.
+    fun requestRedraw() {
         if (Thread.currentThread() !== Looper.getMainLooper().thread) {
             mainLoopHandler.sendEmptyMessage(0);
             return
         }
-        // Suppress duplicate requests for redraw.
-        if (!waitingForRedraw &&  !this.viewport.isEmpty()) {
+        if (!waitingForRedraw && !this.viewport.isEmpty()) {
             Choreographer.getInstance().postFrameCallback(this)
             waitingForRedraw = true
         }
@@ -368,33 +382,143 @@ class WorldWindow : GLSurfaceView, GLSurfaceView.Renderer, MessageListener, Fram
         frameMetrics.endRendering()
     }
 
-    /**
-     * Resets this WorldWindow to its initial internal state.
-     */
-    protected fun reset() { // Reset any state associated with navigator events.
+    protected fun reset() {
         navigatorEvents.reset()
-        // Clear the render resource cache; it's entries are now invalid.
         renderResourceCache?.clear()
-        // Clear the viewport dimensions.
         viewport.setEmpty()
-        // Clear the frame queue and recycle pending frames back into the frame pool.
         clearFrameQueue()
-        // Cancel any outstanding request redraw messages.
         Choreographer.getInstance().removeFrameCallback(this)
         this.mainLoopHandler.removeMessages(0 /*what*/)
         waitingForRedraw = false
     }
-    protected fun clearFrameQueue() { // Clear the frame queue and recycle pending frames back into the frame pool.
+
+    protected fun clearFrameQueue() {
         var frame = frameQueue.poll()
         while (frame != null) {
             frame.recycle()
             frame = frameQueue.poll()
         }
         frameQueue.clear()
-        // Recycle the current frame back into the frame pool.
         if (currentFrame != null) {
             currentFrame!!.recycle()
             currentFrame = null
         }
     }
+
+    private val scratchCamera = Camera()
+    private val scratchViewport = Rect()
+    private val scratchModelview = Matrix4()
+    private val scratchProjection = Matrix4()
+    private val scratchPoint: Vec3 = Vec3()
+
+
+    fun cartesianToScreenPoint(
+        x: Double,
+        y: Double,
+        z: Double,
+        result: PointF?
+    ): Boolean {
+        requireNotNull(result) {
+            Logger.logMessage(
+                Logger.ERROR,
+                "WorldWindow",
+                "cartesianToScreenPoint",
+                "missingResult"
+            )
+        }
+        this.computeViewingTransform(this.scratchViewport, this.scratchProjection, this.scratchModelview)
+        scratchProjection.multiplyByMatrix(scratchModelview)
+        val m = scratchProjection.m
+        var sx = m[0] * x + m[1] * y + m[2] * z + m[3]
+        var sy = m[4] * x + m[5] * y + m[6] * z + m[7]
+        var sz = m[8] * x + m[9] * y + m[10] * z + m[11]
+        val sw = m[12] * x + m[13] * y + m[14] * z + m[15]
+        if (sw == 0.0) {
+            return false
+        }
+        sx /= sw
+        sy /= sw
+        sz /= sw
+        if (sz < -1 || sz > 1) {
+            return false
+        }
+        sx = sx * 0.5 + 0.5
+        sy = sy * 0.5 + 0.5
+        sy = 1 - sy
+        sx = sx * this.scratchViewport.width() + this.scratchViewport.left;
+        sy = sy * this.scratchViewport.height() + this.scratchViewport.top;
+        result.x = sx.toFloat()
+        result.y = sy.toFloat()
+        return true
+    }
+
+    /**
+     * 经纬度转屏幕点位
+     */
+    fun geographicToScreenPoint(
+        latitude: Double,
+        longitude: Double,
+        altitude: Double,
+        result: PointF?
+    ): Boolean {
+        requireNotNull(result) {
+            Logger.logMessage(
+                Logger.ERROR,
+                "WorldWindow",
+                "geographicToScreenPoint",
+                "missingResult"
+            )
+        }
+        globe.geographicToCartesian(latitude, longitude, altitude, scratchPoint)
+        return cartesianToScreenPoint(scratchPoint.x, scratchPoint.y, scratchPoint.z, result)
+    }
+
+    fun rayThroughScreenPoint(
+        x: Float,
+        y: Float,
+        result: Line?
+    ): Boolean {
+        requireNotNull(result) {
+            Logger.logMessage(
+                Logger.ERROR,
+                "WorldWindow",
+                "rayThroughScreenPoint",
+                "missingResult"
+            )
+        }
+        this.computeViewingTransform(this.scratchViewport, this.scratchProjection, this.scratchModelview)
+        scratchProjection.multiplyByMatrix(scratchModelview).invert()
+        var sx = (x - this.scratchViewport.left) / this.scratchViewport.width();
+        var sy = (y - this.scratchViewport.top) / this.scratchViewport.height();
+        sy = 1 - sy
+        sx = sx * 2 - 1
+        sy = sy * 2 - 1
+        val m = scratchProjection.m
+        val mx = m[0] * sx + m[1] * sy + m[3]
+        val my = m[4] * sx + m[5] * sy + m[7]
+        val mz = m[8] * sx + m[9] * sy + m[11]
+        val mw = m[12] * sx + m[13] * sy + m[15]
+        var nx = mx - m[2]
+        var ny = my - m[6]
+        var nz = mz - m[10]
+        val nw = mw - m[14]
+        var fx = mx + m[2]
+        var fy = my + m[6]
+        var fz = mz + m[10]
+        val fw = mw + m[14]
+        if (nw == 0.0 || fw == 0.0) {
+            return false
+        }
+        nx = nx / nw
+        ny = ny / nw
+        nz = nz / nw
+        fx = fx / fw
+        fy = fy / fw
+        fz = fz / fw
+        result.origin.set(nx, ny, nz)
+        result.direction.set(fx - nx, fy - ny, fz - nz).normalize()
+        return true
+    }
+
+
 }

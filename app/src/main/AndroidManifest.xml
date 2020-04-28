@@ -65,6 +65,12 @@
         </activity>
         <activity android:name=".app.NavigatorEventActivity">
         </activity>
+        <activity android:name=".app.PlacemarksSelectDragActivity">
+        </activity>
+        <activity android:name=".app.PlacemarksPickingActivity">
+        </activity>
+        <activity android:name=".app.BasicStressTestActivity">
+        </activity>
 
     </application>
 

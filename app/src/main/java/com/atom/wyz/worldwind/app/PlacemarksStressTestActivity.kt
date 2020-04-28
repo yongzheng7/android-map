@@ -112,7 +112,7 @@ class PlacemarksStressTestActivity : BasicWorldWindActivity() , FrameCallback {
             val cameraDegrees = frameDurationSeconds * cameraDegreesPerSecond
             // Move the navigator to simulate the Earth's rotation about its axis.
             val navigator: Navigator = getWorldWindow().navigator
-            navigator.setLongitude(navigator.getLongitude() - cameraDegrees)
+            navigator.longitude = (navigator.longitude - cameraDegrees)
             // Redraw the World Window to display the above changes.
             getWorldWindow().requestRedraw()
         }

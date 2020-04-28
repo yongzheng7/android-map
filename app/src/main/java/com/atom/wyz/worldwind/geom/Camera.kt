@@ -95,4 +95,38 @@ class Camera {
                 ", roll=" + roll +
                 '}'
     }
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other == null || javaClass != other.javaClass) return false
+        val camera: Camera = other as Camera
+        if (java.lang.Double.compare(camera.latitude, latitude) != 0) return false
+        if (java.lang.Double.compare(camera.longitude, longitude) != 0) return false
+        if (java.lang.Double.compare(camera.altitude, altitude) != 0) return false
+        if (altitudeMode != camera.altitudeMode) return false
+        if (java.lang.Double.compare(camera.heading, heading) != 0) return false
+        return if (java.lang.Double.compare(camera.tilt, tilt) != 0) false else java.lang.Double.compare(
+            camera.roll,
+            roll
+        ) == 0
+    }
+
+    override fun hashCode(): Int {
+        var result: Int
+        var temp: Long
+        temp = java.lang.Double.doubleToLongBits(latitude)
+        result = (temp xor (temp ushr 32)).toInt()
+        temp = java.lang.Double.doubleToLongBits(longitude)
+        result = 31 * result + (temp xor (temp ushr 32)).toInt()
+        temp = java.lang.Double.doubleToLongBits(altitude)
+        result = 31 * result + (temp xor (temp ushr 32)).toInt()
+        result = 31 * result + altitudeMode
+        temp = java.lang.Double.doubleToLongBits(heading)
+        result = 31 * result + (temp xor (temp ushr 32)).toInt()
+        temp = java.lang.Double.doubleToLongBits(tilt)
+        result = 31 * result + (temp xor (temp ushr 32)).toInt()
+        temp = java.lang.Double.doubleToLongBits(roll)
+        result = 31 * result + (temp xor (temp ushr 32)).toInt()
+        return result
+    }
 }

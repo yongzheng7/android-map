@@ -109,7 +109,7 @@ class PlacemarksActivity : BasicWorldWindActivity() , Runnable {
 
     override fun run() {
         val navigator = getWorldWindow().navigator
-        navigator.setLongitude(navigator.getLongitude() - 0.03)
+        navigator.longitude = (navigator.longitude - 0.03)
         getWorldWindow().requestRender()
         if (!pauseHandler) {
             animationHandler.postDelayed(this, 30)

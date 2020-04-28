@@ -109,14 +109,17 @@ class NavigatorEventSupport(wwd: WorldWindow) {
     }
 
     protected fun notifyListeners(action: Int, inputEvent: InputEvent?) {
-        val event = NavigatorEvent.obtain(wwd.navigator, action, inputEvent!!)
-        var idx = 0
-        val len = listeners.size
-        while (idx < len) {
-            listeners[idx].onNavigatorEvent(wwd, event)
-            idx++
+        inputEvent ?.let {
+            val event = NavigatorEvent.obtain(wwd.navigator, action, it)
+            var idx = 0
+            val len = listeners.size
+            while (idx < len) {
+                listeners[idx].onNavigatorEvent(wwd, event)
+                idx++
+            }
+            event.recycle()
         }
-        event.recycle()
+
     }
 
 }

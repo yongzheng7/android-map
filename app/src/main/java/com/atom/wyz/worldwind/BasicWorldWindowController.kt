@@ -1,33 +1,16 @@
 package com.atom.wyz.worldwind
 
-import android.util.Log
 import android.view.MotionEvent
 import com.atom.wyz.worldwind.geom.Location
 import com.atom.wyz.worldwind.geom.LookAt
 import com.atom.wyz.worldwind.gesture.*
 import com.atom.wyz.worldwind.util.WWMath
+import java.util.*
 
 open class BasicWorldWindowController : WorldWindowController, GestureListener {
 
 
     override var worldWindow: WorldWindow? = null
-    set(value) {
-        if (field != null) {
-            field!!.removeGestureRecognizer(panRecognizer)
-            field!!.removeGestureRecognizer(pinchRecognizer)
-            field!!.removeGestureRecognizer(rotationRecognizer)
-            field!!.removeGestureRecognizer(tiltRecognizer)
-        }
-
-        field = value
-
-        if (field != null) {
-            field!!.addGestureRecognizer(panRecognizer)
-            field!!.addGestureRecognizer(pinchRecognizer)
-            field!!.addGestureRecognizer(rotationRecognizer)
-            field!!.addGestureRecognizer(tiltRecognizer)
-        }
-    }
 
     protected var lastX = 0f
 
@@ -49,13 +32,28 @@ open class BasicWorldWindowController : WorldWindowController, GestureListener {
 
     protected var tiltRecognizer = PanRecognizer()
 
+    protected var allRecognizers = Arrays.asList(
+        panRecognizer, pinchRecognizer, rotationRecognizer, tiltRecognizer
+    )
+
+
     constructor() {
-        panRecognizer.maxNumberOfPointers = (2)
         panRecognizer.addListener(this)
         pinchRecognizer.addListener(this)
         rotationRecognizer.addListener(this)
-        tiltRecognizer.minNumberOfPointers = (4)
         tiltRecognizer.addListener(this)
+
+        tiltRecognizer.minNumberOfPointers = (4)
+        panRecognizer.maxNumberOfPointers = (2)
+
+    }
+
+    override fun onTouchEvent(event: MotionEvent): Boolean {
+        var handled = false
+        for (idx in 0 until allRecognizers.size) {
+            handled = allRecognizers[idx].onTouchEvent(event)
+        }
+        return handled
     }
 
     protected open fun handlePan(recognizer: GestureRecognizer) {
@@ -180,6 +178,7 @@ open class BasicWorldWindowController : WorldWindowController, GestureListener {
             gestureDidEnd()
         }
     }
+
     protected open fun applyLimits(lookAt: LookAt) {
         val wwd = this.worldWindow ?: return
         val distanceToExtents: Double = wwd.distanceToViewGlobeExtents()
@@ -190,7 +189,7 @@ open class BasicWorldWindowController : WorldWindowController, GestureListener {
 //        val maxTiltRange = distanceToExtents * 0.9
 //        val tiltAmount: Double = WWMath.clamp((lookAt.range - minTiltRange) / (maxTiltRange - minTiltRange), 0.0, 1.0)
         val maxTilt = 80.0
-        lookAt.tilt = WWMath.clamp(lookAt.tilt, 0.0, maxTilt ) //* (1 - tiltAmount)
+        lookAt.tilt = WWMath.clamp(lookAt.tilt, 0.0, maxTilt) //* (1 - tiltAmount)
     }
 
 

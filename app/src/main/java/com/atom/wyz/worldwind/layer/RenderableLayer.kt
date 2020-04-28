@@ -18,6 +18,9 @@ open class RenderableLayer(displayName: String) : AbstractLayer(displayName), It
         addAllRenderables(renderables)
     }
 
+    constructor(layer: RenderableLayer) : this(layer.displayName) {
+        addAllRenderables(layer)
+    }
     fun count(): Int {
         return renderables.size
     }
@@ -93,6 +96,25 @@ open class RenderableLayer(displayName: String) : AbstractLayer(displayName), It
         renderables.add(index, renderable)
     }
 
+    open fun addAllRenderables(layer: RenderableLayer?) {
+        requireNotNull(layer) {
+            Logger.logMessage(
+                Logger.ERROR,
+                "RenderableLayer",
+                "addAllRenderables",
+                "missingLayer"
+            )
+        }
+        val thisList = renderables
+        val thatList = layer.renderables
+        thisList.ensureCapacity(thatList.size)
+        var idx = 0
+        val len = thatList.size
+        while (idx < len) {
+            thisList.add(thatList[idx]) // we know the contents of layer.renderables is valid
+            idx++
+        }
+    }
     fun addAllRenderables(renderables: Iterable<Renderable?>?) {
         if (renderables == null) {
             throw java.lang.IllegalArgumentException(

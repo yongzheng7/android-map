@@ -7,7 +7,7 @@ import com.atom.wyz.worldwind.util.Logger
 
 class BlueMarbleLayer : WmsLayer {
 
-    constructor() : this("http://worldwind25.arc.nasa.gov/wms")
+    constructor() : this("https://worldwind25.arc.nasa.gov/wms")
 
     constructor(serviceAddress: String?) : super("Blue Marble"){
         if (serviceAddress == null) {

@@ -10,7 +10,7 @@ import com.atom.wyz.worldwind.util.Logger
 
 open class WmsLayer : TiledImageLayer {
     constructor(diaplayername : String = "WMS Layer" ) : super(diaplayername) {
-        this.init()
+        this.imageFormat = ("image/png")
     }
 
     constructor(sector: Sector?, metersPerPixel: Double, config: WmsLayerConfig?) : super("WMS Layer") {
@@ -27,7 +27,7 @@ open class WmsLayer : TiledImageLayer {
             throw IllegalArgumentException(
                     Logger.logMessage(Logger.ERROR, "WmsLayer", "constructor", "missingConfig"))
         }
-        this.init()
+        this.imageFormat = ("image/png")
         this.setConfiguration(sector, metersPerPixel, config)
     }
 
@@ -48,14 +48,8 @@ open class WmsLayer : TiledImageLayer {
             throw java.lang.IllegalArgumentException(
                     Logger.logMessage(Logger.ERROR, "WmsLayer", "constructor", "missingConfig"))
         }
-        this.init()
-        this.setConfiguration(sector, metersPerPixel, config)
-    }
-
-    override fun init() {
-        super.init()
-        this.displayName = ("WMS Layer")
         this.imageFormat = ("image/png")
+        this.setConfiguration(sector, metersPerPixel, config)
     }
 
     open fun setConfiguration(sector: Sector?, metersPerPixel: Double, config: WmsLayerConfig?) {

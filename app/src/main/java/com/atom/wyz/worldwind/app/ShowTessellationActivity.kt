@@ -7,7 +7,6 @@ class ShowTessellationActivity : BasicWorldWindActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
         val layer = ShowTessellationLayer()
         getWorldWindow().layers.addLayer(layer)
     }

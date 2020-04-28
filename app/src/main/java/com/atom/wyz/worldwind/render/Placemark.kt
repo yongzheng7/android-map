@@ -45,7 +45,7 @@ open class Placemark : AbstractRenderable , Highlightable {
 
     var position: Position?
 
-    private var eyeDistance = 0.0
+    private var cameraDistance = 0.0
 
 
     var attributes: PlacemarkAttributes
@@ -118,10 +118,10 @@ open class Placemark : AbstractRenderable , Highlightable {
 
         globe.geographicToCartesian(position.latitude, position.longitude, position.altitude, placePoint)
 
-        eyeDistance = rc.eyePoint.distanceTo(placePoint)
+        cameraDistance = rc.cameraPoint.distanceTo(placePoint)
 
         var depthOffset = 0.0
-        if (eyeDistance < rc.horizonDistance) {
+        if (cameraDistance < rc.horizonDistance) {
             depthOffset = DEFAULT_DEPTH_OFFSET
         }
 
@@ -139,7 +139,7 @@ open class Placemark : AbstractRenderable , Highlightable {
                 val pool: Pool<DrawableLines> = rc.getDrawablePool(DrawableLines::class.java)
                 val drawable = DrawableLines.obtain(pool)
                 prepareDrawableLeader(rc, drawable)
-                rc.offerShapeDrawable(drawable, eyeDistance)
+                rc.offerShapeDrawable(drawable, cameraDistance)
             }
         }
         this.determineActiveTexture(rc)
@@ -150,7 +150,7 @@ open class Placemark : AbstractRenderable , Highlightable {
             val pool: Pool<DrawableScreenTexture> = rc.getDrawablePool(DrawableScreenTexture::class.java)
             val drawable: DrawableScreenTexture = DrawableScreenTexture.obtain(pool)
             prepareDrawableIcon(rc, drawable)
-            rc.offerShapeDrawable(drawable, eyeDistance)
+            rc.offerShapeDrawable(drawable, cameraDistance)
         }
 
         activeTexture = null
@@ -223,7 +223,7 @@ open class Placemark : AbstractRenderable , Highlightable {
         }
 
         val visibilityScale: Double = if (this.eyeDistanceScaling) WWMath.clamp(
-            value = this.eyeDistanceScalingThreshold / eyeDistance,
+            value = this.eyeDistanceScalingThreshold / cameraDistance,
             min = activeAttributes.minimumImageScale,
             max = 1.0
         ) else 1.0
@@ -255,14 +255,14 @@ open class Placemark : AbstractRenderable , Highlightable {
         }
         if (imageRotation != 0.0) {
             val rotation =
-                if (imageRotationReference == WorldWind.RELATIVE_TO_GLOBE) rc.heading - imageRotation else -imageRotation
+                if (imageRotationReference == WorldWind.RELATIVE_TO_GLOBE) rc.camera.heading - imageRotation else -imageRotation
             unitSquareTransform.multiplyByTranslation(0.5, 0.5, 0.0)
             unitSquareTransform.multiplyByRotation(0.0, 0.0, 1.0, rotation)
             unitSquareTransform.multiplyByTranslation(-0.5, -0.5, 0.0)
         }
         if (imageTilt != 0.0) {
             val tilt =
-                if (imageTiltReference == WorldWind.RELATIVE_TO_GLOBE) rc.tilt + imageTilt else imageTilt
+                if (imageTiltReference == WorldWind.RELATIVE_TO_GLOBE) rc.camera.tilt + imageTilt else imageTilt
             unitSquareTransform.multiplyByRotation(-1.0, 0.0, 0.0, tilt)
         }
     }

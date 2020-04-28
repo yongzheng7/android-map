@@ -114,10 +114,10 @@ class Color {
     }
 
     constructor(colorInt: Int) {
-        red = android.graphics.Color.red(colorInt) / 255f
-        green = android.graphics.Color.green(colorInt) / 255f
-        blue = android.graphics.Color.blue(colorInt) / 255f
-        alpha = android.graphics.Color.alpha(colorInt) / 255f
+        red = android.graphics.Color.red(colorInt) / 0xFF.toFloat()
+        green = android.graphics.Color.green(colorInt) / 0xFF.toFloat()
+        blue = android.graphics.Color.blue(colorInt) / 0xFF.toFloat()
+        alpha = android.graphics.Color.alpha(colorInt) / 0xFF.toFloat()
     }
 
 
@@ -138,10 +138,10 @@ class Color {
     }
 
     fun set(colorInt: Int): Color {
-        red = android.graphics.Color.red(colorInt) / 255f
-        green = android.graphics.Color.green(colorInt) / 255f
-        blue = android.graphics.Color.blue(colorInt) / 255f
-        alpha = android.graphics.Color.alpha(colorInt) / 255f
+        red = android.graphics.Color.red(colorInt) / 0xFF.toFloat()
+        green = android.graphics.Color.green(colorInt) / 0xFF.toFloat()
+        blue = android.graphics.Color.blue(colorInt) / 0xFF.toFloat()
+        alpha = android.graphics.Color.alpha(colorInt) / 0xFF.toFloat()
         return this
     }
 
@@ -230,5 +230,13 @@ class Color {
         val bb = Math.round(blue * 255)
         val ab = Math.round(alpha * 255)
         return rb == bytes[0].toInt() && gb == bytes[1].toInt() && bb == bytes[2].toInt() && ab == bytes[3].toInt()
+    }
+
+    fun toColorInt(): Int {
+        val r8 = Math.round(red * 0xFF)
+        val g8 = Math.round(green * 0xFF)
+        val b8 = Math.round(blue * 0xFF)
+        val a8 = Math.round(alpha * 0xFF)
+        return android.graphics.Color.argb(a8, r8, g8, b8)
     }
 }

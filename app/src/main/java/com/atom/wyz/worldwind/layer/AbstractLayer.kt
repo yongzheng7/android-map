@@ -59,8 +59,8 @@ abstract class AbstractLayer : Layer {
     }
 
     override fun isWithinActiveAltitudes(rc: RenderContext): Boolean {
-        val eyeAltitude: Double = rc.eyePosition.altitude
-        return eyeAltitude >= minActiveAltitude && eyeAltitude <= maxActiveAltitude
+        val eyeAltitude: Double = rc.camera.altitude
+        return eyeAltitude >= this.minActiveAltitude && eyeAltitude <= this.maxActiveAltitude
     }
 
     protected abstract fun doRender(rc: RenderContext)

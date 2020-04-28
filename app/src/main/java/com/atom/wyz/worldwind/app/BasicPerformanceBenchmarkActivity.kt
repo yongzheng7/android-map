@@ -3,6 +3,7 @@ package com.atom.wyz.worldwind.app
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
+import android.view.MotionEvent
 import androidx.annotation.NonNull
 import androidx.core.util.Pools
 import com.atom.wyz.worldwind.R
@@ -137,6 +138,10 @@ class BasicPerformanceBenchmarkActivity : BasicWorldWindActivity() {
         override var worldWindow: WorldWindow?
             get() = null
             set(wwd) {}
+
+        override fun onTouchEvent(event: MotionEvent): Boolean {
+            return false
+        }
 
     }
 

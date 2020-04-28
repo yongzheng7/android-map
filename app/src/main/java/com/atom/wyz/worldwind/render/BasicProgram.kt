@@ -15,6 +15,8 @@ import com.atom.wyz.worldwind.util.WWUtil
         val KEY: Any = BasicProgram::class
     }
 
+    var enablePickModeId = 0
+
     var mvpMatrixId = 0
 
     var texCoordMatrixId = 0
@@ -39,6 +41,9 @@ import com.atom.wyz.worldwind.util.WWUtil
     }
 
     override fun initProgram( dc: DrawContext) {
+        enablePickModeId = GLES20.glGetUniformLocation(programId, "enablePickMode")
+        GLES20.glUniform1i(enablePickModeId, 0) // disable pick mode
+
         this.enableTextureId = GLES20.glGetUniformLocation(programId, "enableTexture")
         GLES20.glUniform1i(this.enableTextureId, 0)
 
@@ -57,6 +62,9 @@ import com.atom.wyz.worldwind.util.WWUtil
         GLES20.glUniform1i(this.texSamplerId, 0)
 
     }
+     fun enablePickMode(enable: Boolean) {
+         GLES20.glUniform1i(enablePickModeId, if (enable) 1 else 0)
+     }
 
     fun loadModelviewProjection(matrix: Matrix4) {
         matrix.transposeToArray(array, 0)

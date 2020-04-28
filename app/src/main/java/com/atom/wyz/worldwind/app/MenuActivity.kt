@@ -56,6 +56,15 @@ class MenuActivity : AppCompatActivity() {
             R.id.navigator_event_activity -> {
                 startActivity(Intent(this, NavigatorEventActivity::class.java))
             }
+            R.id.placemark_select_drag_activity -> {
+                startActivity(Intent(this, PlacemarksSelectDragActivity::class.java))
+            }
+            R.id.placemark_pick_activity -> {
+                startActivity(Intent(this, PlacemarksPickingActivity::class.java))
+            }
+            R.id.basic_stress_test_activity -> {
+                startActivity(Intent(this, BasicStressTestActivity::class.java))
+            }
         }
     }
 

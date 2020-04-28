@@ -26,12 +26,8 @@ class Placemarks2Activity : BasicWorldWindActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        val layers: LayerList = getWorldWindow().layers
-
-        val index: Int = layers.indexOfLayerNamed("Atmosphere")
-
         val placemarksLayer = RenderableLayer("Placemarks")
-        getWorldWindow().layers.addLayer(index, placemarksLayer)
+        getWorldWindow().layers.addLayer(placemarksLayer)
 
 
         val ventura = Placemark.createSimple(Position.fromDegrees(34.281, -119.293, 0.0), Color.CYAN, 20)

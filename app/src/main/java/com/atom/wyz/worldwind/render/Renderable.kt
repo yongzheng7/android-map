@@ -10,7 +10,7 @@ interface Renderable {
 
     fun getUserProperty(key: Any): Any?
 
-    fun putUserProperty(key: Any, value: Any): Any?
+    fun putUserProperty(key: Any, value: Any?): Any?
 
     fun removeUserProperty(key: Any): Any?
 

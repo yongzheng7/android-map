@@ -158,7 +158,7 @@ open class Tile {
      * 根据眼睛和图块的距离判断是否需要细分
      */
     open fun mustSubdivide(rc: RenderContext, detailFactor: Double): Boolean {
-        val distance = getExtent(rc).distanceTo(rc.eyePoint) //获取此图块和眼睛的距离 笛卡尔
+        val distance = getExtent(rc).distanceTo(rc.cameraPoint) //获取此图块和眼睛的距离 笛卡尔
         val texelSize: Double = level.texelHeight * rc.globe?.equatorialRadius!!
         val pixelSize = rc.pixelSizeAtDistance(distance)
 

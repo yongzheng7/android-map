@@ -13,6 +13,8 @@ import java.util.*
 
 class DrawContext {
 
+    var eyePoint: Vec3 = Vec3()
+
     var modelview: Matrix4 = Matrix4()
 
     var projection: Matrix4 = Matrix4()
@@ -20,8 +22,6 @@ class DrawContext {
     var modelviewProjection: Matrix4 = Matrix4()
 
     var screenProjection: Matrix4 = Matrix4()
-
-    var eyePoint: Vec3 = Vec3()
 
     var drawableQueue: DrawableQueue? = null
 
@@ -43,11 +43,11 @@ class DrawContext {
 
 
     fun reset() {
+        eyePoint.set(0.0, 0.0, 0.0)
         modelview.setToIdentity()
         projection.setToIdentity()
         modelviewProjection.setToIdentity()
         screenProjection.setToIdentity()
-        eyePoint.set(0.0, 0.0, 0.0)
         scratchList.clear()
         drawableQueue = null
         drawableTerrain = null

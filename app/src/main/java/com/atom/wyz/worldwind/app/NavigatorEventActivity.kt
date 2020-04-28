@@ -216,10 +216,10 @@ class NavigatorEventActivity : BasicWorldWindActivity() , FrameCallback {
                 val navigator: Navigator = getWorldWindow().navigator
                 // Compute the distance to move in this frame
                 val distanceRadians = radiansPerMillisecond * frameDurationMillis
-                currentLocation.set(navigator.getLatitude(), navigator.getLongitude())
+                currentLocation.set(navigator.latitude, navigator.longitude)
                 currentLocation.greatCircleLocation(azimuth, distanceRadians, targetLocation)
-                navigator.setLatitude(targetLocation.latitude)
-                navigator.setLongitude(targetLocation.longitude)
+                navigator.latitude = (targetLocation.latitude)
+                navigator.longitude = (targetLocation.longitude)
                 // Dampen the inertia
                 coastTimeRemainingMillis -= frameDurationMillis
                 if (coastTimeRemainingMillis > 0) {

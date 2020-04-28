@@ -10,7 +10,7 @@ abstract class AbstractRenderable(displayer: String) : Renderable {
 
     override var pickDelegate: Any? = null
 
-    protected var userProperties: HashMap<Any, Any>? = null
+    protected var userProperties: HashMap<Any, Any?>? = null
 
     constructor() :this("")
 
@@ -18,7 +18,7 @@ abstract class AbstractRenderable(displayer: String) : Renderable {
         return if (userProperties == null) userProperties!![key] else null
     }
 
-    override fun putUserProperty(key: Any, value: Any): Any? {
+    override fun putUserProperty(key: Any, value: Any?): Any? {
         if (userProperties == null) {
             userProperties = java.util.HashMap()
         }

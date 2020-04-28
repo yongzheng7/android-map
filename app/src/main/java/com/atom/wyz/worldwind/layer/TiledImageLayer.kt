@@ -52,12 +52,9 @@ open class TiledImageLayer : AbstractLayer, TileFactory {
     protected var ancestorTexCoordMatrix: Matrix3 = Matrix3()
 
     constructor(displayName: String = "Tiled Image Layer") : super(displayName) {
-        this.init()
-    }
-
-    protected open fun init() {
         this.pickEnabled = false
     }
+
 
     override fun doRender(rc: RenderContext) {
         val terrain = rc.terrain ?: return
@@ -139,16 +136,16 @@ open class TiledImageLayer : AbstractLayer, TileFactory {
             rc.offerSurfaceDrawable(drawable, 0.0 /*z-order*/)
         }
 
-//        else if (this.ancestorTile != null) {
-//            // use the ancestor tile's texture, transformed to fill the tile sector
-//            this.ancestorTexCoordMatrix.set(this.ancestorTexture!!.texCoordTransform)
-//            this.ancestorTexCoordMatrix.multiplyByTileTransform(tile.sector, this.ancestorTile!!.sector)
-//
-//            val pool: Pool<DrawableSurfaceTexture> = rc.getDrawablePool(DrawableSurfaceTexture::class.java)
-//            val drawable: Drawable = DrawableSurfaceTexture.obtain(pool)
-//                .set(this.activeProgram, tile.sector, this.ancestorTexture, ancestorTexture?.texCoordTransform)
-//            rc.offerSurfaceDrawable(drawable, 0.0 /*z-order*/)
-//        }
+        else if (this.ancestorTile != null) {
+            // use the ancestor tile's texture, transformed to fill the tile sector
+            this.ancestorTexCoordMatrix.set(this.ancestorTexture!!.texCoordTransform)
+            this.ancestorTexCoordMatrix.multiplyByTileTransform(tile.sector, this.ancestorTile!!.sector)
+
+            val pool: Pool<DrawableSurfaceTexture> = rc.getDrawablePool(DrawableSurfaceTexture::class.java)
+            val drawable: Drawable = DrawableSurfaceTexture.obtain(pool)
+                .set(this.activeProgram, tile.sector, this.ancestorTexture, ancestorTexture?.texCoordTransform)
+            rc.offerSurfaceDrawable(drawable, 0.0 /*z-order*/)
+        }
     }
 
     override fun createTile(sector: Sector?, level: Level?, row: Int, column: Int): Tile {

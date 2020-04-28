@@ -24,8 +24,8 @@ class SurfaceImageActivity : BasicWorldWindActivity() {
         layer.addRenderable(surfaceImageUrl)
         getWorldWindow().layers.addLayer(layer)
 
-        getWorldWindow().navigator.setLatitude(37.46543388598137)
-        getWorldWindow().navigator.setLongitude(14.97980511744455)
-        getWorldWindow().navigator.setAltitude(4.0e5)
+        getWorldWindow().navigator.latitude = (37.46543388598137)
+        getWorldWindow().navigator.longitude = (14.97980511744455)
+        getWorldWindow().navigator.altitude = (4.0e5)
     }
 }

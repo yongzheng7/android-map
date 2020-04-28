@@ -1,21 +1,26 @@
 package com.atom.wyz.worldwind.app
 
 import android.os.Bundle
-import android.os.Handler
+import android.view.Choreographer
+import android.view.Choreographer.FrameCallback
 import com.atom.wyz.worldwind.Navigator
 import com.atom.wyz.worldwind.geom.Location
 import com.atom.wyz.worldwind.layer.AtmosphereLayer
 import com.atom.wyz.worldwind.layer.LayerList
 
-class DayNightCycleActivity : BasicWorldWindActivity() ,  Runnable {
+class DayNightCycleActivity : BasicWorldWindActivity(), FrameCallback {
 
     protected var sunLocation: Location = Location(0.0, -100.0)
 
     protected var atmosphereLayer: AtmosphereLayer? = null
 
-    protected var dayNightHandler = Handler()
+    protected var cameraDegreesPerSecond = 2.0
 
-    protected var pauseHandler = false
+    protected var lightDegreesPerSecond = 6.0
+
+    protected var activityPaused = false
+
+    protected var lastFrameTimeNanos: Long = 0
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -27,35 +32,50 @@ class DayNightCycleActivity : BasicWorldWindActivity() ,  Runnable {
 
         // Initialize the Navigator so that the sun is behind the viewer.
         val navigator: Navigator = getWorldWindow().navigator
-        navigator.setLatitude(20.0)
-        navigator.setLongitude(sunLocation.longitude)
+        navigator.latitude = (20.0)
+        navigator.longitude = (sunLocation.longitude)
 
-        // Set up an Android Handler to change the day-night cycle.
-        dayNightHandler.postDelayed(this, 500)
+        // Use this Activity's Choreographer to animate the day-night cycle.
+        Choreographer.getInstance().postFrameCallback(this)
+
     }
-    override fun run() {
 
-        val navigator: Navigator = getWorldWindow().navigator
-        navigator.setLongitude(navigator.getLongitude() - 0.03)
-
-        sunLocation.set(sunLocation.latitude, sunLocation.longitude - 0.1)
-        atmosphereLayer!!.lightLocation = (sunLocation)
-
-        getWorldWindow().requestRender()
-
-        if (!pauseHandler) { // stop running when this activity is paused; the Handler is resumed in onResume
-            dayNightHandler.postDelayed(this, 30)
+    override fun doFrame(frameTimeNanos: Long) {
+        if (lastFrameTimeNanos != 0L) { // Compute the frame duration in seconds.
+            val frameDurationSeconds = (frameTimeNanos - lastFrameTimeNanos) * 1.0e-9
+            val cameraDegrees = frameDurationSeconds * cameraDegreesPerSecond
+            val lightDegrees = frameDurationSeconds * lightDegreesPerSecond
+            // Move the navigator to simulate the Earth's rotation about its axis.
+            val navigator = getWorldWindow().navigator
+            navigator.longitude = (navigator.longitude - cameraDegrees)
+            // Move the sun location to simulate the Sun's rotation about the Earth.
+            sunLocation.set(sunLocation.latitude, sunLocation.longitude - lightDegrees)
+            atmosphereLayer?.lightLocation = (sunLocation)
+            // Redraw the World Window to display the above changes.
+            getWorldWindow().requestRedraw()
         }
+
+        if (!activityPaused) { // stop animating when this Activity is paused
+            Choreographer.getInstance().postFrameCallback(this)
+        }
+
+        lastFrameTimeNanos = frameTimeNanos
     }
 
     override fun onPause() {
         super.onPause()
-        pauseHandler = true
+
+        activityPaused = true
+        lastFrameTimeNanos = 0
     }
 
     override fun onResume() {
         super.onResume()
-        pauseHandler = false
-        dayNightHandler.postDelayed(this, 500)
+
+        // Resume the day-night cycle animation.
+        activityPaused = false
+        lastFrameTimeNanos = 0
+        Choreographer.getInstance().postFrameCallback(this)
     }
+
 }

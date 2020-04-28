@@ -1,7 +1,7 @@
 package com.atom.wyz.worldwind.layer
 
-import com.atom.wyz.worldwind.RenderContext
 import com.atom.wyz.worldwind.R
+import com.atom.wyz.worldwind.RenderContext
 import com.atom.wyz.worldwind.draw.DrawableGroundAtmosphere
 import com.atom.wyz.worldwind.draw.DrawableSkyAtmosphere
 import com.atom.wyz.worldwind.geom.Location
@@ -54,6 +54,7 @@ class AtmosphereLayer : AbstractLayer {
     private val fullSphereSector: Sector = Sector().setFullSphere()
 
     constructor() : super("Atmosphere") {
+        this.pickEnabled = false
         nightImageSource = ImageSource.fromResource(R.drawable.gov_nasa_worldwind_night)
     }
 
@@ -72,8 +73,8 @@ class AtmosphereLayer : AbstractLayer {
             )
         } else {
             rc.globe!!.geographicToCartesianNormal(
-                rc.eyePosition.latitude,
-                rc.eyePosition.longitude,
+                rc.camera.latitude,
+                rc.camera.longitude,
                 activeLightDirection
             )
         }

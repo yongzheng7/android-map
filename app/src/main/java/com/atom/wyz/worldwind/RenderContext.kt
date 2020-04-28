@@ -6,9 +6,9 @@ import com.atom.wyz.worldwind.draw.Drawable
 import com.atom.wyz.worldwind.draw.DrawableList
 import com.atom.wyz.worldwind.draw.DrawableQueue
 import com.atom.wyz.worldwind.draw.DrawableTerrain
+import com.atom.wyz.worldwind.geom.Camera
 import com.atom.wyz.worldwind.geom.Frustum
 import com.atom.wyz.worldwind.geom.Matrix4
-import com.atom.wyz.worldwind.geom.Position
 import com.atom.wyz.worldwind.geom.Vec3
 import com.atom.wyz.worldwind.globe.Globe
 import com.atom.wyz.worldwind.globe.Terrain
@@ -27,22 +27,25 @@ import com.atom.wyz.worldwind.util.pool.SynchronizedPool
  * 绘画环境
  */
 open class RenderContext {
-
-    var resources: Resources? = null
-
     var globe: Globe? = null
 
     var terrain: Terrain? = null
 
-    var layers = LayerList()
-        set(value) {
-            field.clearLayers()
-            field.addAllLayers(value)
-        }
+    var layers: LayerList? = null
 
     var currentLayer: Layer? = null
 
+    var resources: Resources? = null
+
     var verticalExaggeration = 1.0
+
+    var fieldOfView = 0.0
+
+    var horizonDistance = 0.0
+
+    var camera = Camera()
+
+    var cameraPoint = Vec3()
 
     var viewport = Rect()
         set(value) {
@@ -51,67 +54,51 @@ open class RenderContext {
 
     var modelview: Matrix4 = Matrix4()
 
-    var horizonDistance = 0.0
-
     var projection: Matrix4 = Matrix4()
 
     var modelviewProjection: Matrix4 = Matrix4()
 
-    var eyePoint: Vec3 = Vec3()
-
     var frustum: Frustum = Frustum()
 
-    var pixelSizeFactor = 0.0
-
-    var eyePosition: Position = Position()
-        set(value) {
-            field.set(value)
-        }
-    /**
-     * 眼睛正方向 和 N 的角度
-     */
-    var heading = 0.0
-    /**
-     * 眼睛的倾斜度
-     */
-    var tilt = 0.0
-
-    var roll = 0.0
-
-    var fieldOfView = 0.0
-
-    var pickingMode = false
-
-    var redrawRequested = false
-
     var renderResourceCache: RenderResourceCache? = null
-
-    protected var drawablePools = HashMap<Any, Pool<*>?>()
-
-    private var userProperties: HashMap<Any, Any> = HashMap<Any, Any>()
 
     var drawableQueue: DrawableQueue? = null
 
     var drawableTerrain: DrawableList? = null
 
+    var redrawRequested = false
+
+    var pickingMode = false
+
+    var pixelSizeFactor = 0.0
+
+    private var drawablePools = HashMap<Any, Pool<*>?>()
+
+    private var userProperties: HashMap<Any, Any> = HashMap<Any, Any>()
+
     open fun reset() {
         pickingMode = false
         globe = null
         terrain = null
-        layers.clearLayers()
+        layers = null
         currentLayer = null
         verticalExaggeration = 1.0
-        eyePosition.set(0.0, 0.0, 0.0)
-        heading = 0.0
-        tilt = 0.0
-        roll = 0.0
+        camera.set(
+            0.0,
+            0.0,
+            0.0,
+            WorldWind.ABSOLUTE /*lat, lon, alt*/,
+            0.0,
+            0.0,
+            0.0  /*heading, tilt, roll*/
+        )
+        cameraPoint.set(0.0, 0.0, 0.0)
         fieldOfView = 0.0
         horizonDistance = 0.0
         viewport.setEmpty()
         modelview.setToIdentity()
         projection.setToIdentity()
         modelviewProjection.setToIdentity()
-        eyePoint.set(0.0, 0.0, 0.0)
         frustum.setToUnitFrustum()
         renderResourceCache = null
         resources = null
@@ -288,13 +275,14 @@ open class RenderContext {
         drawableQueue?.offerDrawable(drawable, WorldWind.SURFACE_DRAWABLE, zOrder)
     }
 
-    open fun offerShapeDrawable(drawable: Drawable, eyeDistance: Double) {
+    open fun offerShapeDrawable(drawable: Drawable, cameraDistance: Double) {
         drawableQueue?.offerDrawable(
             drawable,
             WorldWind.SHAPE_DRAWABLE,
-            -eyeDistance
+            -cameraDistance
         ) // order by descending eye distance
     }
+
     open fun sortDrawables() {
         drawableQueue?.sortDrawables()
     }

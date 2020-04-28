@@ -13,9 +13,7 @@ import com.atom.wyz.worldwind.util.Logger
 
 class BasicFrameController : FrameController {
 
-    protected var camera: Camera = Camera()
 
-    protected var matrix: Matrix4 = Matrix4()
 
     override fun drawFrame(dc: DrawContext) {
         clearFrame(dc)
@@ -42,7 +40,6 @@ class BasicFrameController : FrameController {
     }
 
     override fun renderFrame(rc: RenderContext) {
-        prepareViewingState(rc)
         tessellateTerrain(rc)
         renderLayers(rc)
         prepareDrawables(rc)
@@ -54,7 +51,7 @@ class BasicFrameController : FrameController {
 
 
     protected fun renderLayers(rc: RenderContext) {
-        val layers: LayerList = rc.layers
+        val layers: LayerList = rc.layers ?: return
         for (layer in layers) {
             rc.currentLayer = layer
             try {
@@ -74,35 +71,6 @@ class BasicFrameController : FrameController {
 
     protected fun tessellateTerrain(rc: RenderContext) {
         rc.globe?.tessellator?.tessellate(rc)
-    }
-
-    protected fun prepareViewingState(rc: RenderContext) {
-
-        val near = rc.eyePosition.altitude * 0.75
-        val far = rc.globe!!.horizonDistance(rc.eyePosition.altitude, 160000.0)
-        // 获取相机的动作
-        this.camera.set(
-            rc.eyePosition.latitude, rc.eyePosition.longitude, rc.eyePosition.altitude,
-            WorldWind.ABSOLUTE, rc.heading, rc.tilt, rc.roll
-        )
-        // 相机和地球 变换为地球的笛卡尔变换矩阵 ，旋转 远近位移等操作
-        rc.globe!!.cameraToCartesianTransform(camera, rc.modelview)!!.invertOrthonormal()
-        // 通过该矩阵获取眼睛的笛卡尔位置
-        rc.modelview.extractEyePoint(rc.eyePoint)
-        // 创建投影空间
-        rc.projection.setToPerspectiveProjection(
-            rc.viewport.width().toDouble(),
-            rc.viewport.height().toDouble(),
-            rc.fieldOfView,
-            near,
-            far
-        )
-        // 将变换和投影空间合并
-        rc.modelviewProjection.setToMultiply(rc.projection, rc.modelview)
-        // 投影空间设置
-        rc.frustum.setToProjectionMatrix(rc.projection)
-        rc.frustum.transformByMatrix(this.matrix.transposeMatrix(rc.modelview))
-        rc.frustum.normalize()
     }
 
 

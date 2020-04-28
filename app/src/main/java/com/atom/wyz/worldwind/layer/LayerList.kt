@@ -5,12 +5,12 @@ import com.atom.wyz.worldwind.util.Logger
 class LayerList() : Iterable<Layer> {
     protected val layers = arrayListOf<Layer>()
 
-    constructor(layers: Iterable<Layer>?) : this(){
-        if (layers == null) {
-            throw java.lang.IllegalArgumentException(
-                    Logger.logMessage(Logger.ERROR, "LayerList", "constructor", "missingList"))
-        }
-        addAllLayers(layers)
+    constructor(layers: Iterable<Layer>) : this(){
+        this.addAllLayers(layers)
+    }
+
+    constructor(layerList: LayerList):this() {
+        this.addAllLayers(layerList)
     }
     
     fun count(): Int {
