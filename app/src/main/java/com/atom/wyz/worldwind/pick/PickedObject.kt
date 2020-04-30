@@ -9,7 +9,7 @@ import com.atom.wyz.worldwind.util.Logger
 
 class PickedObject() {
 
-    companion object{
+    companion object {
         fun fromRenderable(
             renderable: Renderable?,
             position: Position?, @WorldWind.AltitudeMode altitudeMode: Int,
@@ -116,14 +116,14 @@ class PickedObject() {
 
     var isOnTop = false
 
-    protected var userObject: Any? = null
+    var userObject: Any? = null
 
-    protected var position: Position? = null
+    var position: Position? = null
 
     @WorldWind.AltitudeMode
-    protected var altitudeMode: Int = WorldWind.ABSOLUTE
+    var altitudeMode: Int = WorldWind.ABSOLUTE
 
-    protected var layer: Layer? = null
+    var layer: Layer? = null
 
     var identifier = 0
 

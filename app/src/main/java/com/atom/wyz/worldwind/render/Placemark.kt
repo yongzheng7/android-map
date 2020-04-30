@@ -5,14 +5,16 @@ import com.atom.wyz.worldwind.WorldWind
 import com.atom.wyz.worldwind.draw.DrawableLines
 import com.atom.wyz.worldwind.draw.DrawableScreenTexture
 import com.atom.wyz.worldwind.geom.*
+import com.atom.wyz.worldwind.globe.Globe
 import com.atom.wyz.worldwind.pick.PickedObject
 import com.atom.wyz.worldwind.shape.Highlightable
+import com.atom.wyz.worldwind.shape.Movable
 import com.atom.wyz.worldwind.shape.PlacemarkAttributes
 import com.atom.wyz.worldwind.util.Logger
 import com.atom.wyz.worldwind.util.WWMath
 import com.atom.wyz.worldwind.util.pool.Pool
 
-open class Placemark : AbstractRenderable, Highlightable {
+open class Placemark : AbstractRenderable, Highlightable, Movable {
 
     companion object {
 
@@ -309,5 +311,13 @@ open class Placemark : AbstractRenderable, Highlightable {
 
     override fun setHighlighted(highlighted: Boolean) {
         this._highlighted = highlighted
+    }
+
+    override fun getReferencePosition(): Position? {
+        return position
+    }
+
+    override fun moveTo(globe: Globe, position: Position?) {
+        this.position = position
     }
 }

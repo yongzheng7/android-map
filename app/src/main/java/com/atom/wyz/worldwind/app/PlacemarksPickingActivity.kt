@@ -1,6 +1,5 @@
 package com.atom.wyz.worldwind.app
 
-import android.graphics.PointF
 import android.os.Bundle
 import android.view.GestureDetector
 import android.view.MotionEvent
@@ -8,11 +7,12 @@ import com.atom.wyz.worldwind.BasicWorldWindowController
 import com.atom.wyz.worldwind.R
 import com.atom.wyz.worldwind.WorldWind
 import com.atom.wyz.worldwind.WorldWindow
-import com.atom.wyz.worldwind.geom.*
+import com.atom.wyz.worldwind.geom.LookAt
+import com.atom.wyz.worldwind.geom.Offset
+import com.atom.wyz.worldwind.geom.Position
 import com.atom.wyz.worldwind.layer.RenderableLayer
 import com.atom.wyz.worldwind.render.ImageSource
 import com.atom.wyz.worldwind.render.Placemark
-import com.atom.wyz.worldwind.render.Renderable
 import com.atom.wyz.worldwind.shape.Highlightable
 import com.atom.wyz.worldwind.shape.PlacemarkAttributes
 
@@ -47,10 +47,10 @@ class PlacemarksPickingActivity : BasicWorldWindActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         val wwd: WorldWindow = getWorldWindow()
+
+        wwd.worldWindowController = PickNavigateController()
         val layer = RenderableLayer("Placemarks")
         wwd.layers.addLayer(layer)
-        wwd.worldWindowController =
-            (PickNavigateController(layer))
         layer.addRenderable(
             createAirportPlacemark(
                 Position.fromDegrees(34.200, -119.207, 0.0),
@@ -79,17 +79,12 @@ class PlacemarksPickingActivity : BasicWorldWindActivity() {
 
     }
 
-    inner class PickNavigateController(layer: RenderableLayer) : BasicWorldWindowController() {
-        var PIXEL_TOLERANCE = 50f
+    inner class PickNavigateController() : BasicWorldWindowController() {
 
-        protected var pickedObject // last picked object from onDown events
-                : Renderable? = null
+        protected var pickedObject : Any? = null
 
-        protected var selectedObject // last "selected" object from single tap
-                : Renderable? = null
+        protected var selectedObject: Any? = null
 
-
-        val layer: RenderableLayer = layer
 
         protected var pickGestureDetector =
             GestureDetector(applicationContext, object : GestureDetector.SimpleOnGestureListener() {
@@ -99,9 +94,9 @@ class PlacemarksPickingActivity : BasicWorldWindActivity() {
                     return false
                 }
 
-                override fun onSingleTapConfirmed(e: MotionEvent?): Boolean {
+                override fun onSingleTapUp(e: MotionEvent?): Boolean {
                     toggleSelection() // Highlight the picked object
-                    return true // By not consuming this event, we allow the ACTION_UP event to pass on the navigation gestures
+                    return false // By not consuming this event, we allow the ACTION_UP event to pass on the navigation gestures
                 }
 
             })
@@ -114,32 +109,13 @@ class PlacemarksPickingActivity : BasicWorldWindActivity() {
         }
 
         fun pick(event: MotionEvent) {
-            pickedObject = this.simulatedPicking(event.x, event.y)
-        }
-
-        fun simulatedPicking(pickX: Float, pickY: Float): Renderable? {
-            val iterator: Iterator<Renderable> = layer.iterator()
-            while (iterator.hasNext()) {
-                val renderable = iterator.next()
-                if (renderable is Placemark) { // Get the screen point for this placemark
-                    val placemark = renderable
-                    val position: Position = placemark.position ?: continue
-                    val point = PointF()
-                    if (wwd.geographicToScreenPoint(
-                            position.latitude,
-                            position.longitude,
-                            position.altitude,
-                            point
-                        )
-                    ) {
-                        if (point.x <= pickX + PIXEL_TOLERANCE && point.x >= pickX - PIXEL_TOLERANCE && point.y <= pickY + PIXEL_TOLERANCE && point.y >= pickY - PIXEL_TOLERANCE
-                        ) {
-                            return placemark
-                        }
-                    }
-                }
+            // Forget our last picked object
+            pickedObject = null
+            val pickList = getWorldWindow().pick(event.x, event.y)
+            val pickedObject = pickList.topPickedObject()
+            if (pickedObject != null) {
+                this.pickedObject = pickedObject.userObject
             }
-            return null
         }
 
         fun toggleSelection() {

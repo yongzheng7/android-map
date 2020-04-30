@@ -66,6 +66,10 @@ class Viewport() {
         return x < that.x + that.width && that.x < x + width && y < that.y + that.height && that.y < y + height
     }
 
+    fun contains(x: Int, y: Int): Boolean {
+        return x >= this.x && x < this.x + width && y >= this.y && y < this.y + height
+    }
+
 
     override fun equals(other: Any?): Boolean {
         if (this === other) {

@@ -12,6 +12,7 @@ import com.atom.wyz.worldwind.layer.Layer
 import com.atom.wyz.worldwind.layer.LayerList
 import com.atom.wyz.worldwind.pick.PickedObject
 import com.atom.wyz.worldwind.pick.PickedObjectList
+import com.atom.wyz.worldwind.render.BufferObject
 import com.atom.wyz.worldwind.render.GpuProgram
 import com.atom.wyz.worldwind.render.GpuTexture
 import com.atom.wyz.worldwind.render.ImageSource
@@ -26,7 +27,7 @@ import com.atom.wyz.worldwind.util.pool.SynchronizedPool
  */
 open class RenderContext {
 
-    companion object{
+    companion object {
         private const val MAX_PICKED_OBJECT_ID = 0xFFFFFF
     }
 
@@ -77,6 +78,10 @@ open class RenderContext {
 
     var pickMode = false
 
+    var pickPoint: Vec2? = null
+
+    var pickRay: Line? = null
+
     var pixelSizeFactor = 0.0
 
     private var drawablePools = HashMap<Any, Pool<*>?>()
@@ -118,9 +123,11 @@ open class RenderContext {
         redrawRequested = false
 
         pickedObjects = null
-        pickedObjectId = 0
+        pickPoint = null
+        pickRay = null
         pickMode = false
         pixelSizeFactor = 0.0
+        pickedObjectId = 0
 
         userProperties.clear()
     }
@@ -322,7 +329,7 @@ open class RenderContext {
         return drawableQueue?.let { return it.count() } ?: 0
     }
 
-    open fun offerPickedObject(pickedObject : PickedObject?) {
+    open fun offerPickedObject(pickedObject: PickedObject?) {
         pickedObjects?.offerPickedObject(pickedObject)
     }
 
@@ -334,5 +341,13 @@ open class RenderContext {
         return pickedObjectId
     }
 
+    open fun getBufferObject(key: Any): BufferObject? {
+        return renderResourceCache!![key] as BufferObject?
+    }
+
+    open fun putBufferObject(key: Any, buffer: BufferObject): BufferObject {
+        renderResourceCache?.put(key, buffer, buffer.bufferByteCount)
+        return buffer
+    }
 
 }

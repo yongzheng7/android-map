@@ -74,4 +74,19 @@ class PickedObjectList() {
     fun clearPickedObjects() {
         entries.clear()
     }
+
+    override fun toString(): String {
+        val sb = StringBuilder("PickedObjectList{")
+        var idx = 0
+        val len = entries.size()
+        while (idx < len) {
+            if (idx > 0) {
+                sb.append(", ")
+            }
+            sb.append(entries.valueAt(idx).toString())
+            idx++
+        }
+        sb.append("}")
+        return sb.toString()
+    }
 }

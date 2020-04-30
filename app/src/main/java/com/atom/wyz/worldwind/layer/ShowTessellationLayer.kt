@@ -8,6 +8,9 @@ import com.atom.wyz.worldwind.util.pool.Pool
 
 class ShowTessellationLayer : AbstractLayer("Terrain Tessellation") {
 
+    init {
+        this.pickEnabled = false
+    }
     protected var color: Color = Color.WHITE
 
     override fun doRender(rc: RenderContext) {

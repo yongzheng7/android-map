@@ -152,10 +152,19 @@ class WorldWindow : GLSurfaceView, GLSurfaceView.Renderer, MessageListener, Fram
 
     @SuppressLint("ClickableViewAccessibility")
     override fun onTouchEvent(event: MotionEvent): Boolean {
-        if (!super.onTouchEvent(event)) {
-            if (worldWindowController.onTouchEvent(event)) { // let the controller try to handle the event
-                navigatorEvents.onTouchEvent(event) // the controller handled the event; notify navigator events
+        if (super.onTouchEvent(event)) {
+            return true
+        }
+        // Give the World Window's controller an opportunity to handle the event
+        try {
+            if (worldWindowController.onTouchEvent(event)) {
+                navigatorEvents.onTouchEvent(event)
             }
+        } catch (e: Exception) {
+            Logger.logMessage(
+                Logger.ERROR, "WorldWindow", "onTouchEvent",
+                "Exception while handling touch event \'$event\'", e
+            )
         }
         return true
     }
@@ -164,7 +173,7 @@ class WorldWindow : GLSurfaceView, GLSurfaceView.Renderer, MessageListener, Fram
 
         var nextFrame: Frame?
         while (frameQueue.poll().also { nextFrame = it } != null && nextFrame!!.pickMode) {
-            nextFrame ?.let{
+            nextFrame?.let {
                 drawFrame(it)
                 it.signalDone()
                 it.recycle()
@@ -177,7 +186,7 @@ class WorldWindow : GLSurfaceView, GLSurfaceView.Renderer, MessageListener, Fram
             super.requestRender()
         }
 
-        currentFrame?.let{
+        currentFrame?.let {
             drawFrame(it)
             it.signalDone()
         }
@@ -238,11 +247,12 @@ class WorldWindow : GLSurfaceView, GLSurfaceView.Renderer, MessageListener, Fram
         rc.drawableQueue = frame.drawableQueue
         rc.drawableTerrain = frame.drawableTerrain
         rc.pickedObjects = frame.pickedObjects
+        rc.pickPoint = frame.pickPoint;
+        rc.pickRay = frame.pickRay;
         rc.pickMode = frame.pickMode
 
         frameController.renderFrame(rc)
 
-        // Enqueue the frame for processing on the OpenGL thread as soon as possible and wake the OpenGL thread.
         frameQueue.offer(frame)
         super.requestRender()
 
@@ -250,12 +260,10 @@ class WorldWindow : GLSurfaceView, GLSurfaceView.Renderer, MessageListener, Fram
             requestRedraw()
         }
 
-        // Notify navigator change listeners when the modelview matrix associated with the frame has changed.
         if (!pickMode) {
             navigatorEvents.onFrameRendered(rc)
         }
 
-        // Reset the render context's state in preparation for the next frame.
         rc.reset()
 
         // Mark the end of a frame render.
@@ -271,7 +279,7 @@ class WorldWindow : GLSurfaceView, GLSurfaceView.Renderer, MessageListener, Fram
         if (!pickMode) {
             frameMetrics.beginDrawing()
         }
-        dc.eyePoint = frame.modelview.extractEyePoint(dc.eyePoint)
+        frame.modelview.extractEyePoint(dc.eyePoint)
         dc.projection.set(frame.projection)
         dc.modelview.set(frame.modelview)
         dc.modelviewProjection.setToMultiply(frame.projection, frame.modelview)
@@ -282,6 +290,7 @@ class WorldWindow : GLSurfaceView, GLSurfaceView.Renderer, MessageListener, Fram
 
         dc.drawableQueue = frame.drawableQueue
         dc.drawableTerrain = frame.drawableTerrain
+
         dc.pickedObjects = frame.pickedObjects
         dc.pickPoint = frame.pickPoint
         dc.pickMode = frame.pickMode
@@ -420,7 +429,6 @@ class WorldWindow : GLSurfaceView, GLSurfaceView.Renderer, MessageListener, Fram
     }
 
     protected fun clearFrameQueue() {
-
         var frame: Frame?
         while (frameQueue.poll().also { frame = it } != null) {
             frame?.signalDone()
@@ -438,13 +446,24 @@ class WorldWindow : GLSurfaceView, GLSurfaceView.Renderer, MessageListener, Fram
     fun pick(
         x: Float,
         y: Float
-    ): PickedObjectList? {
+    ): PickedObjectList {
         val pickedObjects = PickedObjectList()
-        val screenPoint = Vec2(x.toDouble(), viewport.height.toDouble() - y)
+        val pickPoint = Vec2(x.toDouble(), (this.height - y).toDouble())
+
+        // Nothing can be picked if the pick point is outside of the World Window's viewport.
+        if (!viewport.contains(pickPoint.x.toInt(), pickPoint.y.toInt())) {
+            return pickedObjects
+        }
+        // Nothing can be picked if a ray through the pick point cannot be constructed.
+        val pickRay = Line()
+        if (!rayThroughScreenPoint(x, y, pickRay)) {
+            return pickedObjects
+        }
         // Obtain a frame from the pool and render the frame, accumulating Drawables to process in the OpenGL thread.
         val frame = Frame.obtain(framePool)
         frame.pickedObjects = pickedObjects
-        frame.pickPoint = screenPoint
+        frame.pickPoint = pickPoint
+        frame.pickRay = pickRay
         frame.pickMode = true
         renderFrame(frame)
         // Wait until the OpenGL thread is done processing the frame and resolving the picked objects.
@@ -519,6 +538,9 @@ class WorldWindow : GLSurfaceView, GLSurfaceView.Renderer, MessageListener, Fram
         return cartesianToScreenPoint(scratchPoint.x, scratchPoint.y, scratchPoint.z, result)
     }
 
+    /**
+     * 根据屏幕的点获取一条射线
+     */
     fun rayThroughScreenPoint(
         x: Float,
         y: Float,
@@ -544,10 +566,12 @@ class WorldWindow : GLSurfaceView, GLSurfaceView.Renderer, MessageListener, Fram
         val my = m[4] * sx + m[5] * sy + m[7]
         val mz = m[8] * sx + m[9] * sy + m[11]
         val mw = m[12] * sx + m[13] * sy + m[15]
+
         var nx = mx - m[2]
         var ny = my - m[6]
         var nz = mz - m[10]
         val nw = mw - m[14]
+
         var fx = mx + m[2]
         var fy = my + m[6]
         var fz = mz + m[10]
@@ -558,6 +582,7 @@ class WorldWindow : GLSurfaceView, GLSurfaceView.Renderer, MessageListener, Fram
         nx = nx / nw
         ny = ny / nw
         nz = nz / nw
+
         fx = fx / fw
         fy = fy / fw
         fz = fz / fw

@@ -2,6 +2,7 @@ package com.atom.wyz.worldwind.frame
 
 import com.atom.wyz.worldwind.draw.DrawableList
 import com.atom.wyz.worldwind.draw.DrawableQueue
+import com.atom.wyz.worldwind.geom.Line
 import com.atom.wyz.worldwind.geom.Matrix4
 import com.atom.wyz.worldwind.geom.Vec2
 import com.atom.wyz.worldwind.geom.Viewport
@@ -32,6 +33,8 @@ class Frame {
 
     var pickPoint: Vec2? = null
 
+    var pickRay: Line? = null
+
     var pickMode = false
 
     private var isDone = false
@@ -59,6 +62,7 @@ class Frame {
         drawableTerrain.clearDrawables()
 
         pickedObjects = null
+        pickRay = null
         pickPoint = null
         pickMode = false
 

@@ -2,10 +2,10 @@ package com.atom.wyz.worldwind.app
 
 import android.app.AlertDialog
 import android.app.Dialog
+import android.content.DialogInterface
 import android.graphics.PointF
 import android.os.Bundle
 import android.view.GestureDetector
-import android.view.GestureDetector.OnDoubleTapListener
 import android.view.MotionEvent
 import android.widget.Toast
 import androidx.fragment.app.DialogFragment
@@ -32,18 +32,38 @@ class PlacemarksSelectDragActivity : BasicWorldWindActivity() {
         const val MOVABLE = "movable"
         const val SELECTABLE = "selectable"
         const val AIRCRAFT_TYPE = "aircraft_type"
+        const val AUTOMOTIVE_TYPE = "auotomotive_type"
 
         val aircraftTypes = arrayOf(
             "Small Plane",
             "Twin Engine",
-            "Passenger Jet",
+            "Passenger Jet", "Bomber",
             "Fighter Jet"
+        )
+        val automotiveTypes = arrayOf(
+            "Car",
+            "SUV",
+            "4x4",
+            "Truck",
+            "Jeep",
+            "Tank"
         )
         val aircraftIcons = intArrayOf(
             R.drawable.aircraft_small,
             R.drawable.aircraft_twin,
             R.drawable.aircraft_jet,
-            R.drawable.aircraft_fighter
+            R.drawable.aircraft_fighter,
+            R.drawable.aircraft_bomber,
+            R.drawable.aircraft_rotor
+            )
+
+        private val automotiveIcons = intArrayOf(
+            R.drawable.vehicle_car,
+            R.drawable.vehicle_suv,
+            R.drawable.vehicle_4x4,
+            R.drawable.vehicle_truck,
+            R.drawable.vehicle_jeep,
+            R.drawable.vehicle_tank
         )
 
         protected fun createAirportPlacemark(position: Position, airportName: String): Placemark {
@@ -53,11 +73,7 @@ class PlacemarksSelectDragActivity : BasicWorldWindActivity() {
                 this.imageOffset = (Offset.bottomCenter())
                 this.imageScale = 2.0
             }
-            placemark.highlightAttributes = (PlacemarkAttributes(placemark.attributes).apply {
-                this.imageScale = (3.0)
-            })
             placemark.displayName = airportName
-            placemark.putUserProperty(SELECTABLE, null)
             return placemark
         }
 
@@ -79,8 +95,8 @@ class PlacemarksSelectDragActivity : BasicWorldWindActivity() {
             }
             placemark.highlightAttributes = (
                     PlacemarkAttributes(placemark.attributes).apply {
-                        this.imageScale = (4.0)
-                        this.imageColor = Color.YELLOW
+                        this.imageScale = (3.0)
+                        this.imageColor = Color(android.graphics.Color.YELLOW)
                     }
                     )
             placemark.displayName = (aircraftName)
@@ -91,78 +107,158 @@ class PlacemarksSelectDragActivity : BasicWorldWindActivity() {
             return placemark
         }
 
+        protected fun createAutomobilePlacemark(
+            position: Position,
+            name: String,
+            automotiveType: String
+        ): Placemark {
+            require(automotiveIconMap.containsKey(automotiveType)) { "$automotiveType is not valid." }
+            val placemark: Placemark = Placemark.createSimpleImage(
+                position,
+                ImageSource.fromResource(automotiveIconMap[automotiveType]!!)
+            )
+            placemark.attributes.apply {
+                this.imageOffset = (Offset.bottomCenter())
+                this.imageScale = 2.0
+            }
+            placemark.highlightAttributes = PlacemarkAttributes(placemark.attributes).apply {
+                this.imageScale = (3.0)
+                this.imageColor = Color(android.graphics.Color.YELLOW)
+
+            }
+            placemark.displayName = (name)
+            placemark.putUserProperty(AUTOMOTIVE_TYPE, automotiveType)
+            placemark.putUserProperty(SELECTABLE, null)
+            placemark.putUserProperty(EDITABLE, null)
+            placemark.putUserProperty(MOVABLE, null)
+            return placemark
+        }
+
         val aircraftIconMap = HashMap<String, Int>()
+        val automotiveIconMap = HashMap<String, Int>()
+
     }
 
     private var controller: SelectDragNavigateController? = null
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         for (i in aircraftTypes.indices) {
             aircraftIconMap[aircraftTypes[i]] = aircraftIcons[i]
         }
+        for (i in automotiveTypes.indices) {
+            automotiveIconMap[automotiveTypes[i]] = automotiveIcons[i]
+        }
+
         val wwd: WorldWindow = getWorldWindow()
 
         val layer = RenderableLayer("Placemarks")
         wwd.layers.addLayer(layer)
+        // Create some placemarks and add them to the layer
         layer.addRenderable(
             createAirportPlacemark(
-                Position.fromDegrees(34.200, -119.207, 0.0),
-                "Oxnard Airport"
+                Position.fromDegrees(
+                    34.2000,
+                    -119.2070,
+                    0.0
+                ), "Oxnard Airport"
             )
         )
         layer.addRenderable(
             createAirportPlacemark(
-                Position.fromDegrees(34.2138, -119.0944, 0.0),
-                "Camarillo Airport"
+                Position.fromDegrees(
+                    34.2138,
+                    -119.0944,
+                    0.0
+                ), "Camarillo Airport"
             )
         )
+        layer.addRenderable(
+            createAirportPlacemark(
+                Position.fromDegrees(
+                    34.1193,
+                    -119.1196,
+                    0.0
+                ), "Pt Mugu Naval Air Station"
+            )
+        )
+        layer.addRenderable(
+            PlacemarksSelectDragActivity.createAutomobilePlacemark(
+                Position.fromDegrees(
+                    34.210,
+                    -119.120,
+                    0.0
+                ), "Civilian Vehicle", automotiveTypes[1]
+            )
+        ) // suv
+
+        layer.addRenderable(
+            PlacemarksSelectDragActivity.createAutomobilePlacemark(
+                Position.fromDegrees(
+                    34.210,
+                    -119.160,
+                    0.0
+                ), "Military Vehicle", automotiveTypes[4]
+            )
+        ) // jeep
 
         layer.addRenderable(
             createAircraftPlacemark(
-                Position.fromDegrees(34.200, -119.207, 1000.0),
-                "Commercial",
-                aircraftTypes[1]
+                Position.fromDegrees(
+                    34.200,
+                    -119.207,
+                    1000.0
+                ), "Commercial Aircraft", aircraftTypes[1]
             )
-        )
+        ) // twin
+
         layer.addRenderable(
             createAircraftPlacemark(
-                Position.fromDegrees(34.210, -119.150, 2000.0),
-                "Military",
-                aircraftTypes[3]
+                Position.fromDegrees(
+                    34.210,
+                    -119.150,
+                    2000.0
+                ), "Military Aircraft", aircraftTypes[3]
             )
-        )
+        ) // fighter
+
         layer.addRenderable(
             createAircraftPlacemark(
-                Position.fromDegrees(34.250, -119.207, 1000.0),
-                "Private",
-                aircraftTypes[0]
+                Position.fromDegrees(
+                    34.150,
+                    -119.150,
+                    500.0
+                ), "Private Aircraft", aircraftTypes[0]
             )
-        )
-        this.controller = SelectDragNavigateController(layer)
+        ) // small plane
+
+
+        this.controller = SelectDragNavigateController()
         wwd.worldWindowController = controller!!
 
         val lookAt: LookAt = LookAt().set(
-            34.210, -119.150, 0.0, WorldWind.ABSOLUTE,
+            34.150, -119.150, 0.0, WorldWind.ABSOLUTE,
             2e4, 0.0, 45.0, 0.0
         )
         getWorldWindow().navigator.setAsLookAt(getWorldWindow().globe, lookAt)
     }
 
-    inner class SelectDragNavigateController(var layer: RenderableLayer) : BasicWorldWindowController(){
-        var PIXEL_TOLERANCE = 50f
+    inner class SelectDragNavigateController() : BasicWorldWindowController() {
 
-        protected var pickedObject: Renderable? = null
+        var pickedObject: Renderable? = null
 
         var selectedObject: Renderable? = null
 
-        protected var isDragging = false
+        var isDragging = false
 
-        protected var isDraggingArmed = false
+        var isDraggingArmed = false
 
-        private val ray: Line = Line()
+        val ray: Line = Line()
 
-        private val pickPoint: Vec3 = Vec3()
+        val pickPoint: Vec3 = Vec3()
+
+        val dragRefPt = PointF()
 
 
         protected var gestureDetector = GestureDetector(applicationContext,
@@ -174,9 +270,13 @@ class PlacemarksSelectDragActivity : BasicWorldWindActivity() {
                     return false // By not consuming this event, we allow it to pass on to the navigation gesture handlers
                 }
 
+                override fun onSingleTapUp(event: MotionEvent?): Boolean { // This single-tap handler has a faster response time than onSingleTapConfirmed.
+                    toggleSelection()
+                    return false
+                }
                 override fun onSingleTapConfirmed(event: MotionEvent?): Boolean {
-                    toggleSelection() // Highlight the picked object
-                    return true
+                    // toggleSelection()
+                    return super.onSingleTapConfirmed(event)
                 }
 
                 override fun onScroll(
@@ -185,9 +285,7 @@ class PlacemarksSelectDragActivity : BasicWorldWindActivity() {
                     distanceX: Float,
                     distanceY: Float
                 ): Boolean {
-                    moveEvent?.let {
-                        drag(it)
-                    }
+                    drag(downEvent!!, moveEvent!!, distanceX, distanceY)
                     // Move the selected object
                     return isDragging // Consume this event if dragging is active
                 }
@@ -195,13 +293,15 @@ class PlacemarksSelectDragActivity : BasicWorldWindActivity() {
                 override fun onDoubleTap(event: MotionEvent?): Boolean { // Note that double-tapping should not toggle a "selected" object's selected state
                     if (pickedObject !== selectedObject) {
                         toggleSelection()
+                    } else {
+                        edit() // Open the placemark editor
+                        return true
                     }
-                    edit() // Open the placemark editor
-                    return true
+                    return false
                 }
 
                 override fun onLongPress(e: MotionEvent?) {
-                    e ?.let {  pick(it)}
+                    e?.let { pick(it) }
                     contextMenu()
                 }
             })
@@ -220,7 +320,18 @@ class PlacemarksSelectDragActivity : BasicWorldWindActivity() {
         }
 
         fun pick(event: MotionEvent) {
-            pickedObject = this.simulatedPicking(event.x, event.y)
+            pickedObject = null
+
+            val pickList = getWorldWindow().pick(event.x, event.y)
+
+            // Examine the picked objects for Renderables
+            val topPickedObject = pickList.topPickedObject()
+            if (topPickedObject != null) {
+                if (topPickedObject.userObject is Renderable) {
+                    pickedObject = topPickedObject.userObject as Renderable
+                }
+            }
+
             isDraggingArmed = (pickedObject != null
                     && selectedObject === pickedObject
                     && selectedObject!!.hasUserProperty(MOVABLE))
@@ -241,7 +352,7 @@ class PlacemarksSelectDragActivity : BasicWorldWindActivity() {
             }
         }
 
-        fun drag(event: MotionEvent) {
+        fun simpleDrag(event: MotionEvent) {
             if (isDraggingArmed && selectedObject != null) {
                 if (selectedObject is Placemark) {
                     isDragging = true
@@ -256,53 +367,122 @@ class PlacemarksSelectDragActivity : BasicWorldWindActivity() {
             }
         }
 
+        fun drag(downEvent: MotionEvent, moveEvent: MotionEvent, distanceX: Float, distanceY: Float) {
+            if (isDraggingArmed && selectedObject != null) {
+                if (selectedObject is Placemark) { // Signal to other event handlers that dragging is in progress
+                    isDragging = true
+                    val position: Position = (selectedObject as Placemark?)?.position ?: return
+                    val altitude = position.altitude
+                    if (!getWorldWindow().geographicToScreenPoint(
+                            position.latitude,
+                            position.longitude,
+                            0.0 /*altitude*/,
+                            dragRefPt
+                        )
+                    ) { // Probably clipped by near/far clipping plane.
+                        isDragging = false
+                        return
+                    }
+                    // Update the placemark's ground position...
+                    if (!screenPointToGroundPosition(
+                            dragRefPt.x - distanceX,
+                            dragRefPt.y - distanceY,
+                            position
+                        )
+                    ) { // Probably off the globe, so cancel the drag.
+                        isDragging = false
+                        return
+                    }
+                    // ... and restore the altitude
+                    position.altitude = altitude
+                    getWorldWindow().requestRedraw()
+                }
+            }
+        }
+
+        /**
+         * Moves the selected object to the event's screen position.
+         */
+        fun bestDrag(
+            downEvent: MotionEvent?,
+            moveEvent: MotionEvent?,
+            distanceX: Float,
+            distanceY: Float
+        ) {
+            if (isDraggingArmed && selectedObject != null) {
+                if (selectedObject is Placemark) {
+                    isDragging = true
+                    val position: Position = (selectedObject as Placemark?)?.position ?: return
+                    val altitude = position.altitude
+                    if (!getWorldWindow().geographicToScreenPoint(
+                            position.latitude,
+                            position.longitude,
+                            0.0 /*altitude*/,
+                            dragRefPt
+                        )
+                    ) { // Probably clipped by near/far clipping plane.
+                        isDragging = false
+                        return
+                    }
+                    // Update the placemark's ground position...
+                    if (!screenPointToGroundPosition(
+                            dragRefPt.x - distanceX,
+                            dragRefPt.y - distanceY,
+                            position
+                        )
+                    ) { // Probably off the globe, so cancel the drag.
+                        isDragging = false
+                        return
+                    }
+                    // ... and restore the altitude
+                    position.altitude = altitude
+                    getWorldWindow().requestRedraw()
+                }
+            }
+        }
+
         fun edit() {
-            val hasUserProperty = selectedObject?.hasUserProperty(EDITABLE) ?: false
-            if (hasUserProperty) {
-                val placemark = selectedObject as Placemark
+            if (selectedObject is Placemark && selectedObject!!.hasUserProperty(EDITABLE)
+            ) {
+                val placemark = selectedObject as Placemark?
                 // Pass the current aircraft type in a Bundle
                 val args = Bundle()
-                args.putString("title", "Select the " + placemark.displayName.toString() + " Aircraft Type")
-                args.putString("type", placemark.getUserProperty(AIRCRAFT_TYPE) as String?)
-                val dialog = AircraftTypeDialog()
-                dialog.arguments = args
+                args.putString("title", "Select the " + placemark?.displayName + "'s type")
+                if (placemark!!.hasUserProperty(AIRCRAFT_TYPE)) {
+                    args.putString("vehicleKey", AIRCRAFT_TYPE)
+                    args.putString(
+                        "vehicleValue",
+                        placemark.getUserProperty(AIRCRAFT_TYPE) as String?
+                    )
+                } else if (placemark.hasUserProperty(AUTOMOTIVE_TYPE)) {
+                    args.putString("vehicleKey", AUTOMOTIVE_TYPE)
+                    args.putString(
+                        "vehicleValue",
+                        placemark.getUserProperty(AUTOMOTIVE_TYPE) as String?
+                    )
+                }
+                // The VehicleTypeDialog calls onFinished
+                val dialog: VehicleTypeDialog = VehicleTypeDialog()
+                dialog.setArguments(args)
                 dialog.show(supportFragmentManager, "aircraft_type")
+            } else {
+                Toast.makeText(
+                    applicationContext,
+                    (if (selectedObject == null) "Object " else selectedObject?.displayName) + " is not editable.",
+                    Toast.LENGTH_LONG
+                ).show()
             }
         }
 
         fun contextMenu() {
             Toast.makeText(
                 applicationContext,
-                (if (pickedObject == null) "Nothing" else pickedObject?.displayName) + " picked"
-                        + (if (pickedObject === selectedObject) " and " else " but not ") + "selected.",
+                (if (pickedObject == null) "Nothing" else pickedObject?.displayName) + " picked and "
+                        + (if (selectedObject == null) "nothing" else selectedObject?.displayName) + " selected.",
                 Toast.LENGTH_LONG
             ).show()
         }
 
-        fun simulatedPicking(pickX: Float, pickY: Float): Renderable? {
-            val iterator = layer.iterator()
-            while (iterator.hasNext()) {
-                val renderable = iterator.next()
-                if (renderable is Placemark) { // Get the screen point for this placemark
-                    val placemark = renderable
-                    val position: Position = placemark.position ?: return null
-                    val point = PointF()
-                    if (wwd.geographicToScreenPoint(
-                            position.latitude,
-                            position.longitude,
-                            position.altitude,
-                            point
-                        )
-                    ) { // Test if the placemark's screen point is within the tolerance for picking
-                        if (point.x <= pickX + PIXEL_TOLERANCE && point.x >= pickX - PIXEL_TOLERANCE && point.y <= pickY + PIXEL_TOLERANCE && point.y >= pickY - PIXEL_TOLERANCE
-                        ) {
-                            return placemark
-                        }
-                    }
-                }
-            }
-            return null
-        }
 
         fun screenPointToGroundPosition(screenX: Float, screenY: Float, result: Position): Boolean {
             if (wwd.rayThroughScreenPoint(screenX, screenY, ray)) {
@@ -317,53 +497,61 @@ class PlacemarksSelectDragActivity : BasicWorldWindActivity() {
 
     }
 
-    class AircraftTypeDialog : DialogFragment() {
+    class VehicleTypeDialog : DialogFragment() {
         interface PlacemarkAircraftTypeListener {
             fun onFinishedAircraftEditing(aircraftType: String?)
         }
 
-        private var selection = -1
-        override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
-            val args = getArguments()
+         var selectedItem = -1
 
-            var title = ""
-            var type = ""
-            args?.let {
-                title = it.getString("title", "")
-                type = it.getString("type", "")
+        var vehicleKey: String? = null
+
+        var vehicleTypes: Array<String>? = null
+
+        var vehicleIcons: HashMap<String, Int>? = null
+
+        override fun onCreateDialog(argss: Bundle?): Dialog {
+            val args = arguments
+            val title = args?.getString("title", "") ?: ""
+            vehicleKey = args?.getString("vehicleKey", "")
+            if (vehicleKey == AIRCRAFT_TYPE) {
+                vehicleTypes = aircraftTypes
+                vehicleIcons = aircraftIconMap
+            } else if (vehicleKey == AUTOMOTIVE_TYPE) {
+                vehicleTypes = automotiveTypes
+                vehicleIcons = automotiveIconMap
             }
-            for (i in aircraftTypes.indices) {
-                if (type === aircraftTypes[i]) {
-                    selection = i
+            val type: String = args?.getString("vehicleValue", "") ?: ""
+            for (i in vehicleTypes!!.indices) {
+                if (type == vehicleTypes!![i]) {
+                    this.selectedItem = i
                     break
                 }
             }
-            // Create single selection list of aircraft types
-            return AlertDialog.Builder(getActivity())
+            return AlertDialog.Builder(activity)
                 .setTitle(title)
                 .setSingleChoiceItems(
-                    aircraftTypes, selection,
-                    { dialog, which -> selection = which })
-                .setPositiveButton(android.R.string.yes, { dialog, which ->
-                    onFinished(aircraftTypes[selection])
-                }) // A null handler will close the dialog
-                .setNegativeButton(android.R.string.no, null)
+                    vehicleTypes, this.selectedItem,
+                    DialogInterface.OnClickListener { dialog, which ->
+                        selectedItem = which
+                    }) // The OK button will update the selected placemark's aircraft type
+                .setPositiveButton(android.R.string.ok,
+                    DialogInterface.OnClickListener { dialog, which -> onFinished(vehicleTypes!![selectedItem]) }) // A null handler will close the dialog
+                .setNegativeButton(android.R.string.cancel, null)
                 .create()
         }
 
-        fun onFinished(aircraftType: String) {
+        fun onFinished(vehicleType: String) {
             val activity = activity as PlacemarksSelectDragActivity?
             if (activity!!.controller!!.selectedObject is Placemark) {
                 val placemark = activity.controller!!.selectedObject as Placemark?
-                val currentType =
-                    placemark!!.getUserProperty(AIRCRAFT_TYPE) as String?
-                if (currentType == aircraftType) {
+                val currentType = placemark!!.getUserProperty(vehicleKey!!) as String?
+                if (currentType == vehicleType) {
                     return
                 }
-                // Update the placemark's icon and aircraft type property
-                val imageSource =
-                    ImageSource.fromResource(aircraftIconMap[aircraftType]!!)
-                placemark.putUserProperty(AIRCRAFT_TYPE, aircraftType)
+                // Update the placemark's icon attributes and vehicle type property.
+                val imageSource = ImageSource.fromResource(vehicleIcons!![vehicleType]!!)
+                placemark.putUserProperty(vehicleKey!!, vehicleType)
                 placemark.attributes.imageSource = (imageSource)
                 placemark.highlightAttributes?.imageSource = (imageSource)
                 // Show the change

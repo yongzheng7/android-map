@@ -1,39 +1,35 @@
 package com.atom.wyz.worldwind.geom
 
 import com.atom.wyz.worldwind.util.Logger
+import java.nio.FloatBuffer
+import java.nio.ShortBuffer
 
 class Line {
 
-    /**
-     * 线的原点
-     */
     val origin: Vec3 = Vec3()
 
-    /**
-     * 从原点到结尾距离xyz
-     */
     val direction: Vec3 = Vec3()
 
-    /**
-     * Constructs a line from a specified origin and direction.
-     *
-     * @param origin    The line's origin.
-     * @param direction The line's direction.
-     *
-     * @throws IllegalArgumentException If either the origin or the direction are null or undefined.
-     */
+    private val vertex = FloatArray(3)
+
     constructor()
 
     constructor(origin: Vec3?, direction: Vec3?) {
         if (origin == null) {
             throw IllegalArgumentException(
-                    Logger.logMessage(Logger.ERROR, "Line", "constructor",
-                            "Origin is null or undefined."))
+                Logger.logMessage(
+                    Logger.ERROR, "Line", "constructor",
+                    "Origin is null or undefined."
+                )
+            )
         }
         if (direction == null) {
             throw IllegalArgumentException(
-                    Logger.logMessage(Logger.ERROR, "Line", "constructor",
-                            "Direction is null or undefined."))
+                Logger.logMessage(
+                    Logger.ERROR, "Line", "constructor",
+                    "Direction is null or undefined."
+                )
+            )
         }
         this.origin.set(origin)
         this.direction.set(direction)
@@ -42,11 +38,13 @@ class Line {
     operator fun set(origin: Vec3?, direction: Vec3?): Line? {
         if (origin == null) {
             throw IllegalArgumentException(
-                    Logger.logMessage(Logger.ERROR, "Line", "set", "The origin is null"))
+                Logger.logMessage(Logger.ERROR, "Line", "set", "The origin is null")
+            )
         }
         if (direction == null) {
             throw IllegalArgumentException(
-                    Logger.logMessage(Logger.ERROR, "Line", "set", "The direction is null"))
+                Logger.logMessage(Logger.ERROR, "Line", "set", "The direction is null")
+            )
         }
         this.origin.set(origin)
         this.direction.set(direction)
@@ -67,7 +65,8 @@ class Line {
     fun pointAt(distance: Double, result: Vec3?): Vec3 {
         if (result == null) {
             throw IllegalArgumentException(
-                    Logger.logMessage(Logger.ERROR, "Line", "pointAt", "missingResult."))
+                Logger.logMessage(Logger.ERROR, "Line", "pointAt", "missingResult.")
+            )
         }
         result.x = origin.x + direction.x * distance
         result.y = origin.y + direction.y * distance
@@ -81,7 +80,8 @@ class Line {
     fun setToSegment(pointA: Vec3?, pointB: Vec3?): Line {
         if (pointA == null || pointB == null) {
             throw java.lang.IllegalArgumentException(
-                    Logger.logMessage(Logger.ERROR, "Line", "setToSegment", "missingVector"))
+                Logger.logMessage(Logger.ERROR, "Line", "setToSegment", "missingVector")
+            )
         }
         this.origin.set(pointA)
         this.direction.set(pointB.x - pointA.x, pointB.y - pointA.y, pointB.z - pointA.z)
@@ -92,10 +92,126 @@ class Line {
     fun Line(line: Line?) {
         if (line == null) {
             throw java.lang.IllegalArgumentException(
-                    Logger.logMessage(Logger.ERROR, "Line", "constructor", "missingLine"))
+                Logger.logMessage(Logger.ERROR, "Line", "constructor", "missingLine")
+            )
         }
         origin.set(line.origin)
         direction.set(line.direction)
+    }
+
+    fun triStripIntersection(
+        points: FloatBuffer?,
+        stride: Int,
+        elements: ShortBuffer?,
+        result: Vec3?
+    ): Boolean {
+        require(!(points == null || points.remaining() < stride)) {
+            Logger.logMessage(
+                Logger.ERROR,
+                "Line",
+                "triStripIntersections",
+                "missingBuffer"
+            )
+        }
+        require(stride >= 3) { Logger.logMessage(Logger.ERROR, "Line", "triStripIntersections", "invalidStride") }
+        require(!(elements == null || elements.remaining() == 0)) {
+            Logger.logMessage(
+                Logger.ERROR,
+                "Line",
+                "triStripIntersections",
+                "missingBuffer"
+            )
+        }
+        requireNotNull(result) { Logger.logMessage(Logger.ERROR, "Line", "triStripIntersections", "missingResult") }
+
+        val vx = direction.x
+        val vy = direction.y
+        val vz = direction.z
+        val sx = origin.x
+        val sy = origin.y
+        val sz = origin.z
+        var tMin = Double.POSITIVE_INFINITY
+        val EPSILON = 0.00001
+        points.mark()
+        // 获取三角形的第一个定点
+        points.position(elements[0] * stride)
+        points.get(vertex)
+        var vert1x = vertex[0].toDouble()
+        var vert1y = vertex[1].toDouble()
+        var vert1z = vertex[2].toDouble()
+        // 获取三角形的第2个定点
+        points.position(elements[1] * stride)
+        points.get(vertex)
+        var vert2x = vertex[0].toDouble()
+        var vert2y = vertex[1].toDouble()
+        var vert2z = vertex[2].toDouble()
+        // 计算每个三角形与指定射线的交点。
+        var i = 2
+        val len = elements.remaining()
+        while (i < len) {
+
+            val vert0x = vert1x
+            val vert0y = vert1y
+            val vert0z = vert1z
+            vert1x = vert2x
+            vert1y = vert2y
+            vert1z = vert2z
+            // Get the triangle strip's next vertex.
+            points.position(elements[i] * stride)
+            points.get(vertex)
+            vert2x = vertex[0].toDouble()
+            vert2y = vertex[1].toDouble()
+            vert2z = vertex[2].toDouble()
+            // find vectors for two edges sharing point a: vert1 - vert0 and vert2 - vert0
+            val edge1x = vert1x - vert0x
+            val edge1y = vert1y - vert0y
+            val edge1z = vert1z - vert0z
+            val edge2x = vert2x - vert0x
+            val edge2y = vert2y - vert0y
+            val edge2z = vert2z - vert0z
+            // Compute cross product of line direction and edge2
+            val px = vy * edge2z - vz * edge2y
+            val py = vz * edge2x - vx * edge2z
+            val pz = vx * edge2y - vy * edge2x
+            // Get determinant
+            val det = edge1x * px + edge1y * py + edge1z * pz // edge1 dot p
+            if (det > -EPSILON && det < EPSILON) { // if det is near zero then ray lies in plane of triangle
+                i++
+                continue
+            }
+            val inv_det = 1.0 / det
+            // Compute distance for vertex A to ray origin: origin - vert0
+            val tx = sx - vert0x
+            val ty = sy - vert0y
+            val tz = sz - vert0z
+            // Calculate u parameter and test bounds: 1/det * t dot p
+            val u = inv_det * (tx * px + ty * py + tz * pz)
+            if (u < -EPSILON || u > 1 + EPSILON) {
+                i++
+                continue
+            }
+            // Prepare to test v parameter: tvec cross edge1
+            val qx = ty * edge1z - tz * edge1y
+            val qy = tz * edge1x - tx * edge1z
+            val qz = tx * edge1y - ty * edge1x
+            // Calculate v parameter and test bounds: 1/det * dir dot q
+            val v = inv_det * (vx * qx + vy * qy + vz * qz)
+            if (v < -EPSILON || u + v > 1 + EPSILON) {
+                i++
+                continue
+            }
+            // Calculate the point of intersection on the line: t = 1/det * edge2 dot q
+            val t = inv_det * (edge2x * qx + edge2y * qy + edge2z * qz)
+            if (t >= 0 && t < tMin) {
+                tMin = t
+            }
+            i++
+        }
+        points.reset()
+        if (tMin != Double.POSITIVE_INFINITY) {
+            result[sx + vx * tMin, sy + vy * tMin] = sz + vz * tMin
+        }
+        return tMin != Double.POSITIVE_INFINITY
     }
 
     override fun equals(other: Any?): Boolean {

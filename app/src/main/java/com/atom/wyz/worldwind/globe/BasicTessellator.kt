@@ -77,7 +77,7 @@ class BasicTessellator : Tessellator, TileFactory {
      */
     protected fun invalidateTiles() {
         topLevelTiles.clear()
-        currentTerrain.clearTiles()
+        currentTerrain.clear()
         tileCache.clear()
         tileVertexTexCoords = null
         tileLineElements = null
@@ -92,7 +92,7 @@ class BasicTessellator : Tessellator, TileFactory {
      */
     protected fun assembleTiles(rc: RenderContext) {
         // 地形清除瓦片
-        currentTerrain.clearTiles() // 1
+        currentTerrain.clear() // 1
 
         if (topLevelTiles.isEmpty()) {
             createTopLevelTiles()
