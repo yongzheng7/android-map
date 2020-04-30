@@ -1,19 +1,17 @@
 package com.atom.wyz.worldwind
 
 import android.content.res.Resources
-import android.graphics.Rect
 import com.atom.wyz.worldwind.draw.Drawable
 import com.atom.wyz.worldwind.draw.DrawableList
 import com.atom.wyz.worldwind.draw.DrawableQueue
 import com.atom.wyz.worldwind.draw.DrawableTerrain
-import com.atom.wyz.worldwind.geom.Camera
-import com.atom.wyz.worldwind.geom.Frustum
-import com.atom.wyz.worldwind.geom.Matrix4
-import com.atom.wyz.worldwind.geom.Vec3
+import com.atom.wyz.worldwind.geom.*
 import com.atom.wyz.worldwind.globe.Globe
 import com.atom.wyz.worldwind.globe.Terrain
 import com.atom.wyz.worldwind.layer.Layer
 import com.atom.wyz.worldwind.layer.LayerList
+import com.atom.wyz.worldwind.pick.PickedObject
+import com.atom.wyz.worldwind.pick.PickedObjectList
 import com.atom.wyz.worldwind.render.GpuProgram
 import com.atom.wyz.worldwind.render.GpuTexture
 import com.atom.wyz.worldwind.render.ImageSource
@@ -27,6 +25,11 @@ import com.atom.wyz.worldwind.util.pool.SynchronizedPool
  * 绘画环境
  */
 open class RenderContext {
+
+    companion object{
+        private const val MAX_PICKED_OBJECT_ID = 0xFFFFFF
+    }
+
     var globe: Globe? = null
 
     var terrain: Terrain? = null
@@ -47,7 +50,7 @@ open class RenderContext {
 
     var cameraPoint = Vec3()
 
-    var viewport = Rect()
+    var viewport = Viewport()
         set(value) {
             field.set(value)
         }
@@ -68,7 +71,11 @@ open class RenderContext {
 
     var redrawRequested = false
 
-    var pickingMode = false
+    var pickedObjects: PickedObjectList? = null
+
+    var pickedObjectId = 0
+
+    var pickMode = false
 
     var pixelSizeFactor = 0.0
 
@@ -77,7 +84,7 @@ open class RenderContext {
     private var userProperties: HashMap<Any, Any> = HashMap<Any, Any>()
 
     open fun reset() {
-        pickingMode = false
+        pickMode = false
         globe = null
         terrain = null
         layers = null
@@ -95,17 +102,26 @@ open class RenderContext {
         cameraPoint.set(0.0, 0.0, 0.0)
         fieldOfView = 0.0
         horizonDistance = 0.0
+
         viewport.setEmpty()
         modelview.setToIdentity()
         projection.setToIdentity()
         modelviewProjection.setToIdentity()
         frustum.setToUnitFrustum()
+
         renderResourceCache = null
         resources = null
-        redrawRequested = false
-        pixelSizeFactor = 0.0
+
         drawableQueue = null
         drawableTerrain = null
+
+        redrawRequested = false
+
+        pickedObjects = null
+        pickedObjectId = 0
+        pickMode = false
+        pixelSizeFactor = 0.0
+
         userProperties.clear()
     }
 
@@ -113,7 +129,7 @@ open class RenderContext {
         if (pixelSizeFactor == 0.0) { // cache the scaling factor used to convert distances to pixel sizes
             val fovyDegrees = fieldOfView
             val tanfovy_2 = Math.tan(Math.toRadians(fovyDegrees * 0.5))
-            pixelSizeFactor = 2 * tanfovy_2 / viewport.height()
+            pixelSizeFactor = 2 * tanfovy_2 / viewport.height
         }
         return distance * pixelSizeFactor
     }
@@ -157,8 +173,8 @@ open class RenderContext {
         y = y * 0.5 + 0.5
         z = z * 0.5 + 0.5
         // Convert the X and Y coordinates from the range [0,1] to screen coordinates.
-        x = x * viewport.width() + viewport.left
-        y = y * viewport.height() + viewport.top
+        x = x * viewport.width + viewport.x
+        y = y * viewport.height + viewport.y
         result.x = x
         result.y = y
         result.z = z
@@ -217,8 +233,8 @@ open class RenderContext {
         y = y * 0.5 + 0.5
         z = z * 0.5 + 0.5
 
-        x = x * viewport.width() + viewport.left
-        y = y * viewport.height() + viewport.top
+        x = x * viewport.width + viewport.x
+        y = y * viewport.height + viewport.y
 
         result.x = x
         result.y = y
@@ -299,6 +315,23 @@ open class RenderContext {
             drawablePools.put(key, pool)
         }
         return pool
+    }
+
+
+    open fun drawableCount(): Int {
+        return drawableQueue?.let { return it.count() } ?: 0
+    }
+
+    open fun offerPickedObject(pickedObject : PickedObject?) {
+        pickedObjects?.offerPickedObject(pickedObject)
+    }
+
+    open fun nextPickedObjectId(): Int {
+        pickedObjectId++
+        if (pickedObjectId > MAX_PICKED_OBJECT_ID) {
+            pickedObjectId = 1
+        }
+        return pickedObjectId
     }
 
 

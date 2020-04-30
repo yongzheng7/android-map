@@ -1,20 +1,24 @@
 package com.atom.wyz.worldwind.frame
 
-import android.graphics.Rect
 import com.atom.wyz.worldwind.draw.DrawableList
 import com.atom.wyz.worldwind.draw.DrawableQueue
 import com.atom.wyz.worldwind.geom.Matrix4
+import com.atom.wyz.worldwind.geom.Vec2
+import com.atom.wyz.worldwind.geom.Viewport
+import com.atom.wyz.worldwind.pick.PickedObjectList
 import com.atom.wyz.worldwind.util.pool.Pool
+import java.util.concurrent.locks.Lock
+import java.util.concurrent.locks.ReentrantLock
 
 class Frame {
     companion object{
         fun obtain(pool: Pool<Frame>): Frame {
             val instance: Frame? = pool.acquire() // get an instance from the pool
-            return if (instance != null) instance.setPool(pool) else Frame().setPool(pool)
+            return if (instance != null) instance.init(pool) else Frame().init(pool)
         }
     }
 
-    val viewport = Rect()
+    val viewport = Viewport()
 
     val modelview: Matrix4 = Matrix4()
 
@@ -24,10 +28,26 @@ class Frame {
 
     val drawableTerrain: DrawableList = DrawableList()
 
+    var pickedObjects: PickedObjectList? = null
+
+    var pickPoint: Vec2? = null
+
+    var pickMode = false
+
+    private var isDone = false
+
+    private var isAwaitingDone = false
+
+    private var doneLock: Lock = ReentrantLock()
+
+    private var doneCondition = doneLock.newCondition()
+
     private var pool: Pool<Frame>? = null
 
-    private fun setPool(pool: Pool<Frame>):Frame {
+    private fun init(pool: Pool<Frame>):Frame {
         this.pool = pool
+        isDone = false
+        isAwaitingDone = false
         return this
     }
 
@@ -37,7 +57,37 @@ class Frame {
         projection.setToIdentity()
         drawableQueue.clearDrawables()
         drawableTerrain.clearDrawables()
+
+        pickedObjects = null
+        pickPoint = null
+        pickMode = false
+
         pool?.release(this)
         pool = null
+    }
+
+    fun awaitDone() {
+        doneLock.lock()
+        try {
+            while (!isDone) {
+                isAwaitingDone = true
+                doneCondition.await()
+            }
+        } catch (ignored: InterruptedException) {
+        } finally {
+            doneLock.unlock()
+        }
+    }
+
+    fun signalDone() {
+        doneLock.lock()
+        try {
+            isDone = true
+            if (isAwaitingDone) {
+                doneCondition.signal()
+            }
+        } finally {
+            doneLock.unlock()
+        }
     }
 }

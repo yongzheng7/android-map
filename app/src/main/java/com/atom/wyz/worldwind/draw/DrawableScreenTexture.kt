@@ -40,7 +40,8 @@ class DrawableScreenTexture : Drawable {
 
         if (!program.useProgram(dc)) {
             return  // program failed to build
-        }
+        } // Use the draw context's pick mode state and use the drawable's color.
+
         program.loadColor(color)
 
         dc.activeTextureUnit(GLES20.GL_TEXTURE0)

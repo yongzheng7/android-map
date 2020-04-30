@@ -4,7 +4,6 @@ import android.annotation.SuppressLint
 import android.app.ActivityManager
 import android.content.Context
 import android.graphics.PointF
-import android.graphics.Rect
 import android.opengl.GLES20
 import android.opengl.GLSurfaceView
 import android.os.Handler
@@ -22,6 +21,7 @@ import com.atom.wyz.worldwind.geom.*
 import com.atom.wyz.worldwind.globe.Globe
 import com.atom.wyz.worldwind.globe.GlobeWgs84
 import com.atom.wyz.worldwind.layer.LayerList
+import com.atom.wyz.worldwind.pick.PickedObjectList
 import com.atom.wyz.worldwind.util.Logger
 import com.atom.wyz.worldwind.util.MessageListener
 import com.atom.wyz.worldwind.util.RenderResourceCache
@@ -75,7 +75,7 @@ class WorldWindow : GLSurfaceView, GLSurfaceView.Renderer, MessageListener, Fram
             field.worldWindow = (this)
         }
 
-    var viewport = Rect()
+    var viewport = Viewport()
 
     var renderResourceCache: RenderResourceCache? = null
 
@@ -161,27 +161,29 @@ class WorldWindow : GLSurfaceView, GLSurfaceView.Renderer, MessageListener, Fram
     }
 
     override fun onDrawFrame(gl: GL10?) {
-        val nextFrame = frameQueue.poll()
+
+        var nextFrame: Frame?
+        while (frameQueue.poll().also { nextFrame = it } != null && nextFrame!!.pickMode) {
+            nextFrame ?.let{
+                drawFrame(it)
+                it.signalDone()
+                it.recycle()
+            }
+        }
+
         if (nextFrame != null) {
             currentFrame?.recycle()
             currentFrame = nextFrame
             super.requestRender()
         }
-        // Process and display the Drawables accumulated during the render phase.
-        if (currentFrame != null) {
-            beforeDrawFrame()
-            drawFrame(currentFrame!!)
-            afterDrawFrame()
-        }
 
-        // Continue processing the frame queue on the OpenGL thread until the queue is empty.
-        if (!frameQueue.isEmpty()) {
-            super.requestRender()
+        currentFrame?.let{
+            drawFrame(it)
+            it.signalDone()
         }
     }
 
     protected fun computeViewingTransform(
-        viewport: Rect,
         projection: Matrix4,
         modelview: Matrix4?
     ) {
@@ -189,8 +191,8 @@ class WorldWindow : GLSurfaceView, GLSurfaceView.Renderer, MessageListener, Fram
         val far = globe.horizonDistance(navigator.altitude, 160000.0)
         viewport.set(this.viewport)
         projection.setToPerspectiveProjection(
-            viewport.width().toDouble(),
-            viewport.height().toDouble(),
+            this.viewport.width.toDouble(),
+            this.viewport.height.toDouble(),
             fieldOfView,
             near,
             far
@@ -200,6 +202,11 @@ class WorldWindow : GLSurfaceView, GLSurfaceView.Renderer, MessageListener, Fram
     }
 
     protected fun renderFrame(frame: Frame) {
+
+        val pickMode = frame.pickMode
+        if (!pickMode) {
+            frameMetrics.beginRendering()
+        }
 
         rc.globe = globe
         rc.layers = layers
@@ -218,7 +225,8 @@ class WorldWindow : GLSurfaceView, GLSurfaceView.Renderer, MessageListener, Fram
         rc.renderResourceCache?.resources = (this.context.resources)
         rc.resources = this.context.resources
 
-        computeViewingTransform(frame.viewport, frame.projection, frame.modelview)
+        frame.viewport.set(this.viewport)
+        computeViewingTransform(frame.projection, frame.modelview)
         rc.viewport.set(frame.viewport)
         rc.projection.set(frame.projection)
         rc.modelview.set(frame.modelview)
@@ -229,42 +237,66 @@ class WorldWindow : GLSurfaceView, GLSurfaceView.Renderer, MessageListener, Fram
 
         rc.drawableQueue = frame.drawableQueue
         rc.drawableTerrain = frame.drawableTerrain
+        rc.pickedObjects = frame.pickedObjects
+        rc.pickMode = frame.pickMode
 
         frameController.renderFrame(rc)
 
-        // Assign the frame's Cartesian modelview matrix and eye coordinate projection matrix.
-        frame.viewport.set(viewport)
-        frame.modelview.set(rc.modelview)
-        frame.projection.set(rc.projection)
+        // Enqueue the frame for processing on the OpenGL thread as soon as possible and wake the OpenGL thread.
+        frameQueue.offer(frame)
+        super.requestRender()
+
+        if (!pickMode && rc.redrawRequested) {
+            requestRedraw()
+        }
+
+        // Notify navigator change listeners when the modelview matrix associated with the frame has changed.
+        if (!pickMode) {
+            navigatorEvents.onFrameRendered(rc)
+        }
+
+        // Reset the render context's state in preparation for the next frame.
+        rc.reset()
+
+        // Mark the end of a frame render.
+        if (!pickMode) {
+            frameMetrics.endRendering()
+        }
+
     }
 
 
     protected fun drawFrame(frame: Frame) {
-
+        val pickMode = frame.pickMode
+        if (!pickMode) {
+            frameMetrics.beginDrawing()
+        }
         dc.eyePoint = frame.modelview.extractEyePoint(dc.eyePoint)
         dc.projection.set(frame.projection)
         dc.modelview.set(frame.modelview)
-
         dc.modelviewProjection.setToMultiply(frame.projection, frame.modelview)
         dc.screenProjection.setToScreenProjection(
-            frame.viewport.width().toDouble(),
-            frame.viewport.height().toDouble()
+            frame.viewport.width.toDouble(),
+            frame.viewport.height.toDouble()
         )
 
         dc.drawableQueue = frame.drawableQueue
         dc.drawableTerrain = frame.drawableTerrain
+        dc.pickedObjects = frame.pickedObjects
+        dc.pickPoint = frame.pickPoint
+        dc.pickMode = frame.pickMode
 
         frameController.drawFrame(dc)
-    }
 
-    protected fun beforeDrawFrame() {
-        frameMetrics.beginDrawing()
-    }
+        if (!pickMode) {
+            renderResourceCache?.releaseEvictedResources(dc)
+        }
 
-    protected fun afterDrawFrame() {
-        renderResourceCache!!.releaseEvictedResources(dc)
         dc.reset()
-        frameMetrics.endDrawing()
+
+        if (!pickMode) {
+            frameMetrics.endDrawing()
+        }
     }
 
 
@@ -281,6 +313,8 @@ class WorldWindow : GLSurfaceView, GLSurfaceView.Renderer, MessageListener, Fram
         GLES20.glEnable(GLES20.GL_CULL_FACE)
         // 深度测试
         GLES20.glEnable(GLES20.GL_DEPTH_TEST)
+
+        GLES20.glDisable(GLES20.GL_DITHER)
         // 混合因子
         GLES20.glBlendFunc(GLES20.GL_ONE, GLES20.GL_ONE_MINUS_SRC_ALPHA)
         // 深度小或相等的时候也渲染 （GL_LESS = 深度小的时候才渲染）
@@ -370,16 +404,9 @@ class WorldWindow : GLSurfaceView, GLSurfaceView.Renderer, MessageListener, Fram
             return
         }
         waitingForRedraw = false
+
         val frame = Frame.obtain(framePool)
-        frameMetrics.beginRendering()
-
         renderFrame(frame)
-        frameQueue.offer(frame)
-        super.requestRender()
-        navigatorEvents.onFrameRendered(rc)
-        rc.reset()
-
-        frameMetrics.endRendering()
     }
 
     protected fun reset() {
@@ -393,20 +420,39 @@ class WorldWindow : GLSurfaceView, GLSurfaceView.Renderer, MessageListener, Fram
     }
 
     protected fun clearFrameQueue() {
-        var frame = frameQueue.poll()
-        while (frame != null) {
-            frame.recycle()
-            frame = frameQueue.poll()
+
+        var frame: Frame?
+        while (frameQueue.poll().also { frame = it } != null) {
+            frame?.signalDone()
+            frame?.recycle()
         }
+
         frameQueue.clear()
-        if (currentFrame != null) {
-            currentFrame!!.recycle()
-            currentFrame = null
-        }
+        // Recycle the current frame back into the frame pool. Mark the frame as done to ensure that threads waiting for
+        // the frame to finish don't deadlock.
+        currentFrame?.signalDone()
+        currentFrame?.recycle()
+        currentFrame = null
+    }
+
+    fun pick(
+        x: Float,
+        y: Float
+    ): PickedObjectList? {
+        val pickedObjects = PickedObjectList()
+        val screenPoint = Vec2(x.toDouble(), viewport.height.toDouble() - y)
+        // Obtain a frame from the pool and render the frame, accumulating Drawables to process in the OpenGL thread.
+        val frame = Frame.obtain(framePool)
+        frame.pickedObjects = pickedObjects
+        frame.pickPoint = screenPoint
+        frame.pickMode = true
+        renderFrame(frame)
+        // Wait until the OpenGL thread is done processing the frame and resolving the picked objects.
+        frame.awaitDone()
+        return pickedObjects
     }
 
     private val scratchCamera = Camera()
-    private val scratchViewport = Rect()
     private val scratchModelview = Matrix4()
     private val scratchProjection = Matrix4()
     private val scratchPoint: Vec3 = Vec3()
@@ -426,7 +472,7 @@ class WorldWindow : GLSurfaceView, GLSurfaceView.Renderer, MessageListener, Fram
                 "missingResult"
             )
         }
-        this.computeViewingTransform(this.scratchViewport, this.scratchProjection, this.scratchModelview)
+        this.computeViewingTransform(this.scratchProjection, this.scratchModelview)
         scratchProjection.multiplyByMatrix(scratchModelview)
         val m = scratchProjection.m
         var sx = m[0] * x + m[1] * y + m[2] * z + m[3]
@@ -445,8 +491,8 @@ class WorldWindow : GLSurfaceView, GLSurfaceView.Renderer, MessageListener, Fram
         sx = sx * 0.5 + 0.5
         sy = sy * 0.5 + 0.5
         sy = 1 - sy
-        sx = sx * this.scratchViewport.width() + this.scratchViewport.left;
-        sy = sy * this.scratchViewport.height() + this.scratchViewport.top;
+        sx = sx * this.width
+        sy = sy * this.height
         result.x = sx.toFloat()
         result.y = sy.toFloat()
         return true
@@ -486,10 +532,10 @@ class WorldWindow : GLSurfaceView, GLSurfaceView.Renderer, MessageListener, Fram
                 "missingResult"
             )
         }
-        this.computeViewingTransform(this.scratchViewport, this.scratchProjection, this.scratchModelview)
+        this.computeViewingTransform(this.scratchProjection, this.scratchModelview)
         scratchProjection.multiplyByMatrix(scratchModelview).invert()
-        var sx = (x - this.scratchViewport.left) / this.scratchViewport.width();
-        var sy = (y - this.scratchViewport.top) / this.scratchViewport.height();
+        var sx = x / this.width
+        var sy = y / this.height
         sy = 1 - sy
         sx = sx * 2 - 1
         sy = sy * 2 - 1

@@ -20,6 +20,7 @@ class Logger {
 
         protected var messageTable = mutableMapOf<String, String>(
             "missingLocation" to "The specified location is null",
+            "missingViewport" to  "The viewport is null",
             "missingCallback" to "The callback is null",
             "missingKey" to "The key is null",
             "missingLine" to "The line is null",

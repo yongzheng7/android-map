@@ -5,11 +5,15 @@ import com.atom.wyz.worldwind.draw.Drawable
 import com.atom.wyz.worldwind.draw.DrawableList
 import com.atom.wyz.worldwind.draw.DrawableQueue
 import com.atom.wyz.worldwind.draw.DrawableTerrain
+import com.atom.wyz.worldwind.geom.Color
 import com.atom.wyz.worldwind.geom.Matrix4
+import com.atom.wyz.worldwind.geom.Vec2
 import com.atom.wyz.worldwind.geom.Vec3
+import com.atom.wyz.worldwind.pick.PickedObjectList
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
 import java.util.*
+import kotlin.experimental.and
 
 class DrawContext {
 
@@ -23,9 +27,16 @@ class DrawContext {
 
     var screenProjection: Matrix4 = Matrix4()
 
+
     var drawableQueue: DrawableQueue? = null
 
     var drawableTerrain: DrawableList? = null
+
+    var pickedObjects: PickedObjectList? = null
+
+    var pickPoint: Vec2? = null
+
+    var pickMode = false
 
     protected var programId = 0
 
@@ -41,6 +52,11 @@ class DrawContext {
 
     protected var scratchList = ArrayList<Any?>()
 
+    private val pixelBuffer =
+        ByteBuffer.allocateDirect(4).order(ByteOrder.nativeOrder())
+
+    private val pixelArray = ByteArray(4)
+
 
     fun reset() {
         eyePoint.set(0.0, 0.0, 0.0)
@@ -48,9 +64,14 @@ class DrawContext {
         projection.setToIdentity()
         modelviewProjection.setToIdentity()
         screenProjection.setToIdentity()
-        scratchList.clear()
         drawableQueue = null
         drawableTerrain = null
+
+        pickedObjects = null
+        pickPoint = null
+        pickMode = false
+
+        scratchList.clear()
     }
 
     fun contextLost() {
@@ -151,8 +172,7 @@ class DrawContext {
         val newBuffer = IntArray(1)
         GLES20.glGenBuffers(1, newBuffer, 0)
         unitSquareBufferId = newBuffer[0]
-        val points = floatArrayOf(0f, 1f, 0f, 0f, 1f, 1f, 1f, 0f) // lower right corner
-//        val points = floatArrayOf(0f, 0f, 0f, 1f, 0f, 1f, 1f, 1f) // lower right corner
+        val points = floatArrayOf(0f, 1f, 0f, 0f, 1f, 1f, 1f, 0f)
         val size = points.size
         val quadBuffer =
             ByteBuffer.allocateDirect(size * 4).order(ByteOrder.nativeOrder()).asFloatBuffer()
@@ -169,6 +189,20 @@ class DrawContext {
 
     fun scratchList(): ArrayList<Any?> {
         return scratchList
+    }
+
+    /**
+     * 在当前活动的OpenGL帧缓冲区中的屏幕点读取片段颜色。 X和Y组件指示OpenGL屏幕坐标，该坐标起源于帧缓冲区的左下角。
+     */
+    fun readPixelColor(x: Int, y: Int, result_temp: Color?): Color {
+        val result = result_temp ?: Color()
+        GLES20.glReadPixels(x, y, 1, 1, GLES20.GL_RGBA, GLES20.GL_UNSIGNED_BYTE, pixelBuffer.rewind())
+        pixelBuffer[pixelArray]
+        result.red = (pixelArray[0] and 0xFF.toByte()) / 0xFF.toFloat()
+        result.green = (pixelArray[1] and 0xFF.toByte()) / 0xFF.toFloat()
+        result.blue = (pixelArray[2] and 0xFF.toByte()) / 0xFF.toFloat()
+        result.alpha = (pixelArray[3] and 0xFF.toByte()) / 0xFF.toFloat()
+        return result
     }
 
 }

@@ -47,7 +47,7 @@ abstract class AbstractLayer : Layer {
             return
         }
 
-        if (rc.pickingMode && !this.pickEnabled) {
+        if (rc.pickMode && !this.pickEnabled) {
             return
         }
 

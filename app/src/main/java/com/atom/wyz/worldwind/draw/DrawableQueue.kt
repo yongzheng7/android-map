@@ -81,6 +81,10 @@ class DrawableQueue {
         position = 0
     }
 
+    fun count(): Int {
+        return size
+    }
+
     protected class Entry {
         var drawable: Drawable? = null
         var order = 0.0

@@ -1,18 +1,18 @@
 package com.atom.wyz.worldwind.render
 
-import android.graphics.Rect
 import com.atom.wyz.worldwind.RenderContext
 import com.atom.wyz.worldwind.WorldWind
 import com.atom.wyz.worldwind.draw.DrawableLines
 import com.atom.wyz.worldwind.draw.DrawableScreenTexture
 import com.atom.wyz.worldwind.geom.*
+import com.atom.wyz.worldwind.pick.PickedObject
 import com.atom.wyz.worldwind.shape.Highlightable
 import com.atom.wyz.worldwind.shape.PlacemarkAttributes
 import com.atom.wyz.worldwind.util.Logger
 import com.atom.wyz.worldwind.util.WWMath
 import com.atom.wyz.worldwind.util.pool.Pool
 
-open class Placemark : AbstractRenderable , Highlightable {
+open class Placemark : AbstractRenderable, Highlightable {
 
     companion object {
 
@@ -39,7 +39,7 @@ open class Placemark : AbstractRenderable , Highlightable {
         private val screenPlacePoint = Vec3()
         private var groundPoint = Vec3()
         private val offset: Vec2 = Vec2()
-        private val screenBounds = Rect()
+        private val screenBounds = Viewport()
         private val unitSquareTransform: Matrix4 = Matrix4()
     }
 
@@ -76,6 +76,7 @@ open class Placemark : AbstractRenderable , Highlightable {
     @WorldWind.OrientationMode
     var imageTiltReference = 0
 
+    protected var activePickedObjectId = 0
 
     constructor(position: Position) : this(position, PlacemarkAttributes.defaults())
 
@@ -89,7 +90,7 @@ open class Placemark : AbstractRenderable , Highlightable {
         }
         this.position = position
         this.altitudeMode = WorldWind.ABSOLUTE
-        displayName?.let { this.displayName = it } ?:let { this.displayName  = "Placemark" }
+        displayName?.let { this.displayName = it } ?: let { this.displayName = "Placemark" }
         this.attributes = if (attributes != null) attributes else PlacemarkAttributes()
 
 
@@ -102,16 +103,24 @@ open class Placemark : AbstractRenderable , Highlightable {
 
     }
 
-    protected open fun determineActiveAttributes(dc: RenderContext) {
+    protected open fun determineActiveAttributes(rc: RenderContext) {
         if (_highlighted && highlightAttributes != null) {
             activeAttributes = highlightAttributes
         } else {
             activeAttributes = attributes
         }
+
+        if (rc.pickMode) {
+            activePickedObjectId = rc.nextPickedObjectId()
+        }
     }
 
     override fun doRender(rc: RenderContext) {
+
         determineActiveAttributes(rc)
+        if (activeAttributes == null) {
+            return
+        }
 
         val position = this.position ?: return
         val globe = rc.globe ?: return
@@ -128,6 +137,8 @@ open class Placemark : AbstractRenderable , Highlightable {
         if (!rc.projectWithDepth(placePoint, depthOffset, screenPlacePoint)) {
             return
         }
+
+        val drawableCount = rc.drawableCount()
         if (mustDrawLeaderLine(rc)) {
             groundPoint = globe.geographicToCartesian(
                 position.latitude,
@@ -144,9 +155,9 @@ open class Placemark : AbstractRenderable , Highlightable {
         }
         this.determineActiveTexture(rc)
 
-        val iconBounds: Rect = WWMath.boundingRectForUnitSquare(unitSquareTransform, screenBounds) // TODO allocation
+        WWMath.boundingRectForUnitSquare(unitSquareTransform, screenBounds) // TODO allocation
 
-        if (Rect.intersects(iconBounds, rc.viewport)) {
+        if (rc.viewport.intersects(screenBounds)) {
             val pool: Pool<DrawableScreenTexture> = rc.getDrawablePool(DrawableScreenTexture::class.java)
             val drawable: DrawableScreenTexture = DrawableScreenTexture.obtain(pool)
             prepareDrawableIcon(rc, drawable)
@@ -155,6 +166,15 @@ open class Placemark : AbstractRenderable , Highlightable {
 
         activeTexture = null
 
+        // Enqueue a picked object that associates the placemark's icon and leader with its picked object ID.
+        if (rc.pickMode && rc.drawableCount() != drawableCount) {
+            rc.offerPickedObject(
+                PickedObject.fromRenderable(
+                    this, this.position, altitudeMode, rc.currentLayer,
+                    activePickedObjectId
+                )
+            )
+        }
 
     }
 
@@ -169,11 +189,19 @@ open class Placemark : AbstractRenderable , Highlightable {
             drawable.program = rc.putProgram(BasicProgram.KEY, BasicProgram(rc.resources!!)) as BasicProgram
         }
 
-
         drawable.unitSquareTransform.set(unitSquareTransform)
-        drawable.color.set(activeAttributes.imageColor!!)
+
         drawable.enableDepthTest = activeAttributes.depthTest
+
         drawable.texture = activeTexture
+
+        // Configure the drawable to display a color appropriate for the current pick mode. During picking we display
+        // the icon in a unique color associated with the picked object ID.
+        if (rc.pickMode) {
+            drawable.color = PickedObject.identifierToUniqueColor(activePickedObjectId, drawable.color)
+        } else {
+            drawable.color.set(activeAttributes.imageColor!!)
+        }
     }
 
     protected open fun prepareDrawableLeader(
@@ -200,14 +228,22 @@ open class Placemark : AbstractRenderable , Highlightable {
         drawable.mvpMatrix.set(rc.modelviewProjection)
         drawable.mvpMatrix.multiplyByTranslation(groundPoint.x, groundPoint.y, groundPoint.z)
 
-        drawable.color.set(activeAttributes.leaderAttributes!!.outlineColor!!)
         drawable.lineWidth = activeAttributes.leaderAttributes!!.outlineWidth
         drawable.enableDepthTest = activeAttributes.leaderAttributes!!.depthTest
+
+        // Configure the drawable to display a color appropriate for the current pick mode. During picking we display
+        // the leader in a unique color associated with the picked object ID.
+        if (rc.pickMode) {
+            drawable.color = PickedObject.identifierToUniqueColor(activePickedObjectId, drawable.color)
+        } else {
+            drawable.color.set(activeAttributes.leaderAttributes!!.outlineColor!!)
+        }
 
     }
 
     protected open fun mustDrawLeaderLine(dc: RenderContext): Boolean {
-        return (activeAttributes!!.drawLeader && activeAttributes!!.leaderAttributes != null && (enableLeaderPicking || !dc.pickingMode))
+        val activeAttributes = this.activeAttributes ?: return false
+        return (activeAttributes.drawLeader && activeAttributes.leaderAttributes != null && (enableLeaderPicking || !dc.pickMode))
     }
 
 
@@ -268,7 +304,7 @@ open class Placemark : AbstractRenderable , Highlightable {
     }
 
     override fun isHighlighted(): Boolean {
-         return _highlighted
+        return _highlighted
     }
 
     override fun setHighlighted(highlighted: Boolean) {
