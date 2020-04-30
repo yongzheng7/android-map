@@ -4,9 +4,8 @@ import android.opengl.GLES20
 import com.atom.wyz.worldwind.DrawContext
 import com.atom.wyz.worldwind.geom.Sector
 import com.atom.wyz.worldwind.geom.Vec3
+import com.atom.wyz.worldwind.render.BufferObject
 import com.atom.wyz.worldwind.util.pool.Pool
-import java.nio.FloatBuffer
-import java.nio.ShortBuffer
 
 class BasicDrawableTerrain : DrawableTerrain {
 
@@ -21,13 +20,13 @@ class BasicDrawableTerrain : DrawableTerrain {
 
     override var vertexOrigin = Vec3()
 
-    var vertexPoints: FloatBuffer? = null
+    var vertexPoints: BufferObject? = null
 
-    var vertexTexCoords: FloatBuffer? = null
+    var vertexTexCoords: BufferObject? = null
 
-    var lineElements: ShortBuffer? = null
+    var lineElements: BufferObject? = null
 
-    var triStripElements: ShortBuffer? = null
+    var triStripElements: BufferObject? = null
 
     private var pool: Pool<BasicDrawableTerrain>? = null
     private fun setPool(pool: Pool<BasicDrawableTerrain>): BasicDrawableTerrain {
@@ -37,35 +36,40 @@ class BasicDrawableTerrain : DrawableTerrain {
 
 
     override fun useVertexPointAttrib(dc: DrawContext, attribLocation: Int) {
-        if (vertexPoints != null) {
-            GLES20.glVertexAttribPointer(attribLocation, 3, GLES20.GL_FLOAT, false, 0, vertexPoints)
+        vertexPoints?.let {
+            it.bindBuffer(dc)
+            GLES20.glVertexAttribPointer(attribLocation, 3, GLES20.GL_FLOAT, false, 0, 0)
         }
     }
 
     override fun useVertexTexCoordAttrib(dc: DrawContext, attribLocation: Int) {
-        if (vertexTexCoords != null) {
-            GLES20.glVertexAttribPointer(attribLocation, 2, GLES20.GL_FLOAT, false, 0, vertexTexCoords)
+        vertexTexCoords?.let {
+            it.bindBuffer(dc)
+            GLES20.glVertexAttribPointer(attribLocation, 2, GLES20.GL_FLOAT, false, 0, 0)
+
         }
     }
 
     override fun drawLines(dc: DrawContext) {
-        if (lineElements != null) {
+        lineElements?.let {
+            it.bindBuffer(dc)
             GLES20.glDrawElements(
                 GLES20.GL_LINES,
-                lineElements!!.remaining(),
+                it.bufferLength,
                 GLES20.GL_UNSIGNED_SHORT,
-                lineElements
+                0
             )
         }
     }
 
     override fun drawTriangles(dc: DrawContext) {
-        if (triStripElements != null) {
+        triStripElements?.let {
+            it.bindBuffer(dc)
             GLES20.glDrawElements(
                 GLES20.GL_TRIANGLE_STRIP,
-                triStripElements!!.remaining(),
+                it.bufferLength,
                 GLES20.GL_UNSIGNED_SHORT,
-                triStripElements
+                0
             )
         }
     }

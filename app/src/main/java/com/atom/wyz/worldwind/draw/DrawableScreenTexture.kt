@@ -57,7 +57,7 @@ class DrawableScreenTexture : Drawable {
             GLES20.glDisable(GLES20.GL_DEPTH_TEST)
         }
 
-        dc.bindBuffer(GLES20.GL_ARRAY_BUFFER, dc.unitSquareBuffer())
+        dc.unitSquareBuffer().bindBuffer(dc)
         GLES20.glEnableVertexAttribArray(1)
 
         GLES20.glVertexAttribPointer(0 /*vertexPoint*/, 2, GLES20.GL_FLOAT, false, 0, 0)
@@ -82,7 +82,6 @@ class DrawableScreenTexture : Drawable {
         if (!enableDepthTest) {
             GLES20.glEnable(GLES20.GL_DEPTH_TEST)
         }
-        dc.bindBuffer(GLES20.GL_ARRAY_BUFFER, 0)
         GLES20.glDisableVertexAttribArray(1)
     }
 

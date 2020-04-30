@@ -18,7 +18,6 @@ import com.atom.wyz.worldwind.render.GpuTexture
 import com.atom.wyz.worldwind.render.ImageSource
 import com.atom.wyz.worldwind.util.Logger
 import com.atom.wyz.worldwind.util.RenderResourceCache
-import com.atom.wyz.worldwind.util.WWMath
 import com.atom.wyz.worldwind.util.pool.Pool
 import com.atom.wyz.worldwind.util.pool.SynchronizedPool
 
@@ -233,7 +232,7 @@ open class RenderContext {
         z = p[8] * ex + p[9] * ey + p[10] * ez * (1 + depthOffset) + p[11] * ew
         z /= w
 
-        z = WWMath.clamp(z, -1.0, 1.0)
+        z = if (z < -1) (-1.0) else if (z > 1) 1.0 else z
 
 
         x = x * 0.5 + 0.5

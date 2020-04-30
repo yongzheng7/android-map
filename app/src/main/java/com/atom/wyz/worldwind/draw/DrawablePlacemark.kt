@@ -97,7 +97,7 @@ class DrawablePlacemark : Drawable {
 
         GLES20.glDepthMask(false)
 
-        dc.bindBuffer(GLES20.GL_ARRAY_BUFFER, dc.unitSquareBuffer())
+        dc.unitSquareBuffer().bindBuffer(dc)
 
         GLES20.glEnableVertexAttribArray(1)
         GLES20.glVertexAttribPointer(0, 2, GLES20.GL_FLOAT, false, 0, 0)

@@ -10,6 +10,7 @@ import com.atom.wyz.worldwind.geom.Matrix4
 import com.atom.wyz.worldwind.geom.Vec2
 import com.atom.wyz.worldwind.geom.Vec3
 import com.atom.wyz.worldwind.pick.PickedObjectList
+import com.atom.wyz.worldwind.render.BufferObject
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
 import java.util.*
@@ -48,7 +49,7 @@ class DrawContext {
 
     protected var elementArrayBufferId = 0
 
-    protected var unitSquareBufferId = 0
+    protected var unitSquareBuffer: BufferObject? = null
 
     protected var scratchList = ArrayList<Any?>()
 
@@ -79,7 +80,7 @@ class DrawContext {
         textureUnit = GLES20.GL_TEXTURE0
         arrayBufferId = 0
         elementArrayBufferId = 0
-        unitSquareBufferId = 0
+        unitSquareBuffer = null
         Arrays.fill(textureId, 0)
     }
 
@@ -165,26 +166,15 @@ class DrawContext {
         }
     }
 
-    fun unitSquareBuffer(): Int {
-        if (unitSquareBufferId != 0) {
-            return unitSquareBufferId
+    val points = floatArrayOf(0f, 1f, 0f, 0f, 1f, 1f, 1f, 0f)
+    fun unitSquareBuffer(): BufferObject {
+        unitSquareBuffer?.let {
+            return it
         }
-        val newBuffer = IntArray(1)
-        GLES20.glGenBuffers(1, newBuffer, 0)
-        unitSquareBufferId = newBuffer[0]
-        val points = floatArrayOf(0f, 1f, 0f, 0f, 1f, 1f, 1f, 0f)
-        val size = points.size
-        val quadBuffer =
-            ByteBuffer.allocateDirect(size * 4).order(ByteOrder.nativeOrder()).asFloatBuffer()
-        quadBuffer.put(points).rewind()
-        val currentBuffer = currentBuffer(GLES20.GL_ARRAY_BUFFER)
-        try {
-            bindBuffer(GLES20.GL_ARRAY_BUFFER, unitSquareBufferId)
-            GLES20.glBufferData(GLES20.GL_ARRAY_BUFFER, size * 4, quadBuffer, GLES20.GL_STATIC_DRAW)
-        } finally {
-            bindBuffer(GLES20.GL_ARRAY_BUFFER, currentBuffer)
-        }
-        return unitSquareBufferId
+        val buffer = ByteBuffer.allocateDirect(points.size * 4).order(ByteOrder.nativeOrder()).asFloatBuffer()
+        buffer.put(points).rewind()
+        unitSquareBuffer = BufferObject(GLES20.GL_ARRAY_BUFFER, buffer)
+        return unitSquareBuffer!!
     }
 
     fun scratchList(): ArrayList<Any?> {

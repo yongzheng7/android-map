@@ -4,15 +4,24 @@ import android.opengl.GLES20
 import com.atom.wyz.worldwind.DrawContext
 import com.atom.wyz.worldwind.RenderContext
 import com.atom.wyz.worldwind.draw.Drawable
+import com.atom.wyz.worldwind.draw.DrawableSurfaceColor
 import com.atom.wyz.worldwind.geom.Color
+import com.atom.wyz.worldwind.geom.Position
+import com.atom.wyz.worldwind.geom.Vec3
 import com.atom.wyz.worldwind.layer.LayerList
 import com.atom.wyz.worldwind.pick.PickedObject
+import com.atom.wyz.worldwind.render.BasicProgram
 import com.atom.wyz.worldwind.util.Logger
+import com.atom.wyz.worldwind.util.pool.Pool
 
 
 class BasicFrameController : FrameController {
 
     private var pickColor: Color? = null
+
+    val pickPoint: Vec3 = Vec3()
+
+    var pickPos: Position = Position()
 
     override fun drawFrame(dc: DrawContext) {
         clearFrame(dc)
@@ -47,7 +56,7 @@ class BasicFrameController : FrameController {
         if (pickedObjects.count() == 0) {
             return
         }
-        dc.pickPoint ?.let{
+        dc.pickPoint?.let {
             pickColor = dc.readPixelColor(
                 Math.round(it.x).toInt(),
                 Math.round(it.y).toInt(),
@@ -56,11 +65,15 @@ class BasicFrameController : FrameController {
         }
         val topObjectId: Int = PickedObject.uniqueColorToIdentifier(pickColor)
         if (topObjectId != 0) {
+            val terrainObject = pickedObjects.terrainPickedObject()
             val topObject = pickedObjects.pickedObjectWithId(topObjectId)
             if (topObject != null) {
                 topObject.markOnTop()
                 pickedObjects.clearPickedObjects()
                 pickedObjects.offerPickedObject(topObject)
+                if (terrainObject != null && terrainObject !== topObject) {
+                    pickedObjects.offerPickedObject(terrainObject)
+                }
             } else {
                 pickedObjects.clearPickedObjects() // no eligible objects drawn at the pick point
             }
@@ -68,6 +81,7 @@ class BasicFrameController : FrameController {
             pickedObjects.clearPickedObjects()
         }
     }
+
     override fun renderFrame(rc: RenderContext) {
         tessellateTerrain(rc)
         renderLayers(rc)
@@ -100,6 +114,33 @@ class BasicFrameController : FrameController {
 
     protected fun tessellateTerrain(rc: RenderContext) {
         rc.globe?.tessellator?.tessellate(rc)
+
+        if (rc.pickMode) {
+            this.renderPickedTerrain(rc)
+        }
+    }
+
+    protected fun renderPickedTerrain(rc: RenderContext) {
+        val terrain = rc.terrain ?: return
+        if (terrain.sector.isEmpty()) {
+            return  // no terrain to pick
+        }
+        // Acquire a unique picked object ID for the terrain.
+        val pickedObjectId = rc.nextPickedObjectId()
+        // Enqueue a drawable for processing on the OpenGL thread that displays the terrain in the unique pick color.
+        val pool: Pool<DrawableSurfaceColor> = rc.getDrawablePool(DrawableSurfaceColor::class.java)
+        val drawable = DrawableSurfaceColor.obtain(pool)
+        drawable.color = PickedObject.identifierToUniqueColor(pickedObjectId, drawable.color)
+        drawable.program = rc.getProgram(BasicProgram.KEY) as BasicProgram?
+        if (drawable.program == null) {
+            drawable.program = rc.putProgram(BasicProgram.KEY, BasicProgram(rc.resources!!)) as BasicProgram
+        }
+        rc.offerSurfaceDrawable(drawable, Double.NEGATIVE_INFINITY)
+        if (terrain.intersect(rc.pickRay, pickPoint)) {
+            pickPos = rc.globe!!.cartesianToGeographic(pickPoint.x, pickPoint.y, pickPoint.z, pickPos)!!
+            pickPos.altitude = 0.0 // report the actual altitude, which does not always match the surface altitude
+            rc.offerPickedObject(PickedObject.fromTerrain(pickPos, pickedObjectId))
+        }
     }
 
 }

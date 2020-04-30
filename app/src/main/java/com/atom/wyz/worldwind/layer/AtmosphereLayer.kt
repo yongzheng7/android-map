@@ -1,5 +1,6 @@
 package com.atom.wyz.worldwind.layer
 
+import android.opengl.GLES20
 import com.atom.wyz.worldwind.R
 import com.atom.wyz.worldwind.RenderContext
 import com.atom.wyz.worldwind.draw.DrawableGroundAtmosphere
@@ -7,6 +8,7 @@ import com.atom.wyz.worldwind.draw.DrawableSkyAtmosphere
 import com.atom.wyz.worldwind.geom.Location
 import com.atom.wyz.worldwind.geom.Sector
 import com.atom.wyz.worldwind.geom.Vec3
+import com.atom.wyz.worldwind.render.BufferObject
 import com.atom.wyz.worldwind.render.GroundProgram
 import com.atom.wyz.worldwind.render.ImageSource
 import com.atom.wyz.worldwind.render.SkyProgram
@@ -18,35 +20,13 @@ import java.util.*
 class AtmosphereLayer : AbstractLayer {
 
     companion object {
-        protected fun assembleTriStripElements(
-            numLat: Int,
-            numLon: Int
-        ): ShortBuffer {
-            val count = ((numLat - 1) * numLon + (numLat - 2)) * 2
-            val result =
-                ByteBuffer.allocateDirect(count * 2).order(ByteOrder.nativeOrder()).asShortBuffer()
-            val index = ShortArray(2)
-            var vertex = 0
-            for (latIndex in 0 until numLat - 1) {
-                for (lonIndex in 0 until numLon) {
-                    vertex = lonIndex + latIndex * numLon
-                    index[0] = (vertex + numLon).toShort()
-                    index[1] = vertex.toShort()
-                    result.put(index)
-                }
-                if (latIndex < numLat - 2) {
-                    index[0] = vertex.toShort()
-                    index[1] = ((latIndex + 2) * numLon).toShort()
-                    result.put(index)
-                }
-            }
-            return result.rewind() as ShortBuffer
-        }
+        private val VERTEX_POINTS_KEY = AtmosphereLayer::class.java.name + ".vertexPoints"
+        private val TRI_STRIP_ELEMENTS_KEY = AtmosphereLayer::class.java.name + ".triStripElements"
     }
 
     protected var nightImageSource: ImageSource? = null
 
-    public var lightLocation: Location? = null
+    var lightLocation: Location? = null
 
     protected var activeLightDirection = Vec3()
 
@@ -60,7 +40,7 @@ class AtmosphereLayer : AbstractLayer {
 
     override fun doRender(rc: RenderContext) {
         determineLightDirection(rc)
-        drawSky(rc)
+        renderSky(rc)
         drawGround(rc)
     }
 
@@ -81,7 +61,7 @@ class AtmosphereLayer : AbstractLayer {
     }
 
     protected fun drawGround(rc: RenderContext) {
-        val terrain = rc.terrain?.apply {
+        rc.terrain?.apply {
             if (this.sector.isEmpty()) {
                 return  // no terrain surface to render on
             }
@@ -108,9 +88,9 @@ class AtmosphereLayer : AbstractLayer {
         rc.offerSurfaceDrawable(drawable, Double.POSITIVE_INFINITY)
     }
 
-    protected fun drawSky(rc: RenderContext) {
+    protected fun renderSky(rc: RenderContext) {
         val drawable = DrawableSkyAtmosphere.obtain(rc.getDrawablePool(DrawableSkyAtmosphere::class.java))
-
+        val size = 128
         drawable.program = rc.getProgram(SkyProgram.KEY) as SkyProgram?
         if (drawable.program == null) {
             drawable.program = rc.putProgram(SkyProgram.KEY, SkyProgram(rc.resources!!)) as SkyProgram
@@ -118,29 +98,68 @@ class AtmosphereLayer : AbstractLayer {
         drawable.lightDirection.set(activeLightDirection)
         drawable.globeRadius = rc.globe!!.equatorialRadius
 
-        val size = 128
+
+        drawable.vertexPoints = rc.getBufferObject(VERTEX_POINTS_KEY)
         if (drawable.vertexPoints == null) {
-            val count = size * size
-            val array = DoubleArray(count)
-            drawable.program?.let {
-                Arrays.fill(array, it.altitude)
-            }
-            drawable.vertexPoints = ByteBuffer.allocateDirect(count * 12).order(ByteOrder.nativeOrder()).asFloatBuffer()
-            rc.globe!!.geographicToCartesianGrid(
-                fullSphereSector,
-                size,
-                size,
-                array,
-                null,
-                drawable.vertexPoints,
-                3
-            ).rewind()
+            drawable.vertexPoints = rc.putBufferObject(
+                VERTEX_POINTS_KEY,
+                this.assembleVertexPoints(rc, size, size, drawable.program!!.altitude)
+            )
         }
 
+        drawable.triStripElements = rc.getBufferObject(TRI_STRIP_ELEMENTS_KEY)
         if (drawable.triStripElements == null) {
-            drawable.triStripElements = AtmosphereLayer.assembleTriStripElements(size, size)
+            drawable.triStripElements = rc.putBufferObject(
+                TRI_STRIP_ELEMENTS_KEY, assembleTriStripElements(size, size)
+            )
         }
+        drawable.lightDirection.set(activeLightDirection)
+        drawable.globeRadius = rc.globe!!.equatorialRadius
 
         rc.offerSurfaceDrawable(drawable, Double.POSITIVE_INFINITY)
+    }
+
+    protected fun assembleVertexPoints(
+        rc: RenderContext,
+        numLat: Int,
+        numLon: Int,
+        altitude: Double
+    ): BufferObject {
+        val count = numLat * numLon
+        val array = DoubleArray(count)
+        Arrays.fill(array, altitude)
+        val buffer = ByteBuffer.allocateDirect(count * 12).order(ByteOrder.nativeOrder()).asFloatBuffer()
+        rc.globe!!.geographicToCartesianGrid(fullSphereSector, numLat, numLon, array, null, buffer, 3).rewind()
+        return BufferObject(GLES20.GL_ARRAY_BUFFER, buffer)
+    }
+
+    protected fun assembleTriStripElements(
+        numLat: Int,
+        numLon: Int
+    ): BufferObject { // Allocate a buffer to hold the indices.
+        val count = ((numLat - 1) * numLon + (numLat - 2)) * 2
+        val buffer =
+            ByteBuffer.allocateDirect(count * 2).order(ByteOrder.nativeOrder()).asShortBuffer()
+        val index = ShortArray(2)
+        var vertex = 0
+        for (latIndex in 0 until numLat - 1) { // Create a triangle strip joining each adjacent column of vertices, starting in the bottom left corner and
+            // proceeding to the right. The first vertex starts with the left row of vertices and moves right to create
+            // a counterclockwise winding order.
+            for (lonIndex in 0 until numLon) {
+                vertex = lonIndex + latIndex * numLon
+                index[0] = (vertex + numLon).toShort()
+                index[1] = vertex.toShort()
+                buffer.put(index)
+            }
+            // Insert indices to create 2 degenerate triangles:
+            // - one for the end of the current row, and
+            // - one for the beginning of the next row
+            if (latIndex < numLat - 2) {
+                index[0] = vertex.toShort()
+                index[1] = ((latIndex + 2) * numLon).toShort()
+                buffer.put(index)
+            }
+        }
+        return BufferObject(GLES20.GL_ELEMENT_ARRAY_BUFFER, buffer.rewind() as ShortBuffer)
     }
 }

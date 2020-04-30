@@ -1,17 +1,16 @@
 package com.atom.wyz.worldwind.globe
 
+import android.opengl.GLES20
 import com.atom.wyz.worldwind.RenderContext
 import com.atom.wyz.worldwind.draw.BasicDrawableTerrain
 import com.atom.wyz.worldwind.geom.Sector
+import com.atom.wyz.worldwind.render.BufferObject
 import com.atom.wyz.worldwind.util.Level
 import com.atom.wyz.worldwind.util.LevelSet
 import com.atom.wyz.worldwind.util.Logger
 import com.atom.wyz.worldwind.util.LruMemoryCache
 import com.atom.wyz.worldwind.util.pool.Pool
-import java.nio.ByteBuffer
-import java.nio.ByteOrder
-import java.nio.FloatBuffer
-import java.nio.ShortBuffer
+import java.nio.*
 import java.util.*
 
 class BasicTessellator : Tessellator, TileFactory {
@@ -35,6 +34,16 @@ class BasicTessellator : Tessellator, TileFactory {
     var tileLineElements: ShortBuffer? = null
 
     var tileTriStripElements: ShortBuffer? = null
+
+    protected var levelSetBuffers = arrayOfNulls<Buffer>(3)
+
+    protected var levelSetBufferObjects: Array<BufferObject?> = arrayOfNulls<BufferObject>(3)
+
+    protected var levelSetBufferKeys = arrayOf(
+        this.javaClass.name + ".levelSetBuffer[0]",
+        this.javaClass.name + ".levelSetBuffer[1]",
+        this.javaClass.name + ".levelSetBuffer[2]"
+    )
 
     constructor() {
     }
@@ -62,7 +71,9 @@ class BasicTessellator : Tessellator, TileFactory {
      * 获取棋盘地形
      */
     override fun tessellate(rc: RenderContext) {
+        currentTerrain.clear()
         this.assembleTiles(rc)
+        rc.terrain = currentTerrain
     }
 
     /**
@@ -79,9 +90,7 @@ class BasicTessellator : Tessellator, TileFactory {
         topLevelTiles.clear()
         currentTerrain.clear()
         tileCache.clear()
-        tileVertexTexCoords = null
-        tileLineElements = null
-        tileTriStripElements = null
+        Arrays.fill(levelSetBuffers, null)
     }
 
     /**
@@ -91,8 +100,9 @@ class BasicTessellator : Tessellator, TileFactory {
      * 3 迭代顶层瓦片，并逐层迭代知道最低曾瓦片位置
      */
     protected fun assembleTiles(rc: RenderContext) {
-        // 地形清除瓦片
-        currentTerrain.clear() // 1
+
+        this.assembleLevelSetBuffers(rc)
+        currentTerrain.triStripElements = (levelSetBuffers[2] as ShortBuffer?)
 
         if (topLevelTiles.isEmpty()) {
             createTopLevelTiles()
@@ -100,7 +110,9 @@ class BasicTessellator : Tessellator, TileFactory {
         for (tile in topLevelTiles) {
             addTileOrDescendants(rc, tile as TerrainTile)
         }
-        rc.terrain = currentTerrain
+
+        // Release references to render resources acquired while assembling tiles.
+        Arrays.fill(levelSetBufferObjects, null)
     }
 
     protected fun createTopLevelTiles() {
@@ -127,42 +139,62 @@ class BasicTessellator : Tessellator, TileFactory {
     }
 
     protected fun addTile(rc: RenderContext, tile: TerrainTile) {
-        val numLat = levelSet.tileHeight
-        val numLon = levelSet.tileWidth
-
         if (tile.vertexPoints == null) {
             this.assembleVertexPoints(rc, tile)
         }
-        // Assemble the shared vertex tex coord buffer.
-        if (tileVertexTexCoords == null) {
-            tileVertexTexCoords = ByteBuffer.allocateDirect(numLat * numLon * 8).order(ByteOrder.nativeOrder())
-                .asFloatBuffer()
-            tileVertexTexCoords?.let {
-                this.assembleVertexTexCoords(numLat, numLon, it, 2).rewind()
-            }
-        }
 
-        if (tileLineElements == null) {
-            tileLineElements = this.assembleLineElements(numLat, numLon)
-        }
-
-        // Assemble the shared triangle strip element buffer.
-        if (tileTriStripElements == null) {
-            tileTriStripElements = this.assembleTriStripElements(numLat, numLon)
-        }
         currentTerrain.addTile(tile) //只添加最后等级的图块 或者 无需再次细分的图块
 
         val pool: Pool<BasicDrawableTerrain> = rc.getDrawablePool(
             BasicDrawableTerrain::class.java)
         val drawable: BasicDrawableTerrain = BasicDrawableTerrain.obtain(pool)
-        drawable.sector.set(tile.sector)
-        drawable.vertexOrigin.set(tile.vertexOrigin)
-        drawable.vertexPoints = tile.vertexPoints
-        drawable.vertexTexCoords = tileVertexTexCoords
-        drawable.triStripElements = tileTriStripElements
-        drawable.lineElements = tileLineElements
+        this.prepareDrawableTerrain(rc, tile, drawable)
         rc.offerDrawableTerrain(drawable)
     }
+
+    protected fun prepareDrawableTerrain(
+        rc: RenderContext,
+        tile: TerrainTile,
+        drawable: BasicDrawableTerrain
+    ) {
+        drawable.sector.set(tile.sector)
+        drawable.vertexOrigin.set(tile.vertexOrigin)
+        drawable.vertexPoints = tile.getVertexPointBuffer(rc)
+        drawable.vertexTexCoords = levelSetBufferObjects[0]
+        drawable.lineElements = levelSetBufferObjects[1]
+        drawable.triStripElements = levelSetBufferObjects[2]
+    }
+
+    protected fun assembleLevelSetBuffers(rc: RenderContext) {
+        val numLat = levelSet.tileHeight
+        val numLon = levelSet.tileWidth
+        // Assemble the level set's vertex tex coord buffer.
+        if (levelSetBuffers[0] == null) {
+            levelSetBuffers[0] = ByteBuffer.allocateDirect(numLat * numLon * 8).order(ByteOrder.nativeOrder()).asFloatBuffer()
+            assembleVertexTexCoords(numLat, numLon, (levelSetBuffers[0] as FloatBuffer?)!!, 2).rewind()
+        }
+        levelSetBufferObjects[0] = rc.getBufferObject(levelSetBufferKeys[0])
+        if (levelSetBufferObjects[0] == null) {
+            levelSetBufferObjects[0] = rc.putBufferObject(levelSetBufferKeys[0], BufferObject(GLES20.GL_ARRAY_BUFFER, levelSetBuffers[0] as FloatBuffer?))
+        }
+        // Assemble the level set's line element buffer.
+        if (levelSetBuffers[1] == null) {
+            levelSetBuffers[1] = assembleLineElements(numLat, numLon)
+        }
+        levelSetBufferObjects[1] = rc.getBufferObject(levelSetBufferKeys[1])
+        if (levelSetBufferObjects[1] == null) {
+            levelSetBufferObjects[1] = rc.putBufferObject(levelSetBufferKeys[1], BufferObject(GLES20.GL_ELEMENT_ARRAY_BUFFER, levelSetBuffers[1] as ShortBuffer?))
+        }
+        // Assemble the shared triangle strip element buffer.
+        if (levelSetBuffers[2] == null) {
+            levelSetBuffers[2] = assembleTriStripElements(numLat, numLon)
+        }
+        levelSetBufferObjects[2] = rc.getBufferObject(levelSetBufferKeys[2])
+        if (levelSetBufferObjects[2] == null) {
+            levelSetBufferObjects[2] = rc.putBufferObject(levelSetBufferKeys[2], BufferObject(GLES20.GL_ELEMENT_ARRAY_BUFFER, levelSetBuffers[2] as ShortBuffer?))
+        }
+    }
+
 
     protected fun assembleVertexPoints(dc: RenderContext, tile: TerrainTile) {
         val globe = dc.globe ?: return
