@@ -2,7 +2,6 @@ package com.atom.wyz.worldwind.globe
 
 import com.atom.wyz.worldwind.geom.*
 import com.atom.wyz.worldwind.util.Logger
-import java.nio.FloatBuffer
 
 /**
  * GPS
@@ -159,7 +158,8 @@ class ProjectionWgs84() : GeographicProjection {
     }
 
 
-    override fun geographicToCartesianGrid(globe: Globe?, sector: Sector?, numLat: Int, numLon: Int, elevations: DoubleArray?, origin: Vec3?, offset: Vec3?, result: FloatBuffer?, stride: Int): FloatBuffer {
+    override fun geographicToCartesianGrid(globe: Globe?, sector: Sector?, numLat: Int, numLon: Int, elevations: DoubleArray?, origin: Vec3?, offset: Vec3?, result: FloatArray?, stride: Int ,  poss : Int): FloatArray {
+        var pos = poss
         if (globe == null) {
             throw java.lang.IllegalArgumentException(
                     Logger.logMessage(Logger.ERROR, "ProjectionWgs84", "geographicToCartesianGrid", "missingGlobe"))
@@ -182,7 +182,7 @@ class ProjectionWgs84() : GeographicProjection {
                     "geographicToCartesianGrid", "missingArray"))
         }
 
-        if (result == null || result.remaining() < numPoints * stride) {
+        if (result == null || result.size < numPoints * stride + pos) {
             throw java.lang.IllegalArgumentException(
                     Logger.logMessage(Logger.ERROR, "BasicGlobe", "geographicToCartesianGrid", "missingResult"))
         }
@@ -204,9 +204,8 @@ class ProjectionWgs84() : GeographicProjection {
 
         var latIndex :Int
         var lonIndex :Int
-        var elevIndex :Int = 0
+        var elevIndex  = 0
 
-        var pos :Int
 
         var lat: Double
         var lon: Double
@@ -215,8 +214,6 @@ class ProjectionWgs84() : GeographicProjection {
         val xOffset: Double = if (origin != null) -origin.x else 0.0
         val yOffset: Double = if (origin != null) -origin.y else 0.0
         val zOffset: Double = if (origin != null) -origin.z else 0.0
-
-        val xyz = FloatArray(3)
 
         // Compute and save values that are a function of each unique longitude value in the specified sector. This
         // eliminates the need to re-compute these values for each column of constant longitude.
@@ -244,15 +241,11 @@ class ProjectionWgs84() : GeographicProjection {
             rpm = eqr / Math.sqrt(1.0 - ec2 * sinLat * sinLat)
             lonIndex = 0
             while (lonIndex < numLon) {
-                pos = result.position()
                 elev = elevations?.get(elevIndex++) ?: 0.0
-                xyz[0] = ((elev + rpm) * cosLat * sinLon[lonIndex] + xOffset).toFloat()
-                xyz[1] = ((elev + rpm * (1.0 - ec2)) * sinLat + yOffset).toFloat()
-                xyz[2] = ((elev + rpm) * cosLat * cosLon[lonIndex] + zOffset).toFloat()
-                result.put(xyz, 0, 3)
-                if (result.limit() >= pos + stride) {
-                    result.position(pos + stride)
-                }
+                result[pos+0] = ((elev + rpm) * cosLat * sinLon[lonIndex] + xOffset).toFloat()
+                result[pos+1] = ((elev + rpm * (1.0 - ec2)) * sinLat + yOffset).toFloat()
+                result[pos+2] = ((elev + rpm) * cosLat * cosLon[lonIndex] + zOffset).toFloat()
+                pos += stride
                 lonIndex++
             }
             latIndex++

@@ -83,7 +83,7 @@ open class BasicGlobe: Globe {
 
         return projection.geographicToCartesianTransform(this, latitude, longitude, altitude, null, result)
     }
-    override fun geographicToCartesianGrid(sector: Sector?, numLat: Int, numLon: Int, elevations: DoubleArray?, origin: Vec3?, result: FloatBuffer?, stride: Int): FloatBuffer {
+    override fun geographicToCartesianGrid(sector: Sector?, numLat: Int, numLon: Int, elevations: DoubleArray?, origin: Vec3?, result: FloatArray?, stride: Int, pos : Int): FloatArray {
         if (sector == null) {
             throw java.lang.IllegalArgumentException(
                     Logger.logMessage(Logger.ERROR, "BasicGlobe", "geographicToCartesianGrid", "missingSector"))
@@ -100,12 +100,12 @@ open class BasicGlobe: Globe {
                     "geographicToCartesianGrid", "missingArray"))
         }
 
-        if (result == null || result.remaining() < numPoints * stride) {
+        if (result == null || result.size < numPoints * stride + pos) {
             throw java.lang.IllegalArgumentException(
                     Logger.logMessage(Logger.ERROR, "BasicGlobe", "geographicToCartesianGrid", "missingResult"))
         }
 
-        return projection.geographicToCartesianGrid(this, sector, numLat, numLon, elevations, origin, null, result, stride)
+        return projection.geographicToCartesianGrid(this, sector, numLat, numLon, elevations, origin, null, result, stride , pos)
     }
     override fun cartesianToGeographic(x: Double, y: Double, z: Double, result: Position?): Position? {
         if (result == null) {

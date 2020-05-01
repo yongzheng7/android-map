@@ -23,9 +23,9 @@ import com.atom.wyz.worldwind.util.Logger
 import com.atom.wyz.worldwind.util.WWMath
 import com.atom.wyz.worldwind.util.WWUtil
 import java.io.BufferedReader
-import java.io.IOException
 import java.io.InputStreamReader
 import java.util.concurrent.Executor
+import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 
 class BasicPerformanceBenchmarkActivity : BasicWorldWindActivity() {
@@ -145,18 +145,15 @@ class BasicPerformanceBenchmarkActivity : BasicWorldWindActivity() {
 
     }
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        wwd.worldWindowController = (NoOpWorldWindowController())
-        // Add a layer containing a large number of placemarks.
-        val layers: LayerList = getWorldWindow().layers
-        layers.addLayer(createPlacemarksLayer())
+    override fun onStart() {
+        super.onStart()
+
         // Create location objects for the places used in this test.
         val arc = Location(37.415229, -122.06265)
         val gsfc = Location(38.996944, -76.848333)
         val esrin = Location(41.826947, 12.674122)
         // After a 1 second initial delay, clear the frame statistics associated with this test.
-        val exec: Executor = BasicPerformanceBenchmarkActivity.commandExecutor
+        val exec: Executor = getNewCommandExecutor()!!
         exec.execute(SleepCommand(1000))
         exec.execute(ClearFrameMetricsCommand(wwd))
         // After a 1/2 second delay, fly to NASA Ames Research Center over 100 frames.
@@ -196,6 +193,20 @@ class BasicPerformanceBenchmarkActivity : BasicWorldWindActivity() {
         exec.execute(LogFrameMetricsCommand(wwd))
     }
 
+
+    override fun onStop() {
+        super.onStop()
+        commandExecutor!!.shutdownNow()
+    }
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        wwd.worldWindowController = (NoOpWorldWindowController())
+        // Add a layer containing a large number of placemarks.
+        val layers: LayerList = getWorldWindow().layers
+        layers.addLayer(createPlacemarksLayer())
+    }
+
     protected fun createPlacemarksLayer(): Layer {
         val layer = RenderableLayer("Placemarks")
         val attrs: Array<PlacemarkAttributes> = arrayOf<PlacemarkAttributes>(
@@ -227,12 +238,14 @@ class BasicPerformanceBenchmarkActivity : BasicWorldWindActivity() {
 
         protected const val FRAME_INTERVAL = 67 // 67 millis; 15 frames per second
 
-
-        protected var commandExecutor: Executor =
-            Executors.newSingleThreadExecutor()
-
         protected var activityHandler = Handler(Looper.getMainLooper())
 
+        protected var commandExecutor: ExecutorService? = null
+
+        fun getNewCommandExecutor(): ExecutorService? {
+            commandExecutor = Executors.newSingleThreadExecutor()
+            return commandExecutor
+        }
 
         fun runOnActivityThread(@NonNull command: Runnable?) {
             activityHandler.post(command)

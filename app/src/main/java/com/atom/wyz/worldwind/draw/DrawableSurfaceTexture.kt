@@ -2,6 +2,7 @@ package com.atom.wyz.worldwind.draw
 
 import android.opengl.GLES20
 import com.atom.wyz.worldwind.DrawContext
+import com.atom.wyz.worldwind.geom.Color
 import com.atom.wyz.worldwind.geom.Matrix3
 import com.atom.wyz.worldwind.geom.Sector
 import com.atom.wyz.worldwind.render.GpuTexture
@@ -19,6 +20,8 @@ class DrawableSurfaceTexture : Drawable, SurfaceTexture {
     protected var program: SurfaceTextureProgram? = null
 
     protected var texture: GpuTexture? = null
+
+    var color: Color = Color()
 
     override var sector: Sector = Sector()
         get() = field
@@ -44,6 +47,7 @@ class DrawableSurfaceTexture : Drawable, SurfaceTexture {
         texCoordMatrix: Matrix3?
     ): DrawableSurfaceTexture {
         this.program = program
+        this.color.set(1f, 1f, 1f, 1f)
         this.texture = texture
         if (sector != null) {
             this.sector.set(sector)
@@ -86,7 +90,13 @@ class DrawableSurfaceTexture : Drawable, SurfaceTexture {
     }
 
     protected fun drawSurfaceTextures(dc: DrawContext) {
+        // Use the draw context's pick mode.
+        program!!.enablePickMode(dc.pickMode)
 
+        // Enable the program to display surface textures from multitexture unit 0.
+        program!!.enableTexture(true)
+
+        dc.activeTextureUnit(GLES20.GL_TEXTURE0)
         GLES20.glEnableVertexAttribArray(1)
         dc.activeTextureUnit(GLES20.GL_TEXTURE0)
 
@@ -103,7 +113,7 @@ class DrawableSurfaceTexture : Drawable, SurfaceTexture {
 
             for (i in 0 until scratchList.size) {
                 // Get the surface texture and its sector.
-                val texture = scratchList.get(i) as SurfaceTexture? ?:continue
+                val texture = scratchList.get(i) as DrawableSurfaceTexture? ?:continue
                 val textureSector = texture.sector
 
                 if (!textureSector.intersects(terrainSector)) {
@@ -129,6 +139,8 @@ class DrawableSurfaceTexture : Drawable, SurfaceTexture {
                 program!!.texCoordMatrix[0].multiplyByTileTransform(terrainSector, textureSector)
                 program!!.texCoordMatrix[1].setToTileTransform(terrainSector, textureSector)
                 program!!.loadTexCoordMatrix()
+                // Use the surface texture's RGBA color.
+                program!!.loadColor(texture.color)
 
                 terrain.drawTriangles(dc)
             }

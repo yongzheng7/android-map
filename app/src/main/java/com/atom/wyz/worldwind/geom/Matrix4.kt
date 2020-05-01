@@ -1114,6 +1114,102 @@ class Matrix4 {
         result[offset_temp] = m[15].toFloat()
         return result
     }
+    fun project(
+        x: Double,
+        y: Double,
+        z: Double,
+        viewport: Viewport?,
+        result: Vec3?
+    ): Boolean {
+        requireNotNull(viewport) { Logger.logMessage(Logger.ERROR, "Matrix4", "project", "missingViewport") }
+        requireNotNull(result) { Logger.logMessage(Logger.ERROR, "Matrix4", "project", "missingResult") }
+        // Transform the model point from model coordinates to eye coordinates then to clip coordinates. This inverts
+        // the Z axis and stores the negative of the eye coordinate Z value in the W coordinate.
+        val m = m
+        var sx = m[0] * x + m[1] * y + m[2] * z + m[3]
+        var sy = m[4] * x + m[5] * y + m[6] * z + m[7]
+        var sz = m[8] * x + m[9] * y + m[10] * z + m[11]
+        val sw = m[12] * x + m[13] * y + m[14] * z + m[15]
+        if (sw == 0.0) {
+            return false
+        }
+        // Complete the conversion from model coordinates to clip coordinates by dividing by W. The resultant X, Y
+        // and Z coordinates are in the range [-1,1].
+        sx /= sw
+        sy /= sw
+        sz /= sw
+        // Clip the point against the near and far clip planes.
+        if (sz < -1 || sz > 1) {
+            return false
+        }
+        // Convert the point from clip coordinate to the range [0,1]. This enables the X and Y coordinates to be
+        // converted to screen coordinates, and the Z coordinate to represent a depth value in the range[0,1].
+        sx = sx * 0.5 + 0.5
+        sy = sy * 0.5 + 0.5
+        sz = sz * 0.5 + 0.5
+        // Convert the X and Y coordinates from the range [0,1] to screen coordinates.
+        sx = sx * viewport.width + viewport.x
+        sy = sy * viewport.height + viewport.y
+        result.x = sx
+        result.y = sy
+        result.z = sz
+        return true
+    }
+
+    fun unProject(
+        x: Double,
+        y: Double,
+        viewport: Viewport?,
+        nearResult: Vec3?,
+        farResult: Vec3?
+    ): Boolean {
+        requireNotNull(viewport) { Logger.logMessage(Logger.ERROR, "Matrix4", "unProject", "missingViewport") }
+        require(!(nearResult == null || farResult == null)) {
+            Logger.logMessage(
+                Logger.ERROR,
+                "Matrix4",
+                "unProject",
+                "missingResult"
+            )
+        }
+        // Convert the XY screen coordinates to coordinates in the range [0, 1]. This enables the XY coordinates to
+        // be converted to clip coordinates.
+        var sx = (x - viewport.x) / viewport.width
+        var sy = (y - viewport.y) / viewport.height
+        // Convert from coordinates in the range [0, 1] to clip coordinates in the range [-1, 1].
+        sx = sx * 2 - 1
+        sy = sy * 2 - 1
+        // Transform the screen point from clip coordinates to model coordinates. This is a partial transformation that
+// factors out the contribution from the screen point's X and Y components. The contribution from the Z
+// component, which is both -1 and +1, is included next.
+        val m = m
+        val mx = m[0] * sx + m[1] * sy + m[3]
+        val my = m[4] * sx + m[5] * sy + m[7]
+        val mz = m[8] * sx + m[9] * sy + m[11]
+        val mw = m[12] * sx + m[13] * sy + m[15]
+        // Transform the screen point at the near clip plane (z = -1) to model coordinates.
+        val nx = mx - m[2]
+        val ny = my - m[6]
+        val nz = mz - m[10]
+        val nw = mw - m[14]
+        // Transform the screen point at the far clip plane (z = +1) to model coordinates.
+        val fx = mx + m[2]
+        val fy = my + m[6]
+        val fz = mz + m[10]
+        val fw = mw + m[14]
+        if (nw == 0.0 || fw == 0.0) {
+            return false
+        }
+        // Complete the conversion from near clip coordinates to model coordinates by dividing by the W component.
+        nearResult.x = nx / nw
+        nearResult.y = ny / nw
+        nearResult.z = nz / nw
+        // Complete the conversion from far clip coordinates to model coordinates by dividing by the W component.
+        farResult.x = fx / fw
+        farResult.y = fy / fw
+        farResult.z = fz / fw
+        return true
+    }
 
     override fun toString(): String {
         return " \n" + "[" + m[0] + ", " + m[1] + ", " + m[2] + ", " + m[3] + "], \n" +

@@ -14,8 +14,7 @@ import com.atom.wyz.worldwind.util.pool.Pool
 class DrawableGroundAtmosphere : Drawable {
     companion object {
         fun obtain(pool: Pool<DrawableGroundAtmosphere>): DrawableGroundAtmosphere {
-            return pool.acquire()?.setPool(pool)
-                ?: DrawableGroundAtmosphere().setPool(pool) // get an instance from the pool
+            return pool.acquire()?.setPool(pool) ?: DrawableGroundAtmosphere().setPool(pool) // get an instance from the pool
         }
     }
 
@@ -49,7 +48,6 @@ class DrawableGroundAtmosphere : Drawable {
         program.loadLightDirection(lightDirection)
 
         GLES20.glEnableVertexAttribArray(1)
-
         dc.activeTextureUnit(GLES20.GL_TEXTURE0)
 
         val textureBound = nightTexture != null && nightTexture!!.bindTexture(dc)
@@ -60,7 +58,6 @@ class DrawableGroundAtmosphere : Drawable {
 
             // Get the drawable terrain associated with the draw context.
             val terrain = dc.getDrawableTerrain(idx) ?: continue
-
 
             val terrainOrigin = terrain.vertexOrigin
 

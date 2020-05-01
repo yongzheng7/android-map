@@ -1,16 +1,12 @@
 package com.atom.wyz.worldwind.geom
 
 import com.atom.wyz.worldwind.util.Logger
-import java.nio.FloatBuffer
-import java.nio.ShortBuffer
 
 class Line {
 
     val origin: Vec3 = Vec3()
 
     val direction: Vec3 = Vec3()
-
-    private val vertex = FloatArray(3)
 
     constructor()
 
@@ -100,12 +96,12 @@ class Line {
     }
 
     fun triStripIntersection(
-        points: FloatBuffer?,
+        points: FloatArray?,
         stride: Int,
-        elements: ShortBuffer?,
+        elements: ShortArray?,
         result: Vec3?
     ): Boolean {
-        require(!(points == null || points.remaining() < stride)) {
+        require(!(points == null || points.size < stride)) {
             Logger.logMessage(
                 Logger.ERROR,
                 "Line",
@@ -114,7 +110,7 @@ class Line {
             )
         }
         require(stride >= 3) { Logger.logMessage(Logger.ERROR, "Line", "triStripIntersections", "invalidStride") }
-        require(!(elements == null || elements.remaining() == 0)) {
+        require(!(elements == null || elements.size == 0)) {
             Logger.logMessage(
                 Logger.ERROR,
                 "Line",
@@ -132,22 +128,21 @@ class Line {
         val sz = origin.z
         var tMin = Double.POSITIVE_INFINITY
         val EPSILON = 0.00001
-        points.mark()
         // 获取三角形的第一个定点
-        points.position(elements[0] * stride)
-        points.get(vertex)
-        var vert1x = vertex[0].toDouble()
-        var vert1y = vertex[1].toDouble()
-        var vert1z = vertex[2].toDouble()
+        // Get the triangle strip's first vertex.
+        var index = elements[0] * stride
+        var vert1x = points[index++].toDouble()
+        var vert1y = points[index++].toDouble()
+        var vert1z = points[index].toDouble()
         // 获取三角形的第2个定点
-        points.position(elements[1] * stride)
-        points.get(vertex)
-        var vert2x = vertex[0].toDouble()
-        var vert2y = vertex[1].toDouble()
-        var vert2z = vertex[2].toDouble()
+        // Get the triangle strip's second vertex.
+        index = elements[1] * stride
+        var vert2x = points[index++].toDouble()
+        var vert2y = points[index++].toDouble()
+        var vert2z = points[index].toDouble()
         // 计算每个三角形与指定射线的交点。
         var i = 2
-        val len = elements.remaining()
+        val len = elements.size
         while (i < len) {
 
             val vert0x = vert1x
@@ -157,11 +152,10 @@ class Line {
             vert1y = vert2y
             vert1z = vert2z
             // Get the triangle strip's next vertex.
-            points.position(elements[i] * stride)
-            points.get(vertex)
-            vert2x = vertex[0].toDouble()
-            vert2y = vertex[1].toDouble()
-            vert2z = vertex[2].toDouble()
+            index = elements[i] * stride
+            vert2x = points[index++].toDouble()
+            vert2y = points[index++].toDouble()
+            vert2z = points[index].toDouble()
             // find vectors for two edges sharing point a: vert1 - vert0 and vert2 - vert0
             val edge1x = vert1x - vert0x
             val edge1y = vert1y - vert0y
@@ -207,7 +201,6 @@ class Line {
             }
             i++
         }
-        points.reset()
         if (tMin != Double.POSITIVE_INFINITY) {
             result[sx + vx * tMin, sy + vy * tMin] = sz + vz * tMin
         }

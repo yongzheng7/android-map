@@ -159,7 +159,7 @@ open class Placemark : AbstractRenderable, Highlightable, Movable {
 
         WWMath.boundingRectForUnitSquare(unitSquareTransform, screenBounds) // TODO allocation
 
-        if (rc.viewport.intersects(screenBounds)) {
+        if (rc.frustum.intersectsViewport(screenBounds)) {
             val pool: Pool<DrawableScreenTexture> = rc.getDrawablePool(DrawableScreenTexture::class.java)
             val drawable: DrawableScreenTexture = DrawableScreenTexture.obtain(pool)
             prepareDrawableIcon(rc, drawable)
@@ -172,7 +172,7 @@ open class Placemark : AbstractRenderable, Highlightable, Movable {
         if (rc.pickMode && rc.drawableCount() != drawableCount) {
             rc.offerPickedObject(
                 PickedObject.fromRenderable(
-                    this, this.position, altitudeMode, rc.currentLayer,
+                    this, this.position, rc.currentLayer,
                     activePickedObjectId
                 )
             )

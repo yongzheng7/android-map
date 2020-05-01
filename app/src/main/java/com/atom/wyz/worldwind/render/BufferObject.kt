@@ -26,18 +26,6 @@ class BufferObject : RenderResource {
         this.buffer = buffer
     }
 
-    constructor(target: Int, buffer: ShortBuffer?) : this(
-        target,
-        if (buffer != null) buffer.remaining() * 2 else 0,
-        buffer
-    )
-
-    constructor(target: Int, buffer: FloatBuffer?) : this(
-        target,
-        if (buffer != null) buffer.remaining() * 4 else 0,
-        buffer
-    )
-
     fun bindBuffer(dc: DrawContext): Boolean {
         if (buffer != null) {
             this.loadBuffer(dc)

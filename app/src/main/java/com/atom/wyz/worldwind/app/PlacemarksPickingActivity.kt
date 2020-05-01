@@ -19,14 +19,17 @@ import com.atom.wyz.worldwind.shape.PlacemarkAttributes
 class PlacemarksPickingActivity : BasicWorldWindActivity() {
 
     companion object {
+        private const val NORMAL_IMAGE_SCALE = 3.0
+        private const val HIGHLIGHTED_IMAGE_SCALE = 4.0
+
 
         private fun createAircraftPlacemark(position: Position): Placemark {
             return Placemark.createSimpleImage(position, ImageSource.fromResource(R.drawable.air_fixwing)).apply {
                 this.attributes.imageOffset = Offset.bottomCenter()
-                this.attributes.imageScale = 2.0
+                this.attributes.imageScale = NORMAL_IMAGE_SCALE
                 this.attributes.drawLeader = true
                 this.highlightAttributes = PlacemarkAttributes(this.attributes).apply {
-                    this.imageScale = 3.0
+                    this.imageScale = HIGHLIGHTED_IMAGE_SCALE
                 }
             }
         }
@@ -35,9 +38,9 @@ class PlacemarksPickingActivity : BasicWorldWindActivity() {
             return Placemark.createSimpleImage(position, ImageSource.fromResource(R.drawable.airport_terminal))
                 .apply {
                     this.attributes.imageOffset = Offset.bottomCenter()
-                    this.attributes.imageScale = 2.0
+                    this.attributes.imageScale = NORMAL_IMAGE_SCALE
                     this.highlightAttributes = PlacemarkAttributes(this.attributes).apply {
-                        this.imageScale = 3.0
+                        this.imageScale = HIGHLIGHTED_IMAGE_SCALE
                     }
                     this.displayName = airportName
                 }

@@ -171,9 +171,10 @@ class DrawContext {
         unitSquareBuffer?.let {
             return it
         }
-        val buffer = ByteBuffer.allocateDirect(points.size * 4).order(ByteOrder.nativeOrder()).asFloatBuffer()
+        val size = points.size * 4
+        val buffer = ByteBuffer.allocateDirect(size).order(ByteOrder.nativeOrder()).asFloatBuffer()
         buffer.put(points).rewind()
-        unitSquareBuffer = BufferObject(GLES20.GL_ARRAY_BUFFER, buffer)
+        unitSquareBuffer = BufferObject(GLES20.GL_ARRAY_BUFFER, size, buffer)
         return unitSquareBuffer!!
     }
 

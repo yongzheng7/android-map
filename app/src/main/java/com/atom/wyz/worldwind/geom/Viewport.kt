@@ -1,5 +1,8 @@
 package com.atom.wyz.worldwind.geom
 
+import com.atom.wyz.worldwind.util.Logger
+import java.lang.IllegalArgumentException
+
 class Viewport() {
     /**
      * The X component of the viewport's origin.
@@ -63,9 +66,35 @@ class Viewport() {
 
     fun intersects(viewport: Viewport): Boolean {
         val that: Viewport = viewport
-        return x < that.x + that.width && that.x < x + width && y < that.y + that.height && that.y < y + height
+        return this.x < (that.x + that.width) && that.x < (this.x + this.width) && this.y < (that.y + that.height) && that.y < (this.y + this.height)
     }
-
+    fun intersect(viewport: Viewport?): Boolean {
+        if (viewport == null) {
+            throw IllegalArgumentException(
+                Logger.logMessage(Logger.ERROR, "Viewport", "intersect", "missingViewport")
+            )
+        }
+        val that: Viewport = viewport
+        if (this.x < that.x + that.width && that.x < this.x + this.width && this.y < that.y + that.height && that.y < this.y + this.height
+        ) {
+            if (x < that.x) {
+                width -= that.x - x
+                x = that.x
+            }
+            if (y < that.y) {
+                height -= that.y - y
+                y = that.y
+            }
+            if (x + width > that.x + that.width) {
+                width = that.x + that.width - x
+            }
+            if (y + height > that.y + that.height) {
+                height = that.y + that.height - y
+            }
+            return true
+        }
+        return false
+    }
     fun contains(x: Int, y: Int): Boolean {
         return x >= this.x && x < this.x + width && y >= this.y && y < this.y + height
     }

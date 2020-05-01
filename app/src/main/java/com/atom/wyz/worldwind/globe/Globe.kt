@@ -59,7 +59,7 @@ interface Globe {
      * 区域经纬度 转笛卡尔网络
      */
     fun geographicToCartesianGrid(sector: Sector?, numLat: Int, numLon: Int, elevations: DoubleArray?,
-                                  origin: Vec3?, result: FloatBuffer? , stride : Int ): FloatBuffer
+                                  origin: Vec3?, result: FloatArray? , stride : Int , pos : Int ): FloatArray
 
     /**
      * 笛卡尔转地域

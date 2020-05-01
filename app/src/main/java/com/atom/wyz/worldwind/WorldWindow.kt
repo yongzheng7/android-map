@@ -8,6 +8,7 @@ import android.opengl.GLES20
 import android.opengl.GLSurfaceView
 import android.os.Handler
 import android.os.Looper
+import android.os.Message
 import android.util.AttributeSet
 import android.view.Choreographer
 import android.view.Choreographer.FrameCallback
@@ -39,6 +40,12 @@ class WorldWindow : GLSurfaceView, GLSurfaceView.Renderer, MessageListener, Fram
         const val DEFAULT_MEMORY_CLASS = 16
 
         const val MAX_FRAME_QUEUE_SIZE = 2
+
+        const val MSG_ID_CLEAR_CACHE = 1
+
+        const val MSG_ID_REQUEST_REDRAW = 2
+
+        const val MSG_ID_SET_VIEWPORT = 3
     }
 
     var globe: Globe = GlobeWgs84()
@@ -84,18 +91,25 @@ class WorldWindow : GLSurfaceView, GLSurfaceView.Renderer, MessageListener, Fram
 
     protected var framePool: Pool<Frame> = SynchronizedPool()
 
-    protected var frameQueue =
-        ConcurrentLinkedQueue<Frame>()
+    protected var frameQueue: Queue<Frame> = ConcurrentLinkedQueue()
+
+    protected var pickQueue: Queue<Frame> = ConcurrentLinkedQueue()
 
     protected var currentFrame: Frame? = null
 
-    protected var waitingForRedraw = false
+    protected var isPaused = false
+    protected var isWaitingForRedraw = false
 
     protected var mainLoopHandler =
         Handler(Looper.getMainLooper(), Handler.Callback {
-            requestRedraw()
+            if (it.what == MSG_ID_CLEAR_CACHE) {
+                renderResourceCache!!.clear()
+            } else if (it.what == MSG_ID_REQUEST_REDRAW) {
+                requestRedraw()
+            } else if (it.what == MSG_ID_SET_VIEWPORT) {
+                viewport.set((it.obj as Viewport))
+            }
             false
-
         })
 
     constructor(context: Context) : super(context) {
@@ -144,11 +158,6 @@ class WorldWindow : GLSurfaceView, GLSurfaceView.Renderer, MessageListener, Fram
         reset()
     }
 
-    override fun surfaceChanged(holder: SurfaceHolder?, format: Int, w: Int, h: Int) {
-        super.surfaceChanged(holder, format, w, h)
-        viewport.set(0, 0, w, h)
-    }
-
 
     @SuppressLint("ClickableViewAccessibility")
     override fun onTouchEvent(event: MotionEvent): Boolean {
@@ -171,15 +180,15 @@ class WorldWindow : GLSurfaceView, GLSurfaceView.Renderer, MessageListener, Fram
 
     override fun onDrawFrame(gl: GL10?) {
 
-        var nextFrame: Frame?
-        while (frameQueue.poll().also { nextFrame = it } != null && nextFrame!!.pickMode) {
-            nextFrame?.let {
-                drawFrame(it)
-                it.signalDone()
-                it.recycle()
-            }
+        val pickFrame = pickQueue.poll()
+        if (pickFrame != null) {
+            drawFrame(pickFrame)
+            pickFrame.signalDone()
+            pickFrame.recycle()
+            super.requestRender()
         }
 
+        var nextFrame = frameQueue.poll()
         if (nextFrame != null) {
             currentFrame?.recycle()
             currentFrame = nextFrame
@@ -188,8 +197,22 @@ class WorldWindow : GLSurfaceView, GLSurfaceView.Renderer, MessageListener, Fram
 
         currentFrame?.let {
             drawFrame(it)
-            it.signalDone()
         }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        isPaused = false
+    }
+
+    override fun onPause() {
+        super.onPause()
+        isPaused = true
+        // Reset the World Window's internal state. The OpenGL thread is paused, so frames in the queue will not be
+        // processed. Clear the frame queue and recycle pending frames back into the frame pool. We also don't know
+        // whether or not the render resources are valid, so we reset and let the GLSurfaceView establish the new
+        // EGL context and viewport.
+        reset()
     }
 
     protected fun computeViewingTransform(
@@ -240,9 +263,11 @@ class WorldWindow : GLSurfaceView, GLSurfaceView.Renderer, MessageListener, Fram
         rc.projection.set(frame.projection)
         rc.modelview.set(frame.modelview)
         rc.modelviewProjection.setToMultiply(frame.projection, frame.modelview)
-        rc.frustum.setToProjectionMatrix(frame.projection)
-        rc.frustum.transformByMatrix(scratchModelview.transposeMatrix(frame.modelview))
-        rc.frustum.normalize()
+        if (pickMode) {
+            rc.frustum.setToModelviewProjection(frame.projection, frame.modelview, frame.viewport, frame.pickViewport)
+        } else {
+            rc.frustum.setToModelviewProjection(frame.projection, frame.modelview, frame.viewport)
+        }
 
         rc.drawableQueue = frame.drawableQueue
         rc.drawableTerrain = frame.drawableTerrain
@@ -253,9 +278,13 @@ class WorldWindow : GLSurfaceView, GLSurfaceView.Renderer, MessageListener, Fram
 
         frameController.renderFrame(rc)
 
-        frameQueue.offer(frame)
-        super.requestRender()
-
+        if (pickMode) {
+            pickQueue.offer(frame)
+            super.requestRender()
+        } else {
+            frameQueue.offer(frame)
+            super.requestRender()
+        }
         if (!pickMode && rc.redrawRequested) {
             requestRedraw()
         }
@@ -311,8 +340,13 @@ class WorldWindow : GLSurfaceView, GLSurfaceView.Renderer, MessageListener, Fram
 
     override fun onSurfaceChanged(gl: GL10?, width: Int, height: Int) {
         GLES20.glViewport(0, 0, width, height)
-
-        requestRedraw()
+        // Set the World Window's new viewport dimensions.
+        val newViewport = Viewport(0, 0, width, height)
+        this.mainLoopHandler.sendMessage(
+            Message.obtain(this.mainLoopHandler, MSG_ID_SET_VIEWPORT /*msg.what*/, newViewport /*msg.obj*/)
+        )
+        // Redraw this World Window with the new viewport.
+        this.mainLoopHandler.sendEmptyMessage(MSG_ID_REQUEST_REDRAW /*msg.what*/)
     }
 
     override fun onSurfaceCreated(gl: GL10?, config: EGLConfig?) {
@@ -332,6 +366,8 @@ class WorldWindow : GLSurfaceView, GLSurfaceView.Renderer, MessageListener, Fram
         GLES20.glEnableVertexAttribArray(0)
 
         this.dc.contextLost()
+        // Clear the render resource cache on the main thread.
+        this.mainLoopHandler.sendEmptyMessage(MSG_ID_CLEAR_CACHE /*msg.what*/)
 
     }
 
@@ -398,12 +434,12 @@ class WorldWindow : GLSurfaceView, GLSurfaceView.Renderer, MessageListener, Fram
 
     fun requestRedraw() {
         if (Thread.currentThread() !== Looper.getMainLooper().thread) {
-            mainLoopHandler.sendEmptyMessage(0);
+            mainLoopHandler.sendEmptyMessage(MSG_ID_REQUEST_REDRAW /*what*/);
             return
         }
-        if (!waitingForRedraw && !this.viewport.isEmpty()) {
+        if (!this.isWaitingForRedraw && !this.isPaused && !this.viewport.isEmpty()) {
             Choreographer.getInstance().postFrameCallback(this)
-            waitingForRedraw = true
+            isWaitingForRedraw = true
         }
     }
 
@@ -412,7 +448,7 @@ class WorldWindow : GLSurfaceView, GLSurfaceView.Renderer, MessageListener, Fram
             Choreographer.getInstance().postFrameCallback(this)
             return
         }
-        waitingForRedraw = false
+        isWaitingForRedraw = false
 
         val frame = Frame.obtain(framePool)
         renderFrame(frame)
@@ -424,34 +460,67 @@ class WorldWindow : GLSurfaceView, GLSurfaceView.Renderer, MessageListener, Fram
         viewport.setEmpty()
         clearFrameQueue()
         Choreographer.getInstance().removeFrameCallback(this)
-        this.mainLoopHandler.removeMessages(0 /*what*/)
-        waitingForRedraw = false
+        this.mainLoopHandler.removeMessages(MSG_ID_REQUEST_REDRAW)
+        isWaitingForRedraw = false
     }
 
     protected fun clearFrameQueue() {
+
+        var pickFrame: Frame?
+        while (pickQueue.poll().also { pickFrame = it } != null) {
+            pickFrame?.signalDone()
+            pickFrame?.recycle()
+        }
         var frame: Frame?
         while (frameQueue.poll().also { frame = it } != null) {
-            frame?.signalDone()
             frame?.recycle()
         }
 
         frameQueue.clear()
-        // Recycle the current frame back into the frame pool. Mark the frame as done to ensure that threads waiting for
-        // the frame to finish don't deadlock.
-        currentFrame?.signalDone()
         currentFrame?.recycle()
         currentFrame = null
     }
 
+    /**
+     * Determines the World Wind objects displayed at a screen point. The screen point is interpreted as coordinates in
+     * Android screen pixels relative to this View.
+     * <p/>
+     * If the screen point intersects any number of World Wind shapes, the returned list contains a picked object
+     * identifying the top shape at the screen point. This picked object includes the shape renderable or its non-null
+     * pick delegate, the shape's geographic position, and the World Wind layer that displayed the shape. Shapes which
+     * are either hidden behind another shape at the screen point or hidden behind terrain at the screen point are
+     * omitted from the returned list. Therefore if the returned list contains a picked object identifying a shape, it
+     * is always marked as 'on top'.
+     * <p/>
+     * If the screen point intersects the World Wind terrain, the returned list contains a picked object identifying the
+     * associated geographic position. If there are no shapes in the World Wind scene between the terrain and the screen
+     * point, the terrain picked object is marked as 'on top'.
+     * <p/>
+     * This returns an empty list when nothing in the World Wind scene intersects the screen point, when the screen
+     * point is outside this View's bounds, or if the OpenGL thread displaying the World Window scene is paused (or
+     * becomes paused while this method is executing).
+     *
+     * @param x the screen point's X coordinate in Android screen pixels
+     * @param y the screen point's Y coordinate in Android screen pixels
+     *
+     * @return A list of World Wind objects at the screen point
+     */
     fun pick(
         x: Float,
         y: Float
     ): PickedObjectList {
         val pickedObjects = PickedObjectList()
-        val pickPoint = Vec2(x.toDouble(), (this.height - y).toDouble())
 
+        // Nothing can be picked if this World Window's OpenGL thread is paused.
+        if (isPaused) {
+            return pickedObjects
+        }
+        // Compute the pick point in OpenGL screen coordinates, rounding to the nearest whole pixel. Nothing can be picked
+        // if pick point is outside the World Window's viewport.
+        val px = Math.round(x)
+        val py = Math.round(this.height - y)
         // Nothing can be picked if the pick point is outside of the World Window's viewport.
-        if (!viewport.contains(pickPoint.x.toInt(), pickPoint.y.toInt())) {
+        if (!viewport.contains(px, py)) {
             return pickedObjects
         }
         // Nothing can be picked if a ray through the pick point cannot be constructed.
@@ -462,7 +531,9 @@ class WorldWindow : GLSurfaceView, GLSurfaceView.Renderer, MessageListener, Fram
         // Obtain a frame from the pool and render the frame, accumulating Drawables to process in the OpenGL thread.
         val frame = Frame.obtain(framePool)
         frame.pickedObjects = pickedObjects
-        frame.pickPoint = pickPoint
+        frame.pickViewport = Viewport(px - 1, py - 1, 3, 3)
+        frame.pickViewport!!.intersect(viewport)
+        frame.pickPoint = Vec2(px.toDouble(), py.toDouble())
         frame.pickRay = pickRay
         frame.pickMode = true
         renderFrame(frame)
@@ -493,28 +564,15 @@ class WorldWindow : GLSurfaceView, GLSurfaceView.Renderer, MessageListener, Fram
         }
         this.computeViewingTransform(this.scratchProjection, this.scratchModelview)
         scratchProjection.multiplyByMatrix(scratchModelview)
-        val m = scratchProjection.m
-        var sx = m[0] * x + m[1] * y + m[2] * z + m[3]
-        var sy = m[4] * x + m[5] * y + m[6] * z + m[7]
-        var sz = m[8] * x + m[9] * y + m[10] * z + m[11]
-        val sw = m[12] * x + m[13] * y + m[14] * z + m[15]
-        if (sw == 0.0) {
-            return false
+        // Transform the Cartesian point to OpenGL screen coordinates. Complete the transformation by converting to
+        // Android screen coordinates and discarding the screen Z component.
+        if (scratchProjection.project(x, y, z, viewport, scratchPoint)) {
+            result.x = scratchPoint.x.toFloat()
+            result.y = (this.height - scratchPoint.y).toFloat()
+            return true
         }
-        sx /= sw
-        sy /= sw
-        sz /= sw
-        if (sz < -1 || sz > 1) {
-            return false
-        }
-        sx = sx * 0.5 + 0.5
-        sy = sy * 0.5 + 0.5
-        sy = 1 - sy
-        sx = sx * this.width
-        sy = sy * this.height
-        result.x = sx.toFloat()
-        result.y = sy.toFloat()
-        return true
+
+        return false
     }
 
     /**
@@ -554,41 +612,24 @@ class WorldWindow : GLSurfaceView, GLSurfaceView.Renderer, MessageListener, Fram
                 "missingResult"
             )
         }
-        this.computeViewingTransform(this.scratchProjection, this.scratchModelview)
+
+        // Convert from Android screen coordinates to OpenGL screen coordinates by inverting the Y axis.
+        val sx = x.toDouble()
+        val sy = this.height - y.toDouble()
+
+        // Compute the inverse modelview-projection matrix corresponding to the World Window's current Navigator state.
+        computeViewingTransform(scratchProjection, scratchModelview)
         scratchProjection.multiplyByMatrix(scratchModelview).invert()
-        var sx = x / this.width
-        var sy = y / this.height
-        sy = 1 - sy
-        sx = sx * 2 - 1
-        sy = sy * 2 - 1
-        val m = scratchProjection.m
-        val mx = m[0] * sx + m[1] * sy + m[3]
-        val my = m[4] * sx + m[5] * sy + m[7]
-        val mz = m[8] * sx + m[9] * sy + m[11]
-        val mw = m[12] * sx + m[13] * sy + m[15]
 
-        var nx = mx - m[2]
-        var ny = my - m[6]
-        var nz = mz - m[10]
-        val nw = mw - m[14]
-
-        var fx = mx + m[2]
-        var fy = my + m[6]
-        var fz = mz + m[10]
-        val fw = mw + m[14]
-        if (nw == 0.0 || fw == 0.0) {
-            return false
+        // Transform the screen point to Cartesian coordinates at the near and far clip planes, store the result in the
+        // ray's origin and direction, respectively. Complete the ray direction by subtracting the near point from the
+        // far point and normalizing.
+        if (scratchProjection.unProject(sx, sy, viewport, result.origin /*near*/, result.direction /*far*/)) {
+            result.direction.subtract(result.origin).normalize()
+            return true
         }
-        nx = nx / nw
-        ny = ny / nw
-        nz = nz / nw
 
-        fx = fx / fw
-        fy = fy / fw
-        fz = fz / fw
-        result.origin.set(nx, ny, nz)
-        result.direction.set(fx - nx, fy - ny, fz - nz).normalize()
-        return true
+        return false
     }
 
 

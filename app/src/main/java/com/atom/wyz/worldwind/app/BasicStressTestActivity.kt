@@ -36,6 +36,7 @@ class BasicStressTestActivity : BasicWorldWindActivity() , Choreographer.FrameCa
 
     override fun onPause() {
         super.onPause()
+        lastFrameTimeNanos = 0
         activityPaused = true
     }
 
@@ -43,6 +44,7 @@ class BasicStressTestActivity : BasicWorldWindActivity() , Choreographer.FrameCa
         super.onResume()
         // Resume the Navigator animation.
         activityPaused = false
+        lastFrameTimeNanos = 0
         Choreographer.getInstance().postFrameCallback(this)
     }
 }

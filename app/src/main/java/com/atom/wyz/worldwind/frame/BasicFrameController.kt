@@ -71,9 +71,7 @@ class BasicFrameController : FrameController {
                 topObject.markOnTop()
                 pickedObjects.clearPickedObjects()
                 pickedObjects.offerPickedObject(topObject)
-                if (terrainObject != null && terrainObject !== topObject) {
-                    pickedObjects.offerPickedObject(terrainObject)
-                }
+                pickedObjects.offerPickedObject(terrainObject)
             } else {
                 pickedObjects.clearPickedObjects() // no eligible objects drawn at the pick point
             }
@@ -84,6 +82,9 @@ class BasicFrameController : FrameController {
 
     override fun renderFrame(rc: RenderContext) {
         tessellateTerrain(rc)
+        if (rc.pickMode) {
+            this.renderTerrainPickedObject(rc)
+        }
         renderLayers(rc)
         prepareDrawables(rc)
     }
@@ -114,13 +115,9 @@ class BasicFrameController : FrameController {
 
     protected fun tessellateTerrain(rc: RenderContext) {
         rc.globe?.tessellator?.tessellate(rc)
-
-        if (rc.pickMode) {
-            this.renderPickedTerrain(rc)
-        }
     }
 
-    protected fun renderPickedTerrain(rc: RenderContext) {
+    protected fun renderTerrainPickedObject(rc: RenderContext) {
         val terrain = rc.terrain ?: return
         if (terrain.sector.isEmpty()) {
             return  // no terrain to pick
@@ -136,11 +133,22 @@ class BasicFrameController : FrameController {
             drawable.program = rc.putProgram(BasicProgram.KEY, BasicProgram(rc.resources!!)) as BasicProgram
         }
         rc.offerSurfaceDrawable(drawable, Double.NEGATIVE_INFINITY)
-        if (terrain.intersect(rc.pickRay, pickPoint)) {
-            pickPos = rc.globe!!.cartesianToGeographic(pickPoint.x, pickPoint.y, pickPoint.z, pickPos)!!
-            pickPos.altitude = 0.0 // report the actual altitude, which does not always match the surface altitude
+        if (resolveTerrainPickPosition(rc, this.pickPos)) {
             rc.offerPickedObject(PickedObject.fromTerrain(pickPos, pickedObjectId))
         }
     }
 
+    protected fun resolveTerrainPickPosition(rc: RenderContext, result: Position?): Boolean {
+        val terrain = rc.terrain ?: return false
+        val globe = rc.globe ?: return false
+        if (terrain.intersect(rc.pickRay, pickPoint)) {
+            globe.cartesianToGeographic(pickPoint.x, pickPoint.y, pickPoint.z, result)?.let {
+                result?.set(it)
+                result?.altitude = 0.0
+                return true
+            } ?: let { return false }
+
+        }
+        return false
+    }
 }

@@ -1,8 +1,10 @@
 package com.atom.wyz.worldwind.render
 
 import com.atom.wyz.worldwind.RenderContext
+import com.atom.wyz.worldwind.WorldWind
 import com.atom.wyz.worldwind.draw.DrawableSurfaceTexture
 import com.atom.wyz.worldwind.geom.Sector
+import com.atom.wyz.worldwind.pick.PickedObject
 import com.atom.wyz.worldwind.util.Logger
 
 class SurfaceImage : AbstractRenderable {
@@ -39,8 +41,25 @@ class SurfaceImage : AbstractRenderable {
             return
         }
         val program = this.getShaderProgram(rc)
-        val drawable = DrawableSurfaceTexture.obtain(rc.getDrawablePool(DrawableSurfaceTexture::class.java)).set(program, sector, texture , texture.texCoordTransform)
+        val drawable = DrawableSurfaceTexture.obtain(rc.getDrawablePool(DrawableSurfaceTexture::class.java))
+            .set(program, sector, texture, texture.texCoordTransform)
         rc.offerSurfaceDrawable(drawable, 0.0 /*z-order*/)
+
+        // Enqueue a picked object that associates the drawable surface texture with this surface image.
+        if (rc.pickMode) {
+            rc.pickedObjects?.let {
+                val terrainObject = it.terrainPickedObject()
+                terrainObject?.position?.let {
+                    val pickedObject = PickedObject.fromRenderable(
+                        this, terrainObject.position, rc.currentLayer, rc.nextPickedObjectId()
+                    )
+                    pickedObject?.let {
+                        PickedObject.identifierToUniqueColor(it.identifier, drawable.color)
+                    }
+                    rc.offerPickedObject(pickedObject)
+                }
+            }
+        }
     }
 
     protected fun getShaderProgram(dc: RenderContext): SurfaceTextureProgram? {

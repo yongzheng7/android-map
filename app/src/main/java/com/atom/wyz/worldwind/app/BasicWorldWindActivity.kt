@@ -27,8 +27,6 @@ open class BasicWorldWindActivity : AppCompatActivity() {
         wwd.layers.addLayer(BackgroundLayer())
         wwd.layers.addLayer(BlueMarbleLandsatLayer())
         wwd.layers.addLayer(AtmosphereLayer())
-
-
     }
 
     override fun onPause() {

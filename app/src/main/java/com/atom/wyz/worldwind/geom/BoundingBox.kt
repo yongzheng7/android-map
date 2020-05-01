@@ -2,8 +2,6 @@ package com.atom.wyz.worldwind.geom
 
 import com.atom.wyz.worldwind.globe.Globe
 import com.atom.wyz.worldwind.util.Logger
-import java.nio.ByteBuffer
-import java.nio.ByteOrder
 import java.util.*
 
 /**
@@ -110,9 +108,9 @@ class BoundingBox() {
         elevations[2] = elevations[6]
         elevations[0] = elevations[2]
 
-        val points = ByteBuffer.allocateDirect(count * stride * 4).order(ByteOrder.nativeOrder()).asFloatBuffer()
-        globe.geographicToCartesianGrid(sector, numLat, numLon, elevations, null, points, stride)
-            .rewind() // points中是经过转换的点
+        val points = FloatArray(count * stride)
+        // points中是经过转换的点
+        globe.geographicToCartesianGrid(sector, numLat, numLon, elevations, null, points, stride , 0)
 
         val centroidLat: Double = sector.centroidLatitude()
         val centroidLon: Double = sector.centroidLongitude()
@@ -132,15 +130,15 @@ class BoundingBox() {
         val tExtremes = doubleArrayOf(Double.POSITIVE_INFINITY, Double.NEGATIVE_INFINITY)
 
         val u = Vec3()
-        val coords = FloatArray(stride)
 
-        for (i in 0 until count) {
-            points.get(coords, 0, stride)
-
-            u.set(coords[0].toDouble(), coords[1].toDouble(), coords[2].toDouble())
-
+        var idx = 0
+        val len = points.size
+        while (idx < len) {
+            u.set(points[idx].toDouble(), points[idx + 1].toDouble() ,points[idx + 2].toDouble())
             adjustExtremes(r, rExtremes, s, sExtremes, t, tExtremes, u)
+            idx += stride
         }
+
         // Sort the axes from most prominent to least prominent. The frustum intersection methods in WWBoundingBox assume
         // that the axes are defined in this way.
         if (rExtremes[1] - rExtremes[0] < sExtremes[1] - sExtremes[0]) {

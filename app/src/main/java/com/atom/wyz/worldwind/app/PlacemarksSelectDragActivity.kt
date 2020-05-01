@@ -33,6 +33,8 @@ class PlacemarksSelectDragActivity : BasicWorldWindActivity() {
         const val SELECTABLE = "selectable"
         const val AIRCRAFT_TYPE = "aircraft_type"
         const val AUTOMOTIVE_TYPE = "auotomotive_type"
+         const val NORMAL_IMAGE_SCALE = 3.0
+         const val HIGHLIGHTED_IMAGE_SCALE = 4.0
 
         val aircraftTypes = arrayOf(
             "Small Plane",
@@ -71,7 +73,7 @@ class PlacemarksSelectDragActivity : BasicWorldWindActivity() {
                 Placemark.createSimpleImage(position, ImageSource.fromResource(R.drawable.airport_terminal))
             placemark.attributes.apply {
                 this.imageOffset = (Offset.bottomCenter())
-                this.imageScale = 2.0
+                this.imageScale = NORMAL_IMAGE_SCALE
             }
             placemark.displayName = airportName
             return placemark
@@ -89,13 +91,13 @@ class PlacemarksSelectDragActivity : BasicWorldWindActivity() {
             )
             placemark.attributes.apply {
                 this.imageOffset = Offset.bottomCenter()
-                this.imageScale = 2.0
+                this.imageScale = NORMAL_IMAGE_SCALE
                 this.drawLeader = true
                 this.leaderAttributes?.outlineWidth = 4f
             }
             placemark.highlightAttributes = (
                     PlacemarkAttributes(placemark.attributes).apply {
-                        this.imageScale = (3.0)
+                        this.imageScale = HIGHLIGHTED_IMAGE_SCALE
                         this.imageColor = Color(android.graphics.Color.YELLOW)
                     }
                     )
@@ -119,10 +121,10 @@ class PlacemarksSelectDragActivity : BasicWorldWindActivity() {
             )
             placemark.attributes.apply {
                 this.imageOffset = (Offset.bottomCenter())
-                this.imageScale = 2.0
+                this.imageScale = NORMAL_IMAGE_SCALE
             }
             placemark.highlightAttributes = PlacemarkAttributes(placemark.attributes).apply {
-                this.imageScale = (3.0)
+                this.imageScale = HIGHLIGHTED_IMAGE_SCALE
                 this.imageColor = Color(android.graphics.Color.YELLOW)
 
             }
@@ -261,7 +263,7 @@ class PlacemarksSelectDragActivity : BasicWorldWindActivity() {
         val dragRefPt = PointF()
 
 
-        protected var gestureDetector = GestureDetector(applicationContext,
+        protected var selectDragDetector = GestureDetector(applicationContext,
             object : GestureDetector.SimpleOnGestureListener() {
                 override fun onDown(event: MotionEvent?): Boolean {
                     event?.let {
@@ -285,9 +287,9 @@ class PlacemarksSelectDragActivity : BasicWorldWindActivity() {
                     distanceX: Float,
                     distanceY: Float
                 ): Boolean {
-                    drag(downEvent!!, moveEvent!!, distanceX, distanceY)
-                    // Move the selected object
-                    return isDragging // Consume this event if dragging is active
+                    return if (isDraggingArmed) {
+                        drag(downEvent!!, moveEvent!!, distanceX, distanceY) // Move the selected object
+                    } else false
                 }
 
                 override fun onDoubleTap(event: MotionEvent?): Boolean { // Note that double-tapping should not toggle a "selected" object's selected state
@@ -307,14 +309,21 @@ class PlacemarksSelectDragActivity : BasicWorldWindActivity() {
             })
 
         override fun onTouchEvent(event: MotionEvent): Boolean {
-            val consumed = gestureDetector.onTouchEvent(event)
+            // Allow our select and drag handlers to process the event first. They'll set the state flags which will
+            // either preempt or allow the event to be subsequently processed by the globe's navigation event handlers.
+            var consumed: Boolean = this.selectDragDetector.onTouchEvent(event)
 
-            if (isDraggingArmed && event.action == MotionEvent.ACTION_UP) {
-                isDraggingArmed = false
+            // Is a dragging operation started or in progress? Any ACTION_UP event cancels a drag operation.
+            if (isDragging && event.action == MotionEvent.ACTION_UP) {
                 isDragging = false
+                isDraggingArmed = false
             }
-            if (!consumed && !isDragging) {
-                return super.onTouchEvent(event)
+            // Preempt the globe's pan navigation recognizer if we're dragging
+            super.panRecognizer.enabled = (!isDragging)
+
+            // Pass on the event on to the default globe navigation handlers
+            if (!consumed) {
+                consumed = super.onTouchEvent(event)
             }
             return consumed
         }
@@ -338,17 +347,27 @@ class PlacemarksSelectDragActivity : BasicWorldWindActivity() {
         }
 
         fun toggleSelection() {
-            val hasUserProperty = pickedObject?.hasUserProperty(SELECTABLE) ?: false
-            if (hasUserProperty) {
-                val isNewSelection = pickedObject != selectedObject
-                if (pickedObject is Highlightable) {
-                    if (isNewSelection && selectedObject is Highlightable) {
-                        (selectedObject as Highlightable).setHighlighted(false)
+            // Test if last picked object is "selectable".  If not, retain the
+            // currently selected object. To discard the current selection,
+            // the user must pick another selectable object or the current object.
+            if (pickedObject != null) {
+                if (pickedObject!!.hasUserProperty(SELECTABLE)) {
+                    val isNewSelection = pickedObject !== selectedObject
+                    // Display the highlight or normal attributes to indicate the
+                    // selected or unselected state respectively.
+                    if (pickedObject is Highlightable) { // Only one object can be selected at time, deselect any previously selected object
+                        if (isNewSelection && selectedObject is Highlightable) {
+                            (selectedObject as Highlightable?)!!.setHighlighted(false)
+                        }
+                        (pickedObject as Highlightable).setHighlighted(isNewSelection)
+                        getWorldWindow().requestRedraw()
                     }
-                    (pickedObject as Highlightable).setHighlighted(isNewSelection)
-                    getWorldWindow().requestRedraw()
+                    // Track the selected object
+                    selectedObject = if (isNewSelection) pickedObject else null
+                } else {
+                    Toast.makeText(applicationContext, "The picked object is not selectable.", Toast.LENGTH_SHORT)
+                        .show()
                 }
-                selectedObject = if (isNewSelection) pickedObject else null
             }
         }
 
@@ -367,39 +386,45 @@ class PlacemarksSelectDragActivity : BasicWorldWindActivity() {
             }
         }
 
-        fun drag(downEvent: MotionEvent, moveEvent: MotionEvent, distanceX: Float, distanceY: Float) {
+        fun drag(downEvent: MotionEvent, moveEvent: MotionEvent, distanceX: Float, distanceY: Float) : Boolean {
             if (isDraggingArmed && selectedObject != null) {
-                if (selectedObject is Placemark) { // Signal to other event handlers that dragging is in progress
+                if (selectedObject is Placemark) { // Signal that dragging is in progress
                     isDragging = true
-                    val position: Position = (selectedObject as Placemark?)?.position ?: return
+                    // First we compute the screen coordinates of the position's "ground" point.  We'll apply the
+                    // screen X and Y drag distances to this point, from which we'll compute a new position,
+                    // wherein we restore the original position's altitude.
+                    val position: Position = (selectedObject as Placemark?)?.position ?: return false
                     val altitude = position.altitude
-                    if (!getWorldWindow().geographicToScreenPoint(
+                    if (getWorldWindow().geographicToScreenPoint(
                             position.latitude,
                             position.longitude,
                             0.0 /*altitude*/,
                             dragRefPt
                         )
-                    ) { // Probably clipped by near/far clipping plane.
-                        isDragging = false
-                        return
+                    ) { // Update the placemark's ground position
+                        if (screenPointToGroundPosition(
+                                dragRefPt.x - distanceX,
+                                dragRefPt.y - distanceY,
+                                position
+                            )
+                        ) { // Restore the placemark's original altitude
+                            position.altitude = altitude
+                            // Reflect the change in position on the globe.
+                            getWorldWindow().requestRedraw()
+                            return true
+                        }
                     }
-                    // Update the placemark's ground position...
-                    if (!screenPointToGroundPosition(
-                            dragRefPt.x - distanceX,
-                            dragRefPt.y - distanceY,
-                            position
-                        )
-                    ) { // Probably off the globe, so cancel the drag.
-                        isDragging = false
-                        return
-                    }
-                    // ... and restore the altitude
-                    position.altitude = altitude
-                    getWorldWindow().requestRedraw()
+                    // Probably clipped by near/far clipping plane or off the globe. The position was not updated. Stop the drag.
+                    isDraggingArmed = false
+                    return true // We consumed this event, even if dragging has been stopped.
                 }
             }
+            return false
         }
-
+        fun cancelDragging() {
+            isDragging = false
+            isDraggingArmed = false
+        }
         /**
          * Moves the selected object to the event's screen position.
          */

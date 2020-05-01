@@ -37,6 +37,8 @@ class Frame {
 
     var pickMode = false
 
+    var pickViewport: Viewport? = null
+
     private var isDone = false
 
     private var isAwaitingDone = false
@@ -61,6 +63,7 @@ class Frame {
         drawableQueue.clearDrawables()
         drawableTerrain.clearDrawables()
 
+        pickViewport = null
         pickedObjects = null
         pickRay = null
         pickPoint = null

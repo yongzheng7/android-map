@@ -16,7 +16,7 @@ class BasicTerrain() : Terrain {
 
     override var sector: Sector = Sector()
 
-    var triStripElements: ShortBuffer? = null
+    var triStripElements: ShortArray? = null
 
     val intersectPoint = Vec3()
 

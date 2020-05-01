@@ -23,7 +23,7 @@ interface GeographicProjection {
      * 通过经纬度范围，以及分割线 进行转化出对应的顶点缓存
      */
     fun geographicToCartesianGrid(globe: Globe?, sector: Sector?, numLat: Int, numLon: Int, elevations: DoubleArray?,
-                                  origin: Vec3?, offset: Vec3?, result: FloatBuffer? , stride :Int ): FloatBuffer
+                                  origin: Vec3?, offset: Vec3?, result: FloatArray? , stride :Int,  pos : Int ): FloatArray
 
     /**
      *笛卡尔地心坐标系转大地经纬度坐标系

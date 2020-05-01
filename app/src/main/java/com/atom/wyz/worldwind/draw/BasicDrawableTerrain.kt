@@ -46,7 +46,6 @@ class BasicDrawableTerrain : DrawableTerrain {
         vertexTexCoords?.let {
             it.bindBuffer(dc)
             GLES20.glVertexAttribPointer(attribLocation, 2, GLES20.GL_FLOAT, false, 0, 0)
-
         }
     }
 

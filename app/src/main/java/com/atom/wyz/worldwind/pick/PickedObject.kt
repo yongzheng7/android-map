@@ -12,7 +12,7 @@ class PickedObject() {
     companion object {
         fun fromRenderable(
             renderable: Renderable?,
-            position: Position?, @WorldWind.AltitudeMode altitudeMode: Int,
+            position: Position?,
             layer: Layer?,
             identifier: Int
         ): PickedObject? {
@@ -40,7 +40,6 @@ class PickedObject() {
             val po = PickedObject()
             po.userObject = if (renderable.pickDelegate != null) renderable.pickDelegate else renderable
             po.position = Position(position)
-            po.altitudeMode = altitudeMode
             po.layer = layer
             po.identifier = identifier
             return po
@@ -73,7 +72,6 @@ class PickedObject() {
             }
             val po = PickedObject()
             po.position = Position(position)
-            po.altitudeMode = WorldWind.ABSOLUTE
             po.userObject = po.position
             po.identifier = identifier
             return po
@@ -120,9 +118,6 @@ class PickedObject() {
 
     var position: Position? = null
 
-    @WorldWind.AltitudeMode
-    var altitudeMode: Int = WorldWind.ABSOLUTE
-
     var layer: Layer? = null
 
     var identifier = 0
@@ -140,7 +135,6 @@ class PickedObject() {
                 "isOnTop=" + isOnTop +
                 ", userObject=" + userObject +
                 ", position=" + position +
-                ", altitudeMode=" + altitudeMode +
                 ", layer=" + layer +
                 ", identifier=" + identifier +
                 '}'
