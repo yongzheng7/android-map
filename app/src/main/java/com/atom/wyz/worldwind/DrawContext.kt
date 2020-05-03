@@ -167,6 +167,7 @@ class DrawContext {
     }
 
     val points = floatArrayOf(0f, 1f, 0f, 0f, 1f, 1f, 1f, 0f)
+
     fun unitSquareBuffer(): BufferObject {
         unitSquareBuffer?.let {
             return it

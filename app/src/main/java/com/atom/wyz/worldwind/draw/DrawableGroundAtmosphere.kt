@@ -59,6 +59,13 @@ class DrawableGroundAtmosphere : Drawable {
             // Get the drawable terrain associated with the draw context.
             val terrain = dc.getDrawableTerrain(idx) ?: continue
 
+            // Use the terrain's vertex point attribute and vertex tex coord attribute.
+            // Use the terrain's vertex point attribute and vertex tex coord attribute.
+            if (!terrain.useVertexPointAttrib(dc, 0 /*vertexPoint*/) ||
+                !terrain.useVertexTexCoordAttrib(dc, 1 /*vertexTexCoord*/)) {
+                continue  // vertex buffer failed to bind
+            }
+
             val terrainOrigin = terrain.vertexOrigin
 
             program.loadVertexOrigin(terrainOrigin)
@@ -73,10 +80,6 @@ class DrawableGroundAtmosphere : Drawable {
                 texCoordMatrix.multiplyByTileTransform(terrain.sector, fullSphereSector)
                 program.loadTexCoordMatrix(texCoordMatrix)
             }
-            // Use the terrain tile's vertex point attribute.
-            // Use the terrain's vertex point attribute and vertex tex coord attribute.
-            terrain.useVertexPointAttrib(dc, 0 /*vertexPoint*/)
-            terrain.useVertexTexCoordAttrib(dc, 1 /*vertexTexCoord*/)
 
             // Draw the terrain tile as triangles, multiplying the current fragment color by the program's secondary color.
             program.loadFragMode(AtmosphereProgram.FRAGMODE_GROUND_SECONDARY)

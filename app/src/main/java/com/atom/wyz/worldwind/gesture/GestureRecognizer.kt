@@ -80,6 +80,9 @@ open class GestureRecognizer {
      */
     protected fun transitionToState(event: MotionEvent, @WorldWind.GestureState newState: Int) {
         when (newState) {
+            WorldWind.POSSIBLE -> {
+                state = newState
+            }
             WorldWind.FAILED -> {
                 state = newState
             }
@@ -131,8 +134,10 @@ open class GestureRecognizer {
                 MotionEvent.ACTION_UP -> this.handleActionUp(event)
                 else -> {
                     if (Logger.isLoggable(Logger.DEBUG)) {
-                        Logger.logMessage(Logger.DEBUG, "GestureRecognizer", "onTouchEvent",
-                                "Unrecognized event action \'$action\'")
+                        Logger.logMessage(
+                            Logger.DEBUG, "GestureRecognizer", "onTouchEvent",
+                            "Unrecognized event action \'$action\'"
+                        )
                     }
                 }
             }
@@ -195,7 +200,9 @@ open class GestureRecognizer {
     protected fun handleActionCancel(event: MotionEvent) {
         actionCancel(event)
         val state: Int = this.state
-        if (state == WorldWind.POSSIBLE || state == WorldWind.BEGAN || state == WorldWind.CHANGED) {
+        if (state == WorldWind.POSSIBLE ) {
+            transitionToState(event, WorldWind.FAILED)
+        }else if(state == WorldWind.BEGAN || state == WorldWind.CHANGED){
             transitionToState(event, WorldWind.CANCELLED)
         }
         reset()

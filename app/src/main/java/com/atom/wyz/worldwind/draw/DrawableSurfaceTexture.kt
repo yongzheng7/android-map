@@ -124,7 +124,12 @@ class DrawableSurfaceTexture : Drawable, SurfaceTexture {
                     continue  // texture failed to bind
                 }
 
-                if (!usingTerrainAttrs) { // Use the draw context's modelview projection matrix, transformed to terrain local coordinates.
+                if (!usingTerrainAttrs ||
+                    terrain.useVertexPointAttrib(dc, 0) &&
+                    terrain.useVertexTexCoordAttrib(dc, 1)) {
+                    // Use the draw context's modelview projection matrix, transformed to terrain local coordinates.
+                    // Suppress subsequent tile state application until the next terrain.
+                    usingTerrainAttrs = true
                     this.program!!.mvpMatrix.set(dc.modelviewProjection)
                     this.program!!.mvpMatrix.multiplyByTranslation(terrainOrigin.x, terrainOrigin.y, terrainOrigin.z)
                     this.program!!.loadModelviewProjection()
@@ -132,9 +137,10 @@ class DrawableSurfaceTexture : Drawable, SurfaceTexture {
                     terrain.useVertexPointAttrib(dc, 0 /*vertexPoint*/)
                     terrain.useVertexTexCoordAttrib(dc, 1 /*vertexTexCoord*/)
                     // Suppress subsequent tile state application until the next terrain.
-                    usingTerrainAttrs = true
                 }
-
+                if (!usingTerrainAttrs) {
+                    continue  // terrain vertex attribute failed to bind
+                }
                 program!!.texCoordMatrix[0].set(texture.texCoordTransform)
                 program!!.texCoordMatrix[0].multiplyByTileTransform(terrainSector, textureSector)
                 program!!.texCoordMatrix[1].setToTileTransform(terrainSector, textureSector)

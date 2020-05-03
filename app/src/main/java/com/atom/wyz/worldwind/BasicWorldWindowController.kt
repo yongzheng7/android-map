@@ -51,7 +51,7 @@ open class BasicWorldWindowController : WorldWindowController, GestureListener {
     override fun onTouchEvent(event: MotionEvent): Boolean {
         var handled = false
         for (idx in 0 until allRecognizers.size) {
-            handled = allRecognizers[idx].onTouchEvent(event)
+            handled = handled or allRecognizers[idx].onTouchEvent(event)
         }
         return handled
     }
@@ -213,6 +213,8 @@ open class BasicWorldWindowController : WorldWindowController, GestureListener {
     }
 
     protected open fun gestureDidEnd() {
-        activeGestures--
+        if (activeGestures > 0) { // this should always be the case, but we check anyway
+            activeGestures--
+        }
     }
 }

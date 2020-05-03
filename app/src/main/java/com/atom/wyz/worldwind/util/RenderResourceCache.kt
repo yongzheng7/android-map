@@ -11,7 +11,7 @@ import com.atom.wyz.worldwind.render.RenderResource
 import java.net.SocketTimeoutException
 import java.util.concurrent.ConcurrentLinkedQueue
 
-class RenderResourceCache : LruMemoryCache<Any, RenderResource> {
+class RenderResourceCache : LruMemoryCache<Any, RenderResource> , Retriever.Callback<ImageSource, Bitmap> {
 
     var resources: Resources? = null
         set(value) {
@@ -19,39 +19,12 @@ class RenderResourceCache : LruMemoryCache<Any, RenderResource> {
             imageRetriever.resources = value
         }
     // 回收队列
-    protected var evictionQueue = ConcurrentLinkedQueue<Entry<out Any, out RenderResource>>()
+    protected var evictionQueue = ConcurrentLinkedQueue<RenderResource>()
     // 陈俄共队列
     protected var pendingQueue = ConcurrentLinkedQueue<Entry<out Any, out RenderResource>>()
 
     protected var imageRetriever = ImageRetriever()
 
-    protected var imageRetrieverCallback = object : Retriever.Callback<ImageSource, Bitmap> {
-        override fun retrievalSucceeded(retriever: Retriever<ImageSource, Bitmap>?, key: ImageSource?, value: Bitmap?) {
-            val texture = GpuTexture(value)
-            val entry = Entry(key!!, texture, texture.imageByteCount)
-            pendingQueue.offer(entry)
-            WorldWind.requestRedraw()
-            if (Logger.isLoggable(Logger.DEBUG)) {
-                Logger.log(Logger.DEBUG, "Image retrieval succeeded \'$key\'")
-            }
-        }
-
-        override fun retrievalFailed(retriever: Retriever<ImageSource, Bitmap>?, key: ImageSource?, ex: Throwable?) {
-            if (ex is SocketTimeoutException) {
-                Logger.log(Logger.ERROR, "Socket timeout retrieving image \'$key\'")
-            } else if (ex != null) {
-                Logger.log(Logger.ERROR, "Image retrieval failed with exception \'$key\'")
-            } else {
-                Logger.log(Logger.ERROR, "Image retrieval failed \'$key\'")
-            }
-        }
-
-        override fun retrievalRejected(retriever: Retriever<ImageSource, Bitmap>?, key: ImageSource?) {
-            if (Logger.isLoggable(Logger.DEBUG)) {
-                Logger.log(Logger.DEBUG, "Image retrieval rejected \'$key\'")
-            }
-        }
-    }
 
     constructor(capacity: Int, lowWater: Int) : super(capacity, lowWater)
     constructor(capacity: Int) : super(capacity)
@@ -64,18 +37,30 @@ class RenderResourceCache : LruMemoryCache<Any, RenderResource> {
     }
 
     fun releaseEvictedResources(dc: DrawContext) {
-        var evicted: Entry<out Any, out RenderResource>? = null
-        while (evictionQueue.poll().also { it?.let { evicted = it } } != null) {
+        var evicted: RenderResource?
+        while (evictionQueue.poll().also { evicted = it } != null) {
             try {
-                evicted?.value?.release(dc) // TODO rename as dispose as release
+                evicted?.release(dc)
+                if (Logger.isLoggable(Logger.INFO)) {
+                    Logger.log(Logger.INFO, "Released render resource \'$evicted\'")
+                }
             } catch (ignored: Exception) {
-
+                if (Logger.isLoggable(Logger.INFO)) {
+                    Logger.log(Logger.INFO, "Exception releasing render resource \'$evicted\'", ignored)
+                }
             }
         }
     }
 
     override fun entryRemoved(entry: Entry<Any, RenderResource>) {
-        evictionQueue.offer(entry)
+        evictionQueue.offer(entry.value)
+    }
+
+    override fun entryReplaced(
+        oldEntry: Entry<Any, RenderResource>,
+        newEntry: Entry<Any, RenderResource>
+    ) {
+        evictionQueue.offer(oldEntry.value)
     }
 
     fun retrieveTexture(imageSource: ImageSource?): GpuTexture? {
@@ -84,14 +69,14 @@ class RenderResourceCache : LruMemoryCache<Any, RenderResource> {
         }
         if (imageSource.isBitmap()) {
             val texture = GpuTexture(imageSource.asBitmap())
-            put(imageSource, texture, texture.imageByteCount)
+            put(imageSource, texture, texture.textureByteCount)
             return texture
         }
         val texture = this.processPendingQueue(imageSource) as GpuTexture?
         if (texture != null) {
             return texture
         }
-        imageRetriever.retrieve(imageSource, imageRetrieverCallback) // adds entries to pendingQueue
+        imageRetriever.retrieve(imageSource, this) // adds entries to pendingQueue
         return null
     }
 
@@ -108,5 +93,31 @@ class RenderResourceCache : LruMemoryCache<Any, RenderResource> {
             poll = pendingQueue.poll()?.let { it as Entry<Any, RenderResource> }
         }
         return match?.value
+    }
+
+    override fun retrievalSucceeded(retriever: Retriever<ImageSource, Bitmap>?, key: ImageSource?, value: Bitmap?) {
+        val texture = GpuTexture(value)
+        val entry = Entry(key!!, texture, texture.textureByteCount)
+        pendingQueue.offer(entry)
+        WorldWind.requestRedraw()
+        if (Logger.isLoggable(Logger.DEBUG)) {
+            Logger.log(Logger.DEBUG, "Image retrieval succeeded \'$key\'")
+        }
+    }
+
+    override fun retrievalFailed(retriever: Retriever<ImageSource, Bitmap>?, key: ImageSource?, ex: Throwable?) {
+        if (ex is SocketTimeoutException) {
+            Logger.log(Logger.ERROR, "Socket timeout retrieving image \'$key\'")
+        } else if (ex != null) {
+            Logger.log(Logger.ERROR, "Image retrieval failed with exception \'$key\'")
+        } else {
+            Logger.log(Logger.ERROR, "Image retrieval failed \'$key\'")
+        }
+    }
+
+    override fun retrievalRejected(retriever: Retriever<ImageSource, Bitmap>?, key: ImageSource?) {
+        if (Logger.isLoggable(Logger.DEBUG)) {
+            Logger.log(Logger.DEBUG, "Image retrieval rejected \'$key\'")
+        }
     }
 }

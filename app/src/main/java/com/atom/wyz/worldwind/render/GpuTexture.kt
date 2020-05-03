@@ -25,7 +25,7 @@ class GpuTexture : RenderResource {
 
     var imageFormat = 0
 
-    var imageByteCount = 0
+    var textureByteCount = 0
 
     var imageBitmap: Bitmap? = null
 
@@ -34,24 +34,25 @@ class GpuTexture : RenderResource {
     fun setBitmap(bitmap : Bitmap?){
         if (bitmap == null || bitmap.isRecycled) {
             throw IllegalArgumentException(
-                    Logger.logMessage(Logger.ERROR, "GpuTexture", "setImage", "invalidBitmap"))
+                    Logger.logMessage(Logger.ERROR, "GpuTexture", "setImage",
+                        if (bitmap == null) "missingBitmap" else "invalidBitmap"))
         }
+        texCoordTransform.setToVerticalFlip()
+        textureByteCount = estimateTexImageByteCount(bitmap)
         imageWidth = bitmap.getWidth()
         imageHeight = bitmap.getHeight()
         imageFormat = GLUtils.getInternalFormat(bitmap)
-        imageByteCount = bitmap.getByteCount()
         imageBitmap = bitmap
-        texCoordTransform.setToVerticalFlip()
     }
 
     constructor(bitmap: Bitmap?) {
-        setBitmap(bitmap) ;
+        setBitmap(bitmap)
     }
 
     override fun release(dc: DrawContext) {
         this.deleteTexture(dc)
-        recycle()
-        //imageBitmap = null
+//        recycle()
+        imageBitmap = null
     }
 
     fun recycle(){
@@ -123,5 +124,35 @@ class GpuTexture : RenderResource {
         if (isPowerOfTwo) {
             GLES20.glGenerateMipmap(GLES20.GL_TEXTURE_2D)
         }
+    }
+
+    protected fun estimateTexImageByteCount(bitmap: Bitmap): Int {
+        // Compute the number of bytes per row of texture image level 0. Use a default of 32 bits per pixel when either
+// of the bitmap's type or internal format are unrecognized.
+        var bytesPerRow = bitmap.width * 4
+        val type = GLUtils.getType(bitmap)
+        when (type) {
+            GLES20.GL_UNSIGNED_BYTE -> {
+                val format = GLUtils.getInternalFormat(bitmap)
+                when (format) {
+                    GLES20.GL_ALPHA -> bytesPerRow = bitmap.width
+                    GLES20.GL_RGB -> bytesPerRow = bitmap.width * 3
+                    GLES20.GL_RGBA -> bytesPerRow = bitmap.width * 4
+                    GLES20.GL_LUMINANCE -> bytesPerRow = bitmap.width
+                    GLES20.GL_LUMINANCE_ALPHA -> bytesPerRow = bitmap.width * 2
+                }
+            }
+            GLES20.GL_UNSIGNED_SHORT_5_6_5 -> bytesPerRow = bitmap.getWidth() * 2
+            GLES20.GL_UNSIGNED_SHORT_4_4_4_4 -> bytesPerRow = bitmap.getWidth() * 2
+            GLES20.GL_UNSIGNED_SHORT_5_5_5_1 -> bytesPerRow = bitmap.getWidth() * 2
+        }
+        // Compute the number of bytes for the entire texture image level 0 (i.e. bytePerRow * numRows).
+        var byteCount = bytesPerRow * bitmap.height
+        val isPowerOfTwo =
+            WWMath.isPowerOfTwo(bitmap.width) && WWMath.isPowerOfTwo(bitmap.height)
+        if (isPowerOfTwo) {
+            byteCount += byteCount / 3 // add 1/3 for the mipmap texture images
+        }
+        return byteCount
     }
 }

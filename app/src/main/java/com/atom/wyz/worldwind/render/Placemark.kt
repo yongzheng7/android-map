@@ -16,6 +16,10 @@ import com.atom.wyz.worldwind.util.pool.Pool
 
 open class Placemark : AbstractRenderable, Highlightable, Movable {
 
+    interface LevelOfDetailSelector {
+        fun selectLevelOfDetail(rc: RenderContext, placemark: Placemark?, cameraDistance: Double)
+    }
+
     companion object {
 
         var DEFAULT_EYE_DISTANCE_SCALING_THRESHOLD = 1e6
@@ -49,16 +53,14 @@ open class Placemark : AbstractRenderable, Highlightable, Movable {
 
     private var cameraDistance = 0.0
 
+    protected var levelOfDetailSelector: LevelOfDetailSelector? = null
 
     var attributes: PlacemarkAttributes
-
+    var _highlighted = false
     var highlightAttributes: PlacemarkAttributes? = null
     var activeAttributes: PlacemarkAttributes? = null
 
     var activeTexture: GpuTexture? = null
-
-
-    var _highlighted = false
 
     var eyeDistanceScaling: Boolean
     var eyeDistanceScalingThreshold: Double
@@ -140,6 +142,9 @@ open class Placemark : AbstractRenderable, Highlightable, Movable {
             return
         }
 
+        // Allow the placemark to adjust the level of detail based on distance to the camera
+        levelOfDetailSelector?.selectLevelOfDetail(rc, this, cameraDistance)
+
         val drawableCount = rc.drawableCount()
         if (mustDrawLeaderLine(rc)) {
             groundPoint = globe.geographicToCartesian(
@@ -153,6 +158,15 @@ open class Placemark : AbstractRenderable, Highlightable, Movable {
                 val drawable = DrawableLines.obtain(pool)
                 prepareDrawableLeader(rc, drawable)
                 rc.offerShapeDrawable(drawable, cameraDistance)
+            }
+        }
+
+        activeAttributes?.imageSource?.let {
+            activeTexture = rc.getTexture(activeAttributes!!.imageSource!!)
+            if (activeTexture == null) {
+                if (!rc.frustum.containsPoint(placePoint)) {
+                    return
+                }
             }
         }
         this.determineActiveTexture(rc)
@@ -252,7 +266,6 @@ open class Placemark : AbstractRenderable, Highlightable, Movable {
     protected open fun determineActiveTexture(rc: RenderContext) {
         val activeAttributes = this.activeAttributes ?: return
         if (activeAttributes.imageSource != null) {
-            activeTexture = rc.getTexture(activeAttributes.imageSource!!) // try to get the texture from the cache
             if (activeTexture == null) {
                 activeTexture = rc.retrieveTexture(activeAttributes.imageSource) // puts retrieved textures in the cache
             }
@@ -282,8 +295,10 @@ open class Placemark : AbstractRenderable, Highlightable, Movable {
             )
             unitSquareTransform.multiplyByScale(w * s, h * s, 1.0)
         } else {
-            val size = activeAttributes.imageScale * visibilityScale
-            val offset = activeAttributes.imageOffset!!.offsetForSize(size, size, offset) // TODO allocation
+            // This branch serves both non-textured attributes and also textures that haven't been loaded yet.
+            // We set the size for non-loaded textures to the typical size of a contemporary "small" icon (24px)
+            var size: Double = if (activeAttributes.imageSource != null) 24.0 else activeAttributes.imageScale
+            size *= visibilityScale
             unitSquareTransform.multiplyByTranslation(
                 screenPlacePoint.x - offset.x,
                 screenPlacePoint.y - offset.y,

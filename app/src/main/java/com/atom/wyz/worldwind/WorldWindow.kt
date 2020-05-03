@@ -237,7 +237,7 @@ class WorldWindow : GLSurfaceView, GLSurfaceView.Renderer, MessageListener, Fram
 
         val pickMode = frame.pickMode
         if (!pickMode) {
-            frameMetrics.beginRendering()
+            frameMetrics.beginRendering(this.rc)
         }
 
         rc.globe = globe
@@ -292,21 +292,18 @@ class WorldWindow : GLSurfaceView, GLSurfaceView.Renderer, MessageListener, Fram
         if (!pickMode) {
             navigatorEvents.onFrameRendered(rc)
         }
-
-        rc.reset()
-
         // Mark the end of a frame render.
         if (!pickMode) {
-            frameMetrics.endRendering()
+            frameMetrics.endRendering(this.rc)
         }
-
+        rc.reset()
     }
 
 
     protected fun drawFrame(frame: Frame) {
         val pickMode = frame.pickMode
         if (!pickMode) {
-            frameMetrics.beginDrawing()
+            frameMetrics.beginDrawing(this.dc)
         }
         frame.modelview.extractEyePoint(dc.eyePoint)
         dc.projection.set(frame.projection)
@@ -330,11 +327,11 @@ class WorldWindow : GLSurfaceView, GLSurfaceView.Renderer, MessageListener, Fram
             renderResourceCache?.releaseEvictedResources(dc)
         }
 
-        dc.reset()
-
         if (!pickMode) {
-            frameMetrics.endDrawing()
+            frameMetrics.endDrawing(this.dc)
         }
+
+        dc.reset()
     }
 
 
@@ -450,8 +447,17 @@ class WorldWindow : GLSurfaceView, GLSurfaceView.Renderer, MessageListener, Fram
         }
         isWaitingForRedraw = false
 
-        val frame = Frame.obtain(framePool)
-        renderFrame(frame)
+        // Obtain a frame from the pool and render the frame, accumulating Drawables to process in the OpenGL thread.
+        // The frame is recycled by the OpenGL thread.
+        try {
+            val frame = Frame.obtain(framePool)
+            renderFrame(frame)
+        } catch (e: java.lang.Exception) {
+            Logger.logMessage(
+                Logger.ERROR, "WorldWindow", "doFrame",
+                "Exception while rendering frame in Choreographer callback \'$frameTimeNanos\'", e
+            )
+        }
     }
 
     protected fun reset() {
@@ -546,7 +552,7 @@ class WorldWindow : GLSurfaceView, GLSurfaceView.Renderer, MessageListener, Fram
     private val scratchModelview = Matrix4()
     private val scratchProjection = Matrix4()
     private val scratchPoint: Vec3 = Vec3()
-
+    private val scratchRay = Line()
 
     fun cartesianToScreenPoint(
         x: Double,
@@ -631,6 +637,24 @@ class WorldWindow : GLSurfaceView, GLSurfaceView.Renderer, MessageListener, Fram
 
         return false
     }
-
-
+    /**
+     * Converts a screen point to the geographic coordinates on the globe.
+     *
+     * @param screenX X coordinate in Android screen coordinates
+     * @param screenY Y coordinate in Android screen coordinates
+     * @param result  Pre-allocated Position receives the geographic coordinates
+     *
+     * @return true if the screen point could be converted; false if the screen point is not on the globe
+     */
+    fun screenPointToGeographic(screenX: Float, screenY: Float, result: Position?): Boolean {
+        val ray = Line()
+        val intersection = Vec3()
+        if (rayThroughScreenPoint(screenX, screenY, scratchRay)) {
+            if (globe.intersect(scratchRay, scratchPoint)) {
+                globe.cartesianToGeographic(scratchPoint.x, scratchPoint.y, scratchPoint.z, result)
+                return true
+            }
+        }
+        return false
+    }
 }

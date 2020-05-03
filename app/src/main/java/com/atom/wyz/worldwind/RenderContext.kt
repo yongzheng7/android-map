@@ -281,7 +281,7 @@ open class RenderContext {
     }
 
     open fun putTexture(imageSource: ImageSource, texture: GpuTexture): GpuTexture? {
-        renderResourceCache?.put(imageSource, texture, texture.imageByteCount)
+        renderResourceCache?.put(imageSource, texture, texture.textureByteCount)
         return texture
     }
 

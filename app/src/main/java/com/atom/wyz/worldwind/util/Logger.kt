@@ -20,6 +20,9 @@ class Logger {
 
         protected var messageTable = mutableMapOf<String, String>(
             "missingLocation" to "The specified location is null",
+            "missingFactory" to "The factory is null",
+            "missingOffset" to "The offset name is null",
+            "missingCache" to  "The cache is null",
             "missingViewport" to  "The viewport is null",
             "missingCallback" to "The callback is null",
             "missingKey" to "The key is null",

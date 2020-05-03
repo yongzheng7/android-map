@@ -65,6 +65,15 @@ class MenuActivity : AppCompatActivity() {
             R.id.basic_stress_test_activity -> {
                 startActivity(Intent(this, BasicStressTestActivity::class.java))
             }
+            R.id.placemark_Dragger_activity -> {
+                startActivity(Intent(this, PlacemarksDraggerActivity::class.java))
+            }
+            R.id.placemark_Dragger_2_activity -> {
+                startActivity(Intent(this, PlacemarksDragger2Activity::class.java))
+            }
+            R.id.texture_stress_activity -> {
+                startActivity(Intent(this, TextureStressTestActivity::class.java))
+            }
         }
     }
 

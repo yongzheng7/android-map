@@ -27,7 +27,7 @@ class BasicTessellator : Tessellator, TileFactory {
 
     protected var currentTerrain: BasicTerrain = BasicTerrain()
 
-    protected var tileCache: LruMemoryCache<String?, Array<Tile?>?> = LruMemoryCache(300) // cache for 300 tiles
+    protected var tileCache: LruMemoryCache<String?, Array<Tile?>?> = LruMemoryCache(200) // cache for 300 tiles
 
     var detailControl = 80.0
 

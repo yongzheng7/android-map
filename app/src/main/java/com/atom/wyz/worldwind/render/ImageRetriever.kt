@@ -3,7 +3,6 @@ package com.atom.wyz.worldwind.render
 import android.content.res.Resources
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
-import androidx.annotation.NonNull
 import com.atom.wyz.worldwind.util.AbstractRetriever
 import com.atom.wyz.worldwind.util.Logger
 import com.atom.wyz.worldwind.util.Retriever
@@ -12,13 +11,8 @@ import java.io.BufferedInputStream
 import java.io.IOException
 import java.io.InputStream
 import java.net.URL
-import java.util.concurrent.*
-import java.util.concurrent.atomic.AtomicInteger
 
-class ImageRetriever() : AbstractRetriever<ImageSource, Bitmap>(MAX_SIMULTANEOUS_RETRIEVALS) {
-    companion object {
-        val MAX_SIMULTANEOUS_RETRIEVALS = 8
-    }
+class ImageRetriever(maxSimultaneousRetrievals : Int = 8 ) : AbstractRetriever<ImageSource, Bitmap>(maxSimultaneousRetrievals) {
 
     var resources: Resources? = null
 
@@ -37,8 +31,12 @@ class ImageRetriever() : AbstractRetriever<ImageSource, Bitmap>(MAX_SIMULTANEOUS
 
     @Throws(IOException::class)
     protected fun decodeImage(imageSource: ImageSource): Bitmap? {
+
         if (imageSource.isBitmap()) {
             return imageSource.asBitmap()
+        }
+        if (imageSource.isBitmapFactory()) {
+            return imageSource.asBitmapFactory()?.createBitmap()
         }
         if (imageSource.isResource()) {
             return this.decodeResource(imageSource.asResource())

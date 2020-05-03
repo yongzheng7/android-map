@@ -37,10 +37,9 @@ class DrawableScreenTexture : Drawable {
 
     override fun draw(dc: DrawContext) {
         val program = this.program ?: return
+        if (!program.useProgram(dc)) return
 
-        if (!program.useProgram(dc)) {
-            return  // program failed to build
-        } // Use the draw context's pick mode state and use the drawable's color.
+        if (!dc.unitSquareBuffer().bindBuffer(dc)) return
 
         program.loadColor(color)
 
@@ -57,7 +56,6 @@ class DrawableScreenTexture : Drawable {
             GLES20.glDisable(GLES20.GL_DEPTH_TEST)
         }
 
-        dc.unitSquareBuffer().bindBuffer(dc)
         GLES20.glEnableVertexAttribArray(1)
 
         GLES20.glVertexAttribPointer(0 /*vertexPoint*/, 2, GLES20.GL_FLOAT, false, 0, 0)

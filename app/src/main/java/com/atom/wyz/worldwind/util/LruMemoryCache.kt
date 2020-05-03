@@ -11,22 +11,31 @@ open class LruMemoryCache<K, V> {
 
     protected val entries = hashMapOf<K, Entry<K, V>>()
 
-    protected val lruComparator: Comparator<Entry<K, V>> = Comparator { lhs, rhs -> ((lhs.lastUsed - rhs.lastUsed).toInt()) }
+    protected val lruComparator: Comparator<Entry<K, V>> =
+        Comparator { lhs, rhs -> ((lhs.lastUsed - rhs.lastUsed).toInt()) }
 
-    protected var capacity = 0
+    var capacity = 0
 
     protected var lowWater = 0
 
-    protected var usedCapacity = 0
+    var usedCapacity = 0
 
     constructor (capacity: Int, lowWater: Int) {
         if (capacity < 1) {
-            throw IllegalArgumentException(Logger.logMessage(Logger.ERROR, "LruMemoryCache", "constructor",
-                    "The specified capacity is less than 1"))
+            throw IllegalArgumentException(
+                Logger.logMessage(
+                    Logger.ERROR, "LruMemoryCache", "constructor",
+                    "The specified capacity is less than 1"
+                )
+            )
         }
         if (lowWater >= capacity || lowWater < 0) {
-            throw IllegalArgumentException(Logger.logMessage(Logger.ERROR, "LruMemoryCache", "constructor",
-                    "The specified low-water value is greater than or equal to the capacity, or less than 1"))
+            throw IllegalArgumentException(
+                Logger.logMessage(
+                    Logger.ERROR, "LruMemoryCache", "constructor",
+                    "The specified low-water value is greater than or equal to the capacity, or less than 1"
+                )
+            )
         }
         this.capacity = capacity
         this.lowWater = lowWater
@@ -34,15 +43,19 @@ open class LruMemoryCache<K, V> {
 
     constructor(capacity: Int) {
         if (capacity < 1) {
-            throw java.lang.IllegalArgumentException(Logger.logMessage(Logger.ERROR, "LruMemoryCache", "constructor",
-                    "The specified capacity is less than 1"))
+            throw java.lang.IllegalArgumentException(
+                Logger.logMessage(
+                    Logger.ERROR, "LruMemoryCache", "constructor",
+                    "The specified capacity is less than 1"
+                )
+            )
         }
         this.capacity = capacity
         lowWater = (capacity * 0.75).toInt()
     }
 
 
-    fun count(): Int {
+    open fun getEntryCount(): Int {
         return entries.size
     }
 
@@ -75,7 +88,7 @@ open class LruMemoryCache<K, V> {
         if (oldEntry != null) {
             usedCapacity -= oldEntry.size
             if (newEntry.value !== oldEntry.value) {
-                entryRemoved(oldEntry)
+                entryReplaced(oldEntry , newEntry)
                 return oldEntry
             }
         }
@@ -128,4 +141,6 @@ open class LruMemoryCache<K, V> {
     }
 
     protected open fun entryRemoved(entry: Entry<K, V>) {}
+    protected open fun entryReplaced(oldEntry: Entry<K, V>, newEntry: Entry<K, V>) {
+    }
 }

@@ -41,7 +41,7 @@ open class TiledImageLayer : AbstractLayer, TileFactory {
 
     protected var topLevelTiles = ArrayList<Tile>()
 
-    protected var tileCache: LruMemoryCache<String?, Array<Tile?>?>? = LruMemoryCache(600)
+    protected var tileCache: LruMemoryCache<String?, Array<Tile?>?>? = LruMemoryCache(500)
 
     protected var activeProgram: SurfaceTextureProgram? = null
 

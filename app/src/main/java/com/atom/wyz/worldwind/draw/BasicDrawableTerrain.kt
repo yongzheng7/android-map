@@ -35,42 +35,41 @@ class BasicDrawableTerrain : DrawableTerrain {
     }
 
 
-    override fun useVertexPointAttrib(dc: DrawContext, attribLocation: Int) {
-        vertexPoints?.let {
-            it.bindBuffer(dc)
+    override fun useVertexPointAttrib(dc: DrawContext, attribLocation: Int)  : Boolean{
+        var bufferBound :Boolean
+        bufferBound = vertexPoints?.bindBuffer(dc)?.also { bufferBound = it } ?: false
+        if(bufferBound){
             GLES20.glVertexAttribPointer(attribLocation, 3, GLES20.GL_FLOAT, false, 0, 0)
         }
+        return bufferBound
     }
 
-    override fun useVertexTexCoordAttrib(dc: DrawContext, attribLocation: Int) {
-        vertexTexCoords?.let {
-            it.bindBuffer(dc)
+    override fun useVertexTexCoordAttrib(dc: DrawContext, attribLocation: Int)  : Boolean{
+        var bufferBound :Boolean
+        bufferBound = vertexTexCoords?.bindBuffer(dc)?.also { bufferBound = it } ?: false
+        if(bufferBound){
             GLES20.glVertexAttribPointer(attribLocation, 2, GLES20.GL_FLOAT, false, 0, 0)
         }
+        return bufferBound
     }
 
-    override fun drawLines(dc: DrawContext) {
-        lineElements?.let {
-            it.bindBuffer(dc)
-            GLES20.glDrawElements(
-                GLES20.GL_LINES,
-                it.bufferLength,
-                GLES20.GL_UNSIGNED_SHORT,
-                0
-            )
+    override fun drawLines(dc: DrawContext) : Boolean {
+        var bufferBound :Boolean
+        bufferBound = lineElements?.bindBuffer(dc)?.also { bufferBound = it } ?: false
+        if(bufferBound){
+            GLES20.glDrawElements(GLES20.GL_LINES, lineElements!!.bufferLength, GLES20.GL_UNSIGNED_SHORT, 0)
         }
+        return bufferBound
     }
 
-    override fun drawTriangles(dc: DrawContext) {
-        triStripElements?.let {
-            it.bindBuffer(dc)
-            GLES20.glDrawElements(
-                GLES20.GL_TRIANGLE_STRIP,
-                it.bufferLength,
-                GLES20.GL_UNSIGNED_SHORT,
-                0
-            )
+    override fun drawTriangles(dc: DrawContext) : Boolean {
+        var bufferBound :Boolean
+        bufferBound = triStripElements?.bindBuffer(dc)?.also { bufferBound = it } ?: false
+
+        if(bufferBound){
+            GLES20.glDrawElements(GLES20.GL_TRIANGLE_STRIP, triStripElements!!.bufferLength, GLES20.GL_UNSIGNED_SHORT, 0)
         }
+        return bufferBound
     }
 
     override fun draw(dc: DrawContext) {

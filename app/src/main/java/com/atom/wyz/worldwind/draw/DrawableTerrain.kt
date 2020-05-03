@@ -11,11 +11,11 @@ interface DrawableTerrain : Drawable {
 
     var vertexOrigin : Vec3
 
-    fun useVertexPointAttrib(dc: DrawContext, attribLocation: Int)
+    fun useVertexPointAttrib(dc: DrawContext, attribLocation: Int) : Boolean
 
-    fun useVertexTexCoordAttrib(dc: DrawContext, attribLocation: Int)
+    fun useVertexTexCoordAttrib(dc: DrawContext, attribLocation: Int) : Boolean
 
-    fun drawLines(dc: DrawContext)
+    fun drawLines(dc: DrawContext) : Boolean
 
-    fun drawTriangles(dc: DrawContext)
+    fun drawTriangles(dc: DrawContext) : Boolean
 }

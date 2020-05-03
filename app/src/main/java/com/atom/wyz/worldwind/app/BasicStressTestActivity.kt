@@ -2,21 +2,24 @@ package com.atom.wyz.worldwind.app
 
 import android.os.Bundle
 import android.view.Choreographer
+import com.atom.wyz.worldwind.layer.ShowTessellationLayer
 
 class BasicStressTestActivity : BasicWorldWindActivity() , Choreographer.FrameCallback {
     protected var cameraDegreesPerSecond = 0.1
 
-    protected var activityPaused = false
-
     protected var lastFrameTimeNanos: Long = 0
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        // Add the ShowTessellation layer to provide some visual feedback regardless of texture details
+        getWorldWindow().layers.addLayer(ShowTessellationLayer())
+
+
         val navigator = getWorldWindow().navigator
         navigator.altitude = (1e3) // 1 km
         navigator.heading = (90.0) // looking east
         navigator.tilt = (75.0) // looking at the horizon
-        // Use this Activity's Choreographer to animate the Navigator.
-        Choreographer.getInstance().postFrameCallback(this)
     }
     override fun doFrame(frameTimeNanos: Long) {
         if (lastFrameTimeNanos != 0L) {
@@ -26,10 +29,7 @@ class BasicStressTestActivity : BasicWorldWindActivity() , Choreographer.FrameCa
             navigator.longitude = (navigator.longitude + cameraDegrees)
             getWorldWindow().requestRedraw()
         }
-
-        if (!activityPaused) { // stop animating when this Activity is paused
-            Choreographer.getInstance().postFrameCallback(this)
-        }
+        Choreographer.getInstance().postFrameCallback(this)
 
         lastFrameTimeNanos = frameTimeNanos
     }
@@ -37,14 +37,12 @@ class BasicStressTestActivity : BasicWorldWindActivity() , Choreographer.FrameCa
     override fun onPause() {
         super.onPause()
         lastFrameTimeNanos = 0
-        activityPaused = true
+        Choreographer.getInstance().removeFrameCallback(this)
     }
 
     override fun onResume() {
         super.onResume()
-        // Resume the Navigator animation.
-        activityPaused = false
-        lastFrameTimeNanos = 0
         Choreographer.getInstance().postFrameCallback(this)
+        lastFrameTimeNanos = 0
     }
 }

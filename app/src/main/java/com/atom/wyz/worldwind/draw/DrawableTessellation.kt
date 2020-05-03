@@ -64,12 +64,14 @@ class DrawableTessellation : Drawable {
 
             // Get the drawable terrain associated with the draw context.
             val terrain = dc.getDrawableTerrain(idx) ?: continue
-
+            // Use the terrain's vertex point attribute.
+            if (!terrain.useVertexPointAttrib(dc, 0 /*vertexPoint*/)) {
+                continue  // vertex buffer failed to bind
+            }
             val terrainOrigin: Vec3 = terrain.vertexOrigin
             mvpMatrix.set(offsetMvpMatrix)
             mvpMatrix.multiplyByTranslation(terrainOrigin.x, terrainOrigin.y, terrainOrigin.z)
             program.loadModelviewProjection(mvpMatrix)
-            terrain.useVertexPointAttrib(dc, 0)
             terrain.drawLines(dc)
         }
         GLES20.glDepthMask(true)

@@ -10,6 +10,7 @@ open class Location(var latitude: Double, var longitude: Double) {
     companion object {
 
         protected var timeZoneLatitudes = SparseIntArray()
+        protected const val TOLERANCE = 1e-15
 
         init {
             timeZoneLatitudes.put(-12, -45)// GMT-12
@@ -47,15 +48,18 @@ open class Location(var latitude: Double, var longitude: Double) {
         fun fromTimeZone(timeZone: TimeZone?): Location {
             if (timeZone == null) {
                 throw java.lang.IllegalArgumentException(
-                        Logger.logMessage(Logger.ERROR, "Location", "fromTimeZone", "The time zone is null"))
+                    Logger.logMessage(Logger.ERROR, "Location", "fromTimeZone", "The time zone is null")
+                )
             }
             val millisPerHour = 3.6e6 // 毫秒
             val offsetMillis = timeZone.rawOffset
             val offsetHours = (offsetMillis / millisPerHour).toInt()
-            val lat: Double = timeZoneLatitudes.get(offsetHours, 0).toDouble() // use a pre-determined latitude or 0 if none is available
+            val lat: Double = timeZoneLatitudes.get(offsetHours, 0)
+                .toDouble() // use a pre-determined latitude or 0 if none is available
             val lon = 180 * offsetHours / 12.toDouble() // center on the time zone's average longitude
             return Location(lat, lon)
         }
+
         /**
          * 直接经纬度创建生成一个Location
          */
@@ -111,7 +115,8 @@ open class Location(var latitude: Double, var longitude: Double) {
         fun locationsCrossAntimeridian(locations: Iterable<Location>?): Boolean {
             if (locations == null) {
                 throw java.lang.IllegalArgumentException(
-                        Logger.logMessage(Logger.ERROR, "Location", "locationsCrossAntimeridian", "missingList"))
+                    Logger.logMessage(Logger.ERROR, "Location", "locationsCrossAntimeridian", "missingList")
+                )
             }
             lateinit var prev: Location
             for (cur in locations) {
@@ -127,7 +132,8 @@ open class Location(var latitude: Double, var longitude: Double) {
 
     constructor() : this(0.0, 0.0) {
     }
-    constructor( location : Location ) : this(location.latitude, location.longitude) {
+
+    constructor(location: Location) : this(location.latitude, location.longitude) {
     }
 
     override fun equals(other: Any?): Boolean {
@@ -149,11 +155,12 @@ open class Location(var latitude: Double, var longitude: Double) {
     }
 
     open fun set(location: Any?): Location {
-        if(location == null){
+        if (location == null) {
             throw IllegalArgumentException(
-                    Logger.logMessage(Logger.ERROR, "Location", "set", "missingPosition"))
+                Logger.logMessage(Logger.ERROR, "Location", "set", "missingPosition")
+            )
         }
-        if(location is Location){
+        if (location is Location) {
             latitude = location.latitude
             longitude = location.longitude
         }
@@ -169,17 +176,24 @@ open class Location(var latitude: Double, var longitude: Double) {
         result = 31 * result + (temp xor (temp ushr 32)).toInt()
         return result
     }
+
     /**
      * 沿路径在两个指定位置之间的指定距离处计算位置。计算中心点位置经纬度
      */
-    open fun interpolateAlongPath(@WorldWind.PathType pathType: Int, amount: Double, endLocation: Location?, result: Location?): Location {
+    open fun interpolateAlongPath(
+        @WorldWind.PathType pathType: Int, amount: Double,
+        endLocation: Location?,
+        result: Location?
+    ): Location {
         if (endLocation == null) {
             throw IllegalArgumentException(
-                    Logger.logMessage(Logger.ERROR, "Location", "interpolateAlongPath", "missingLocation"))
+                Logger.logMessage(Logger.ERROR, "Location", "interpolateAlongPath", "missingLocation")
+            )
         }
         if (result == null) {
             throw IllegalArgumentException(
-                    Logger.logMessage(Logger.ERROR, "Location", "interpolateAlongPath", "missingResult"))
+                Logger.logMessage(Logger.ERROR, "Location", "interpolateAlongPath", "missingResult")
+            )
         }
         if (this == endLocation) {
             result.set(this)
@@ -214,7 +228,8 @@ open class Location(var latitude: Double, var longitude: Double) {
     open fun greatCircleAzimuth(location: Location?): Double {
         if (location == null) {
             throw java.lang.IllegalArgumentException(
-                    Logger.logMessage(Logger.ERROR, "Location", "greatCircleAzimuth", "missingLocation"))
+                Logger.logMessage(Logger.ERROR, "Location", "greatCircleAzimuth", "missingLocation")
+            )
         }
         val lat1: Double = Math.toRadians(latitude)
         val lat2: Double = Math.toRadians(location.latitude)
@@ -245,7 +260,8 @@ open class Location(var latitude: Double, var longitude: Double) {
     open fun greatCircleDistance(location: Location?): Double {
         if (location == null) {
             throw java.lang.IllegalArgumentException(
-                    Logger.logMessage(Logger.ERROR, "Location", "greatCircleDistance", "missingLocation"))
+                Logger.logMessage(Logger.ERROR, "Location", "greatCircleDistance", "missingLocation")
+            )
         }
         val lat1Radians: Double = Math.toRadians(latitude)
         val lat2Radians: Double = Math.toRadians(location.latitude)
@@ -281,7 +297,8 @@ open class Location(var latitude: Double, var longitude: Double) {
     open fun greatCircleLocation(azimuthDegrees: Double, distanceRadians: Double, result: Location?): Location {
         if (result == null) {
             throw java.lang.IllegalArgumentException(
-                    Logger.logMessage(Logger.ERROR, "Location", "greatCircleLocation", "missingResult"))
+                Logger.logMessage(Logger.ERROR, "Location", "greatCircleLocation", "missingResult")
+            )
         }
         if (distanceRadians == 0.0) {
             result.latitude = latitude
@@ -292,12 +309,15 @@ open class Location(var latitude: Double, var longitude: Double) {
         val lonRadians: Double = Math.toRadians(longitude)
         val azimuthRadians: Double = Math.toRadians(azimuthDegrees)
         // Taken from "Map Projections - A Working Manual", page 31, equation 5-5 and 5-6.
-        val endLatRadians = Math.asin(Math.sin(latRadians) * Math.cos(distanceRadians) +
-                Math.cos(latRadians) * Math.sin(distanceRadians) * Math.cos(azimuthRadians))
+        val endLatRadians = Math.asin(
+            Math.sin(latRadians) * Math.cos(distanceRadians) +
+                    Math.cos(latRadians) * Math.sin(distanceRadians) * Math.cos(azimuthRadians)
+        )
         val endLonRadians = lonRadians + Math.atan2(
-                Math.sin(distanceRadians) * Math.sin(azimuthRadians),
-                Math.cos(latRadians) * Math.cos(distanceRadians) -
-                        Math.sin(latRadians) * Math.sin(distanceRadians) * Math.cos(azimuthRadians))
+            Math.sin(distanceRadians) * Math.sin(azimuthRadians),
+            Math.cos(latRadians) * Math.cos(distanceRadians) -
+                    Math.sin(latRadians) * Math.sin(distanceRadians) * Math.cos(azimuthRadians)
+        )
         if (java.lang.Double.isNaN(endLatRadians) || java.lang.Double.isNaN(endLonRadians)) {
             result.latitude = latitude
             result.longitude = longitude
@@ -323,7 +343,8 @@ open class Location(var latitude: Double, var longitude: Double) {
     open fun rhumbAzimuth(location: Location?): Double {
         if (location == null) {
             throw java.lang.IllegalArgumentException(
-                    Logger.logMessage(Logger.ERROR, "Location", "rhumbAzimuth", "missingLocation"))
+                Logger.logMessage(Logger.ERROR, "Location", "rhumbAzimuth", "missingLocation")
+            )
         }
         val lat1: Double = Math.toRadians(latitude)
         val lat2: Double = Math.toRadians(location.latitude)
@@ -333,8 +354,10 @@ open class Location(var latitude: Double, var longitude: Double) {
             return 0.0
         }
         var dLon = lon2 - lon1
-        val dPhi = Math.log(Math.tan(lat2 / 2.0 + Math.PI / 4) /
-                Math.tan(lat1 / 2.0 + Math.PI / 4))
+        val dPhi = Math.log(
+            Math.tan(lat2 / 2.0 + Math.PI / 4) /
+                    Math.tan(lat1 / 2.0 + Math.PI / 4)
+        )
         // If lonChange over 180 take shorter rhumb across 180 meridian.
         if (Math.abs(dLon) > Math.PI) {
             dLon = if (dLon > 0) -(2 * Math.PI - dLon) else 2 * Math.PI + dLon
@@ -353,7 +376,8 @@ open class Location(var latitude: Double, var longitude: Double) {
     open fun rhumbDistance(location: Location?): Double {
         if (location == null) {
             throw java.lang.IllegalArgumentException(
-                    Logger.logMessage(Logger.ERROR, "Location", "rhumbDistance", "missingLocation"))
+                Logger.logMessage(Logger.ERROR, "Location", "rhumbDistance", "missingLocation")
+            )
         }
         val lat1: Double = Math.toRadians(latitude)
         val lat2: Double = Math.toRadians(location.latitude)
@@ -364,12 +388,20 @@ open class Location(var latitude: Double, var longitude: Double) {
         }
         val dLat = lat2 - lat1
         var dLon = lon2 - lon1
-        val dPhi = Math.log(Math.tan(lat2 / 2.0 + Math.PI / 4) /
-                Math.tan(lat1 / 2.0 + Math.PI / 4))
-        var q = dLat / dPhi
-        if (java.lang.Double.isNaN(dPhi) || java.lang.Double.isNaN(q)) {
-            q = Math.cos(lat1)
-        }
+
+
+        val q: Double
+        q =
+            if (Math.abs(dLat) < TOLERANCE) { // Avoid indeterminates along E/W courses when lat end points are "nearly" identical
+                Math.cos(lat1)
+            } else {
+                val dPhi = Math.log(
+                    Math.tan(lat2 / 2.0 + Math.PI / 4) /
+                            Math.tan(lat1 / 2.0 + Math.PI / 4)
+                )
+                dLat / dPhi
+            }
+
         // If lonChange over 180 take shorter rhumb across 180 meridian.
         if (Math.abs(dLon) > Math.PI) {
             dLon = if (dLon > 0) -(2 * Math.PI - dLon) else 2 * Math.PI + dLon
@@ -394,7 +426,8 @@ open class Location(var latitude: Double, var longitude: Double) {
     open fun rhumbLocation(azimuthDegrees: Double, distanceRadians: Double, result: Location?): Location {
         if (result == null) {
             throw java.lang.IllegalArgumentException(
-                    Logger.logMessage(Logger.ERROR, "Location", "rhumbLocation", "missingResult"))
+                Logger.logMessage(Logger.ERROR, "Location", "rhumbLocation", "missingResult")
+            )
         }
         if (distanceRadians == 0.0) {
             result.latitude = latitude
@@ -406,12 +439,21 @@ open class Location(var latitude: Double, var longitude: Double) {
         val azimuthRadians: Double = Math.toRadians(azimuthDegrees)
         var endLatRadians = latRadians + distanceRadians * Math.cos(azimuthRadians)
         val endLonRadians: Double
-        val dPhi = Math.log(Math.tan(endLatRadians / 2 + Math.PI / 4) /
-                Math.tan(latRadians / 2 + Math.PI / 4))
-        var q = (endLatRadians - latRadians) / dPhi
-        if (java.lang.Double.isNaN(dPhi) || java.lang.Double.isNaN(q) || java.lang.Double.isInfinite(q)) {
-            q = Math.cos(latRadians)
-        }
+
+        val dLat = endLatRadians - latRadians
+        val q: Double
+        q =
+            if (Math.abs(dLat) < TOLERANCE) { // Avoid indeterminates along E/W courses when lat end points are "nearly" identical
+                Math.cos(latRadians)
+            } else {
+                val dPhi = Math.log(
+                    Math.tan(endLatRadians / 2 + Math.PI / 4) /
+                            Math.tan(latRadians / 2 + Math.PI / 4)
+                )
+                dLat / dPhi
+            }
+
+
         val dLon = distanceRadians * Math.sin(azimuthRadians) / q
         // Handle latitude passing over either pole.
         if (Math.abs(endLatRadians) > Math.PI / 2) {
@@ -442,7 +484,8 @@ open class Location(var latitude: Double, var longitude: Double) {
     open fun linearAzimuth(location: Location?): Double {
         if (location == null) {
             throw java.lang.IllegalArgumentException(
-                    Logger.logMessage(Logger.ERROR, "Location", "linearAzimuth", "missingLocation"))
+                Logger.logMessage(Logger.ERROR, "Location", "linearAzimuth", "missingLocation")
+            )
         }
         val lat1: Double = Math.toRadians(latitude)
         val lat2: Double = Math.toRadians(location.latitude)
@@ -476,7 +519,8 @@ open class Location(var latitude: Double, var longitude: Double) {
     open fun linearDistance(location: Location?): Double {
         if (location == null) {
             throw java.lang.IllegalArgumentException(
-                    Logger.logMessage(Logger.ERROR, "Location", "linearDistance", "missingLocation"))
+                Logger.logMessage(Logger.ERROR, "Location", "linearDistance", "missingLocation")
+            )
         }
         val lat1: Double = Math.toRadians(latitude)
         val lat2: Double = Math.toRadians(location.latitude)
@@ -511,7 +555,8 @@ open class Location(var latitude: Double, var longitude: Double) {
     open fun linearLocation(azimuthDegrees: Double, distanceRadians: Double, result: Location?): Location {
         if (result == null) {
             throw java.lang.IllegalArgumentException(
-                    Logger.logMessage(Logger.ERROR, "Location", "linearLocation", "missingResult"))
+                Logger.logMessage(Logger.ERROR, "Location", "linearLocation", "missingResult")
+            )
         }
         if (distanceRadians == 0.0) {
             result.latitude = latitude

@@ -6,6 +6,24 @@
         <LinearLayout android:layout_width="match_parent" android:layout_height="match_parent"
         android:orientation="vertical">
             <Button
+                    android:id="@+id/texture_stress_activity"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="texture_stress_activity"
+                    android:onClick="menuButton"/>
+            <Button
+                    android:id="@+id/placemark_Dragger_2_activity"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="placemark_Dragger_2_activity"
+                    android:onClick="menuButton"/>
+            <Button
+                    android:id="@+id/placemark_Dragger_activity"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="placemark_Dragger_activity"
+                    android:onClick="menuButton"/>
+            <Button
                     android:id="@+id/basic_stress_test_activity"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
