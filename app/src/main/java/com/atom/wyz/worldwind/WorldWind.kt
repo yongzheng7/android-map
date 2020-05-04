@@ -45,6 +45,16 @@ class WorldWind {
     @kotlin.annotation.Retention(AnnotationRetention.SOURCE)
     annotation class DrawableGroup
 
+    /**
+     * Image format indicates the in-memory representation for images displayed by World Wind components. Images are
+     * typically represented in the 32-bit RGBA_8888 format, the highest quality available. Components that do not
+     * require an alpha channel and want to conserve memory may use the 16-bit RGBA_565 format. Accepted values are
+     * [.IMAGE_FORMAT_RGBA_8888] and [.IMAGE_FORMAT_RGB_565].
+     */
+    @IntDef(RGBA_8888, RGB_565)
+    @kotlin.annotation.Retention(AnnotationRetention.SOURCE)
+    annotation class ImageFormat
+
 
     /**
      * Navigator event type indicates the reason a NavigatorEvent has been generated.
@@ -208,6 +218,17 @@ class WorldWind {
          * [NavigatorAction] constant indicating that the navigator has stopped moving.
          */
         const val NAVIGATOR_STOPPED = 1
+
+        ///////////////////////////////////////////////////////////////////////////////////////////////
+        /**
+         * [ImageFormat] constant indicating 32-bit RGBA_8888 image format.
+         */
+        const val RGBA_8888 = 0
+
+        /**
+         * [ImageFormat] constant indicating 16-bit RGBA_565 image format.
+         */
+        const val RGB_565 = 1
 
         ///////////////////////////////////////////////////////////////////////////////////////////////
 

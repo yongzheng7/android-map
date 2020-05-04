@@ -1,8 +1,10 @@
 package com.atom.wyz.worldwind.layer
 
+import com.atom.wyz.worldwind.WorldWind
 import com.atom.wyz.worldwind.geom.Sector
 import com.atom.wyz.worldwind.ogc.WmsLayer
 import com.atom.wyz.worldwind.ogc.WmsLayerConfig
+import com.atom.wyz.worldwind.render.ImageOptions
 import com.atom.wyz.worldwind.util.Logger
 
 class BlueMarbleLayer : WmsLayer {
@@ -21,6 +23,7 @@ class BlueMarbleLayer : WmsLayer {
         config.coordinateSystem = "EPSG:4326"
         config.transparent = false // the BlueMarble layer is opaque
 
+        this.imageOptions = ImageOptions(WorldWind.RGB_565)
         setConfiguration(Sector().setFullSphere(), 500.0, config)
     }
 }

@@ -12,10 +12,7 @@ import com.atom.wyz.worldwind.layer.Layer
 import com.atom.wyz.worldwind.layer.LayerList
 import com.atom.wyz.worldwind.pick.PickedObject
 import com.atom.wyz.worldwind.pick.PickedObjectList
-import com.atom.wyz.worldwind.render.BufferObject
-import com.atom.wyz.worldwind.render.GpuProgram
-import com.atom.wyz.worldwind.render.GpuTexture
-import com.atom.wyz.worldwind.render.ImageSource
+import com.atom.wyz.worldwind.render.*
 import com.atom.wyz.worldwind.util.Logger
 import com.atom.wyz.worldwind.util.RenderResourceCache
 import com.atom.wyz.worldwind.util.pool.Pool
@@ -250,7 +247,7 @@ open class RenderContext {
 
 
     open fun getProgram(key: Any): GpuProgram? {
-        return renderResourceCache?.let { it[key] as GpuProgram? }
+        return renderResourceCache?.let { it.get(key) as GpuProgram? }
     }
 
     open fun putProgram(key: Any, program: GpuProgram): GpuProgram {
@@ -285,8 +282,8 @@ open class RenderContext {
         return texture
     }
 
-    open fun retrieveTexture(imageSource: ImageSource?): GpuTexture? {
-        return renderResourceCache?.retrieveTexture(imageSource)
+    open fun retrieveTexture(imageSource: ImageSource? ,imageOptions : ImageOptions?  ): GpuTexture? {
+        return renderResourceCache?.retrieveTexture(imageSource , imageOptions)
     }
 
     open fun offerDrawable(drawable: Drawable, groupId: Int, depth: Double) {
@@ -341,7 +338,7 @@ open class RenderContext {
     }
 
     open fun getBufferObject(key: Any): BufferObject? {
-        return renderResourceCache!![key] as BufferObject?
+        return renderResourceCache?.get(key) as BufferObject?
     }
 
     open fun putBufferObject(key: Any, buffer: BufferObject): BufferObject {

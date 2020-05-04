@@ -17,6 +17,7 @@ open class SurfaceImage : AbstractRenderable, Movable {
             field.set(value)
         }
     var imageSource: ImageSource? = null
+    var imageOptions: ImageOptions? = null
 
     constructor() : super("Surface Image")
 
@@ -39,7 +40,7 @@ open class SurfaceImage : AbstractRenderable, Movable {
         }
         var texture: GpuTexture? = rc.getTexture(imageSource!!)
         if (texture == null) {
-            texture = rc.retrieveTexture(imageSource)
+            texture = rc.retrieveTexture(imageSource , imageOptions)
         }
         if (texture == null) {
             return

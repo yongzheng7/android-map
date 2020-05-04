@@ -1,13 +1,14 @@
 package com.atom.wyz.worldwind.layer
 
 import com.atom.wyz.worldwind.WorldWind
-import com.atom.wyz.worldwind.util.LevelSet
-import com.atom.wyz.worldwind.util.LevelSetConfig
 import com.atom.wyz.worldwind.globe.Tile
 import com.atom.wyz.worldwind.globe.TileUrlFactory
 import com.atom.wyz.worldwind.ogc.WmsGetMapUrlFactory
 import com.atom.wyz.worldwind.ogc.WmsLayer
 import com.atom.wyz.worldwind.ogc.WmsLayerConfig
+import com.atom.wyz.worldwind.render.ImageOptions
+import com.atom.wyz.worldwind.util.LevelSet
+import com.atom.wyz.worldwind.util.LevelSetConfig
 import com.atom.wyz.worldwind.util.Logger
 
 class BlueMarbleLandsatLayer : WmsLayer, TileUrlFactory {
@@ -50,6 +51,9 @@ class BlueMarbleLandsatLayer : WmsLayer, TileUrlFactory {
         this.levelSet = LevelSet(levelsConfig)
         this.tileUrlFactory = this
         this.imageFormat = ("image/png")
+        // Configure this layer's image options to reduce memory usage by using a 16-bit format with no alpha.
+        this.imageOptions = ImageOptions(WorldWind.RGB_565)
+
     }
 
     override fun urlForTile(tile: Tile?, imageFormat: String?): String {

@@ -51,9 +51,9 @@ open class Placemark : AbstractRenderable, Highlightable, Movable {
 
     var position: Position?
 
-    private var cameraDistance = 0.0
+    var cameraDistance = 0.0
 
-    protected var levelOfDetailSelector: LevelOfDetailSelector? = null
+    var levelOfDetailSelector: LevelOfDetailSelector? = null
 
     var attributes: PlacemarkAttributes
     var _highlighted = false
@@ -267,7 +267,7 @@ open class Placemark : AbstractRenderable, Highlightable, Movable {
         val activeAttributes = this.activeAttributes ?: return
         if (activeAttributes.imageSource != null) {
             if (activeTexture == null) {
-                activeTexture = rc.retrieveTexture(activeAttributes.imageSource) // puts retrieved textures in the cache
+                activeTexture = rc.retrieveTexture(activeAttributes.imageSource , null) // puts retrieved textures in the cache
             }
         } else {
             activeTexture = null // there is no imageSource; draw a simple colored square

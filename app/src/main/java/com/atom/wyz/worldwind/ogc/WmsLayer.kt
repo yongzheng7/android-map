@@ -49,7 +49,7 @@ open class WmsLayer : TiledImageLayer {
                     Logger.logMessage(Logger.ERROR, "WmsLayer", "constructor", "missingConfig"))
         }
         this.imageFormat = ("image/png")
-        this.setConfiguration(sector, metersPerPixel, config)
+        this.setConfiguration(sector, globe ,metersPerPixel, config)
     }
 
     open fun setConfiguration(sector: Sector?, metersPerPixel: Double, config: WmsLayerConfig?) {

@@ -3,18 +3,15 @@ package com.atom.wyz.worldwind.layer
 import android.opengl.GLES20
 import com.atom.wyz.worldwind.R
 import com.atom.wyz.worldwind.RenderContext
+import com.atom.wyz.worldwind.WorldWind
 import com.atom.wyz.worldwind.draw.DrawableGroundAtmosphere
 import com.atom.wyz.worldwind.draw.DrawableSkyAtmosphere
 import com.atom.wyz.worldwind.geom.Location
 import com.atom.wyz.worldwind.geom.Sector
 import com.atom.wyz.worldwind.geom.Vec3
-import com.atom.wyz.worldwind.render.BufferObject
-import com.atom.wyz.worldwind.render.GroundProgram
-import com.atom.wyz.worldwind.render.ImageSource
-import com.atom.wyz.worldwind.render.SkyProgram
+import com.atom.wyz.worldwind.render.*
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
-import java.nio.ShortBuffer
 import java.util.*
 
 class AtmosphereLayer : AbstractLayer {
@@ -24,11 +21,13 @@ class AtmosphereLayer : AbstractLayer {
         private val TRI_STRIP_ELEMENTS_KEY = AtmosphereLayer::class.java.name + ".triStripElements"
     }
 
-    protected var nightImageSource: ImageSource? = null
+    var nightImageSource: ImageSource? = null
+
+    var nightImageOptions: ImageOptions? = null
 
     var lightLocation: Location? = null
 
-    protected var activeLightDirection = Vec3()
+    var activeLightDirection = Vec3()
 
 
     private val fullSphereSector: Sector = Sector().setFullSphere()
@@ -36,6 +35,7 @@ class AtmosphereLayer : AbstractLayer {
     constructor() : super("Atmosphere") {
         this.pickEnabled = false
         nightImageSource = ImageSource.fromResource(R.drawable.gov_nasa_worldwind_night)
+        nightImageOptions = ImageOptions(WorldWind.RGB_565)
     }
 
     override fun doRender(rc: RenderContext) {
@@ -79,7 +79,7 @@ class AtmosphereLayer : AbstractLayer {
         if (nightImageSource != null && lightLocation != null) {
             drawable.nightTexture = rc.getTexture(nightImageSource!!)
             if (drawable.nightTexture == null) {
-                drawable.nightTexture = rc.retrieveTexture(nightImageSource)
+                drawable.nightTexture = rc.retrieveTexture(nightImageSource, nightImageOptions)
             }
         } else {
             drawable.nightTexture = null
@@ -132,7 +132,7 @@ class AtmosphereLayer : AbstractLayer {
 
         val points = FloatArray(count * 3)
 
-        rc.globe!!.geographicToCartesianGrid(fullSphereSector, numLat, numLon, altitudes, null, points, 3 , 0)
+        rc.globe!!.geographicToCartesianGrid(fullSphereSector, numLat, numLon, altitudes, null, points, 3, 0)
 
         val size = points.size * 4
         val buffer = ByteBuffer.allocateDirect(size).order(ByteOrder.nativeOrder()).asFloatBuffer()
@@ -171,6 +171,6 @@ class AtmosphereLayer : AbstractLayer {
             ByteBuffer.allocateDirect(size).order(ByteOrder.nativeOrder()).asShortBuffer()
         buffer.put(elements).rewind()
 
-        return BufferObject(GLES20.GL_ELEMENT_ARRAY_BUFFER, size , buffer)
+        return BufferObject(GLES20.GL_ELEMENT_ARRAY_BUFFER, size, buffer)
     }
 }

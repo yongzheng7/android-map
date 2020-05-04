@@ -14,11 +14,11 @@ open class LruMemoryCache<K, V> {
     protected val lruComparator: Comparator<Entry<K, V>> =
         Comparator { lhs, rhs -> ((lhs.lastUsed - rhs.lastUsed).toInt()) }
 
-    var capacity = 0
+    open var capacity = 0
 
-    protected var lowWater = 0
+    open var lowWater = 0
 
-    var usedCapacity = 0
+    open var usedCapacity = 0
 
     constructor (capacity: Int, lowWater: Int) {
         if (capacity < 1) {
@@ -59,10 +59,7 @@ open class LruMemoryCache<K, V> {
         return entries.size
     }
 
-    /**
-     * 获取根据key
-     */
-    operator fun get(key: K): V? {
+    open fun get(key: K): V? {
         val entry: Entry<K, V>? = entries[key]
         return if (entry != null) {
             entry.lastUsed = System.currentTimeMillis()
@@ -72,75 +69,84 @@ open class LruMemoryCache<K, V> {
         }
     }
 
-    fun put(key: K, value: V, size: Int): V? {
-        val newEntry: Entry<K, V> = Entry(key, value, size)
-        val oldEntry = putEntry(newEntry)
-        return oldEntry?.value ?: let { null };
-    }
-
-    protected open fun putEntry(newEntry: Entry<K, V>): Entry<K, V>? {
-        if (usedCapacity + newEntry.size > capacity) {
-            makeSpace(newEntry.size)
+    open fun put(key: K, value: V, size: Int): V? {
+        if (usedCapacity + size > capacity) {
+            makeSpace(size)
         }
+        val newEntry = Entry(key, value, size)
         newEntry.lastUsed = System.currentTimeMillis()
-        usedCapacity += newEntry.size
-        val oldEntry: Entry<K, V>? = entries.put(newEntry.key, newEntry)
-        if (oldEntry != null) {
-            usedCapacity -= oldEntry.size
-            if (newEntry.value !== oldEntry.value) {
-                entryReplaced(oldEntry , newEntry)
-                return oldEntry
+        this.usedCapacity += newEntry.size
+        val oldEntry = entries.put(newEntry.key, newEntry)
+
+        return oldEntry?.let {
+            usedCapacity -= it.size
+            if (newEntry.value !== it.value) {
+                entryRemoved(it.key, it.value, newEntry.value, false)
+                it.value
+            } else {
+                null
             }
-        }
-        return null
-    }
-
-    fun remove(key: K): V? {
-        val entry: Entry<K, V>? = entries.remove(key)
-
-        return if (entry != null) {
-            usedCapacity -= entry.size
-            entryRemoved(entry)
-            entry.value
-        } else {
+        } ?: let {
             null
         }
     }
 
-    fun containsKey(key: K): Boolean {
-        return entries.containsKey(key)
+    open fun remove(key: K): V? {
+        return entries.remove(key)?.let {
+            usedCapacity -= it.size
+            entryRemoved(it.key, it.value, null, false)
+            it.value
+        } ?: let {
+            null
+        }
+    }
+
+    open fun containsKey(key: K) = entries.containsKey(key)
+
+    open fun trimToAge(maxAgeMillis: Long): Int {
+        var trimmedCapacity = 0
+        for (entry in this.assembleSortedEntries()) {
+            if (entry.lastUsed < maxAgeMillis) {
+                entries.remove(entry.key)
+                usedCapacity -= entry.size
+                trimmedCapacity += entry.size
+                entryRemoved(entry.key, entry.value, null, false)
+            } else {
+                break
+            }
+        }
+        return trimmedCapacity
     }
 
     open fun clear() {
         for (entry in entries.values) {
-            entryRemoved(entry)
+            entryRemoved(entry.key, entry.value, null, false)
         }
         entries.clear()
         usedCapacity = 0
     }
 
-    protected fun makeSpace(spaceRequired: Int) {
-        // Sort the entries from least recently used to most recently used, then remove the least recently used entries
-        // until the cache capacity reaches the low water and the cache has enough free capacity for the required space.
-        val sortedEntries: ArrayList<Entry<K, V>> = ArrayList<Entry<K, V>>(entries.size)
-        for (entry in entries.values) {
-            sortedEntries.add(entry)
-        }
-        // 将所有的 value 进行更具时间排序
-        Collections.sort(sortedEntries, lruComparator)
-        for (entry in sortedEntries) {
-            if (usedCapacity > lowWater || capacity - usedCapacity < spaceRequired) {
+    protected open fun makeSpace(spaceRequired: Int) {
+        for (entry in this.assembleSortedEntries()) {
+            if (usedCapacity > lowWater || (capacity - usedCapacity) < spaceRequired) {
                 entries.remove(entry.key)
                 usedCapacity -= entry.size
-                entryRemoved(entry)
-
+                entryRemoved(entry.key, entry.value, null, true)
             } else {
                 break
             }
         }
     }
 
-    protected open fun entryRemoved(entry: Entry<K, V>) {}
-    protected open fun entryReplaced(oldEntry: Entry<K, V>, newEntry: Entry<K, V>) {
+    protected open fun assembleSortedEntries(): ArrayList<Entry<K, V>> {
+        val sortedEntries: ArrayList<Entry<K, V>> = ArrayList(entries.size)
+        for (entry in entries.values) {
+            sortedEntries.add(entry)
+        }
+        Collections.sort(sortedEntries, lruComparator)
+        return sortedEntries
     }
+
+    protected open fun entryRemoved(key: K, oldValue: V, newValue: V?, evicted: Boolean) {}
+
 }

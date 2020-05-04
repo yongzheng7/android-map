@@ -74,6 +74,9 @@ class MenuActivity : AppCompatActivity() {
             R.id.texture_stress_activity -> {
                 startActivity(Intent(this, TextureStressTestActivity::class.java))
             }
+            R.id.placemark_demo_activity -> {
+                startActivity(Intent(this, PlacemarksDemoActivity::class.java))
+            }
         }
     }
 

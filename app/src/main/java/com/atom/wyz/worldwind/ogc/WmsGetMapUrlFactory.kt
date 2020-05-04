@@ -112,7 +112,7 @@ class WmsGetMapUrlFactory : TileUrlFactory {
         var index = url.indexOf("?")
         if (index < 0) { // if service address contains no query delimiter
             url.append("?") // add one
-        } else if (index != url.length) { // else if query delimiter not at end of string
+        } else if (index != url.length- 1) { // else if query delimiter not at end of string
             index = url.lastIndexOf("&")
             if (index != url.length - 1) {
                 url.append("&") // add a parameter delimiter

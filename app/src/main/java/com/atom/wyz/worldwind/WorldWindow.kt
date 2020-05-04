@@ -1,7 +1,6 @@
 package com.atom.wyz.worldwind
 
 import android.annotation.SuppressLint
-import android.app.ActivityManager
 import android.content.Context
 import android.graphics.PointF
 import android.opengl.GLES20
@@ -37,8 +36,6 @@ import javax.microedition.khronos.opengles.GL10
 class WorldWindow : GLSurfaceView, GLSurfaceView.Renderer, MessageListener, FrameCallback {
 
     companion object {
-        const val DEFAULT_MEMORY_CLASS = 16
-
         const val MAX_FRAME_QUEUE_SIZE = 2
 
         const val MSG_ID_CLEAR_CACHE = 1
@@ -134,10 +131,9 @@ class WorldWindow : GLSurfaceView, GLSurfaceView.Renderer, MessageListener, Fram
 
         this.worldWindowController.worldWindow = this
 
-        val am = this.context.getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
-        val memoryClass = am.memoryClass as Int? ?: DEFAULT_MEMORY_CLASS // default to 16 MB class
-        val gpuCacheSize = memoryClass / 2 * 1024 * 1024
-        renderResourceCache = RenderResourceCache(gpuCacheSize)
+        // Initialize the World Window's render resource cache.
+        val cacheCapacity = RenderResourceCache.recommendedCapacity(this.context)
+        renderResourceCache = RenderResourceCache(cacheCapacity)
 
         this.setEGLConfigChooser(configChooser)
         this.setEGLContextClientVersion(2) // must be called before setRenderer
@@ -182,10 +178,18 @@ class WorldWindow : GLSurfaceView, GLSurfaceView.Renderer, MessageListener, Fram
 
         val pickFrame = pickQueue.poll()
         if (pickFrame != null) {
-            drawFrame(pickFrame)
-            pickFrame.signalDone()
-            pickFrame.recycle()
-            super.requestRender()
+            try {
+                drawFrame(pickFrame)
+            } catch (e: java.lang.Exception) {
+                Logger.logMessage(
+                    Logger.ERROR, "WorldWindow", "onDrawFrame",
+                    "Exception while processing pick in OpenGL thread", e
+                )
+            } finally {
+                pickFrame.signalDone()
+                pickFrame.recycle()
+                super.requestRender()
+            }
         }
 
         var nextFrame = frameQueue.poll()
@@ -194,9 +198,17 @@ class WorldWindow : GLSurfaceView, GLSurfaceView.Renderer, MessageListener, Fram
             currentFrame = nextFrame
             super.requestRender()
         }
-
-        currentFrame?.let {
-            drawFrame(it)
+        // Process and display the Drawables accumulated in the last frame taken from the front of the queue. This frame
+        // may be drawn multiple times if the OpenGL thread executes more often than the World Window enqueues frames.
+        try {
+            currentFrame?.let {
+                drawFrame(it)
+            }
+        } catch (e: java.lang.Exception) {
+            Logger.logMessage(
+                Logger.ERROR, "WorldWindow", "onDrawFrame",
+                "Exception while drawing frame in OpenGL thread", e
+            )
         }
     }
 
@@ -323,9 +335,7 @@ class WorldWindow : GLSurfaceView, GLSurfaceView.Renderer, MessageListener, Fram
 
         frameController.drawFrame(dc)
 
-        if (!pickMode) {
-            renderResourceCache?.releaseEvictedResources(dc)
-        }
+        renderResourceCache?.releaseEvictedResources(dc)
 
         if (!pickMode) {
             frameMetrics.endDrawing(this.dc)

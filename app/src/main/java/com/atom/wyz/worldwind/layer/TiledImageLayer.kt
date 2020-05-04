@@ -8,10 +8,7 @@ import com.atom.wyz.worldwind.geom.Sector
 import com.atom.wyz.worldwind.globe.Tile
 import com.atom.wyz.worldwind.globe.TileFactory
 import com.atom.wyz.worldwind.globe.TileUrlFactory
-import com.atom.wyz.worldwind.render.GpuTexture
-import com.atom.wyz.worldwind.render.ImageSource
-import com.atom.wyz.worldwind.render.ImageTile
-import com.atom.wyz.worldwind.render.SurfaceTextureProgram
+import com.atom.wyz.worldwind.render.*
 import com.atom.wyz.worldwind.util.Level
 import com.atom.wyz.worldwind.util.LevelSet
 import com.atom.wyz.worldwind.util.LruMemoryCache
@@ -35,6 +32,12 @@ open class TiledImageLayer : AbstractLayer, TileFactory {
         set(value) {
             field = value
             this.invalidateTiles()
+        }
+
+    var imageOptions: ImageOptions? = null
+        set(value) {
+            field = value
+            invalidateTiles()
         }
 
     var detailControl = 4.0
@@ -96,7 +99,7 @@ open class TiledImageLayer : AbstractLayer, TileFactory {
     protected open fun fetchTileTexture(rc: RenderContext, tile: ImageTile): GpuTexture? {
         var texture: GpuTexture? = rc.getTexture(tile.imageSource!!)
         if (texture == null) {
-            texture = rc.retrieveTexture(tile.imageSource!!)
+            texture = rc.retrieveTexture(tile.imageSource!! , imageOptions)
         }
         return texture
     }
