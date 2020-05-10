@@ -28,6 +28,7 @@ class DrawContext {
 
     var screenProjection: Matrix4 = Matrix4()
 
+    var infiniteProjection = Matrix4()
 
     var drawableQueue: DrawableQueue? = null
 
@@ -65,6 +66,7 @@ class DrawContext {
         projection.setToIdentity()
         modelviewProjection.setToIdentity()
         screenProjection.setToIdentity()
+        infiniteProjection.setToIdentity()
         drawableQueue = null
         drawableTerrain = null
 

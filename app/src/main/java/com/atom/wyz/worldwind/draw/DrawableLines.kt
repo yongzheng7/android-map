@@ -68,7 +68,7 @@ class DrawableLines : Drawable {
         dc.bindBuffer(GLES20.GL_ARRAY_BUFFER, 0)
         val buffer = getVertexPointBuffer(vertexPoints)
         GLES20.glVertexAttribPointer(0, 3, GLES20.GL_FLOAT, false, 0, buffer)
-        GLES20.glDrawArrays(GLES20.GL_LINES, 0 /*first*/, vertexPoints.size / 3 /*count*/)
+        GLES20.glDrawArrays(GLES20.GL_LINES, 0 /*first*/, buffer.remaining() / 3 /*count*/)
         // Restore the default World Wind OpenGL state.
         if (!enableDepthTest) {
             GLES20.glEnable(GLES20.GL_DEPTH_TEST)

@@ -2,6 +2,7 @@ package com.atom.wyz.worldwind.draw
 
 import android.opengl.GLES20
 import com.atom.wyz.worldwind.DrawContext
+import com.atom.wyz.worldwind.geom.Range
 import com.atom.wyz.worldwind.geom.Sector
 import com.atom.wyz.worldwind.geom.Vec3
 import com.atom.wyz.worldwind.render.BufferObject
@@ -20,13 +21,15 @@ class BasicDrawableTerrain : DrawableTerrain {
 
     override var vertexOrigin = Vec3()
 
+    var lineElementRange: Range = Range()
+
+    var triStripElementRange: Range = Range()
+
     var vertexPoints: BufferObject? = null
 
     var vertexTexCoords: BufferObject? = null
 
-    var lineElements: BufferObject? = null
-
-    var triStripElements: BufferObject? = null
+    var elements: BufferObject? = null
 
     private var pool: Pool<BasicDrawableTerrain>? = null
     private fun setPool(pool: Pool<BasicDrawableTerrain>): BasicDrawableTerrain {
@@ -55,19 +58,19 @@ class BasicDrawableTerrain : DrawableTerrain {
 
     override fun drawLines(dc: DrawContext) : Boolean {
         var bufferBound :Boolean
-        bufferBound = lineElements?.bindBuffer(dc)?.also { bufferBound = it } ?: false
+        bufferBound = elements?.bindBuffer(dc)?.also { bufferBound = it } ?: false
         if(bufferBound){
-            GLES20.glDrawElements(GLES20.GL_LINES, lineElements!!.bufferLength, GLES20.GL_UNSIGNED_SHORT, 0)
+            GLES20.glDrawElements(GLES20.GL_LINES, this.lineElementRange.length() , GLES20.GL_UNSIGNED_SHORT, 0)
         }
         return bufferBound
     }
 
     override fun drawTriangles(dc: DrawContext) : Boolean {
         var bufferBound :Boolean
-        bufferBound = triStripElements?.bindBuffer(dc)?.also { bufferBound = it } ?: false
+        bufferBound = elements?.bindBuffer(dc)?.also { bufferBound = it } ?: false
 
         if(bufferBound){
-            GLES20.glDrawElements(GLES20.GL_TRIANGLE_STRIP, triStripElements!!.bufferLength, GLES20.GL_UNSIGNED_SHORT, 0)
+            GLES20.glDrawElements(GLES20.GL_TRIANGLE_STRIP, this.triStripElementRange.length() , GLES20.GL_UNSIGNED_SHORT, this.triStripElementRange.lower * 2)
         }
         return bufferBound
     }
@@ -79,8 +82,7 @@ class BasicDrawableTerrain : DrawableTerrain {
     override fun recycle() {
         vertexPoints = null
         vertexTexCoords = null
-        lineElements = null
-        triStripElements = null
+        elements = null
         pool?.release(this)
         pool = null
     }

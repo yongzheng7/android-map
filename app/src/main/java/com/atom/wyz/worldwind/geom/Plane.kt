@@ -19,14 +19,16 @@ class Plane {
     constructor(x: Double, y: Double, z: Double, distance: Double) {
         normal.set(x, y, z)
         this.distance = distance
+        this.normalize()
     }
 
-    constructor(normal: Vec3?, distance: Double) {
-        if (normal == null) {
-            throw java.lang.IllegalArgumentException(Logger.logMessage(Logger.ERROR, "Plane", "constructor", "missingVector"))
-        }
+    constructor() {
+        normal.z = 1.0
+    }
+    constructor(normal: Vec3, distance: Double) {
         this.normal.set(normal)
         this.distance = distance
+        this.normalize()
     }
 
     constructor(plane : Plane? ) {
@@ -40,22 +42,18 @@ class Plane {
     fun set(x: Double, y: Double, z: Double, distance: Double): Plane {
         normal.set(x ,y , z)
         this.distance = distance
+        this.normalize()
         return this
     }
-    fun set(normal: Vec3?, distance: Double): Plane{
-        if (normal == null) {
-            throw java.lang.IllegalArgumentException(Logger.logMessage(Logger.ERROR, "Plane", "set", "missingVector"))
-        }
+    fun set(normal: Vec3, distance: Double): Plane{
         this.normal.set(normal)
         this.distance = distance
+        this.normalize()
         return this
     }
 
 
-    fun set(plane : Plane? ): Plane {
-        if (plane == null) {
-            throw java.lang.IllegalArgumentException(Logger.logMessage(Logger.ERROR, "Plane", "constructor", "missingPlane"))
-        }
+    fun set(plane : Plane ): Plane {
         normal.set(plane.normal)
         this.distance =plane.distance
         return this
@@ -123,6 +121,7 @@ class Plane {
         normal.y = y
         normal.z = z
         this.distance = distance
+        this.normalize()
         return this
     }
 
@@ -132,19 +131,26 @@ class Plane {
      * @return This plane with its components normalized.
      */
     fun normalize(): Plane {
-        val magnitude = normal.magnitude()
-        if (magnitude == 0.0) return this
+        val x = normal.x
+        val y = normal.y
+        val z = normal.z
+        val len = Math.sqrt(x * x + y * y + z * z)
+        val EPSILON = 1.0e-10
 
-        normal.divide(magnitude)
-        distance /= magnitude
-
+        if (len != 0.0 && Math.abs(1.0 - len) > EPSILON) {
+            // normalize when the length is non-zero and not close enough to 1.0
+            normal.x = x / len
+            normal.y = y / len
+            normal.z = z / len
+            distance = distance / len
+        }
         return this
     }
 
     /**
      * 确定指定的线段是否与此平面相交。
      */
-    fun intersectsSegment(endPoint1: Vec3?, endPoint2: Vec3?): Boolean {
+    fun intersectsSegment(endPoint1: Vec3, endPoint2: Vec3): Boolean {
         val distance1 = dot(endPoint1)
         val distance2 = dot(endPoint2)
         return distance1 * distance2 <= 0
@@ -236,10 +242,16 @@ class Plane {
     }
 
     override fun equals(other: Any?): Boolean {
-        if (this === other) return true
-        if (other == null || javaClass != other.javaClass) return false
-        val plane: Plane = other as Plane
-        return if (java.lang.Double.compare(plane.distance, distance) != 0) false else normal == plane.normal
+        if (this === other) {
+            return true
+        }
+        if (other == null || this.javaClass != other.javaClass) {
+            return false
+        }
+
+        val that: Plane = other as Plane
+        return normal.equals(that.normal) && distance == that.distance
+
     }
 
     override fun hashCode(): Int {

@@ -269,8 +269,10 @@ class WorldWindow : GLSurfaceView, GLSurfaceView.Renderer, MessageListener, Fram
         rc.renderResourceCache?.resources = (this.context.resources)
         rc.resources = this.context.resources
 
-        frame.viewport.set(this.viewport)
         computeViewingTransform(frame.projection, frame.modelview)
+        frame.viewport.set(this.viewport)
+        frame.infiniteProjection.setToInfiniteProjection(viewport.width.toDouble(), viewport.height.toDouble(), fieldOfView, 1.0)
+        frame.infiniteProjection.multiplyByMatrix(frame.modelview)
         rc.viewport.set(frame.viewport)
         rc.projection.set(frame.projection)
         rc.modelview.set(frame.modelview)
@@ -321,6 +323,7 @@ class WorldWindow : GLSurfaceView, GLSurfaceView.Renderer, MessageListener, Fram
         dc.projection.set(frame.projection)
         dc.modelview.set(frame.modelview)
         dc.modelviewProjection.setToMultiply(frame.projection, frame.modelview)
+        dc.infiniteProjection.set(frame.infiniteProjection)
         dc.screenProjection.setToScreenProjection(
             frame.viewport.width.toDouble(),
             frame.viewport.height.toDouble()

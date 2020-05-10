@@ -81,12 +81,13 @@ class DrawableGroundAtmosphere : Drawable {
                 program.loadTexCoordMatrix(texCoordMatrix)
             }
 
-            // Draw the terrain tile as triangles, multiplying the current fragment color by the program's secondary color.
-            program.loadFragMode(AtmosphereProgram.FRAGMODE_GROUND_SECONDARY)
+            // Draw the terrain as triangles, multiplying the current fragment color by the program's secondary color.
+            this.program!!.loadFragMode(AtmosphereProgram.FRAGMODE_SECONDARY)
             GLES20.glBlendFunc(GLES20.GL_DST_COLOR, GLES20.GL_ZERO)
             terrain.drawTriangles(dc)
             // Draw the terrain tile as triangles, adding the current fragment color to the program's primary color.
-            program.loadFragMode(if (textureBound) AtmosphereProgram.FRAGMODE_GROUND_PRIMARY_TEX_BLEND else AtmosphereProgram.FRAGMODE_GROUND_PRIMARY)
+            // Draw the terrain as triangles, adding the current fragment color to the program's primary color.
+            this.program!!.loadFragMode(if (textureBound) AtmosphereProgram.FRAGMODE_PRIMARY_TEX_BLEND else AtmosphereProgram.FRAGMODE_PRIMARY)
             GLES20.glBlendFunc(GLES20.GL_ONE, GLES20.GL_ONE)
             terrain.drawTriangles(dc)
         }

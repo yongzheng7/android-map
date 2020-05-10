@@ -70,7 +70,7 @@ class Vec3(var x: Double, var y: Double, var z: Double) {
     constructor() : this(0.0, 0.0, 0.0)
     constructor(vector: Vec3) : this(vector.x, vector.y, vector.z)
 
-    operator fun set(x: Double, y: Double, z: Double): Vec3 {
+    fun set(x: Double, y: Double, z: Double): Vec3 {
         this.x = x
         this.y = y
         this.z = z
@@ -193,7 +193,7 @@ class Vec3(var x: Double, var y: Double, var z: Double) {
     /**
      * 叉积
      */
-    fun cross(vector: Vec3?): Vec3? {
+    fun cross(vector: Vec3?): Vec3 {
         if (vector == null) {
             throw IllegalArgumentException(
                     Logger.logMessage(Logger.ERROR, "Vec3", "cross", "missingVector"))

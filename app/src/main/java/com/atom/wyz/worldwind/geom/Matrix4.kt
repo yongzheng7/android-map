@@ -1211,6 +1211,66 @@ class Matrix4 {
         return true
     }
 
+    /**
+     * Sets this matrix to an infinite perspective projection matrix for the specified viewport dimensions, vertical
+     * field of view and near clip distance.
+     * 无限透视投影矩阵
+     */
+    fun setToInfiniteProjection(
+        viewportWidth: Double,
+        viewportHeight: Double,
+        fovyDegrees: Double,
+        nearDistance: Double
+    ): Matrix4? {
+        require(viewportWidth > 0) {
+            Logger.logMessage(
+                Logger.ERROR, "Matrix4", "setToInfiniteProjection",
+                "invalidWidth"
+            )
+        }
+        require(viewportHeight > 0) {
+            Logger.logMessage(
+                Logger.ERROR, "Matrix4", "setToInfiniteProjection",
+                "invalidHeight"
+            )
+        }
+        require(!(fovyDegrees <= 0 || fovyDegrees >= 180)) {
+            Logger.logMessage(
+                Logger.ERROR, "Matrix4", "setToInfiniteProjection",
+                "invalidFieldOfView"
+            )
+        }
+        require(nearDistance > 0) {
+            Logger.logMessage(
+                Logger.ERROR, "Matrix4", "setToInfiniteProjection",
+                "invalidClipDistance"
+            )
+        }
+        // Compute the dimensions of the near rectangle given the specified parameters.
+        val aspect = viewportWidth / viewportHeight
+        val tanfovy_2 = Math.tan(Math.toRadians(fovyDegrees * 0.5))
+        val nearHeight = 2 * nearDistance * tanfovy_2
+        val nearWidth = nearHeight * aspect
+        // Taken from Mathematics for 3D Game Programming and Computer Graphics, Second Edition, equation 4.52.
+        m[0] = 2 * nearDistance / nearWidth
+        m[1] = 0.0
+        m[2] = 0.0
+        m[3] = 0.0
+        m[4] = 0.0
+        m[5] = 2 * nearDistance / nearHeight
+        m[6] = 0.0
+        m[7] = 0.0
+        m[8] = 0.0
+        m[9] = 0.0
+        m[10] = -1.0
+        m[11] = -2 * nearDistance
+        m[12] = 0.0
+        m[13] = 0.0
+        m[14] = -1.0
+        m[15] = 0.0
+        return this
+    }
+
     override fun toString(): String {
         return " \n" + "[" + m[0] + ", " + m[1] + ", " + m[2] + ", " + m[3] + "], \n" +
                 '[' + m[4] + ", " + m[5] + ", " + m[6] + ", " + m[7] + "], \n" +

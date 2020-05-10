@@ -121,57 +121,49 @@ class Frustum {
         var y: Double
         var z: Double
         var w: Double
-        var d: Double
         // Left Plane = row 4 + row 1:
         x = m[12] + m[0]
         y = m[13] + m[1]
         z = m[14] + m[2]
         w = m[15] + m[3]
-        d = Math.sqrt(x * x + y * y + z * z) // for normalizing the coordinates
-        left.set(x / d, y / d, z / d, w / d)
-        left.transformByMatrix(scratchMatrix).normalize()
+        left.set(x , y , z , w )
+        left.transformByMatrix(scratchMatrix)
 
         // Right Plane = row 4 - row 1:
         x = m[12] - m[0]
         y = m[13] - m[1]
         z = m[14] - m[2]
         w = m[15] - m[3]
-        d = Math.sqrt(x * x + y * y + z * z) // for normalizing the coordinates
-        right.set(x / d, y / d, z / d, w / d)
-        right.transformByMatrix(scratchMatrix).normalize()
+        right.set(x , y , z , w )
+        right.transformByMatrix(scratchMatrix)
         // Bottom Plane = row 4 + row 2:
         x = m[12] + m[4]
         y = m[13] + m[5]
         z = m[14] + m[6]
         w = m[15] + m[7]
-        d = Math.sqrt(x * x + y * y + z * z) // for normalizing the coordinates
-        bottom.set(x / d, y / d, z / d, w / d)
-        bottom.transformByMatrix(scratchMatrix).normalize()
+        bottom.set(x , y , z, w )
+        bottom.transformByMatrix(scratchMatrix)
         // Top Plane = row 4 - row 2:
         x = m[12] - m[4]
         y = m[13] - m[5]
         z = m[14] - m[6]
         w = m[15] - m[7]
-        d = Math.sqrt(x * x + y * y + z * z) // for normalizing the coordinates
-        top.set(x / d, y / d, z / d, w / d)
-        top.transformByMatrix(scratchMatrix).normalize()
+        top.set(x , y , z, w )
+        top.transformByMatrix(scratchMatrix)
         // Near Plane = row 4 + row 3:
         x = m[12] + m[8]
         y = m[13] + m[9]
         z = m[14] + m[10]
         w = m[15] + m[11]
-        d = Math.sqrt(x * x + y * y + z * z) // for normalizing the coordinates
-        near.set(x / d, y / d, z / d, w / d)
-        near.transformByMatrix(scratchMatrix).normalize()
+        near.set(x, y , z , w )
+        near.transformByMatrix(scratchMatrix)
         // Far Plane = row 4 - row 3:
         x = m[12] - m[8]
         y = m[13] - m[9]
         z = m[14] - m[10]
         w = m[15] - m[11]
-        d = Math.sqrt(x * x + y * y + z * z) // for normalizing the coordinates
-        far.set(x / d, y / d, z / d, w / d)
-        far.transformByMatrix(scratchMatrix).normalize()
-        // Copy the specified viewport.
+        far.set(x , y , z , w)
+        far.transformByMatrix(scratchMatrix)
         this.viewport.set(viewport)
 
         return this
@@ -218,36 +210,37 @@ class Frustum {
         mvpInv.unProject(right, bottom, viewport, Vec3().also { brn = it }, Vec3().also { brf = it })
         mvpInv.unProject(left, top, viewport, Vec3().also { tln = it }, Vec3().also { tlf = it })
         mvpInv.unProject(right, top, viewport, Vec3().also { trn = it }, Vec3().also { trf = it })
+
         val va = Vec3(tlf.x - bln.x, tlf.y - bln.y, tlf.z - bln.z)
         val vb = Vec3(tln.x - blf.x, tln.y - blf.y, tln.z - blf.z)
         val nl = va.cross(vb)
-        this.left.set(nl!!.x, nl.y, nl.z, -nl.dot(bln))
-        this.left.normalize()
-        va[trn.x - brf.x, trn.y - brf.y] = trn.z - brf.z
-        vb[trf.x - brn.x, trf.y - brn.y] = trf.z - brn.z
+        this.left.set(nl.x, nl.y, nl.z, -nl.dot(bln))
+
+        va.set(trn.x - brf.x, trn.y - brf.y, trn.z - brf.z)
+        vb.set(trf.x - brn.x, trf.y - brn.y, trf.z - brn.z);
         val nr = va.cross(vb)
-        this.right.set(nr!!.x, nr.y, nr.z, -nr.dot(brn))
-        this.right.normalize()
-        va[brf.x - bln.x, brf.y - bln.y] = brf.z - bln.z
-        vb[blf.x - brn.x, blf.y - brn.y] = blf.z - brn.z
+        this.right.set(nr.x, nr.y, nr.z, -nr.dot(brn))
+
+        va.set(brf.x - bln.x, brf.y - bln.y, brf.z - bln.z);
+        vb.set(blf.x - brn.x, blf.y - brn.y, blf.z - brn.z);
         val nb = va.cross(vb)
-        this.bottom.set(nb!!.x, nb.y, nb.z, -nb.dot(brn))
-        this.bottom.normalize()
-        va[tlf.x - trn.x, tlf.y - trn.y] = tlf.z - trn.z
-        vb[trf.x - tln.x, trf.y - tln.y] = trf.z - tln.z
+        this.bottom.set(nb.x, nb.y, nb.z, -nb.dot(brn))
+
+        va.set(tlf.x - trn.x, tlf.y - trn.y, tlf.z - trn.z);
+        vb.set(trf.x - tln.x, trf.y - tln.y, trf.z - tln.z);
         val nt = va.cross(vb)
-        this.top.set(nt!!.x, nt.y, nt.z, -nt.dot(tln))
-        this.top.normalize()
-        va[tln.x - brn.x, tln.y - brn.y] = tln.z - brn.z
-        vb[trn.x - bln.x, trn.y - bln.y] = trn.z - bln.z
+        this.top.set(nt.x, nt.y, nt.z, -nt.dot(tln))
+
+        va.set(tln.x - brn.x, tln.y - brn.y, tln.z - brn.z);
+        vb.set(trn.x - bln.x, trn.y - bln.y, trn.z - bln.z);
         val nn = va.cross(vb)
-        near.set(nn!!.x, nn.y, nn.z, -nn.dot(bln))
-        near.normalize()
-        va[trf.x - blf.x, trf.y - blf.y] = trf.z - blf.z
-        vb[tlf.x - brf.x, tlf.y - brf.y] = tlf.z - brf.z
+        near.set(nn.x, nn.y, nn.z, -nn.dot(bln))
+
+        va.set(trf.x - blf.x, trf.y - blf.y, trf.z - blf.z);
+        vb.set(tlf.x - brf.x, tlf.y - brf.y, tlf.z - brf.z);
         val nf = va.cross(vb)
-        far.set(nf!!.x, nf.y, nf.z, -nf.dot(blf))
-        far.normalize()
+        far.set(nf.x, nf.y, nf.z, -nf.dot(blf))
+
         // Copy the specified sub-viewport.
         this.viewport.set(subViewport)
         return this

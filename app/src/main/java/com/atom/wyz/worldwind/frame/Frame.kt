@@ -25,6 +25,8 @@ class Frame {
 
     val projection: Matrix4 = Matrix4()
 
+    val infiniteProjection = Matrix4()
+
     val drawableQueue: DrawableQueue = DrawableQueue()
 
     val drawableTerrain: DrawableList = DrawableList()

@@ -3,7 +3,6 @@ package com.atom.wyz.worldwind.render
 import android.opengl.GLES20
 import androidx.annotation.IntDef
 import com.atom.wyz.worldwind.DrawContext
-import com.atom.wyz.worldwind.RenderContext
 import com.atom.wyz.worldwind.geom.Matrix3
 import com.atom.wyz.worldwind.geom.Matrix4
 import com.atom.wyz.worldwind.geom.Vec3
@@ -11,18 +10,16 @@ import java.util.*
 
 open class AtmosphereProgram() : GpuProgram() {
 
-    @IntDef(FRAGMODE_SKY, FRAGMODE_GROUND_PRIMARY, FRAGMODE_GROUND_SECONDARY, FRAGMODE_GROUND_PRIMARY_TEX_BLEND)
+    @IntDef(FRAGMODE_PRIMARY, FRAGMODE_SECONDARY, FRAGMODE_PRIMARY_TEX_BLEND)
     @kotlin.annotation.Retention(AnnotationRetention.SOURCE)
     annotation class FragMode
 
     companion object {
-        const val FRAGMODE_SKY = 1
+        const val FRAGMODE_PRIMARY = 1
 
-        const val FRAGMODE_GROUND_PRIMARY = 2
+        const val FRAGMODE_SECONDARY = 2
 
-        const val FRAGMODE_GROUND_SECONDARY = 3
-
-        const val FRAGMODE_GROUND_PRIMARY_TEX_BLEND = 4
+        const val FRAGMODE_PRIMARY_TEX_BLEND = 3
     }
 
     var altitude = 160000.0
@@ -96,7 +93,7 @@ open class AtmosphereProgram() : GpuProgram() {
         val exposure = 2.0
 
         fragModeId = GLES20.glGetUniformLocation(programId, "fragMode")
-        GLES20.glUniform1i(fragModeId, FRAGMODE_SKY)
+        GLES20.glUniform1i(fragModeId, FRAGMODE_PRIMARY)
 
         mvpMatrixId = GLES20.glGetUniformLocation(programId, "mvpMatrix")
         Matrix4().transposeToArray(array, 0) // 4 x 4 identity matrix

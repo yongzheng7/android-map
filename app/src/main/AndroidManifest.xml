@@ -80,6 +80,8 @@
         </activity>
         <activity android:name=".app.PlacemarksDemoActivity">
         </activity>
+        <activity android:name=".app.BasicGlobeActivity">
+        </activity>
 
     </application>
 

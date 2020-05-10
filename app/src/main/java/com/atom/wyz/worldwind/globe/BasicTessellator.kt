@@ -3,6 +3,7 @@ package com.atom.wyz.worldwind.globe
 import android.opengl.GLES20
 import com.atom.wyz.worldwind.RenderContext
 import com.atom.wyz.worldwind.draw.BasicDrawableTerrain
+import com.atom.wyz.worldwind.geom.Range
 import com.atom.wyz.worldwind.geom.Sector
 import com.atom.wyz.worldwind.render.BufferObject
 import com.atom.wyz.worldwind.util.Level
@@ -12,7 +13,6 @@ import com.atom.wyz.worldwind.util.LruMemoryCache
 import com.atom.wyz.worldwind.util.pool.Pool
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
-import java.nio.ShortBuffer
 import java.util.*
 
 class BasicTessellator : Tessellator, TileFactory {
@@ -22,14 +22,13 @@ class BasicTessellator : Tessellator, TileFactory {
             field = value
             this.invalidateTiles()
         }
+    var detailControl = 80.0
 
     var topLevelTiles = ArrayList<Tile>()
 
-    protected var currentTerrain: BasicTerrain = BasicTerrain()
+    var currentTerrain: BasicTerrain = BasicTerrain()
 
-    protected var tileCache: LruMemoryCache<String?, Array<Tile?>?> = LruMemoryCache(200) // cache for 300 tiles
-
-    var detailControl = 80.0
+    var tileCache: LruMemoryCache<String?, Array<Tile?>?> = LruMemoryCache(200) // cache for 300 tiles
 
     var levelSetVertexTexCoords: FloatArray? = null
 
@@ -37,13 +36,17 @@ class BasicTessellator : Tessellator, TileFactory {
 
     var levelSetTriStripElements: ShortArray? = null
 
-    protected var levelSetBufferObjects: Array<BufferObject?> = arrayOfNulls<BufferObject>(3)
+    var levelSetLineElementRange: Range = Range()
 
-    protected var levelSetBufferKeys = arrayOf(
-        this.javaClass.name + ".levelSetBuffer[0]",
-        this.javaClass.name + ".levelSetBuffer[1]",
-        this.javaClass.name + ".levelSetBuffer[2]"
-    )
+    var levelSetTriStripElementRange: Range = Range()
+
+    var levelSetVertexTexCoordBuffer: BufferObject? = null
+
+    var levelSetElementBuffer: BufferObject? = null
+
+    var levelSetVertexTexCoordKey = this.javaClass.name + ".vertexTexCoordKey"
+
+    var levelSetElementKey = this.javaClass.name + ".elementKey"
 
     constructor() {
     }
@@ -113,8 +116,8 @@ class BasicTessellator : Tessellator, TileFactory {
             addTileOrDescendants(rc, tile as TerrainTile)
         }
 
-        // Release references to render resources acquired while assembling tiles.
-        Arrays.fill(levelSetBufferObjects, null)
+        levelSetVertexTexCoordBuffer = null
+        levelSetElementBuffer = null
     }
 
     protected fun createTopLevelTiles() {
@@ -141,14 +144,15 @@ class BasicTessellator : Tessellator, TileFactory {
     }
 
     protected fun addTile(rc: RenderContext, tile: TerrainTile) {
-        if (mustAssembleTilePoints(rc , tile )) {
+        if (mustAssembleTilePoints(rc, tile)) {
             this.assembleTilePoints(rc, tile)
         }
 
         currentTerrain.addTile(tile) //只添加最后等级的图块 或者 无需再次细分的图块
 
         val pool: Pool<BasicDrawableTerrain> = rc.getDrawablePool(
-            BasicDrawableTerrain::class.java)
+            BasicDrawableTerrain::class.java
+        )
         val drawable: BasicDrawableTerrain = BasicDrawableTerrain.obtain(pool)
         this.prepareDrawableTerrain(rc, tile, drawable)
         rc.offerDrawableTerrain(drawable)
@@ -161,10 +165,14 @@ class BasicTessellator : Tessellator, TileFactory {
     ) {
         drawable.sector.set(tile.sector)
         drawable.vertexOrigin.set(tile.vertexOrigin)
+        // Assemble the drawable's element buffer ranges.
+        drawable.lineElementRange.set(levelSetLineElementRange)
+        drawable.triStripElementRange.set(levelSetTriStripElementRange)
+
+        // Assemble the drawable's OpenGL buffer objects.
         drawable.vertexPoints = tile.getVertexPointBuffer(rc)
-        drawable.vertexTexCoords = levelSetBufferObjects[0]
-        drawable.lineElements = levelSetBufferObjects[1]
-        drawable.triStripElements = levelSetBufferObjects[2]
+        drawable.vertexTexCoords = levelSetVertexTexCoordBuffer
+        drawable.elements = levelSetElementBuffer
     }
 
     protected fun assembleLevelSetBuffers(rc: RenderContext) {
@@ -173,7 +181,7 @@ class BasicTessellator : Tessellator, TileFactory {
         // Assemble the level set's vertex tex coord buffer.
         if (levelSetVertexTexCoords == null) {
             levelSetVertexTexCoords = FloatArray(numLat * numLon * 2)
-            assembleVertexTexCoords(numLat, numLon, levelSetVertexTexCoords!!, 2 , 0)
+            assembleVertexTexCoords(numLat, numLon, levelSetVertexTexCoords!!, 2, 0)
         }
 
         // Assemble the level set's line element buffer.
@@ -186,40 +194,43 @@ class BasicTessellator : Tessellator, TileFactory {
             levelSetTriStripElements = assembleTriStripElements(numLat, numLon)
         }
 
-        levelSetBufferObjects[0] = rc.getBufferObject(levelSetBufferKeys[0])
-        if (levelSetBufferObjects[0] == null) {
-            levelSetVertexTexCoords ?.let{
+        levelSetVertexTexCoordBuffer = rc.getBufferObject(this.levelSetVertexTexCoordKey)
+        if (levelSetVertexTexCoordBuffer == null) {
+            levelSetVertexTexCoords?.let {
                 val size = it.size * 4
                 val buffer = ByteBuffer.allocateDirect(size).order(ByteOrder.nativeOrder()).asFloatBuffer()
                 buffer.put(it).rewind()
-                levelSetBufferObjects[0] = rc.putBufferObject(levelSetBufferKeys[0], BufferObject(GLES20.GL_ARRAY_BUFFER, size, buffer))
+                levelSetVertexTexCoordBuffer =
+                    rc.putBufferObject(levelSetVertexTexCoordKey, BufferObject(GLES20.GL_ARRAY_BUFFER, size, buffer))
             }
         }
 
-        levelSetBufferObjects[1] = rc.getBufferObject(levelSetBufferKeys[1])
-        if (levelSetBufferObjects[1] == null) {
-            levelSetLineElements ?.let {
-                val size = it.size * 2
+        levelSetElementBuffer = rc.getBufferObject(levelSetElementKey)
+        if (levelSetElementBuffer == null) {
+            ifNotNull(levelSetLineElements, levelSetTriStripElements, { levelSetLineElements: ShortArray, levelSetTriStripElements: ShortArray ->
+                val size = (levelSetLineElements.size + levelSetTriStripElements.size) * 2
                 val buffer = ByteBuffer.allocateDirect(size).order(ByteOrder.nativeOrder()).asShortBuffer()
-                buffer.put(it).rewind()
-                levelSetBufferObjects[1] = rc.putBufferObject(levelSetBufferKeys[1], BufferObject(GLES20.GL_ELEMENT_ARRAY_BUFFER, size, buffer))
-            }
-        }
-
-        levelSetBufferObjects[2] = rc.getBufferObject(levelSetBufferKeys[2])
-        if (levelSetBufferObjects[2] == null) {
-            levelSetTriStripElements ?.let {
-                val size = it.size * 2
-                val buffer = ByteBuffer.allocateDirect(size).order(ByteOrder.nativeOrder()).asShortBuffer()
-                buffer.put(it).rewind()
-                levelSetBufferObjects[2] = rc.putBufferObject(levelSetBufferKeys[2], BufferObject(GLES20.GL_ELEMENT_ARRAY_BUFFER, size, buffer))
-            }
+                buffer.put(this.levelSetLineElements)
+                levelSetLineElementRange.upper = buffer.position()
+                levelSetTriStripElementRange.lower = buffer.position()
+                buffer.put(this.levelSetTriStripElements)
+                levelSetTriStripElementRange.upper = buffer.position()
+                buffer.rewind()
+                levelSetElementBuffer = rc.putBufferObject(levelSetElementKey, BufferObject(GLES20.GL_ELEMENT_ARRAY_BUFFER, size, buffer))
+            })
         }
     }
 
     fun mustAssembleTilePoints(rc: RenderContext, tile: TerrainTile): Boolean {
         return tile.vertexPoints == null
     }
+
+    fun <T1, T2> ifNotNull(value1: T1?, value2: T2?, bothNotNull: (T1, T2) -> (Unit)) {
+        if (value1 != null && value2 != null) {
+            bothNotNull(value1, value2)
+        }
+    }
+
     protected fun assembleTilePoints(rc: RenderContext, tile: TerrainTile) {
         val globe = rc.globe ?: return
 
@@ -233,7 +244,7 @@ class BasicTessellator : Tessellator, TileFactory {
         }
 
         globe.geographicToCartesian(tile.sector.centroidLatitude(), tile.sector.centroidLongitude(), 0.0, origin)
-        globe.geographicToCartesianGrid(tile.sector, numLat, numLon, null, origin, points, 3 ,0)
+        globe.geographicToCartesianGrid(tile.sector, numLat, numLon, null, origin, points, 3, 0)
         tile.vertexOrigin.set(origin)
         tile.vertexPoints = points
     }
@@ -241,7 +252,13 @@ class BasicTessellator : Tessellator, TileFactory {
     /**
      * 组装纹理顶点缓存
      */
-    protected fun assembleVertexTexCoords(numLat: Int, numLon: Int, result: FloatArray, stride: Int , poss :Int): FloatArray {
+    protected fun assembleVertexTexCoords(
+        numLat: Int,
+        numLon: Int,
+        result: FloatArray,
+        stride: Int,
+        poss: Int
+    ): FloatArray {
         val ds = 1f / if (numLon > 1) numLon - 1 else 1
         val dt = 1f / if (numLat > 1) numLat - 1 else 1
         val st = FloatArray(2)
@@ -285,14 +302,11 @@ class BasicTessellator : Tessellator, TileFactory {
         numLon: Int
     ): ShortArray { // Allocate a buffer to hold the indices.
         val count = ((numLat - 1) * numLon + (numLat - 2)) * 2
-        val result = ShortArray(count )
+        val result = ShortArray(count)
         var pos = 0
         var vertex = 0
 
         for (latIndex in 0 until numLat - 1) {
-            // Create a triangle strip joining each adjacent column of vertices, starting in the bottom left corner and
-            // proceeding to the right. The first vertex starts with the left row of vertices and moves right to create
-            // a counterclockwise winding order.
             for (lonIndex in 0 until numLon) {
                 vertex = lonIndex + latIndex * numLon
                 result[pos++] = (vertex + numLon).toShort()
@@ -314,7 +328,7 @@ class BasicTessellator : Tessellator, TileFactory {
         numLon: Int
     ): ShortArray { // Allocate a buffer to hold the indices.
         val count = (numLat * (numLon - 1) + numLon * (numLat - 1)) * 2
-        val result = ShortArray(count )
+        val result = ShortArray(count)
         var pos = 0
         var vertex: Int
         // Add a line between each row to define the horizontal cell outlines.

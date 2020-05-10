@@ -53,9 +53,6 @@ class DrawableSkyAtmosphere : Drawable {
 
         program.loadModelviewProjection(dc.modelviewProjection)
 
-        program.loadFragMode(AtmosphereProgram.FRAGMODE_SKY)
-
-
         GLES20.glVertexAttribPointer(0 /*vertexPoint*/, 3, GLES20.GL_FLOAT, false, 0, 0)
 
         GLES20.glDepthMask(false)

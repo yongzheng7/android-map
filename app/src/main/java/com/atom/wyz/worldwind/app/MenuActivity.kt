@@ -77,6 +77,9 @@ class MenuActivity : AppCompatActivity() {
             R.id.placemark_demo_activity -> {
                 startActivity(Intent(this, PlacemarksDemoActivity::class.java))
             }
+            R.id.turse_BasicGlobeActivity -> {
+                startActivity(Intent(this, BasicGlobeActivity::class.java))
+            }
         }
     }
 
