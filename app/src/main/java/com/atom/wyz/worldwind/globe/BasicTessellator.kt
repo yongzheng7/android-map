@@ -107,6 +107,8 @@ class BasicTessellator : Tessellator, TileFactory {
     protected fun assembleTiles(rc: RenderContext) {
 
         this.assembleLevelSetBuffers(rc)
+        currentTerrain.globe = rc.globe
+        currentTerrain.verticalExaggeration = rc.verticalExaggeration
         currentTerrain.triStripElements = levelSetTriStripElements
 
         if (topLevelTiles.isEmpty()) {
@@ -150,9 +152,7 @@ class BasicTessellator : Tessellator, TileFactory {
 
         currentTerrain.addTile(tile) //只添加最后等级的图块 或者 无需再次细分的图块
 
-        val pool: Pool<BasicDrawableTerrain> = rc.getDrawablePool(
-            BasicDrawableTerrain::class.java
-        )
+        val pool: Pool<BasicDrawableTerrain> = rc.getDrawablePool(BasicDrawableTerrain::class.java)
         val drawable: BasicDrawableTerrain = BasicDrawableTerrain.obtain(pool)
         this.prepareDrawableTerrain(rc, tile, drawable)
         rc.offerDrawableTerrain(drawable)

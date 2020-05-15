@@ -80,6 +80,12 @@ class MenuActivity : AppCompatActivity() {
             R.id.turse_BasicGlobeActivity -> {
                 startActivity(Intent(this, BasicGlobeActivity::class.java))
             }
+            R.id.paths_Example_Activity -> {
+                startActivity(Intent(this, PathsExampleActivity::class.java))
+            }
+            R.id.paths_Activity -> {
+                startActivity(Intent(this, PathsActivity::class.java))
+            }
         }
     }
 

@@ -24,12 +24,12 @@ class TextAttributes {
         depthTest = false
     }
 
-    constructor(copy: TextAttributes) {
-        color = copy.color?.let { Color(it) }
-        font = copy.font
-        offset = copy.offset?.let { Offset(it) }
-        scale = copy.scale
-        depthTest = copy.depthTest
+    constructor(attributes: TextAttributes) {
+        color = attributes.color?.let { Color(it) }
+        font = attributes.font
+        offset = attributes.offset?.let { Offset(it) }
+        scale = attributes.scale
+        depthTest = attributes.depthTest
     }
 
     fun set(attributes: TextAttributes): TextAttributes? {

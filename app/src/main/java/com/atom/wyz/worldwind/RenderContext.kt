@@ -282,8 +282,8 @@ open class RenderContext {
         return texture
     }
 
-    open fun retrieveTexture(imageSource: ImageSource? ,imageOptions : ImageOptions?  ): GpuTexture? {
-        return renderResourceCache?.retrieveTexture(imageSource , imageOptions)
+    open fun retrieveTexture(imageSource: ImageSource?, imageOptions: ImageOptions?): GpuTexture? {
+        return renderResourceCache?.retrieveTexture(imageSource, imageOptions)
     }
 
     open fun offerDrawable(drawable: Drawable, groupId: Int, depth: Double) {
@@ -344,6 +344,45 @@ open class RenderContext {
     open fun putBufferObject(key: Any, buffer: BufferObject): BufferObject {
         renderResourceCache?.put(key, buffer, buffer.bufferByteCount)
         return buffer
+    }
+
+    open fun geographicToCartesian(
+        latitude: Double, longitude: Double, altitude: Double,
+        @WorldWind.AltitudeMode altitudeMode: Int, result: Vec3?
+    ): Vec3 {
+        requireNotNull(result) {
+            Logger.logMessage(
+                Logger.ERROR,
+                "RenderContext",
+                "geographicToCartesian",
+                "missingResult"
+            )
+        }
+        when (altitudeMode) {
+            WorldWind.ABSOLUTE -> {
+                return globe!!.geographicToCartesian(
+                    latitude,
+                    longitude,
+                    altitude * verticalExaggeration,
+                    result
+                )
+            }
+            WorldWind.CLAMP_TO_GROUND -> {
+                if (terrain != null && terrain!!.surfacePoint(latitude, longitude, 0.0, result)) {
+                    return result // found a point on the terrain
+                } else if (globe != null) {
+                    return globe!!.geographicToCartesian(latitude, longitude, 0.0, result)
+                }
+            }
+            WorldWind.RELATIVE_TO_GROUND -> {
+                if (terrain != null && terrain!!.surfacePoint(latitude, longitude, altitude, result)) {
+                    return result // found a point relative to the terrain
+                } else if (globe != null) { // TODO use elevation model height as a fallback
+                    return globe!!.geographicToCartesian(latitude, longitude, altitude, result)
+                }
+            }
+        }
+        return result
     }
 
 }

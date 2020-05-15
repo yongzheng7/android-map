@@ -73,12 +73,12 @@ class Frustum {
      * 视口进行规格化
      */
     fun normalize(): Frustum {
-        left.normalize()
-        right.normalize()
-        bottom.normalize()
-        top.normalize()
-        near.normalize()
-        far.normalize()
+        left.normalizeIfNeeded()
+        right.normalizeIfNeeded()
+        bottom.normalizeIfNeeded()
+        top.normalizeIfNeeded()
+        near.normalizeIfNeeded()
+        far.normalizeIfNeeded()
         return this
     }
 

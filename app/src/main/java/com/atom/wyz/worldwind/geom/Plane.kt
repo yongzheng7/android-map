@@ -6,6 +6,10 @@ import com.atom.wyz.worldwind.util.Logger
  * 平面
  */
 class Plane {
+
+    companion object{
+        protected const val NEAR_ZERO_THRESHOLD = 1e-10
+    }
     /**
      * The normal vector to the plane.
      */
@@ -19,7 +23,7 @@ class Plane {
     constructor(x: Double, y: Double, z: Double, distance: Double) {
         normal.set(x, y, z)
         this.distance = distance
-        this.normalize()
+        this.normalizeIfNeeded()
     }
 
     constructor() {
@@ -28,7 +32,7 @@ class Plane {
     constructor(normal: Vec3, distance: Double) {
         this.normal.set(normal)
         this.distance = distance
-        this.normalize()
+        this.normalizeIfNeeded()
     }
 
     constructor(plane : Plane? ) {
@@ -42,13 +46,13 @@ class Plane {
     fun set(x: Double, y: Double, z: Double, distance: Double): Plane {
         normal.set(x ,y , z)
         this.distance = distance
-        this.normalize()
+        this.normalizeIfNeeded()
         return this
     }
     fun set(normal: Vec3, distance: Double): Plane{
         this.normal.set(normal)
         this.distance = distance
-        this.normalize()
+        this.normalizeIfNeeded()
         return this
     }
 
@@ -121,7 +125,7 @@ class Plane {
         normal.y = y
         normal.z = z
         this.distance = distance
-        this.normalize()
+        this.normalizeIfNeeded()
         return this
     }
 
@@ -130,21 +134,27 @@ class Plane {
      *  待定
      * @return This plane with its components normalized.
      */
-    fun normalize(): Plane {
-        val x = normal.x
-        val y = normal.y
-        val z = normal.z
-        val len = Math.sqrt(x * x + y * y + z * z)
-        val EPSILON = 1.0e-10
+    fun normalizeIfNeeded() {
+        // Compute the plane normal's magnitude in order to determine whether or not the plane needs normalization.
+        val magnitude = normal.magnitude()
 
-        if (len != 0.0 && Math.abs(1.0 - len) > EPSILON) {
-            // normalize when the length is non-zero and not close enough to 1.0
-            normal.x = x / len
-            normal.y = y / len
-            normal.z = z / len
-            distance = distance / len
+        // Don't normalize a zero vector; the result is NaN when it should be 0.0.
+        if (magnitude == 0.0) {
+            return
         }
-        return this
+
+        // Don't normalize a unit vector, this indicates that the caller has already normalized the vector, but floating
+        // point roundoff results in a length not exactly 1.0. Since we're normalizing on the caller's behalf, we want
+        // to avoid unnecessary any normalization that modifies the specified values.
+        if (magnitude >= 1 - NEAR_ZERO_THRESHOLD && magnitude <= 1 + NEAR_ZERO_THRESHOLD) {
+            return
+        }
+
+        // Normalize the caller-specified plane coordinates.
+        normal.x /= magnitude
+        normal.y /= magnitude
+        normal.z /= magnitude
+        distance /= magnitude
     }
 
     /**

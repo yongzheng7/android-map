@@ -52,18 +52,9 @@ open class SurfaceImage : AbstractRenderable, Movable {
 
         // Enqueue a picked object that associates the drawable surface texture with this surface image.
         if (rc.pickMode) {
-            rc.pickedObjects?.let {
-                val terrainObject = it.terrainPickedObject()
-                terrainObject?.position?.let {
-                    val pickedObject = PickedObject.fromRenderable(
-                        this, terrainObject.position, rc.currentLayer, rc.nextPickedObjectId()
-                    )
-                    pickedObject?.let {
-                        PickedObject.identifierToUniqueColor(it.identifier, drawable.color)
-                    }
-                    rc.offerPickedObject(pickedObject)
-                }
-            }
+            val pickedObjectId = rc.nextPickedObjectId()
+            PickedObject.identifierToUniqueColor(pickedObjectId, drawable.color)
+            rc.offerPickedObject(PickedObject.fromRenderable(pickedObjectId, this, rc.currentLayer!!))
         }
     }
 

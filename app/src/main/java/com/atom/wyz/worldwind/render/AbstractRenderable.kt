@@ -2,7 +2,7 @@ package com.atom.wyz.worldwind.render
 
 import com.atom.wyz.worldwind.RenderContext
 
-abstract class AbstractRenderable(displayer: String) : Renderable {
+abstract class AbstractRenderable(displayer: String = "") : Renderable {
 
     override var displayName: String = displayer
 
@@ -10,28 +10,23 @@ abstract class AbstractRenderable(displayer: String) : Renderable {
 
     override var pickDelegate: Any? = null
 
-    protected var userProperties: HashMap<Any, Any?>? = null
-
-    constructor() :this("")
+    private var userProperties: HashMap<Any, Any?>? = null
 
     override fun getUserProperty(key: Any): Any? {
-        return if (userProperties == null) userProperties!![key] else null
+        return userProperties?.get(key)
     }
 
     override fun putUserProperty(key: Any, value: Any?): Any? {
-        if (userProperties == null) {
-            userProperties = java.util.HashMap()
-        }
-
-        return userProperties!!.put(key, value)
+        userProperties ?: let { userProperties = HashMap() }
+        return userProperties?.put(key, value)
     }
 
     override fun removeUserProperty(key: Any): Any? {
-        return if (userProperties != null) userProperties!!.remove(key) else null
+        return userProperties?.remove(key)
     }
 
     override fun hasUserProperty(key: Any): Boolean {
-        return userProperties != null && userProperties!!.containsKey(key)
+        return userProperties?.containsKey(key) ?: false
     }
 
     override fun render(rc: RenderContext) {

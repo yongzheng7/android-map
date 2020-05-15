@@ -99,6 +99,7 @@ class Line {
         points: FloatArray?,
         stride: Int,
         elements: ShortArray?,
+        count : Int ,
         result: Vec3?
     ): Boolean {
         require(!(points == null || points.size < stride)) {
@@ -130,20 +131,19 @@ class Line {
         val EPSILON = 0.00001
         // 获取三角形的第一个定点
         // Get the triangle strip's first vertex.
-        var index = elements[0] * stride
-        var vert1x = points[index++].toDouble()
-        var vert1y = points[index++].toDouble()
-        var vert1z = points[index].toDouble()
+        var vertex = elements[0] * stride
+        var vert1x = points[vertex++].toDouble()
+        var vert1y = points[vertex++].toDouble()
+        var vert1z = points[vertex].toDouble()
         // 获取三角形的第2个定点
         // Get the triangle strip's second vertex.
-        index = elements[1] * stride
-        var vert2x = points[index++].toDouble()
-        var vert2y = points[index++].toDouble()
-        var vert2z = points[index].toDouble()
+        vertex = elements[1] * stride
+        var vert2x = points[vertex++].toDouble()
+        var vert2y = points[vertex++].toDouble()
+        var vert2z = points[vertex].toDouble()
         // 计算每个三角形与指定射线的交点。
-        var i = 2
-        val len = elements.size
-        while (i < len) {
+        var idx = 2
+        while (idx < count) {
 
             val vert0x = vert1x
             val vert0y = vert1y
@@ -152,10 +152,10 @@ class Line {
             vert1y = vert2y
             vert1z = vert2z
             // Get the triangle strip's next vertex.
-            index = elements[i] * stride
-            vert2x = points[index++].toDouble()
-            vert2y = points[index++].toDouble()
-            vert2z = points[index].toDouble()
+            vertex = elements[idx] * stride
+            vert2x = points[vertex++].toDouble()
+            vert2y = points[vertex++].toDouble()
+            vert2z = points[vertex].toDouble()
             // find vectors for two edges sharing point a: vert1 - vert0 and vert2 - vert0
             val edge1x = vert1x - vert0x
             val edge1y = vert1y - vert0y
@@ -170,7 +170,7 @@ class Line {
             // Get determinant
             val det = edge1x * px + edge1y * py + edge1z * pz // edge1 dot p
             if (det > -EPSILON && det < EPSILON) { // if det is near zero then ray lies in plane of triangle
-                i++
+                idx++
                 continue
             }
             val inv_det = 1.0 / det
@@ -181,7 +181,7 @@ class Line {
             // Calculate u parameter and test bounds: 1/det * t dot p
             val u = inv_det * (tx * px + ty * py + tz * pz)
             if (u < -EPSILON || u > 1 + EPSILON) {
-                i++
+                idx++
                 continue
             }
             // Prepare to test v parameter: tvec cross edge1
@@ -191,7 +191,7 @@ class Line {
             // Calculate v parameter and test bounds: 1/det * dir dot q
             val v = inv_det * (vx * qx + vy * qy + vz * qz)
             if (v < -EPSILON || u + v > 1 + EPSILON) {
-                i++
+                idx++
                 continue
             }
             // Calculate the point of intersection on the line: t = 1/det * edge2 dot q
@@ -199,10 +199,10 @@ class Line {
             if (t >= 0 && t < tMin) {
                 tMin = t
             }
-            i++
+            idx++
         }
         if (tMin != Double.POSITIVE_INFINITY) {
-            result[sx + vx * tMin, sy + vy * tMin] = sz + vz * tMin
+            result.set(sx + vx * tMin, sy + vy * tMin , sz + vz * tMin)
         }
         return tMin != Double.POSITIVE_INFINITY
     }

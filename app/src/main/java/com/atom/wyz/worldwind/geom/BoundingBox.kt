@@ -250,9 +250,100 @@ class BoundingBox() {
         return center.distanceTo(point) // TODO shortest distance to center and corner points
     }
 
+    fun isUnitBox(): Boolean {
+        return center.x == 0.0 && center.y == 0.0 && center.z == 0.0 && radius == Math.sqrt(3.0)
+    }
+
+    fun translate(x: Double, y: Double, z: Double): BoundingBox {
+        center.x += x
+        center.y += y
+        center.z += z
+        bottomCenter.x += x
+        bottomCenter.y += y
+        bottomCenter.z += z
+        topCenter.x += x
+        topCenter.y += y
+        topCenter.z += z
+        return this
+    }
+
+    /**
+     * 设置此边界框，以使其最少包围指定的点数组。
+     */
+    fun setToPoints(array: FloatArray, count: Int, stride: Int): BoundingBox {
+         // Compute this box's axes by performing a principal component analysis on the array of points.
+        val matrix = Matrix4()
+        matrix.setToCovarianceOfPoints(array, count, stride)
+        matrix.extractEigenvectors(r, s, t)
+        r.normalize()
+        s.normalize()
+        t.normalize()
+        // Find the extremes along each axis.
+        var rMin = Double.POSITIVE_INFINITY
+        var rMax = Double.NEGATIVE_INFINITY
+        var sMin = Double.POSITIVE_INFINITY
+        var sMax = Double.NEGATIVE_INFINITY
+        var tMin = Double.POSITIVE_INFINITY
+        var tMax = Double.NEGATIVE_INFINITY
+        val p = Vec3()
+        var idx = 0
+        while (idx < count) {
+            p.set(array[idx].toDouble(), array[idx + 1].toDouble(), array[idx + 2].toDouble())
+            val pdr = p.dot(r)
+            if (rMin > pdr) {
+                rMin = pdr
+            }
+            if (rMax < pdr) {
+                rMax = pdr
+            }
+            val pds = p.dot(s)
+            if (sMin > pds) {
+                sMin = pds
+            }
+            if (sMax < pds) {
+                sMax = pds
+            }
+            val pdt = p.dot(t)
+            if (tMin > pdt) {
+                tMin = pdt
+            }
+            if (tMax < pdt) {
+                tMax = pdt
+            }
+            idx += stride
+        }
+        // Ensure that the extremes along each axis have nonzero separation.
+        if (rMax == rMin) rMax = rMin + 1
+        if (sMax == sMin) sMax = sMin + 1
+        if (tMax == tMin) tMax = tMin + 1
+        // Compute the box properties from its unit axes and the extremes along each axis.
+        val rLen = rMax - rMin
+        val sLen = sMax - sMin
+        val tLen = tMax - tMin
+        val rSum = rMax + rMin
+        val sSum = sMax + sMin
+        val tSum = tMax + tMin
+        val cx = 0.5 * (r.x * rSum + s.x * sSum + t.x * tSum)
+        val cy = 0.5 * (r.y * rSum + s.y * sSum + t.y * tSum)
+        val cz = 0.5 * (r.z * rSum + s.z * sSum + t.z * tSum)
+        val rx_2 = 0.5 * r.x * rLen
+        val ry_2 = 0.5 * r.y * rLen
+        val rz_2 = 0.5 * r.z * rLen
+        center.set(cx, cy, cz)
+        topCenter.set(cx + rx_2, cy + ry_2, cz + rz_2)
+        bottomCenter.set(cx - rx_2, cy - ry_2, cz - rz_2)
+        r.multiply(rLen)
+        s.multiply(sLen)
+        t.multiply(tLen)
+        radius = 0.5 * Math.sqrt(rLen * rLen + sLen * sLen + tLen * tLen)
+        return this
+    }
+
     override fun toString(): String {
         return "center=[$center], bottomCenter=[$bottomCenter], topCenter=[$topCenter], r=[$r], s=[$s], t=[$t], radius=$radius"
     }
+
+
 
 
 }

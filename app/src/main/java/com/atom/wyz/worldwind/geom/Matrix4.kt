@@ -1,7 +1,6 @@
 package com.atom.wyz.worldwind.geom
 
 import com.atom.wyz.worldwind.util.Logger
-import java.nio.FloatBuffer
 import java.util.*
 
 
@@ -137,7 +136,10 @@ class Matrix4 {
          * 源参数和目标参数表示一个4 x 4矩阵，具有按行优先顺序排列的一维数组。
          * 源和目标可以引用相同的数组。
          */
-        fun invert(src: DoubleArray, dst: DoubleArray): Boolean { // Copy the specified matrix into a mutable two-dimensional array.
+        fun invert(
+            src: DoubleArray,
+            dst: DoubleArray
+        ): Boolean { // Copy the specified matrix into a mutable two-dimensional array.
             val A = Array(4) { DoubleArray(4) }
             A[0][0] = src[0]
             A[0][1] = src[1]
@@ -213,10 +215,12 @@ class Matrix4 {
     constructor() {
     }
 
-    constructor(m11: Double, m12: Double, m13: Double, m14: Double,
-                m21: Double, m22: Double, m23: Double, m24: Double,
-                m31: Double, m32: Double, m33: Double, m34: Double,
-                m41: Double, m42: Double, m43: Double, m44: Double) {
+    constructor(
+        m11: Double, m12: Double, m13: Double, m14: Double,
+        m21: Double, m22: Double, m23: Double, m24: Double,
+        m31: Double, m32: Double, m33: Double, m34: Double,
+        m41: Double, m42: Double, m43: Double, m44: Double
+    ) {
         m[0] = m11
         m[1] = m12
         m[2] = m13
@@ -238,15 +242,18 @@ class Matrix4 {
     constructor(matrix: Matrix4?) {
         if (matrix == null) {
             throw java.lang.IllegalArgumentException(
-                    Logger.logMessage(Logger.ERROR, "Matrix4", "constructor", "missingMatrix"))
+                Logger.logMessage(Logger.ERROR, "Matrix4", "constructor", "missingMatrix")
+            )
         }
         System.arraycopy(matrix.m, 0, m, 0, 16)
     }
 
-    operator fun set(m11: Double, m12: Double, m13: Double, m14: Double,
-                     m21: Double, m22: Double, m23: Double, m24: Double,
-                     m31: Double, m32: Double, m33: Double, m34: Double,
-                     m41: Double, m42: Double, m43: Double, m44: Double): Matrix4 {
+    operator fun set(
+        m11: Double, m12: Double, m13: Double, m14: Double,
+        m21: Double, m22: Double, m23: Double, m24: Double,
+        m31: Double, m32: Double, m33: Double, m34: Double,
+        m41: Double, m42: Double, m43: Double, m44: Double
+    ): Matrix4 {
         m[0] = m11
         m[1] = m12
         m[2] = m13
@@ -298,12 +305,14 @@ class Matrix4 {
     fun invertMatrix(matrix: Matrix4?): Matrix4 {
         if (matrix == null) {
             throw java.lang.IllegalArgumentException(
-                    Logger.logMessage(Logger.ERROR, "Matrix4", "invertMatrix", "missingMatrix"))
+                Logger.logMessage(Logger.ERROR, "Matrix4", "invertMatrix", "missingMatrix")
+            )
         }
-        val success: Boolean = invert(matrix.m,this.m) // store inverse of matrix in this matrix
+        val success: Boolean = invert(matrix.m, this.m) // store inverse of matrix in this matrix
         if (!success) { // the matrix is singular
             throw java.lang.IllegalArgumentException(
-                    Logger.logMessage(Logger.ERROR, "Matrix4", "invertMatrix", "singularMatrix"))
+                Logger.logMessage(Logger.ERROR, "Matrix4", "invertMatrix", "singularMatrix")
+            )
         }
         return this
     }
@@ -345,7 +354,8 @@ class Matrix4 {
         val success: Boolean = invert(this.m, this.m) // passing the same array as src and dst is supported
         if (!success) { // the matrix is singular
             throw java.lang.IllegalArgumentException(
-                    Logger.logMessage(Logger.ERROR, "Matrix4", "invertMatrix", "singularMatrix"))
+                Logger.logMessage(Logger.ERROR, "Matrix4", "invertMatrix", "singularMatrix")
+            )
         }
         return this
     }
@@ -497,7 +507,8 @@ class Matrix4 {
     fun setToMultiply(a: Matrix4?, b: Matrix4?): Matrix4 {
         if (a == null || b == null) {
             throw IllegalArgumentException(
-                    Logger.logMessage(Logger.ERROR, "Matrix4", "setToMultiply", "missingMatrix"))
+                Logger.logMessage(Logger.ERROR, "Matrix4", "setToMultiply", "missingMatrix")
+            )
         }
         val ma: DoubleArray = a.m
         val mb: DoubleArray = b.m
@@ -527,27 +538,49 @@ class Matrix4 {
      * 0 0 x x
      * 0 0 x 0
      */
-    fun setToPerspectiveProjection(viewportWidth: Double, viewportHeight: Double, fovyDegrees: Double,
-                                   nearDistance: Double, farDistance: Double): Matrix4 {
+    fun setToPerspectiveProjection(
+        viewportWidth: Double, viewportHeight: Double, fovyDegrees: Double,
+        nearDistance: Double, farDistance: Double
+    ): Matrix4 {
         if (viewportWidth <= 0) {
-            throw java.lang.IllegalArgumentException(Logger.logMessage(Logger.ERROR, "Matrix4", "setToPerspectiveProjection",
-                    "invalidWidth"))
+            throw java.lang.IllegalArgumentException(
+                Logger.logMessage(
+                    Logger.ERROR, "Matrix4", "setToPerspectiveProjection",
+                    "invalidWidth"
+                )
+            )
         }
         if (viewportHeight <= 0) {
-            throw java.lang.IllegalArgumentException(Logger.logMessage(Logger.ERROR, "Matrix4", "setToPerspectiveProjection",
-                    "invalidHeight"))
+            throw java.lang.IllegalArgumentException(
+                Logger.logMessage(
+                    Logger.ERROR, "Matrix4", "setToPerspectiveProjection",
+                    "invalidHeight"
+                )
+            )
         }
         if (fovyDegrees <= 0 || fovyDegrees > 180) {
-            throw java.lang.IllegalArgumentException(Logger.logMessage(Logger.ERROR, "Matrix4", "setToPerspectiveProjection",
-                    "Invalid field of view"))
+            throw java.lang.IllegalArgumentException(
+                Logger.logMessage(
+                    Logger.ERROR, "Matrix4", "setToPerspectiveProjection",
+                    "Invalid field of view"
+                )
+            )
         }
         if (nearDistance == farDistance) {
-            throw java.lang.IllegalArgumentException(Logger.logMessage(Logger.ERROR, "Matrix4", "setToPerspectiveProjection",
-                    "Near distance or far distance is invalid"))
+            throw java.lang.IllegalArgumentException(
+                Logger.logMessage(
+                    Logger.ERROR, "Matrix4", "setToPerspectiveProjection",
+                    "Near distance or far distance is invalid"
+                )
+            )
         }
         if (nearDistance <= 0 || farDistance <= 0) {
-            throw java.lang.IllegalArgumentException(Logger.logMessage(Logger.ERROR, "Matrix4", "setToPerspectiveProjection",
-                    "Near distance or far distance is invalid"))
+            throw java.lang.IllegalArgumentException(
+                Logger.logMessage(
+                    Logger.ERROR, "Matrix4", "setToPerspectiveProjection",
+                    "Near distance or far distance is invalid"
+                )
+            )
         }
         // Compute the dimensions of the near rectangle given the specified parameters.
         val aspect = viewportWidth / viewportHeight
@@ -578,12 +611,20 @@ class Matrix4 {
 
     fun setToScreenProjection(viewportWidth: Double, viewportHeight: Double): Matrix4? {
         if (viewportWidth <= 0) {
-            throw java.lang.IllegalArgumentException(Logger.logMessage(Logger.ERROR, "Matrix4", "setToScreenProjection",
-                    "invalidWidth"))
+            throw java.lang.IllegalArgumentException(
+                Logger.logMessage(
+                    Logger.ERROR, "Matrix4", "setToScreenProjection",
+                    "invalidWidth"
+                )
+            )
         }
         if (viewportHeight <= 0) {
-            throw java.lang.IllegalArgumentException(Logger.logMessage(Logger.ERROR, "Matrix4", "setToScreenProjection",
-                    "invalidHeight"))
+            throw java.lang.IllegalArgumentException(
+                Logger.logMessage(
+                    Logger.ERROR, "Matrix4", "setToScreenProjection",
+                    "invalidHeight"
+                )
+            )
         }
         /**
          * m[0]   0       0   -1
@@ -610,53 +651,67 @@ class Matrix4 {
         return this
     }
 
-    fun setToCovarianceOfBuffer(points: FloatBuffer?, stride: Int): Matrix4 {
-        if (points == null || points.remaining() < stride) {
-            throw java.lang.IllegalArgumentException(
-                    Logger.logMessage(Logger.ERROR, "Vec3", "setToCovarianceOfBuffer", "missingBuffer"))
-        }
-        if (stride < 3) {
-            throw java.lang.IllegalArgumentException(
-                    Logger.logMessage(Logger.ERROR, "Vec3", "setToCovarianceOfBuffer", "invalidStride"))
-        }
-        val mean: Vec3 = Vec3.averageOfBuffer(points, stride, Vec3())
+    /**
+     *  0  1  2  3
+     *  4  5  6  7
+     *  8  9  10 11
+     *  12 13 14 15
+     */
+    fun setToCovarianceOfPoints(array: FloatArray, count: Int, stride: Int): Matrix4 {
         var dx: Double
         var dy: Double
         var dz: Double
+        var mx = 0.0
+        var my = 0.0
+        var mz = 0.0
         var c11 = 0.0
         var c22 = 0.0
         var c33 = 0.0
         var c12 = 0.0
         var c13 = 0.0
         var c23 = 0.0
-        val count = points.remaining() / stride
-        val coords = FloatArray(stride)
-        points.mark()
-        for (i in 0 until count) {
-            points[coords, 0, stride] // get the entire coordinate to advance the buffer position
-            dx = coords[0] - mean.x
-            dy = coords[1] - mean.y
-            dz = coords[2] - mean.z
+        var numPoints = 0.0
+        var idx = 0
+        while (idx < count) {
+            mx += array[idx]
+            my += array[idx + 1]
+            mz += array[idx + 2]
+            numPoints++
+            idx += stride
+        }
+        mx /= numPoints
+        my /= numPoints
+        mz /= numPoints
+
+        idx = 0
+        while (idx < count) {
+            dx = array[idx    ] - mx
+            dy = array[idx + 1] - my
+            dz = array[idx + 2] - mz
             c11 += dx * dx
             c22 += dy * dy
             c33 += dz * dz
             c12 += dx * dy // c12 = c21
             c13 += dx * dz // c13 = c31
             c23 += dy * dz // c23 = c32
+            idx += stride
         }
-        points.reset()
-        m[0] = c11 / count
-        m[1] = c12 / count
-        m[2] = c13 / count
+
+        m[0] = c11 / numPoints
+        m[1] = c12 / numPoints
+        m[2] = c13 / numPoints
         m[3] = 0.0
-        m[4] = c12 / count
-        m[5] = c22 / count
-        m[6] = c23 / count
+
+        m[4] = c12 / numPoints
+        m[5] = c22 / numPoints
+        m[6] = c23 / numPoints
         m[7] = 0.0
-        m[8] = c13 / count
-        m[9] = c23 / count
-        m[10] = c33 / count
+
+        m[8] = c13 / numPoints
+        m[9] = c23 / numPoints
+        m[10] = c33 / numPoints
         m[11] = 0.0
+
         m[12] = 0.0
         m[13] = 0.0
         m[14] = 0.0
@@ -700,9 +755,10 @@ class Matrix4 {
         val c = Math.cos(toRadians)
         val s = Math.sin(toRadians)
         this.multiplyByMatrix(
-                c + (1 - c) * x * x, (1 - c) * x * y - s * z, (1 - c) * x * z + s * y, 0.0,
-                (1 - c) * x * y + s * z, c + (1 - c) * y * y, (1 - c) * y * z - s * x, 0.0,
-                (1 - c) * x * z - s * y, (1 - c) * y * z + s * x, c + (1 - c) * z * z, 0.0, 0.0, 0.0, 0.0, 1.0)
+            c + (1 - c) * x * x, (1 - c) * x * y - s * z, (1 - c) * x * z + s * y, 0.0,
+            (1 - c) * x * y + s * z, c + (1 - c) * y * y, (1 - c) * y * z - s * x, 0.0,
+            (1 - c) * x * z - s * y, (1 - c) * y * z + s * x, c + (1 - c) * z * z, 0.0, 0.0, 0.0, 0.0, 1.0
+        )
         return this
     }
 
@@ -741,7 +797,8 @@ class Matrix4 {
     fun multiplyByMatrix(matrix: Matrix4?): Matrix4 {
         if (matrix == null) {
             throw java.lang.IllegalArgumentException(
-                    Logger.logMessage(Logger.ERROR, "Matrix4", "multiplyByMatrix", "missingMatrix"))
+                Logger.logMessage(Logger.ERROR, "Matrix4", "multiplyByMatrix", "missingMatrix")
+            )
         }
         val ma = m
         val mb: DoubleArray = matrix.m
@@ -784,10 +841,12 @@ class Matrix4 {
         return this
     }
 
-    fun multiplyByMatrix(m11: Double, m12: Double, m13: Double, m14: Double,
-                         m21: Double, m22: Double, m23: Double, m24: Double,
-                         m31: Double, m32: Double, m33: Double, m34: Double,
-                         m41: Double, m42: Double, m43: Double, m44: Double): Matrix4 {
+    fun multiplyByMatrix(
+        m11: Double, m12: Double, m13: Double, m14: Double,
+        m21: Double, m22: Double, m23: Double, m24: Double,
+        m31: Double, m32: Double, m33: Double, m34: Double,
+        m41: Double, m42: Double, m43: Double, m44: Double
+    ): Matrix4 {
         val m = m
         var mr1: Double
         var mr2: Double
@@ -834,7 +893,8 @@ class Matrix4 {
     fun transposeMatrix(matrix: Matrix4?): Matrix4 {
         if (matrix == null) {
             throw java.lang.IllegalArgumentException(
-                    Logger.logMessage(Logger.ERROR, "Matrix4", "transposeMatrix", "missingMatrix"))
+                Logger.logMessage(Logger.ERROR, "Matrix4", "transposeMatrix", "missingMatrix")
+            )
         }
         m[0] = matrix.m[0]
         m[1] = matrix.m[4]
@@ -868,22 +928,32 @@ class Matrix4 {
     fun invertOrthonormalMatrix(matrix: Matrix4?): Matrix4 {
         if (matrix == null) {
             throw java.lang.IllegalArgumentException(
-                    Logger.logMessage(Logger.ERROR, "Matrix4", "invertOrthonormalMatrix", "missingMatrix"))
+                Logger.logMessage(Logger.ERROR, "Matrix4", "invertOrthonormalMatrix", "missingMatrix")
+            )
         }
         // 'matrix' is assumed to contain matrix 3D transformation matrix.
         // Upper-3x3 is inverted, translation is transformed by inverted-upper-3x3 and negated.
         m[0] = matrix.m.get(0)
         m[1] = matrix.m.get(4)
         m[2] = matrix.m.get(8)
-        m[3] = 0.0 - matrix.m.get(0) * matrix.m.get(3) - matrix.m.get(4) * matrix.m.get(7) - matrix.m.get(8) * matrix.m.get(11)
+        m[3] =
+            0.0 - matrix.m.get(0) * matrix.m.get(3) - matrix.m.get(4) * matrix.m.get(7) - matrix.m.get(8) * matrix.m.get(
+                11
+            )
         m[4] = matrix.m.get(1)
         m[5] = matrix.m.get(5)
         m[6] = matrix.m.get(9)
-        m[7] = 0.0 - matrix.m.get(1) * matrix.m.get(3) - matrix.m.get(5) * matrix.m.get(7) - matrix.m.get(9) * matrix.m.get(11)
+        m[7] =
+            0.0 - matrix.m.get(1) * matrix.m.get(3) - matrix.m.get(5) * matrix.m.get(7) - matrix.m.get(9) * matrix.m.get(
+                11
+            )
         m[8] = matrix.m.get(2)
         m[9] = matrix.m.get(6)
         m[10] = matrix.m.get(10)
-        m[11] = 0.0 - matrix.m.get(2) * matrix.m.get(3) - matrix.m.get(6) * matrix.m.get(7) - matrix.m.get(10) * matrix.m.get(11)
+        m[11] =
+            0.0 - matrix.m.get(2) * matrix.m.get(3) - matrix.m.get(6) * matrix.m.get(7) - matrix.m.get(10) * matrix.m.get(
+                11
+            )
         m[12] = 0.0
         m[13] = 0.0
         m[14] = 0.0
@@ -909,7 +979,8 @@ class Matrix4 {
     fun extractEyePoint(result: Vec3?): Vec3 {
         if (result == null) {
             throw java.lang.IllegalArgumentException(
-                    Logger.logMessage(Logger.ERROR, "Matrix4", "extractEyePoint", "missingResult"))
+                Logger.logMessage(Logger.ERROR, "Matrix4", "extractEyePoint", "missingResult")
+            )
         }
         // The eye point of a modelview matrix is computed by transforming the origin (0, 0, 0, 1) by the matrix's inverse.
         // This is equivalent to transforming the inverse of this matrix's translation components in the rightmost column by
@@ -923,7 +994,8 @@ class Matrix4 {
     fun extractForwardVector(result: Vec3?): Vec3 {
         if (result == null) {
             throw java.lang.IllegalArgumentException(
-                    Logger.logMessage(Logger.ERROR, "Matrix4", "extractForwardVector", "missingResult"))
+                Logger.logMessage(Logger.ERROR, "Matrix4", "extractForwardVector", "missingResult")
+            )
         }
         // The forward vector of a modelview matrix is computed by transforming the negative Z axis (0, 0, -1, 0) by the
         // matrix's inverse. We have pre-computed the result inline here to simplify this computation.
@@ -933,15 +1005,11 @@ class Matrix4 {
         return result
     }
 
-    fun eigensystemFromSymmetricMatrix(result: Array<Vec3?>?): Array<Vec3?> {
-        if (result == null || result.size < 3) {
-            throw java.lang.IllegalArgumentException(
-                    Logger.logMessage(Logger.ERROR, "Matrix4", "eigensystemFromSymmetricMatrix", "An axis argument is null"))
-        }
+    fun extractEigenvectors(result1: Vec3, result2: Vec3, result3: Vec3): Boolean {
         if (m[1] != m[4] || m[2] != m[8] || m[6] != m[9]) {
-            throw java.lang.IllegalArgumentException(
-                    Logger.logMessage(Logger.ERROR, "Matrix4", "eigensystemFromSymmetricMatrix", "Matrix is not symmetric"))
+            return false // matrix is not symmetric
         }
+
         // Taken from Mathematics for 3D Game Programming and Computer Graphics, Second Edition,
         // listing 14.6.
         val EPSILON = 1.0e-10
@@ -1053,22 +1121,26 @@ class Matrix4 {
             i1 = i2
             i2 = itemp
         }
-        result[0]?.set(r[0][i1], r[1][i1], r[2][i1])
-        result[1]?.set(r[0][i2], r[1][i2], r[2][i2])
-        result[2]?.set(r[0][i3], r[1][i3], r[2][i3])
-        result[0]?.normalize()
-        result[1]?.normalize()
-        result[2]?.normalize()
-        result[0]?.multiply(m11)
-        result[1]?.multiply(m22)
-        result[2]?.multiply(m33)
-        return result
+        result1.set(r[0][i1], r[1][i1], r[2][i1])
+        result2.set(r[0][i2], r[1][i2], r[2][i2])
+        result3.set(r[0][i3], r[1][i3], r[2][i3])
+
+        result1.normalize()
+        result2.normalize()
+        result3.normalize()
+
+        result1.multiply(m11)
+        result2.multiply(m22)
+        result3.multiply(m33)
+
+        return true
     }
 
     fun set(matrix: Matrix4?): Matrix4 {
         if (matrix == null) {
             throw java.lang.IllegalArgumentException(
-                    Logger.logMessage(Logger.ERROR, "Matrix4", "set", "missingMatrix"))
+                Logger.logMessage(Logger.ERROR, "Matrix4", "set", "missingMatrix")
+            )
         }
         System.arraycopy(matrix.m, 0, this.m, 0, 16)
         return this
@@ -1079,7 +1151,13 @@ class Matrix4 {
             return false
         }
         val that: Matrix4 = other as Matrix4
-        return m[0] == that.m.get(0) && m[1] == that.m.get(1) && m[2] == that.m.get(2) && m[3] == that.m.get(3) && m[4] == that.m.get(4) && m[5] == that.m.get(5) && m[6] == that.m.get(6) && m[7] == that.m.get(7) && m[8] == that.m.get(8) && m[9] == that.m.get(9) && m[10] == that.m.get(10) && m[11] == that.m.get(11) && m[12] == that.m.get(12) && m[13] == that.m.get(13) && m[14] == that.m.get(14) && m[15] == that.m.get(15)
+        return m[0] == that.m.get(0) && m[1] == that.m.get(1) && m[2] == that.m.get(2) && m[3] == that.m.get(3) && m[4] == that.m.get(
+            4
+        ) && m[5] == that.m.get(5) && m[6] == that.m.get(6) && m[7] == that.m.get(7) && m[8] == that.m.get(8) && m[9] == that.m.get(
+            9
+        ) && m[10] == that.m.get(10) && m[11] == that.m.get(11) && m[12] == that.m.get(12) && m[13] == that.m.get(13) && m[14] == that.m.get(
+            14
+        ) && m[15] == that.m.get(15)
     }
 
     override fun hashCode(): Int {
@@ -1094,7 +1172,8 @@ class Matrix4 {
         var offset_temp = offset
         if (result == null || result.size - offset_temp < 16) {
             throw java.lang.IllegalArgumentException(
-                    Logger.logMessage(Logger.ERROR, "Matrix4", "transposeToArray", "missingResult"))
+                Logger.logMessage(Logger.ERROR, "Matrix4", "transposeToArray", "missingResult")
+            )
         }
         result[offset_temp++] = m[0].toFloat()
         result[offset_temp++] = m[4].toFloat()
@@ -1114,6 +1193,7 @@ class Matrix4 {
         result[offset_temp] = m[15].toFloat()
         return result
     }
+
     fun project(
         x: Double,
         y: Double,

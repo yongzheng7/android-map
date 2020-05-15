@@ -40,31 +40,6 @@ class Vec3(var x: Double, var y: Double, var z: Double) {
             result.z /= count.toDouble()
             return result
         }
-
-        fun principalAxesOfBuffer(points: FloatBuffer?, stride: Int, result: Array<Vec3?>?): Array<Vec3?> {
-            if (points == null || points.remaining() < stride) {
-                throw IllegalArgumentException(
-                        Logger.logMessage(Logger.ERROR, "Vec3", "principalAxesOfBuffer", "missingBuffer"))
-            }
-            if (stride < 3) {
-                throw IllegalArgumentException(
-                        Logger.logMessage(Logger.ERROR, "Vec3", "principalAxesOfBuffer", "invalidStride"))
-            }
-            if (result == null || result.size < 3 || result[0] == null || result[1] == null || result[2] == null) {
-                throw IllegalArgumentException(Logger.logMessage(Logger.ERROR, "Vec3", "principalAxesOfBuffer",
-                        "nullResult"))
-            }
-            // Compute the covariance matrix.
-            val covariance: Matrix4 = Matrix4().setToCovarianceOfBuffer(points, stride)
-            // Compute the eigenvectors from the covariance matrix. The covariance matrix is symmetric by definition.
-            covariance.eigensystemFromSymmetricMatrix(result)
-            // Normalize the eigenvectors, which are already sorted in order of descending magnitude.
-            result[0]?.normalize()
-            result[1]?.normalize()
-            result[2]?.normalize()
-            return result
-        }
-
     }
 
     constructor() : this(0.0, 0.0, 0.0)

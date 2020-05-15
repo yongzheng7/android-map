@@ -24,6 +24,7 @@ import com.atom.wyz.worldwind.util.WWMath
 import com.atom.wyz.worldwind.util.WWUtil
 import java.io.BufferedReader
 import java.io.InputStreamReader
+import java.util.*
 import java.util.concurrent.Executor
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
@@ -217,14 +218,23 @@ class BasicPerformanceBenchmarkActivity : BasicWorldWindActivity() {
         )
         var reader: BufferedReader? = null
         try {
-            val `in` = this.resources.openRawResource(R.raw.arpt2)
+            val `in` = this.resources.openRawResource(R.raw.ntad_place)
             reader = BufferedReader(InputStreamReader(`in`))
-            var line: String
+
+            var line = reader.readLine()
+            val headers = Arrays.asList(*line.split(",").toTypedArray())
+            val LAT = headers.indexOf("LAT")
+            val LON = headers.indexOf("LON")
+            val NA3 = headers.indexOf("NA3")
+            val USE = headers.indexOf("USE")
+            // Read the remaining lines
             var attrIndex = 0
             while (reader.readLine().also { line = it } != null) {
-                val locationString = line.split(",").toTypedArray()
-                val pos: Position = Position.fromDegrees(locationString[0].toDouble(), locationString[1].toDouble(), 0.0)
-                layer.addRenderable(Placemark(pos, attrs[attrIndex++ % attrs.size]))
+                val fields = line.split(",").toTypedArray()
+                if (fields[NA3].startsWith("US") && fields[USE] == "49") { // display USA Civilian/Public airports
+                    val pos = Position.fromDegrees(fields[LAT].toDouble(), fields[LON].toDouble(), 0.0)
+                    layer.addRenderable(Placemark(pos, attrs[attrIndex++ % attrs.size]))
+                }
             }
         } catch (e: Exception) {
             Logger.log(Logger.ERROR, "Exception attempting to read Airports database")

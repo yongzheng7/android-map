@@ -82,6 +82,10 @@
         </activity>
         <activity android:name=".app.BasicGlobeActivity">
         </activity>
+        <activity android:name=".app.PathsExampleActivity">
+        </activity>
+        <activity android:name=".app.PathsActivity">
+        </activity>
 
     </application>
 

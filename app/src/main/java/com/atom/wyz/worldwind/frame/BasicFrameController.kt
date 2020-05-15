@@ -17,7 +17,7 @@ import com.atom.wyz.worldwind.util.pool.Pool
 
 class BasicFrameController : FrameController {
 
-    private var pickColor: Color? = null
+    private var pickColor: Color = Color()
 
     val pickPoint: Vec3 = Vec3()
 
@@ -56,7 +56,7 @@ class BasicFrameController : FrameController {
         if (pickedObjects.count() == 0) {
             return
         }
-        dc.pickPoint?.let {
+        val let = dc.pickPoint?.let {
             pickColor = dc.readPixelColor(
                 Math.round(it.x).toInt(),
                 Math.round(it.y).toInt(),
@@ -134,7 +134,7 @@ class BasicFrameController : FrameController {
         }
         rc.offerSurfaceDrawable(drawable, Double.NEGATIVE_INFINITY)
         if (resolveTerrainPickPosition(rc, this.pickPos)) {
-            rc.offerPickedObject(PickedObject.fromTerrain(pickPos, pickedObjectId))
+            rc.offerPickedObject(PickedObject.fromTerrain(pickedObjectId , this.pickPos))
         }
     }
 

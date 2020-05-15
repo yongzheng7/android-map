@@ -112,19 +112,30 @@ open class Location(var latitude: Double, var longitude: Double) {
         /**
          * 确定位置列表是否跨越了子午线。
          */
-        fun locationsCrossAntimeridian(locations: Iterable<Location>?): Boolean {
-            if (locations == null) {
-                throw java.lang.IllegalArgumentException(
-                    Logger.logMessage(Logger.ERROR, "Location", "locationsCrossAntimeridian", "missingList")
-                )
+        fun locationsCrossAntimeridian(locations: List<out Location>): Boolean {
+
+            // Check the list's length. A list with fewer than two locations does not cross the antimeridan.
+            val len = locations.size
+            if (len < 2) {
+                return false
             }
-            lateinit var prev: Location
-            for (cur in locations) {
-                if (Math.signum(prev.longitude) != Math.signum(cur.longitude)) {
-                    val delta: Double = Math.abs(prev.longitude - cur.longitude)
-                    if (delta > 180 && delta < 360) return true
+            // Compute the longitude attributes associated with the first location.
+            var lon1: Double = normalizeLongitude(locations[0].longitude)
+            var sig1 = Math.signum(lon1)
+
+            // Iterate over the segments in the list. A segment crosses the antimeridian if its endpoint longitudes have
+            // different signs and are more than 180 degrees apart (but not 360, which indicates the longitudes are the same).
+            for (idx in 1 until len) {
+                val lon2: Double = normalizeLongitude(locations[idx].longitude)
+                val sig2 = Math.signum(lon2)
+                if (sig1 != sig2) {
+                    val delta = Math.abs(lon1 - lon2)
+                    if (delta > 180 && delta < 360) {
+                        return true
+                    }
                 }
-                prev = cur
+                lon1 = lon2
+                sig1 = sig2
             }
             return false
         }
@@ -242,8 +253,7 @@ open class Location(var latitude: Double, var longitude: Double) {
         if (lon1 == lon2) { // 如果两个经纬度 其中经度一样纬度 比较
             return if (lat1 > lat2) 180.0 else 0.0
         }
-        // Taken from "Map Projections - A Working Manual", page 30, equation 5-4b.
-        // The atan2() function is used in place of the traditional atan(y/x) to simplify the case when x == 0.
+
         val y = Math.cos(lat2) * Math.sin(lon2 - lon1)
         val x = Math.cos(lat1) * Math.sin(lat2) - Math.sin(lat1) * Math.cos(lat2) * Math.cos(lon2 - lon1)
         val azimuthRadians = Math.atan2(y, x)
@@ -256,6 +266,10 @@ open class Location(var latitude: Double, var longitude: Double) {
      * the segment between the two positions. To compute a distance in meters from this value,
      * multiply the return value by the radius of the globe. This function uses a spherical model,
      * not elliptical.
+     * 计算两个位置之间的大圆角距离。 返回值给出距离作为两个位置之间的角度。
+     * 以弧度表示，此角度是两个位置之间的线段的弧长。
+     * 要从该值计算以米为单位的距离，请将返回值乘以地球仪的半径。
+     * 此函数使用球形模型，而不是椭圆形。
      */
     open fun greatCircleDistance(location: Location?): Double {
         if (location == null) {

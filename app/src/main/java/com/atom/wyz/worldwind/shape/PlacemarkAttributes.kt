@@ -50,8 +50,6 @@ class PlacemarkAttributes {
 
     var labelAttributes: TextAttributes? = null
 
-
-
     var drawLeader = false
     var leaderAttributes: ShapeAttributes? = null
 
@@ -64,23 +62,23 @@ class PlacemarkAttributes {
         imageOffset = Offset(Offset.CENTER)
         imageScale = 1.0
         imageSource = null
-        labelAttributes = TextAttributes()
-        leaderAttributes = ShapeAttributes()
         drawLeader = false
         depthTest = true
+        labelAttributes = TextAttributes()
+        leaderAttributes = ShapeAttributes()
     }
 
-    constructor(copy: PlacemarkAttributes) {
-        imageColor = Color(copy.imageColor!!)
-        imageOffset = Offset(copy.imageOffset!!)
-        imageScale = copy.imageScale
-        imageSource = copy.imageSource
-        minimumImageScale = copy.minimumImageScale
-        depthTest = copy.depthTest
-        copy.labelAttributes ?.let { labelAttributes = TextAttributes(it) } ?:let { labelAttributes = null }
+    constructor(attributes: PlacemarkAttributes) {
+        imageColor = Color(attributes.imageColor!!)
+        imageOffset = Offset(attributes.imageOffset!!)
+        imageScale = attributes.imageScale
+        imageSource = attributes.imageSource
+        minimumImageScale = attributes.minimumImageScale
+        depthTest = attributes.depthTest
+        attributes.labelAttributes ?.let { labelAttributes = TextAttributes(it) } ?:let { labelAttributes = null }
 
-        drawLeader = copy.drawLeader
-        copy.leaderAttributes ?.let { leaderAttributes = ShapeAttributes(it) } ?:let { leaderAttributes = null }
+        drawLeader = attributes.drawLeader
+        attributes.leaderAttributes ?.let { leaderAttributes = ShapeAttributes(it) } ?:let { leaderAttributes = null }
 
     }
 
@@ -95,6 +93,7 @@ class PlacemarkAttributes {
         imageSource = attributes.imageSource // TODO: resolve shallow or deep copy of imageSource
         depthTest = attributes.depthTest
         minimumImageScale = attributes.minimumImageScale
+        drawLeader = attributes.drawLeader
         if (attributes.labelAttributes != null) {
             if (labelAttributes == null) {
                 labelAttributes = TextAttributes(attributes.labelAttributes!!)
@@ -104,8 +103,6 @@ class PlacemarkAttributes {
         } else {
             labelAttributes = null
         }
-
-        drawLeader = attributes.drawLeader
         if (attributes.leaderAttributes != null) {
             if (leaderAttributes == null) {
                 leaderAttributes = ShapeAttributes(attributes.leaderAttributes!!)
@@ -118,30 +115,37 @@ class PlacemarkAttributes {
         return this
     }
 
-    override fun equals(other: Any?): Boolean {
-        if (this === other) return true
-        if (other == null || javaClass != other.javaClass) return false
-        val that: PlacemarkAttributes = other as PlacemarkAttributes
-        if (java.lang.Double.compare(that.imageScale, imageScale) != 0) return false
-        if (depthTest != that.depthTest) return false
-        if (drawLeader != that.drawLeader) return false
-        if (if (imageColor != null) imageColor != that.imageColor else that.imageColor != null) return false
-        if (if (imageOffset != null) imageOffset != that.imageOffset else that.imageOffset != null) return false
-        if (if (imageSource != null) imageSource != that.imageSource else that.imageSource != null) return false
-        return if (if (labelAttributes != null) labelAttributes != that.labelAttributes else that.labelAttributes != null) false else !if (leaderAttributes != null) leaderAttributes != that.leaderAttributes else that.leaderAttributes != null
+    override fun equals(o: Any?): Boolean {
+        if (this === o) {
+            return true
+        }
+
+        if (o == null || this.javaClass != o.javaClass) {
+            return false
+        }
+        val that = o as PlacemarkAttributes
+        return if (imageSource == null) that.imageSource == null else if (imageSource!!.equals(that.imageSource)
+            && imageColor!!.equals(that.imageColor)
+            && imageOffset!!.equals(that.imageOffset)
+            && imageScale == that.imageScale && minimumImageScale == that.minimumImageScale && drawLeader == that.drawLeader && depthTest == that.depthTest && labelAttributes == null
+        ) that.labelAttributes == null else if (labelAttributes!!.equals(that.labelAttributes)
+            && leaderAttributes == null
+        ) that.leaderAttributes == null else leaderAttributes!!.equals(that.leaderAttributes)
     }
 
     override fun hashCode(): Int {
         var result: Int
-        val temp: Long
-        result = if (imageColor != null) imageColor.hashCode() else 0
-        result = 31 * result + if (imageOffset != null) imageOffset.hashCode() else 0
+        var temp: Long
+        result = if (imageSource != null) imageSource.hashCode() else 0
+        result = 31 * result + imageColor.hashCode()
+        result = 31 * result + imageOffset.hashCode()
         temp = java.lang.Double.doubleToLongBits(imageScale)
         result = 31 * result + (temp xor (temp ushr 32)).toInt()
-        result = 31 * result + if (imageSource != null) imageSource.hashCode() else 0
+        temp = java.lang.Double.doubleToLongBits(minimumImageScale)
+        result = 31 * result + (temp xor (temp ushr 32)).toInt()
+        result = 31 * result + if (drawLeader) 1 else 0
         result = 31 * result + if (depthTest) 1 else 0
         result = 31 * result + if (labelAttributes != null) labelAttributes.hashCode() else 0
-        result = 31 * result + if (drawLeader) 1 else 0
         result = 31 * result + if (leaderAttributes != null) leaderAttributes.hashCode() else 0
         return result
     }

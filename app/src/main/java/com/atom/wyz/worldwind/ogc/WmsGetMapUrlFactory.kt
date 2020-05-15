@@ -4,14 +4,10 @@ import com.atom.wyz.worldwind.geom.Sector
 import com.atom.wyz.worldwind.globe.Tile
 import com.atom.wyz.worldwind.globe.TileUrlFactory
 import com.atom.wyz.worldwind.util.Logger
-import java.lang.IllegalArgumentException
+import java.util.*
 
 class WmsGetMapUrlFactory : TileUrlFactory {
 
-    /**
-     * The WMS service address used to build Get Map URLs.
-     * 用于构建“获取地图URL”的WMS服务地址。
-     */
      var serviceAddress: String? = null
 
     /**
@@ -118,7 +114,7 @@ class WmsGetMapUrlFactory : TileUrlFactory {
                 url.append("&") // add a parameter delimiter
             }
         }
-        index = serviceAddress!!.toUpperCase().indexOf("SERVICE=WMS")
+        index = serviceAddress!!.toUpperCase(Locale.US).indexOf("SERVICE=WMS")
         if (index < 0) {
             url.append("SERVICE=WMS")
         }

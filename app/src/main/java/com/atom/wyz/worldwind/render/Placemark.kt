@@ -66,6 +66,7 @@ open class Placemark : AbstractRenderable, Highlightable, Movable {
     var eyeDistanceScalingThreshold: Double
     var eyeDistanceScalingLabelThreshold: Double
 
+    @WorldWind.AltitudeMode
     var altitudeMode: Int = WorldWind.ABSOLUTE
 
     var enableLeaderPicking: Boolean = false
@@ -80,7 +81,13 @@ open class Placemark : AbstractRenderable, Highlightable, Movable {
     @WorldWind.OrientationMode
     var imageTiltReference = 0
 
-    protected var activePickedObjectId = 0
+    /**
+     * The picked object ID associated with the placemark during the current render pass.
+     */
+    protected var pickedObjectId = 0
+
+    protected var pickColor = Color()
+
 
     constructor(position: Position) : this(position, PlacemarkAttributes.defaults())
 
@@ -113,23 +120,15 @@ open class Placemark : AbstractRenderable, Highlightable, Movable {
         } else {
             activeAttributes = attributes
         }
-
-        if (rc.pickMode) {
-            activePickedObjectId = rc.nextPickedObjectId()
-        }
     }
 
     override fun doRender(rc: RenderContext) {
 
-        determineActiveAttributes(rc)
-        if (activeAttributes == null) {
-            return
-        }
-
         val position = this.position ?: return
         val globe = rc.globe ?: return
 
-        globe.geographicToCartesian(position.latitude, position.longitude, position.altitude, placePoint)
+        // Compute the placemark's Cartesian model point.
+        rc.geographicToCartesian(position.latitude, position.longitude, position.altitude, altitudeMode, placePoint)
 
         cameraDistance = rc.cameraPoint.distanceTo(placePoint)
 
@@ -141,18 +140,22 @@ open class Placemark : AbstractRenderable, Highlightable, Movable {
         if (!rc.projectWithDepth(placePoint, depthOffset, screenPlacePoint)) {
             return
         }
+        determineActiveAttributes(rc)
+        if (activeAttributes == null) {
+            return
+        }
 
         // Allow the placemark to adjust the level of detail based on distance to the camera
         levelOfDetailSelector?.selectLevelOfDetail(rc, this, cameraDistance)
 
         val drawableCount = rc.drawableCount()
-        if (mustDrawLeaderLine(rc)) {
-            groundPoint = globe.geographicToCartesian(
-                position.latitude,
-                position.longitude,
-                0.0,
-                groundPoint
-            )
+        if (rc.pickMode) {
+            pickedObjectId = rc.nextPickedObjectId()
+            pickColor = PickedObject.identifierToUniqueColor(pickedObjectId, pickColor)
+        }
+        if (mustDrawLeader(rc)) {
+            // Compute the placemark's Cartesian ground point.
+            groundPoint = rc.geographicToCartesian(position.latitude, position.longitude, 0.0, WorldWind.CLAMP_TO_GROUND, groundPoint)
             if (rc.frustum.intersectsSegment(groundPoint, placePoint)) {
                 val pool: Pool<DrawableLines> = rc.getDrawablePool(DrawableLines::class.java)
                 val drawable = DrawableLines.obtain(pool)
@@ -184,12 +187,7 @@ open class Placemark : AbstractRenderable, Highlightable, Movable {
 
         // Enqueue a picked object that associates the placemark's icon and leader with its picked object ID.
         if (rc.pickMode && rc.drawableCount() != drawableCount) {
-            rc.offerPickedObject(
-                PickedObject.fromRenderable(
-                    this, this.position, rc.currentLayer,
-                    activePickedObjectId
-                )
-            )
+            rc.offerPickedObject(PickedObject.fromRenderable(pickedObjectId, this, rc.currentLayer!!))
         }
 
     }
@@ -207,17 +205,15 @@ open class Placemark : AbstractRenderable, Highlightable, Movable {
 
         drawable.unitSquareTransform.set(unitSquareTransform)
 
+
+
+        // Configure the drawable according to the placemark's active attributes. Use a color appropriate for the pick
+        // mode. When picking use a unique color associated with the picked object ID. Use the texture associated with
+        // the active attributes' image source and its associated tex coord transform. If the texture is not specified
+        // or not available, draw a simple colored square.
+        drawable.color.set(if (rc.pickMode) pickColor else activeAttributes.imageColor!!)
         drawable.enableDepthTest = activeAttributes.depthTest
-
         drawable.texture = activeTexture
-
-        // Configure the drawable to display a color appropriate for the current pick mode. During picking we display
-        // the icon in a unique color associated with the picked object ID.
-        if (rc.pickMode) {
-            drawable.color = PickedObject.identifierToUniqueColor(activePickedObjectId, drawable.color)
-        } else {
-            drawable.color.set(activeAttributes.imageColor!!)
-        }
     }
 
     protected open fun prepareDrawableLeader(
@@ -246,18 +242,11 @@ open class Placemark : AbstractRenderable, Highlightable, Movable {
 
         drawable.lineWidth = activeAttributes.leaderAttributes!!.outlineWidth
         drawable.enableDepthTest = activeAttributes.leaderAttributes!!.depthTest
-
-        // Configure the drawable to display a color appropriate for the current pick mode. During picking we display
-        // the leader in a unique color associated with the picked object ID.
-        if (rc.pickMode) {
-            drawable.color = PickedObject.identifierToUniqueColor(activePickedObjectId, drawable.color)
-        } else {
-            drawable.color.set(activeAttributes.leaderAttributes!!.outlineColor!!)
-        }
+        drawable.color.set(if (rc.pickMode) pickColor else activeAttributes.leaderAttributes!!.outlineColor!!)
 
     }
 
-    protected open fun mustDrawLeaderLine(dc: RenderContext): Boolean {
+    protected open fun mustDrawLeader(dc: RenderContext): Boolean {
         val activeAttributes = this.activeAttributes ?: return false
         return (activeAttributes.drawLeader && activeAttributes.leaderAttributes != null && (enableLeaderPicking || !dc.pickMode))
     }
