@@ -42,7 +42,7 @@ class PathsExampleActivity : BasicGlobeActivity()  , Handler.Callback  {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        Thread(Runnable {
+        GlobalScope.launch {
             Log.e("PathsExampleActivity" , " 1 ")
             readAirportTable()
             Log.e("PathsExampleActivity" , " 2 ")
@@ -51,7 +51,7 @@ class PathsExampleActivity : BasicGlobeActivity()  , Handler.Callback  {
             Log.e("PathsExampleActivity" , " 3 ")
 
             handler.sendEmptyMessage(0 /*what*/)
-        }).start()
+        }
         this.wwd.layers.addLayer(flightPathLayer)
     }
 

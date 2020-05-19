@@ -272,8 +272,8 @@ open class Placemark : AbstractRenderable, Highlightable, Movable {
 
         if (activeTexture != null) {
             val activeTexture = this.activeTexture!!
-            val w: Int = activeTexture.imageWidth
-            val h: Int = activeTexture.imageHeight
+            val w: Int = activeTexture.textureWidth
+            val h: Int = activeTexture.textureHeight
             val s = activeAttributes.imageScale * visibilityScale
             val offset =
                 activeAttributes.imageOffset!!.offsetForSize(w.toDouble(), h.toDouble(), offset) // TODO allocation

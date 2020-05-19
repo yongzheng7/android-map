@@ -4,6 +4,7 @@ import com.atom.wyz.worldwind.geom.Matrix4
 import com.atom.wyz.worldwind.geom.Plane
 import com.atom.wyz.worldwind.geom.Vec3
 import com.atom.wyz.worldwind.util.Logger
+import com.atom.wyz.worldwind.util.WWMath
 import junit.framework.Assert.assertEquals
 import org.junit.Assert
 import org.junit.Before
@@ -393,5 +394,13 @@ class PlaneTest {
             expected1,
             result[1]
         )
+    }
+    @Test
+    fun testClip_NegativeasDirection() {
+        val powerOfTwo = WWMath.isPowerOfTwo(4)
+        System.out.println(powerOfTwo)
+
+        val powerOfTwoCeiling = WWMath.powerOfTwoCeiling(17);
+        System.out.println(powerOfTwoCeiling)
     }
 }

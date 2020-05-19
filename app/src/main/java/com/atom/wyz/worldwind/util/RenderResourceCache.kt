@@ -105,7 +105,7 @@ class RenderResourceCache
         }
     }
 
-    fun retrieveTexture(imageSource: ImageSource?, imageOptions : ImageOptions? ): GpuTexture? {
+    fun retrieveTexture(imageSource: ImageSource?, imageOptions : ImageOptions?): GpuTexture? {
         if (imageSource == null) {
             return null
         }

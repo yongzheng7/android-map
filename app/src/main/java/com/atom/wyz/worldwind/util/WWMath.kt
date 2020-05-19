@@ -1,6 +1,5 @@
 package com.atom.wyz.worldwind.util
 
-import android.graphics.Rect
 import com.atom.wyz.worldwind.geom.Matrix4
 import com.atom.wyz.worldwind.geom.Viewport
 
@@ -130,5 +129,9 @@ class WWMath {
             return result
         }
 
+        fun powerOfTwoCeiling(value: Int): Int {
+            val pow = Math.floor(Math.log(value.toDouble()) / Math.log(2.0)).toInt()
+            return 1 shl pow
+        }
     }
 }

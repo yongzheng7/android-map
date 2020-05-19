@@ -319,7 +319,8 @@ class WorldWindow : GLSurfaceView, GLSurfaceView.Renderer, MessageListener, Fram
         if (!pickMode) {
             frameMetrics.beginDrawing(this.dc)
         }
-        frame.modelview.extractEyePoint(dc.eyePoint)
+        dc.eyePoint = frame.modelview.extractEyePoint(dc.eyePoint)
+        dc.viewport.set(frame.viewport)
         dc.projection.set(frame.projection)
         dc.modelview.set(frame.modelview)
         dc.modelviewProjection.setToMultiply(frame.projection, frame.modelview)

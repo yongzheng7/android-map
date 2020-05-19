@@ -13,7 +13,8 @@ class WmsLayerActivity : BasicWorldWindActivity() {
         val config: WmsLayerConfig = WmsLayerConfig()
         config.serviceAddress = "http://neowms.sci.gsfc.nasa.gov/wms/wms"
         config.wmsVersion = "1.1.1" // NEO server works best with WMS 1.1.1
-        config.layerNames = "MYD28M" // Sea surface temperature (MODIS)
+        config.layerNames = "MOD_LSTD_CLIM_M" // Sea surface temperature (MODIS)
+//        config.layerNames = "MYD28M" // Sea surface temperature (MODIS)
 
         val layer: WmsLayer = WmsLayer(Sector().setFullSphere(), 1e3, config) // 1km resolution
 

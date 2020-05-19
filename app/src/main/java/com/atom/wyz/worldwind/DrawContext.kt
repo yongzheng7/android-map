@@ -5,10 +5,7 @@ import com.atom.wyz.worldwind.draw.Drawable
 import com.atom.wyz.worldwind.draw.DrawableList
 import com.atom.wyz.worldwind.draw.DrawableQueue
 import com.atom.wyz.worldwind.draw.DrawableTerrain
-import com.atom.wyz.worldwind.geom.Color
-import com.atom.wyz.worldwind.geom.Matrix4
-import com.atom.wyz.worldwind.geom.Vec2
-import com.atom.wyz.worldwind.geom.Vec3
+import com.atom.wyz.worldwind.geom.*
 import com.atom.wyz.worldwind.pick.PickedObjectList
 import com.atom.wyz.worldwind.render.BufferObject
 import java.nio.ByteBuffer
@@ -19,6 +16,8 @@ import kotlin.experimental.and
 class DrawContext {
 
     var eyePoint: Vec3 = Vec3()
+
+    var viewport: Viewport = Viewport()
 
     var modelview: Matrix4 = Matrix4()
 
@@ -39,6 +38,8 @@ class DrawContext {
     var pickPoint: Vec2? = null
 
     var pickMode = false
+
+    private var framebufferId = 0
 
     protected var programId = 0
 
@@ -62,6 +63,7 @@ class DrawContext {
 
     fun reset() {
         eyePoint.set(0.0, 0.0, 0.0)
+        viewport.setEmpty()
         modelview.setToIdentity()
         projection.setToIdentity()
         modelviewProjection.setToIdentity()
@@ -79,6 +81,7 @@ class DrawContext {
 
     fun contextLost() {
         programId = 0
+        framebufferId = 0
         textureUnit = GLES20.GL_TEXTURE0
         arrayBufferId = 0
         elementArrayBufferId = 0
@@ -104,6 +107,17 @@ class DrawContext {
 
     fun getDrawableTerrain(index: Int): DrawableTerrain? {
         return drawableTerrain?.getDrawable(index) as DrawableTerrain?
+    }
+
+    fun currentFramebuffer(): Int {
+        return framebufferId
+    }
+
+    fun bindFramebuffer(framebufferId: Int) {
+        if (this.framebufferId != framebufferId) {
+            this.framebufferId = framebufferId
+            GLES20.glBindFramebuffer(GLES20.GL_FRAMEBUFFER, framebufferId)
+        }
     }
 
     fun currentProgram(): Int {
