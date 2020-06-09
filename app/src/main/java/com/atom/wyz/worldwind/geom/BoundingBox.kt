@@ -247,7 +247,40 @@ class BoundingBox() {
      * 点距离该边框的中心的距离
      */
     fun distanceTo(point: Vec3): Double {
-        return center.distanceTo(point) // TODO shortest distance to center and corner points
+
+        var minDist2 = Double.POSITIVE_INFINITY
+
+        var dist2 = center.distanceToSquared(point)
+        if (minDist2 > dist2) {
+            minDist2 = dist2
+        }
+
+        dist2 = bottomCenter.distanceToSquared(point)
+        if (minDist2 > dist2) {
+            minDist2 = dist2
+        }
+        dist2 = topCenter.distanceToSquared(point)
+        if (minDist2 > dist2) {
+            minDist2 = dist2
+        }
+
+        endPoint1.x = center.x - 0.5 * r.x
+        endPoint1.y = center.y - 0.5 * r.y
+        endPoint1.z = center.z - 0.5 * r.z
+        dist2 = endPoint1.distanceToSquared(point)
+        if (minDist2 > dist2) {
+            minDist2 = dist2
+        }
+
+        endPoint1.x = center.x + 0.5 * r.x
+        endPoint1.y = center.y + 0.5 * r.y
+        endPoint1.z = center.z + 0.5 * r.z
+        dist2 = endPoint1.distanceToSquared(point)
+        if (minDist2 > dist2) {
+            minDist2 = dist2
+        }
+
+        return Math.sqrt(minDist2)
     }
 
     fun isUnitBox(): Boolean {
@@ -264,6 +297,22 @@ class BoundingBox() {
         topCenter.x += x
         topCenter.y += y
         topCenter.z += z
+        return this
+    }
+
+    /**
+     * Sets this bounding box to a unit box centered at the Cartesian origin (0, 0, 0).
+     *
+     * @return This bounding box set to a unit box
+     */
+    fun setToUnitBox(): BoundingBox {
+        center.set(0.0, 0.0, 0.0)
+        bottomCenter.set(-0.5, 0.0, 0.0)
+        topCenter.set(0.5, 0.0, 0.0)
+        r.set(1.0, 0.0, 0.0)
+        s.set(0.0, 1.0, 0.0)
+        t.set(0.0, 0.0, 1.0)
+        radius = Math.sqrt(3.0)
         return this
     }
 

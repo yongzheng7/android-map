@@ -15,6 +15,8 @@ import com.atom.wyz.worldwind.pick.PickedObjectList
 import com.atom.wyz.worldwind.render.*
 import com.atom.wyz.worldwind.util.Logger
 import com.atom.wyz.worldwind.util.RenderResourceCache
+import com.atom.wyz.worldwind.util.glu.GLU
+import com.atom.wyz.worldwind.util.glu.GLUtessellator
 import com.atom.wyz.worldwind.util.pool.Pool
 import com.atom.wyz.worldwind.util.pool.SynchronizedPool
 
@@ -78,11 +80,15 @@ open class RenderContext {
 
     var pickRay: Line? = null
 
+    var pickViewport: Viewport? = null
+
     var pixelSizeFactor = 0.0
 
     private var drawablePools = HashMap<Any, Pool<*>?>()
 
-    private var userProperties: HashMap<Any, Any> = HashMap<Any, Any>()
+    private var userProperties: HashMap<Any, Any> = HashMap()
+
+    private var tessellator: GLUtessellator? = null
 
     open fun reset() {
         pickMode = false
@@ -117,7 +123,7 @@ open class RenderContext {
         drawableTerrain = null
 
         redrawRequested = false
-
+        pickViewport = null
         pickedObjects = null
         pickPoint = null
         pickRay = null
@@ -255,6 +261,11 @@ open class RenderContext {
         return program
     }
 
+    open fun getTessellator(): GLUtessellator {
+        tessellator ?.let{ return it }
+        val tess: GLUtessellator = GLU.gluNewTess()
+        return tess.also { tessellator = it }
+    }
 
     open fun getUserProperty(key: Any?): Any? {
         return userProperties[key]

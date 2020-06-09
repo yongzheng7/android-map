@@ -3,10 +3,8 @@ package com.atom.wyz.worldwind.app
 import android.content.Intent
 import android.os.Bundle
 import android.view.View
-import android.widget.LinearLayout
 import androidx.appcompat.app.AppCompatActivity
 import com.atom.wyz.worldwind.R
-import com.atom.wyz.worldwind.ogc.WmsLayer
 
 class MenuActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -85,6 +83,12 @@ class MenuActivity : AppCompatActivity() {
             }
             R.id.paths_Activity -> {
                 startActivity(Intent(this, PathsActivity::class.java))
+            }
+            R.id.polygons_Activity -> {
+                startActivity(Intent(this, PolygonsActivity::class.java))
+            }
+            R.id.pathsAndPolygonsActivity -> {
+                startActivity(Intent(this, PathsAndPolygonsActivity::class.java))
             }
         }
     }

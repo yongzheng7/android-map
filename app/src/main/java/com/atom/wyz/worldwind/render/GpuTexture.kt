@@ -27,6 +27,10 @@ class GpuTexture : RenderResource {
 
     var texCoordTransform = Matrix3()
 
+    var haveMipmaps = false
+
+    var pickMode = false
+
     constructor(bitmap: Bitmap?) {
         if (bitmap == null || bitmap.isRecycled) {
             throw IllegalArgumentException(
@@ -94,6 +98,11 @@ class GpuTexture : RenderResource {
             dc.bindTexture(textureName[0])
         }
 
+        if (textureName[0] != 0 && pickMode != dc.pickMode) {
+            this.setTexParameters(dc)
+            pickMode = dc.pickMode
+        }
+
         return textureName[0] != 0
     }
 
@@ -114,9 +123,9 @@ class GpuTexture : RenderResource {
             GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_T, GLES20.GL_CLAMP_TO_EDGE)
             // Specify the texture object's image data, either by loading a bitmap or by allocating an empty image.
 
-            imageBitmap ?.let{
+            imageBitmap?.let {
                 loadTexImage(dc, it)
-            } ?:let{
+            } ?: let {
                 this.allocTexImage(dc)
             }
             imageBitmap = null
@@ -147,8 +156,8 @@ class GpuTexture : RenderResource {
             GLUtils.texImage2D(GLES20.GL_TEXTURE_2D, 0 /*level*/, bitmap, 0 /*border*/)
             // If the bitmap has power-of-two dimensions, generate the texture object's image data for image levels 1
             // through level N, and configure the texture object's filtering modes to use those image levels.
-            val isPowerOfTwo = WWMath.isPowerOfTwo(bitmap.getWidth()) && WWMath.isPowerOfTwo(bitmap.getHeight())
-            if (isPowerOfTwo) {
+            this.haveMipmaps = WWMath.isPowerOfTwo(bitmap.getWidth()) && WWMath.isPowerOfTwo(bitmap.getHeight())
+            if (haveMipmaps) {
                 GLES20.glGenerateMipmap(GLES20.GL_TEXTURE_2D)
                 GLES20.glTexParameteri(
                     GLES20.GL_TEXTURE_2D,
@@ -161,6 +170,19 @@ class GpuTexture : RenderResource {
                 Logger.ERROR, "Texture", "loadTexImage",
                 "Exception attempting to load texture image \'$bitmap\'", e
             )
+        }
+    }
+
+    protected fun setTexParameters(dc: DrawContext) {
+        if (dc.pickMode) {
+            GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MIN_FILTER, GLES20.GL_NEAREST)
+            GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MAG_FILTER, GLES20.GL_NEAREST)
+        } else if (haveMipmaps) {
+            GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MIN_FILTER, GLES20.GL_LINEAR_MIPMAP_LINEAR)
+            GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MAG_FILTER, GLES20.GL_LINEAR)
+        } else {
+            GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MIN_FILTER, GLES20.GL_LINEAR)
+            GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MAG_FILTER, GLES20.GL_LINEAR)
         }
     }
 

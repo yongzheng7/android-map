@@ -2,6 +2,7 @@ package com.atom.wyz.worldwind.pick
 
 import android.util.SparseArray
 import com.atom.wyz.worldwind.util.Logger
+import java.util.*
 
 class PickedObjectList() {
 
@@ -73,6 +74,24 @@ class PickedObjectList() {
 
     fun clearPickedObjects() {
         entries.clear()
+    }
+
+    fun keepTopObjects() {
+        val removalList = ArrayList<Int>()
+        var idx = 0
+        val len = this.entries.size()
+        while (idx < len) {
+            val po = this.entries.valueAt(idx)!!
+            if (!po.isOnTop) {
+                removalList.add(idx)
+            }
+            idx++
+        }
+        while (idx < len) {
+            val indexToRemove = removalList[idx]
+            entries.removeAt(indexToRemove)
+            idx++
+        }
     }
 
     override fun toString(): String {

@@ -286,6 +286,7 @@ class WorldWindow : GLSurfaceView, GLSurfaceView.Renderer, MessageListener, Fram
         rc.drawableQueue = frame.drawableQueue
         rc.drawableTerrain = frame.drawableTerrain
         rc.pickedObjects = frame.pickedObjects
+        rc.pickViewport = frame.pickViewport
         rc.pickPoint = frame.pickPoint;
         rc.pickRay = frame.pickRay;
         rc.pickMode = frame.pickMode
@@ -333,6 +334,7 @@ class WorldWindow : GLSurfaceView, GLSurfaceView.Renderer, MessageListener, Fram
         dc.drawableQueue = frame.drawableQueue
         dc.drawableTerrain = frame.drawableTerrain
 
+        dc.pickViewport = frame.pickViewport
         dc.pickedObjects = frame.pickedObjects
         dc.pickPoint = frame.pickPoint
         dc.pickMode = frame.pickMode
@@ -670,5 +672,36 @@ class WorldWindow : GLSurfaceView, GLSurfaceView.Renderer, MessageListener, Fram
             }
         }
         return false
+    }
+
+    fun pickShapesInRect(
+        x: Float,
+        y: Float,
+        width: Float,
+        height: Float
+    ): PickedObjectList {
+        // Allocate a list in which to collect and return the picked objects.
+        val pickedObjects = PickedObjectList()
+        // Nothing can be picked if the World Window's OpenGL thread is paused.
+        if (isPaused) {
+            return pickedObjects
+        }
+        val px = Math.floor(x.toDouble()).toInt()
+        val py = Math.floor(height - (y + height).toDouble()).toInt()
+        val pw = Math.ceil(width.toDouble()).toInt()
+        val ph = Math.ceil(height.toDouble()).toInt()
+        if (!viewport.intersects(px, py, pw, ph)) {
+            return pickedObjects
+        }
+        // Obtain a frame from the pool and render the frame, accumulating Drawables to process in the OpenGL thread.
+        val frame = Frame.obtain(framePool)
+        frame.pickedObjects = pickedObjects
+        frame.pickViewport = Viewport(px, py, pw, ph) // caller-specified pick rectangle
+        frame.pickViewport!!.intersect(viewport) // limit the pick viewport to the screen viewport
+        frame.pickMode = true
+        renderFrame(frame)
+        // Wait until the OpenGL thread is done processing the frame and resolving the picked objects.
+        frame.awaitDone()
+        return pickedObjects
     }
 }

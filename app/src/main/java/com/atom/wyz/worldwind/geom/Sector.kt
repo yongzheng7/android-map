@@ -259,25 +259,40 @@ class Sector() {
      * 判断多个是否存在
      * 接着进行获取两个区域想融合的大小
      */
-    fun union(locations: Iterable<Location?>?): Sector {
-        if (locations == null) {
-            throw java.lang.IllegalArgumentException(
-                    Logger.logMessage(Logger.ERROR, "Sector", "union", "missingList"))
+    fun union(array : FloatArray? , count:Int , stride:Int ): Sector {
+        require(!(array == null || array.size < stride)) {
+            Logger.logMessage(
+                Logger.ERROR,
+                "Sector",
+                "union",
+                "missingArray"
+            )
         }
+        require(count >= 0) { Logger.logMessage(Logger.ERROR, "Sector", "union", "invalidCount") }
+        require(stride >= 2) { Logger.logMessage(Logger.ERROR, "Sector", "union", "invalidStride") }
+
         var minLat = if (java.lang.Double.isNaN(minLatitude)) Double.MAX_VALUE else minLatitude
         var maxLat = if (java.lang.Double.isNaN(maxLatitude)) -Double.MAX_VALUE else maxLatitude
         var minLon = if (java.lang.Double.isNaN(minLongitude)) Double.MAX_VALUE else minLongitude
         var maxLon = if (java.lang.Double.isNaN(maxLongitude)) -Double.MAX_VALUE else maxLongitude
 
-        for (location in locations) {
-            if (location == null) {
-                throw java.lang.IllegalArgumentException(
-                        Logger.logMessage(Logger.ERROR, "Sector", "union", "missingLocation"))
+        var idx = 0
+        while (idx < count) {
+            val lon = array[idx]
+            val lat = array[idx + 1]
+            if (maxLat < lat) {
+                maxLat = lat.toDouble()
             }
-            maxLat = Math.max(maxLat, location.latitude)
-            minLat = Math.min(minLat, location.latitude)
-            maxLon = Math.max(maxLon, location.longitude)
-            minLon = Math.min(minLon, location.longitude)
+            if (minLat > lat) {
+                minLat = lat.toDouble()
+            }
+            if (maxLon < lon) {
+                maxLon = lon.toDouble()
+            }
+            if (minLon > lon) {
+                minLon = lon.toDouble()
+            }
+            idx += stride
         }
 
         if (minLat < Double.MAX_VALUE) {

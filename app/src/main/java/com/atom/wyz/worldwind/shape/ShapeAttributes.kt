@@ -32,7 +32,7 @@ class ShapeAttributes {
         drawOutline = true
         enableLighting = false
         interiorColor = Color(Color.WHITE)
-        outlineColor = Color( Color.RED)
+        outlineColor = Color(Color.RED)
         outlineWidth = 1.0f
         outlineStippleFactor = 0
         outlineStipplePattern = 0xF0F0.toShort()
@@ -74,16 +74,17 @@ class ShapeAttributes {
         if (this === other) return true
         if (other == null || javaClass != other.javaClass) return false
         val that: ShapeAttributes = other as ShapeAttributes
-        if (drawInterior != that.drawInterior) return false
-        if (drawOutline != that.drawOutline) return false
-        if (enableLighting != that.enableLighting) return false
-        if (java.lang.Double.compare(that.outlineWidth.toDouble(), outlineWidth.toDouble()) != 0) return false
-        if (outlineStippleFactor != that.outlineStippleFactor) return false
-        if (outlineStipplePattern != that.outlineStipplePattern) return false
-        if (depthTest != that.depthTest) return false
-        if (drawVerticals != that.drawVerticals) return false
-        if (interiorColor != that.interiorColor) return false
-        return if (outlineColor != that.outlineColor ) false else !if (imageSource != null) imageSource != that.imageSource else that.imageSource != null
+        return drawInterior == that.drawInterior
+                && drawOutline == that.drawOutline
+                && drawVerticals == that.drawVerticals
+                && depthTest == that.depthTest
+                && enableLighting == that.enableLighting
+                && interiorColor.equals(that.interiorColor)
+                && outlineColor.equals(that.outlineColor)
+                && outlineWidth == that.outlineWidth
+                && outlineStippleFactor == that.outlineStippleFactor
+                && outlineStipplePattern == that.outlineStipplePattern
+                && if (imageSource == null) that.imageSource == null else imageSource!!.equals(that.imageSource)
     }
 
     override fun hashCode(): Int {

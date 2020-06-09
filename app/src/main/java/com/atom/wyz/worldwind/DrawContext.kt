@@ -8,6 +8,8 @@ import com.atom.wyz.worldwind.draw.DrawableTerrain
 import com.atom.wyz.worldwind.geom.*
 import com.atom.wyz.worldwind.pick.PickedObjectList
 import com.atom.wyz.worldwind.render.BufferObject
+import com.atom.wyz.worldwind.render.Framebuffer
+import com.atom.wyz.worldwind.render.GpuTexture
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
 import java.util.*
@@ -39,6 +41,8 @@ class DrawContext {
 
     var pickMode = false
 
+    var pickViewport: Viewport? = null
+
     private var framebufferId = 0
 
     protected var programId = 0
@@ -51,14 +55,15 @@ class DrawContext {
 
     protected var elementArrayBufferId = 0
 
+    protected var surfaceFramebuffer: Framebuffer? = null
+
     protected var unitSquareBuffer: BufferObject? = null
 
     protected var scratchList = ArrayList<Any?>()
 
-    private val pixelBuffer =
-        ByteBuffer.allocateDirect(4).order(ByteOrder.nativeOrder())
+    private var scratchBuffer = ByteBuffer.allocateDirect(4).order(ByteOrder.nativeOrder())
 
-    private val pixelArray = ByteArray(4)
+    private var pixelArray = ByteArray(4)
 
 
     fun reset() {
@@ -72,10 +77,12 @@ class DrawContext {
         drawableQueue = null
         drawableTerrain = null
 
+        pickViewport = null
         pickedObjects = null
         pickPoint = null
         pickMode = false
 
+        scratchBuffer.clear()
         scratchList.clear()
     }
 
@@ -86,6 +93,7 @@ class DrawContext {
         arrayBufferId = 0
         elementArrayBufferId = 0
         unitSquareBuffer = null
+        surfaceFramebuffer = null
         Arrays.fill(textureId, 0)
     }
 
@@ -118,6 +126,14 @@ class DrawContext {
             this.framebufferId = framebufferId
             GLES20.glBindFramebuffer(GLES20.GL_FRAMEBUFFER, framebufferId)
         }
+    }
+
+    fun surfaceFramebuffer(): Framebuffer {
+        surfaceFramebuffer?.let { return it }
+        val framebuffer = Framebuffer()
+        val colorAttachment = GpuTexture(1024, 1024, GLES20.GL_RGBA)
+        framebuffer.attachTexture(this, colorAttachment, GLES20.GL_COLOR_ATTACHMENT0)
+        return framebuffer.also { surfaceFramebuffer = it }
     }
 
     fun currentProgram(): Int {
@@ -182,17 +198,17 @@ class DrawContext {
         }
     }
 
-    val points = floatArrayOf(0f, 1f, 0f, 0f, 1f, 1f, 1f, 0f)
 
     fun unitSquareBuffer(): BufferObject {
         unitSquareBuffer?.let {
             return it
         }
+        val points = floatArrayOf(0f, 1f, 0f, 0f, 1f, 1f, 1f, 0f)
         val size = points.size * 4
         val buffer = ByteBuffer.allocateDirect(size).order(ByteOrder.nativeOrder()).asFloatBuffer()
         buffer.put(points).rewind()
-        unitSquareBuffer = BufferObject(GLES20.GL_ARRAY_BUFFER, size, buffer)
-        return unitSquareBuffer!!
+        val bufferObject = BufferObject(GLES20.GL_ARRAY_BUFFER, size, buffer)
+        return bufferObject.also { unitSquareBuffer = it }
     }
 
     fun scratchList(): ArrayList<Any?> {
@@ -204,8 +220,12 @@ class DrawContext {
      */
     fun readPixelColor(x: Int, y: Int, result_temp: Color?): Color {
         val result = result_temp ?: Color()
-        GLES20.glReadPixels(x, y, 1, 1, GLES20.GL_RGBA, GLES20.GL_UNSIGNED_BYTE, pixelBuffer.rewind())
-        pixelBuffer[pixelArray]
+
+        // Read the fragment pixel as an RGBA 8888 color.
+        val pixelBuffer = this.scratchBuffer(4).clear() as ByteBuffer
+        GLES20.glReadPixels(x, y, 1, 1, GLES20.GL_RGBA, GLES20.GL_UNSIGNED_BYTE, pixelBuffer)
+        pixelBuffer.get(this.pixelArray, 0, 4)
+
         result.red = (pixelArray[0] and 0xFF.toByte()) / 0xFF.toFloat()
         result.green = (pixelArray[1] and 0xFF.toByte()) / 0xFF.toFloat()
         result.blue = (pixelArray[2] and 0xFF.toByte()) / 0xFF.toFloat()
@@ -213,4 +233,39 @@ class DrawContext {
         return result
     }
 
+    fun readPixelColors(x: Int, y: Int, width: Int, height: Int): Set<Color> {
+        // Read the fragment pixels as a tightly packed array of RGBA 8888 colors.
+        val pixelCount = width * height
+        val pixelBuffer = scratchBuffer(pixelCount * 4).clear() as ByteBuffer
+        GLES20.glReadPixels(x, y, width, height, GLES20.GL_RGBA, GLES20.GL_UNSIGNED_BYTE, pixelBuffer)
+
+        val resultSet = HashSet<Color>()
+        var result = Color()
+
+        var idx = 0
+        while (idx < pixelCount) {
+            // Copy each RGBA 888 color from the NIO buffer a heap array in bulk to reduce buffer access overhead.
+            pixelBuffer[pixelArray, 0, 4]
+
+            // Convert the RGBA 8888 color to a World Wind color.
+            result.red = (pixelArray[0] and 0xFF.toByte()) / 0xFF.toFloat()
+            result.green = (pixelArray[1] and 0xFF.toByte()) / 0xFF.toFloat()
+            result.blue = (pixelArray[2] and 0xFF.toByte()) / 0xFF.toFloat()
+            result.alpha = (pixelArray[3] and 0xFF.toByte()) / 0xFF.toFloat()
+
+            // Accumulate the unique colors in a set.
+            if (resultSet.add(result)) {
+                result = Color()
+            }
+            idx++
+        }
+        return resultSet
+    }
+
+    fun scratchBuffer(capacity: Int): ByteBuffer {
+        if (scratchBuffer.capacity() < capacity) {
+            scratchBuffer = ByteBuffer.allocateDirect(capacity).order(ByteOrder.nativeOrder())
+        }
+        return scratchBuffer
+    }
 }

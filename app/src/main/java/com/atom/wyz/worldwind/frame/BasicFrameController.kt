@@ -27,8 +27,10 @@ class BasicFrameController : FrameController {
         clearFrame(dc)
         drawDrawables(dc)
 
-        if (dc.pickMode) {
-            this.resolvePick(dc)
+        if (dc.pickMode && dc.pickPoint != null) {
+            resolvePick(dc)
+        } else if (dc.pickMode) {
+            this.resolvePickRect(dc)
         }
     }
 
@@ -134,14 +136,36 @@ class BasicFrameController : FrameController {
         }
         rc.offerSurfaceDrawable(drawable, Double.NEGATIVE_INFINITY)
         if (resolveTerrainPickPosition(rc, this.pickPos)) {
-            rc.offerPickedObject(PickedObject.fromTerrain(pickedObjectId , this.pickPos))
+            rc.offerPickedObject(PickedObject.fromTerrain(pickedObjectId, this.pickPos))
         }
+    }
+
+    protected fun resolvePickRect(dc: DrawContext) {
+        val pickedObjects = dc.pickedObjects ?: return
+        if (pickedObjects.count() == 0) {
+            return  // no eligible objects; avoid expensive calls to glReadPixels
+        }
+        val pickColors =
+            dc.readPixelColors(
+                dc.pickViewport!!.x,
+                dc.pickViewport!!.y,
+                dc.pickViewport!!.width,
+                dc.pickViewport!!.height
+            )
+        for (pickColor in pickColors) {
+            val topObjectId = PickedObject.uniqueColorToIdentifier(pickColor)
+            if (topObjectId != 0) {
+                val topObject = pickedObjects.pickedObjectWithId(topObjectId)
+                topObject?.markOnTop()
+            }
+        }
+        pickedObjects.keepTopObjects()
     }
 
     protected fun resolveTerrainPickPosition(rc: RenderContext, result: Position?): Boolean {
         val terrain = rc.terrain ?: return false
         val globe = rc.globe ?: return false
-        if (terrain.intersect(rc.pickRay, pickPoint)) {
+        if (rc.pickRay != null && terrain.intersect(rc.pickRay, pickPoint)) {
             globe.cartesianToGeographic(pickPoint.x, pickPoint.y, pickPoint.z, result)?.let {
                 result?.set(it)
                 result?.altitude = 0.0

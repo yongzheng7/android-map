@@ -104,7 +104,30 @@ class Viewport() {
     fun contains(x: Int, y: Int): Boolean {
         return x >= this.x && x < this.x + width && y >= this.y && y < this.y + height
     }
-
+    fun intersects(x: Int, y: Int, width: Int, height: Int): Boolean {
+        return this.width > 0 && this.height > 0 && width > 0 && height > 0 && this.x < x + width && x < this.x + this.width && this.y < y + height && y < this.y + this.height
+    }
+    fun intersect(x: Int, y: Int, width: Int, height: Int): Boolean {
+        if (this.width > 0 && this.height > 0 && width > 0 && height > 0 && this.x < x + width && x < this.x + this.width && this.y < y + height && y < this.y + this.height
+        ) {
+            if (this.x < x) {
+                this.width -= x - this.x
+                this.x = x
+            }
+            if (this.y < y) {
+                this.height -= y - this.y
+                this.y = y
+            }
+            if (this.x + this.width > x + width) {
+                this.width = x + width - this.x
+            }
+            if (this.y + this.height > y + height) {
+                this.height = y + height - this.y
+            }
+            return true
+        }
+        return false
+    }
 
     override fun equals(other: Any?): Boolean {
         if (this === other) {

@@ -4,13 +4,18 @@ import com.atom.wyz.worldwind.RenderContext
 import com.atom.wyz.worldwind.WorldWind
 import com.atom.wyz.worldwind.geom.BoundingBox
 import com.atom.wyz.worldwind.geom.Color
+import com.atom.wyz.worldwind.geom.Sector
 import com.atom.wyz.worldwind.pick.PickedObject
 import com.atom.wyz.worldwind.render.AbstractRenderable
 
-open class AbstractShape  : AbstractRenderable , Attributable, Highlightable {
-     override var attributes: ShapeAttributes? = null
+abstract class AbstractShape : AbstractRenderable, Attributable, Highlightable {
+    companion object {
+        const val NEAR_ZERO_THRESHOLD = 1.0e-10
+    }
 
-     override var highlightAttributes: ShapeAttributes? = null
+    override var attributes: ShapeAttributes? = null
+
+    override var highlightAttributes: ShapeAttributes? = null
 
     protected var activeAttributes: ShapeAttributes? = null
 
@@ -18,27 +23,29 @@ open class AbstractShape  : AbstractRenderable , Attributable, Highlightable {
 
     @WorldWind.AltitudeMode
     var altitudeMode: Int = WorldWind.ABSOLUTE
-    set(value) {
-        field = value
-        this.reset()
-    }
+        set(value) {
+            field = value
+            this.reset()
+        }
 
     @WorldWind.PathType
     var pathType: Int = WorldWind.GREAT_CIRCLE
-    set(value) {
-        field = value
-        this.reset()
-    }
+        set(value) {
+            field = value
+            this.reset()
+        }
+    var maximumIntermediatePoints = 10
 
-    protected var pickedObjectId = 0
+    var pickedObjectId = 0
 
-    protected var pickColor: Color = Color()
+    var pickColor: Color = Color()
 
-    protected val boundingBox: BoundingBox
+    var boundingSector: Sector = Sector()
+
+    val boundingBox: BoundingBox = BoundingBox()
 
     constructor(attributes: ShapeAttributes = ShapeAttributes()) : super("AbstractShape") {
         this.attributes = attributes
-        boundingBox = BoundingBox()
     }
 
     override fun doRender(rc: RenderContext) {
@@ -69,7 +76,6 @@ open class AbstractShape  : AbstractRenderable , Attributable, Highlightable {
         }
     }
 
-    protected open fun reset() {}
 
     protected fun intersectsFrustum(rc: RenderContext): Boolean {
         return boundingBox.isUnitBox() || boundingBox.intersectsFrustum(rc.frustum)
@@ -83,10 +89,11 @@ open class AbstractShape  : AbstractRenderable , Attributable, Highlightable {
         }
     }
 
-    protected open fun makeDrawable(rc: RenderContext) {}
+    protected abstract fun makeDrawable(rc: RenderContext)
+    protected abstract fun reset()
 
     override fun isHighlighted(): Boolean {
-        return _highlighted  ;
+        return _highlighted;
     }
 
     override fun setHighlighted(highlighted: Boolean) {

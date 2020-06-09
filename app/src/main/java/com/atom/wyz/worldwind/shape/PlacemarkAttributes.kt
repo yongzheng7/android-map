@@ -124,13 +124,15 @@ class PlacemarkAttributes {
             return false
         }
         val that = o as PlacemarkAttributes
-        return if (imageSource == null) that.imageSource == null else if (imageSource!!.equals(that.imageSource)
-            && imageColor!!.equals(that.imageColor)
-            && imageOffset!!.equals(that.imageOffset)
-            && imageScale == that.imageScale && minimumImageScale == that.minimumImageScale && drawLeader == that.drawLeader && depthTest == that.depthTest && labelAttributes == null
-        ) that.labelAttributes == null else if (labelAttributes!!.equals(that.labelAttributes)
-            && leaderAttributes == null
-        ) that.leaderAttributes == null else leaderAttributes!!.equals(that.leaderAttributes)
+        return ((if (imageSource == null) that.imageSource == null else imageSource!!.equals(that.imageSource))
+                && imageColor!!.equals(that.imageColor)
+                && imageOffset!!.equals(that.imageOffset)
+                && imageScale == that.imageScale
+                && minimumImageScale == that.minimumImageScale
+                && drawLeader == that.drawLeader
+                && depthTest == that.depthTest
+                && (if (labelAttributes == null) that.labelAttributes == null else labelAttributes!!.equals(that.labelAttributes))
+                && if (leaderAttributes == null) that.leaderAttributes == null else leaderAttributes!!.equals(that.leaderAttributes))
     }
 
     override fun hashCode(): Int {

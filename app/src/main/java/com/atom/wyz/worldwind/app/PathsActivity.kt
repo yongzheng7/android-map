@@ -10,17 +10,15 @@ import com.atom.wyz.worldwind.shape.ShapeAttributes
 import java.util.*
 
 class PathsActivity : BasicWorldWindActivity() {
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        // Create a layer to display the tutorial paths.
         // Create a layer to display the tutorial paths.
         val layer = RenderableLayer()
         wwd.layers.addLayer(layer)
 
         // Create a basic path with the default attributes, the default altitude mode (ABSOLUTE),
         // and the default path type (GREAT_CIRCLE).
-        // Create a basic path with the default attributes, the default altitude mode (ABSOLUTE),
-// and the default path type (GREAT_CIRCLE).
         var positions = Arrays.asList(
             Position.fromDegrees(50.0, -180.0, 1e5),
             Position.fromDegrees(30.0, -100.0, 1e6),
@@ -31,8 +29,6 @@ class PathsActivity : BasicWorldWindActivity() {
 
         // Create a basic path with the default attributes, the CLAMP_TO_GROUND altitude mode,
         // and the default path type (GREAT_CIRCLE).
-        // Create a basic path with the default attributes, the CLAMP_TO_GROUND altitude mode,
-// and the default path type (GREAT_CIRCLE).
         positions = Arrays.asList(
             Position.fromDegrees(40.0, -180.0, 0.0),
             Position.fromDegrees(20.0, -100.0, 0.0),
@@ -40,12 +36,11 @@ class PathsActivity : BasicWorldWindActivity() {
         )
         path = Path(positions)
         path.altitudeMode = (WorldWind.CLAMP_TO_GROUND)
+        path.followTerrain = (true)
         layer.addRenderable(path)
 
         // Create an extruded path with the default attributes, the default altitude mode (ABSOLUTE),
         // and the default path type (GREAT_CIRCLE).
-        // Create an extruded path with the default attributes, the default altitude mode (ABSOLUTE),
-// and the default path type (GREAT_CIRCLE).
         positions = Arrays.asList(
             Position.fromDegrees(30.0, -180.0, 1e5),
             Position.fromDegrees(10.0, -100.0, 1e6),
@@ -58,8 +53,6 @@ class PathsActivity : BasicWorldWindActivity() {
 
         // Create an extruded path with custom attributes that display the extruded vertical lines,
         // make the extruded interior 50% transparent, and increase the path line with.
-        // Create an extruded path with custom attributes that display the extruded vertical lines,
-// make the extruded interior 50% transparent, and increase the path line with.
         positions = Arrays.asList(
             Position.fromDegrees(20.0, -180.0, 1e5),
             Position.fromDegrees(0.0, -100.0, 1e6),
