@@ -42,10 +42,10 @@ class PlacemarksActivity : BasicWorldWindActivity() , Runnable {
         southPole.attributes.imageSource = (ImageSource.fromResource(R.drawable.airport))
         antiMeridian.attributes.imageSource = (ImageSource.fromResource(R.drawable.airport_terminal))
         
-        origin.attributes.imageOffset = (Offset.CENTER)
-        northPole.attributes.imageOffset = (Offset.CENTER)
-        southPole.attributes.imageOffset = (Offset.CENTER)
-        antiMeridian.attributes.imageOffset = (Offset.CENTER)
+        origin.attributes.imageOffset = (Offset.center())
+        northPole.attributes.imageOffset = (Offset.center())
+        southPole.attributes.imageOffset = (Offset.center())
+        antiMeridian.attributes.imageOffset = (Offset.center())
         
         placemarksLayer.addRenderable(origin)
         placemarksLayer.addRenderable(northPole)
@@ -92,7 +92,7 @@ class PlacemarksActivity : BasicWorldWindActivity() , Runnable {
         // Create pushpins anchored at the "pinpoints" with eye distance scaling
 
         val attributes: PlacemarkAttributes = PlacemarkAttributes()
-        attributes.imageOffset = (Offset.CENTER)
+        attributes.imageOffset = (Offset.center())
         attributes.imageSource = ImageSource.fromResource(R.drawable.crosshairs)
         attributes.imageScale = (1.0)
         for (i in 0 until 1000) { // Create an even distribution of latitude and longitudes across the globe.

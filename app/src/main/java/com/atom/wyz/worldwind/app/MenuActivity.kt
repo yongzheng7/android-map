@@ -90,6 +90,9 @@ class MenuActivity : AppCompatActivity() {
             R.id.pathsAndPolygonsActivity -> {
                 startActivity(Intent(this, PathsAndPolygonsActivity::class.java))
             }
+            R.id.multiGlobeActivity -> {
+                startActivity(Intent(this, MultiGlobeActivity::class.java))
+            }
         }
     }
 

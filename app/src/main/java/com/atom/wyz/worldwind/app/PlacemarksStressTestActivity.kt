@@ -47,22 +47,22 @@ class PlacemarksStressTestActivity : BasicWorldWindActivity() , FrameCallback {
 
         // Create some placemarks at a known locations
         var withImageAndLabel = PlacemarkAttributes.withImageAndLabel(ImageSource.fromResource(R.drawable.air_fixwing))
-        withImageAndLabel.imageOffset = Offset.CENTER
+        withImageAndLabel.imageOffset = Offset.center()
         val origin: Placemark = Placemark(Position.fromDegrees(0.0, 0.0, 1e5),
                 withImageAndLabel,
                 "Origin")
         withImageAndLabel = PlacemarkAttributes.withImageAndLabelLeaderLine(ImageSource.fromResource(R.drawable.air_fixwing))
-        withImageAndLabel.imageOffset = Offset.BOTTOM_CENTER
+        withImageAndLabel.imageOffset = Offset.bottomCenter()
         val northPole: Placemark = Placemark(Position.fromDegrees(90.0, 0.0, 1e5),
                 withImageAndLabel,
                 "North Pole")
         withImageAndLabel = PlacemarkAttributes.withImageAndLabel(ImageSource.fromResource(R.drawable.crosshairs))
-        withImageAndLabel.imageOffset = Offset.BOTTOM_LEFT
+        withImageAndLabel.imageOffset = Offset.bottomLeft()
         val southPole: Placemark = Placemark(Position.fromDegrees(-90.0, 0.0, 0.0),
                 withImageAndLabel,
                 "South Pole")
         withImageAndLabel =  PlacemarkAttributes.withImageAndLabel(ImageSource.fromResource(R.drawable.ehipcc))
-        withImageAndLabel.imageOffset = Offset.BOTTOM_RIGHT
+        withImageAndLabel.imageOffset = Offset.bottomRight()
 
         val antiMeridian: Placemark = Placemark(Position.fromDegrees(0.0, 180.0, 0.0),
                 withImageAndLabel,
@@ -80,7 +80,7 @@ class PlacemarksStressTestActivity : BasicWorldWindActivity() , FrameCallback {
         val random = Random(123)
         
         val attributes: PlacemarkAttributes = PlacemarkAttributes.withImage(ImageSource.fromResource(R.drawable.ic_menu_home))
-        attributes.imageOffset  = Offset.CENTER
+        attributes.imageOffset  = Offset.center()
 
         for (i in 0 until NUM_PLACEMARKS) {
             val lat = Math.toDegrees(Math.asin(random.nextDouble())) * if (random.nextBoolean()) 1 else -1

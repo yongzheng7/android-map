@@ -90,6 +90,8 @@
         </activity>
         <activity android:name=".app.PathsAndPolygonsActivity">
         </activity>
+        <activity android:name=".app.MultiGlobeActivity">
+        </activity>
 
     </application>
 

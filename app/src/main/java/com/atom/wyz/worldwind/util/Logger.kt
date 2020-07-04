@@ -75,6 +75,7 @@ class Logger {
             "missingFrameStatistics" to "The frame metrics argument is null",
             "invalidCapacity" to "The capacity is less than 1",
             "missingColor" to "The color is null",
+            "missingTypeface" to "The typeface is null",
             "missingGlobe" to "The globe is null"
         )
 

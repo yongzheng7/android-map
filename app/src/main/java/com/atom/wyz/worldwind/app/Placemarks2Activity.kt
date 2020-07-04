@@ -41,14 +41,14 @@ class Placemarks2Activity : BasicWorldWindActivity() {
         val airport = Placemark(
                 Position.fromDegrees(34.200, -119.208, 0.0),
                 PlacemarkAttributes.withImageAndLabel(ImageSource.fromResource(R.drawable.airport_terminal)).apply {
-                    this.imageOffset = (Offset.BOTTOM_CENTER)
+                    this.imageOffset = (Offset.bottomCenter())
                     this.imageScale = 2.0
                 },
                 "Oxnard Airport")
 
         val wildfire = Placemark(
                 Position.fromDegrees(34.300, -119.25, 0.0),
-                PlacemarkAttributes.withImageAndLabel(ImageSource.fromBitmap( BitmapFactory.decodeResource(resources, R.drawable.ehipcc))).apply { this.imageOffset = Offset.BOTTOM_CENTER },
+                PlacemarkAttributes.withImageAndLabel(ImageSource.fromBitmap( BitmapFactory.decodeResource(resources, R.drawable.ehipcc))).apply { this.imageOffset = Offset.bottomCenter() },
                 "Fire")
 
         placemarksLayer.addRenderable(ventura)

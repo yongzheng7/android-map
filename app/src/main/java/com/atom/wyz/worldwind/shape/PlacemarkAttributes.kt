@@ -59,7 +59,7 @@ class PlacemarkAttributes {
 
     constructor() {
         imageColor = Color(1f, 1f, 1f, 1f)
-        imageOffset = Offset(Offset.CENTER)
+        imageOffset = Offset(Offset.center())
         imageScale = 1.0
         imageSource = null
         drawLeader = false
@@ -115,15 +115,15 @@ class PlacemarkAttributes {
         return this
     }
 
-    override fun equals(o: Any?): Boolean {
-        if (this === o) {
+    override fun equals(other: Any?): Boolean {
+        if (this === other) {
             return true
         }
 
-        if (o == null || this.javaClass != o.javaClass) {
+        if (other == null || this.javaClass != other.javaClass) {
             return false
         }
-        val that = o as PlacemarkAttributes
+        val that = other as PlacemarkAttributes
         return ((if (imageSource == null) that.imageSource == null else imageSource!!.equals(that.imageSource))
                 && imageColor!!.equals(that.imageColor)
                 && imageOffset!!.equals(that.imageOffset)

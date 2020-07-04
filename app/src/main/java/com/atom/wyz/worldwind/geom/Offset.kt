@@ -7,22 +7,26 @@ class Offset {
 
     companion object{
 
-        val CENTER: Offset = Offset(WorldWind.OFFSET_FRACTION, 0.5, WorldWind.OFFSET_FRACTION, 0.5)
-        val BOTTOM_LEFT: Offset = Offset(WorldWind.OFFSET_FRACTION, 0.0, WorldWind.OFFSET_FRACTION, 0.0)
-        val BOTTOM_CENTER: Offset = Offset(WorldWind.OFFSET_FRACTION, 0.5, WorldWind.OFFSET_FRACTION, 0.0)
-        val BOTTOM_RIGHT: Offset = Offset(WorldWind.OFFSET_FRACTION, 1.0, WorldWind.OFFSET_FRACTION, 0.0)
-
         fun center(): Offset {
-            return CENTER
+            return Offset(WorldWind.OFFSET_FRACTION, 0.5, WorldWind.OFFSET_FRACTION, 0.5)
         }
         fun bottomLeft(): Offset {
-            return BOTTOM_LEFT
+            return Offset(WorldWind.OFFSET_FRACTION, 0.0, WorldWind.OFFSET_FRACTION, 0.0)
         }
         fun bottomCenter(): Offset {
-            return BOTTOM_CENTER
+            return Offset(WorldWind.OFFSET_FRACTION, 0.5, WorldWind.OFFSET_FRACTION, 0.0)
         }
         fun bottomRight(): Offset {
-            return BOTTOM_RIGHT
+            return Offset(WorldWind.OFFSET_FRACTION, 1.0, WorldWind.OFFSET_FRACTION, 0.0)
+        }
+        fun topLeft(): Offset {
+            return Offset(WorldWind.OFFSET_FRACTION, 0.0, WorldWind.OFFSET_FRACTION, 1.0)
+        }
+        fun topCenter(): Offset {
+            return Offset(WorldWind.OFFSET_FRACTION, 0.5, WorldWind.OFFSET_FRACTION, 1.0)
+        }
+        fun topRight(): Offset  {
+            return Offset(WorldWind.OFFSET_FRACTION, 1.0, WorldWind.OFFSET_FRACTION, 1.0)
         }
     }
     /**
@@ -60,11 +64,11 @@ class Offset {
     /**
      * Creates a new copy of this offset with identical property values.
      */
-    constructor(copy: Offset) {
-        x = copy.x
-        y = copy.y
-        xUnits = copy.xUnits
-        yUnits = copy.yUnits
+    constructor(offset: Offset) {
+        x = offset.x
+        y = offset.y
+        xUnits = offset.xUnits
+        yUnits = offset.yUnits
     }
 
     fun set(offset: Offset): Offset {
@@ -76,12 +80,15 @@ class Offset {
     }
 
     override fun equals(other: Any?): Boolean {
-        if (this === other) return true
-        if (other == null || javaClass != other.javaClass) return false
-        val offset: Offset = other as Offset
-        if (java.lang.Double.compare(offset.x, x) != 0) return false
-        if (java.lang.Double.compare(offset.y, y) != 0) return false
-        return if (xUnits != offset.xUnits) false else yUnits == offset.yUnits
+        if (this === other) {
+            return true
+        }
+        if (other == null || this.javaClass != other.javaClass) {
+            return false
+        }
+
+        val that = other as Offset
+        return x == that.x && y == that.y && xUnits == that.xUnits && yUnits == that.yUnits
     }
 
     override fun hashCode(): Int {

@@ -315,7 +315,8 @@ class Polygon : AbstractShape {
     protected fun drawInterior(
         rc: RenderContext,
         drawState: DrawShapeState
-    ) { // Configure the drawable to display the shape's interior (and its optional extruded interior).
+    ) {
+        // Configure the drawable to display the shape's interior (and its optional extruded interior).
         if (activeAttributes!!.drawInterior) {
             drawState.color(if (rc.pickMode) pickColor else activeAttributes!!.interiorColor)
             drawState.drawElements(
@@ -343,15 +344,6 @@ class Polygon : AbstractShape {
             drawState.drawElements(
                 GLES20.GL_LINES, verticalElements.size(),
                 GLES20.GL_UNSIGNED_SHORT, interiorElements.size() * 2 + outlineElements.size() * 2
-            )
-        }
-
-        // Configure the drawable to display the shape's interior (and its optional extruded interior).
-        if (activeAttributes!!.drawInterior) {
-            drawState.color(if (rc.pickMode) pickColor else activeAttributes!!.interiorColor)
-            drawState.drawElements(
-                GLES20.GL_TRIANGLES, interiorElements.size(),
-                GLES20.GL_UNSIGNED_SHORT, 0
             )
         }
     }
