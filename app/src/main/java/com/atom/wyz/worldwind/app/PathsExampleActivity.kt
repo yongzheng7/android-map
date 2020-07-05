@@ -146,7 +146,7 @@ class PathsExampleActivity : BasicGlobeActivity()  , Handler.Callback  {
     protected fun populateFlightPaths() {
         val attrs = ShapeAttributes()
         attrs.interiorColor.set(0.8f, 0.8f, 1.0f, 0.8f)
-        attrs.outlineColor.set(0.0f, 0.0f, 1.0f, 1.0f)
+        attrs.outlineColor.set(0.0f, 0.0f,  0.0f, 1.0f)
         val dept = airportIkoIndex["KSEA"]
         for (dest in airportTable) {
             if (dest == dept) {

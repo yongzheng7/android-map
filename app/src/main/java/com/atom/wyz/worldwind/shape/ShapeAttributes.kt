@@ -17,11 +17,9 @@ class ShapeAttributes {
 
     var outlineWidth = 0f
 
-    var outlineStippleFactor = 0
+    var interiorImageSource: ImageSource? = null
 
-    var outlineStipplePattern: Short = 0
-
-    var imageSource: ImageSource? = null
+    var outlineImageSource: ImageSource? = null
 
     var depthTest = false
 
@@ -34,9 +32,8 @@ class ShapeAttributes {
         interiorColor = Color(Color.WHITE)
         outlineColor = Color(Color.RED)
         outlineWidth = 1.0f
-        outlineStippleFactor = 0
-        outlineStipplePattern = 0xF0F0.toShort()
-        imageSource = null
+        interiorImageSource = null
+        outlineImageSource = null
         depthTest = true
         drawVerticals = false
     }
@@ -48,43 +45,44 @@ class ShapeAttributes {
         interiorColor = attributes.interiorColor.let { Color(it) }
         outlineColor = attributes.outlineColor.let { Color(it) }
         outlineWidth = attributes.outlineWidth
-        outlineStippleFactor = attributes.outlineStippleFactor
-        outlineStipplePattern = attributes.outlineStipplePattern
-        imageSource = attributes.imageSource
+        interiorImageSource = attributes.interiorImageSource
+        outlineImageSource = attributes.outlineImageSource
         depthTest = attributes.depthTest
         drawVerticals = attributes.drawVerticals
     }
 
     fun set(attributes: ShapeAttributes): ShapeAttributes {
-        imageSource = attributes.imageSource
         attributes.interiorColor.let { interiorColor.set(it) }
         attributes.outlineColor.let { outlineColor.set(it) }
         drawInterior = attributes.drawInterior
         drawOutline = attributes.drawOutline
         enableLighting = attributes.enableLighting
         outlineWidth = attributes.outlineWidth
-        outlineStippleFactor = attributes.outlineStippleFactor
-        outlineStipplePattern = attributes.outlineStipplePattern
+        interiorImageSource = attributes.interiorImageSource
+        outlineImageSource = attributes.outlineImageSource
         depthTest = attributes.depthTest
         drawVerticals = attributes.drawVerticals
         return this
     }
 
     override fun equals(other: Any?): Boolean {
-        if (this === other) return true
-        if (other == null || javaClass != other.javaClass) return false
-        val that: ShapeAttributes = other as ShapeAttributes
-        return drawInterior == that.drawInterior
-                && drawOutline == that.drawOutline
-                && drawVerticals == that.drawVerticals
-                && depthTest == that.depthTest
-                && enableLighting == that.enableLighting
-                && interiorColor.equals(that.interiorColor)
+        if (this === other) {
+            return true
+        }
+        if (other == null || this.javaClass != other.javaClass) {
+            return false
+        }
+        val that = other as ShapeAttributes
+        return (drawInterior == that.drawInterior && drawOutline == that.drawOutline && drawVerticals == that.drawVerticals && depthTest == that.depthTest && enableLighting == that.enableLighting && interiorColor.equals(
+            that.interiorColor
+        )
                 && outlineColor.equals(that.outlineColor)
-                && outlineWidth == that.outlineWidth
-                && outlineStippleFactor == that.outlineStippleFactor
-                && outlineStipplePattern == that.outlineStipplePattern
-                && if (imageSource == null) that.imageSource == null else imageSource!!.equals(that.imageSource)
+                && outlineWidth == that.outlineWidth && (if (interiorImageSource == null) that.interiorImageSource == null else interiorImageSource!!.equals(
+            that.interiorImageSource
+        ))
+                && if (outlineImageSource == null) that.outlineImageSource == null else outlineImageSource!!.equals(
+            that.outlineImageSource
+        ))
     }
 
     override fun hashCode(): Int {
@@ -92,16 +90,15 @@ class ShapeAttributes {
         val temp: Long
         result = if (drawInterior) 1 else 0
         result = 31 * result + if (drawOutline) 1 else 0
+        result = 31 * result + if (depthTest) 1 else 0
+        result = 31 * result + if (drawVerticals) 1 else 0
         result = 31 * result + if (enableLighting) 1 else 0
         result = 31 * result + interiorColor.hashCode()
         result = 31 * result + outlineColor.hashCode()
         temp = java.lang.Double.doubleToLongBits(outlineWidth.toDouble())
         result = 31 * result + (temp xor (temp ushr 32)).toInt()
-        result = 31 * result + outlineStippleFactor
-        result = 31 * result + outlineStipplePattern.toInt()
-        result = 31 * result + if (imageSource != null) imageSource.hashCode() else 0
-        result = 31 * result + if (depthTest) 1 else 0
-        result = 31 * result + if (drawVerticals) 1 else 0
+        result = 31 * result + if (interiorImageSource != null) interiorImageSource.hashCode() else 0
+        result = 31 * result + if (outlineImageSource != null) outlineImageSource.hashCode() else 0
         return result
     }
 }

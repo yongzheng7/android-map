@@ -43,6 +43,8 @@ class WorldWindow : GLSurfaceView, GLSurfaceView.Renderer, MessageListener, Fram
         const val MSG_ID_REQUEST_REDRAW = 2
 
         const val MSG_ID_SET_VIEWPORT = 3
+
+        const val MSG_ID_SET_DEPTH_BITS = 4
     }
 
     var globe: Globe = GlobeWgs84()
@@ -81,6 +83,8 @@ class WorldWindow : GLSurfaceView, GLSurfaceView.Renderer, MessageListener, Fram
 
     var viewport = Viewport()
 
+    var depthBits = 0
+
     var renderResourceCache: RenderResourceCache? = null
 
     var rc = RenderContext()
@@ -105,6 +109,8 @@ class WorldWindow : GLSurfaceView, GLSurfaceView.Renderer, MessageListener, Fram
                 requestRedraw()
             } else if (it.what == MSG_ID_SET_VIEWPORT) {
                 viewport.set((it.obj as Viewport))
+            } else if (it.what == MSG_ID_SET_DEPTH_BITS) {
+                depthBits = it.obj as Int
             }
             false
         })
@@ -231,9 +237,22 @@ class WorldWindow : GLSurfaceView, GLSurfaceView.Renderer, MessageListener, Fram
         projection: Matrix4,
         modelview: Matrix4?
     ) {
-        val near = navigator.altitude * 0.75
+        var near = navigator.altitude * 0.5
         val far = globe.horizonDistance(navigator.altitude, 160000.0)
         viewport.set(this.viewport)
+
+        // Computes the near clip distance that provides a minimum resolution at the far clip plane, based on the OpenGL
+        // context's depth buffer precision.
+        if (depthBits != 0) {
+            val maxDepthValue = (1 shl depthBits) - 1.toDouble()
+            val farResolution = 10.0
+            val nearDistance = far / (maxDepthValue / (1 - farResolution / far) - maxDepthValue + 1)
+            // Use the computed near distance only when it's less than our default distance.
+            if (near > nearDistance) {
+                near = nearDistance
+            }
+        }
+
         projection.setToPerspectiveProjection(
             this.viewport.width.toDouble(),
             this.viewport.height.toDouble(),
@@ -379,6 +398,17 @@ class WorldWindow : GLSurfaceView, GLSurfaceView.Renderer, MessageListener, Fram
         GLES20.glEnableVertexAttribArray(0)
 
         this.dc.contextLost()
+
+        // Set the World Window's depth bits.
+        val depthBits = IntArray(1)
+        GLES20.glGetIntegerv(GLES20.GL_DEPTH_BITS, depthBits, 0)
+        this.mainLoopHandler.sendMessage(
+            Message.obtain(
+                this.mainLoopHandler,
+                MSG_ID_SET_DEPTH_BITS /*msg.what*/,
+                depthBits[0] /*msg.obj*/
+            )
+        )
         // Clear the render resource cache on the main thread.
         this.mainLoopHandler.sendEmptyMessage(MSG_ID_CLEAR_CACHE /*msg.what*/)
 

@@ -4,10 +4,9 @@ import android.app.ActivityManager
 import android.content.Context
 import android.content.res.Resources
 import android.graphics.Bitmap
-import android.graphics.BitmapFactory
+import android.opengl.GLES20
 import android.os.Handler
 import android.os.Message
-import android.util.Log
 import com.atom.wyz.worldwind.DrawContext
 import com.atom.wyz.worldwind.WorldWind
 import com.atom.wyz.worldwind.render.*
@@ -17,7 +16,7 @@ import java.util.concurrent.ConcurrentLinkedQueue
 
 class RenderResourceCache
     : LruMemoryCache<Any, RenderResource>,
-    Retriever.Callback<ImageSource,ImageOptions, Bitmap>,
+    Retriever.Callback<ImageSource, ImageOptions, Bitmap>,
     Handler.Callback {
     companion object {
         protected const val STALE_RETRIEVAL_AGE = 3000
@@ -54,9 +53,9 @@ class RenderResourceCache
     // 回收队列
     protected var evictionQueue: Queue<RenderResource>
 
-    protected var imageRetriever: Retriever<ImageSource, ImageOptions,Bitmap>
+    protected var imageRetriever: Retriever<ImageSource, ImageOptions, Bitmap>
 
-    protected var urlImageRetriever: Retriever<ImageSource,ImageOptions, Bitmap>
+    protected var urlImageRetriever: Retriever<ImageSource, ImageOptions, Bitmap>
 
     protected var imageRetrieverCache: LruMemoryCache<ImageSource, Bitmap>
 
@@ -86,9 +85,11 @@ class RenderResourceCache
         imageRetrieverCache.clear()
         usedCapacity = 0
     }
+
     override fun entryRemoved(key: Any, oldValue: RenderResource, newValue: RenderResource?, evicted: Boolean) {
         evictionQueue.offer(oldValue)
     }
+
     fun releaseEvictedResources(dc: DrawContext) {
         var evicted: RenderResource?
         while (evictionQueue.poll().also { evicted = it } != null) {
@@ -105,30 +106,48 @@ class RenderResourceCache
         }
     }
 
-    fun retrieveTexture(imageSource: ImageSource?, imageOptions : ImageOptions?): GpuTexture? {
+    fun retrieveTexture(imageSource: ImageSource?, imageOptions: ImageOptions?): GpuTexture? {
         if (imageSource == null) {
             return null
         }
         if (imageSource.isBitmap()) {
-            val texture = GpuTexture(imageSource.asBitmap())
+            val texture = this.createTexture(imageSource, imageOptions, imageSource.asBitmap());
             put(imageSource, texture, texture.textureByteCount)
             return texture
         }
-        imageRetrieverCache.remove(imageSource)?.let{
-            val texture = GpuTexture(it)
+        imageRetrieverCache.remove(imageSource)?.let {
+            val texture = this.createTexture(imageSource, imageOptions, it);
             put(imageSource, texture, texture.textureByteCount)
             return texture
         }
 
         if (imageSource.isUrl()) {
-            urlImageRetriever.retrieve(imageSource, imageOptions,this)
+            urlImageRetriever.retrieve(imageSource, imageOptions, this)
         } else {
-            imageRetriever.retrieve(imageSource, imageOptions,this)
+            imageRetriever.retrieve(imageSource, imageOptions, this)
         }
         return null
     }
 
-    override fun retrievalSucceeded(retriever: Retriever<ImageSource,ImageOptions, Bitmap>, key: ImageSource, options : ImageOptions? , value: Bitmap) {
+    protected fun createTexture(imageSource: ImageSource, options: ImageOptions?, bitmap: Bitmap?): GpuTexture {
+        val texture = GpuTexture(bitmap)
+        if (options != null && options.resamplingMode == WorldWind.NEAREST_NEIGHBOR) {
+            texture.setTexParameter(GLES20.GL_TEXTURE_MIN_FILTER, GLES20.GL_NEAREST)
+            texture.setTexParameter(GLES20.GL_TEXTURE_MAG_FILTER, GLES20.GL_NEAREST)
+        }
+        if (options != null && options.wrapMode == WorldWind.REPEAT) {
+            texture.setTexParameter(GLES20.GL_TEXTURE_WRAP_S, GLES20.GL_REPEAT)
+            texture.setTexParameter(GLES20.GL_TEXTURE_WRAP_T, GLES20.GL_REPEAT)
+        }
+        return texture
+    }
+
+    override fun retrievalSucceeded(
+        retriever: Retriever<ImageSource, ImageOptions, Bitmap>,
+        key: ImageSource,
+        options: ImageOptions?,
+        value: Bitmap
+    ) {
         imageRetrieverCache.put(key, value, value.byteCount)
         WorldWind.requestRedraw()
         if (!handler.hasMessages(TRIM_STALE_RETRIEVALS)) {
@@ -142,7 +161,11 @@ class RenderResourceCache
         }
     }
 
-    override fun retrievalFailed(retriever: Retriever<ImageSource,ImageOptions, Bitmap>, key: ImageSource, ex: Throwable?) {
+    override fun retrievalFailed(
+        retriever: Retriever<ImageSource, ImageOptions, Bitmap>,
+        key: ImageSource,
+        ex: Throwable?
+    ) {
         if (ex is SocketTimeoutException) {
             Logger.log(Logger.ERROR, "Socket timeout retrieving image \'$key\'")
         } else if (ex != null) {
@@ -152,7 +175,7 @@ class RenderResourceCache
         }
     }
 
-    override fun retrievalRejected(retriever: Retriever<ImageSource,ImageOptions, Bitmap>, key: ImageSource) {
+    override fun retrievalRejected(retriever: Retriever<ImageSource, ImageOptions, Bitmap>, key: ImageSource) {
         if (Logger.isLoggable(Logger.DEBUG)) {
             Logger.log(Logger.DEBUG, "Image retrieval rejected \'$key\'")
         }

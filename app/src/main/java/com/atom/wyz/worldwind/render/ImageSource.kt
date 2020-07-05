@@ -1,10 +1,13 @@
 package com.atom.wyz.worldwind.render
 
 import android.graphics.Bitmap
+import android.graphics.Color
 import androidx.annotation.DrawableRes
 import androidx.annotation.IntDef
 import com.atom.wyz.worldwind.util.Logger
 import com.atom.wyz.worldwind.util.WWUtil
+import java.util.*
+import kotlin.experimental.and
 
 class ImageSource {
 
@@ -17,6 +20,8 @@ class ImageSource {
     }
 
     companion object {
+        protected const val TYPE_UNRECOGNIZED = 0
+
         protected const val TYPE_BITMAP_FACTORY = 1
 
         protected const val TYPE_BITMAP = 2
@@ -27,7 +32,7 @@ class ImageSource {
 
         protected const val TYPE_URL = 5
 
-        protected const val TYPE_UNRECOGNIZED = 0
+        protected val lineStippleFactories: HashMap<Any, BitmapFactory> = HashMap()
 
         fun fromBitmap(bitmap: Bitmap?): ImageSource {
             if (bitmap == null || bitmap.isRecycled) {
@@ -72,6 +77,22 @@ class ImageSource {
             return imageSource
         }
 
+        fun fromLineStipple(factor: Int, pattern: Short): ImageSource {
+            val lfactor = (factor.toLong() and 0xFFFFFFFFL)
+            val lpattern = (pattern.toLong() and 0xFFFFL)
+            val key = lfactor shl 32 or lpattern
+            var factory: BitmapFactory? = lineStippleFactories[key]
+
+            if (factory == null) {
+                factory = LineStippleBitmapFactory(factor, pattern)
+                lineStippleFactories[key] = factory
+            }
+            val imageSource = ImageSource()
+            imageSource.type = TYPE_BITMAP_FACTORY
+            imageSource.source = factory
+            return imageSource
+        }
+
         fun fromObject(source: Any?): ImageSource {
             if (source == null) {
                 throw java.lang.IllegalArgumentException(
@@ -95,6 +116,7 @@ class ImageSource {
                 imageSource
             }
         }
+
 
         fun fromBitmapFactory(factory: BitmapFactory?): ImageSource {
             requireNotNull(factory) {
@@ -193,5 +215,40 @@ class ImageSource {
 
     fun asObject(): Any? {
         return source
+    }
+
+     class LineStippleBitmapFactory(protected var factor: Int, protected var pattern: Short) : BitmapFactory {
+
+         override fun createBitmap(): Bitmap {
+            val transparent = Color.argb(0, 0, 0, 0)
+            val white = Color.argb(255, 255, 255, 255)
+            return if (factor <= 0) {
+                val width = 16
+                val pixels = IntArray(width)
+                Arrays.fill(pixels, white)
+                val bitmap = Bitmap.createBitmap(width, 1 /*height*/, Bitmap.Config.ARGB_4444)
+                bitmap.setPixels(pixels, 0 /*offset*/, width /*stride*/, 0 /*x*/, 0 /*y*/, width, 1 /*height*/)
+                bitmap
+            } else {
+                val width = factor * 16
+                val pixels = IntArray(width)
+                var pixel = 0
+                for (bi in 0..15) {
+                    val bit: Int = pattern.toInt() and (1 shl bi)
+                    val color = if (bit == 0) transparent else white
+                    for (fi in 0 until factor) {
+                        pixels[pixel++] = color
+                    }
+                }
+                val bitmap = Bitmap.createBitmap(width, 1 /*height*/, Bitmap.Config.ARGB_4444)
+                bitmap.setPixels(pixels, 0 /*offset*/, width /*stride*/, 0 /*x*/, 0 /*y*/, width, 1 /*height*/)
+                bitmap
+            }
+        }
+
+        override fun toString(): String {
+            return "LineStippleBitmapFactory factor=" + factor + ", pattern=" + Integer.toHexString(pattern.toInt() and 0xFFFF)
+        }
+
     }
 }

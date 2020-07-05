@@ -8,7 +8,7 @@ class SimpleFloatArray {
 
     protected lateinit var array: FloatArray
 
-    protected var size = 0
+    var size = 0
 
     constructor(initialCapacity: Int = 0) {
         if (initialCapacity == 0) {

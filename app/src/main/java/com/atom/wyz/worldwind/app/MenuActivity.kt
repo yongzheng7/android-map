@@ -93,6 +93,12 @@ class MenuActivity : AppCompatActivity() {
             R.id.multiGlobeActivity -> {
                 startActivity(Intent(this, MultiGlobeActivity::class.java))
             }
+            R.id.LabelsFragment -> {
+                startActivity(Intent(this, LabelsFragment::class.java))
+            }
+            R.id.ShapesDashAndFillFragment -> {
+                startActivity(Intent(this, ShapesDashAndFillFragment::class.java))
+            }
         }
     }
 

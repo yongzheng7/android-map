@@ -5,8 +5,10 @@ import com.atom.wyz.worldwind.WorldWind
 import com.atom.wyz.worldwind.geom.BoundingBox
 import com.atom.wyz.worldwind.geom.Color
 import com.atom.wyz.worldwind.geom.Sector
+import com.atom.wyz.worldwind.geom.Vec3
 import com.atom.wyz.worldwind.pick.PickedObject
 import com.atom.wyz.worldwind.render.AbstractRenderable
+import com.atom.wyz.worldwind.util.WWMath
 
 abstract class AbstractShape : AbstractRenderable, Attributable, Highlightable {
     companion object {
@@ -43,6 +45,8 @@ abstract class AbstractShape : AbstractRenderable, Attributable, Highlightable {
     var boundingSector: Sector = Sector()
 
     val boundingBox: BoundingBox = BoundingBox()
+
+    private val scratchPoint: Vec3 = Vec3()
 
     constructor(attributes: ShapeAttributes = ShapeAttributes()) : super("AbstractShape") {
         this.attributes = attributes
@@ -98,5 +102,40 @@ abstract class AbstractShape : AbstractRenderable, Attributable, Highlightable {
 
     override fun setHighlighted(highlighted: Boolean) {
         _highlighted = highlighted
+    }
+
+    protected open fun cameraDistanceGeographic(rc: RenderContext, boundingSector: Sector): Double {
+        val lat: Double = WWMath.clamp(rc.camera.latitude, boundingSector.minLatitude, boundingSector.maxLatitude)
+        val lon: Double = WWMath.clamp(rc.camera.longitude, boundingSector.minLongitude, boundingSector.maxLongitude)
+        val point = rc.geographicToCartesian(lat, lon, 0.0, WorldWind.CLAMP_TO_GROUND, scratchPoint)
+        return point.distanceTo(rc.cameraPoint)
+    }
+
+    protected open fun cameraDistanceCartesian(
+        rc: RenderContext,
+        array: FloatArray,
+        count: Int,
+        stride: Int,
+        offset: Vec3
+    ): Double {
+        val cx = rc.cameraPoint.x - offset.x
+        val cy = rc.cameraPoint.y - offset.y
+        val cz = rc.cameraPoint.z - offset.z
+        var minDistance2 = Double.POSITIVE_INFINITY
+        var idx = 0
+        while (idx < count) {
+            val px = array[idx].toDouble()
+            val py = array[idx + 1].toDouble()
+            val pz = array[idx + 2].toDouble()
+            val dx = px - cx
+            val dy = py - cy
+            val dz = pz - cz
+            val distance2 = dx * dx + dy * dy + dz * dz
+            if (minDistance2 > distance2) {
+                minDistance2 = distance2
+            }
+            idx += stride
+        }
+        return Math.sqrt(minDistance2)
     }
 }

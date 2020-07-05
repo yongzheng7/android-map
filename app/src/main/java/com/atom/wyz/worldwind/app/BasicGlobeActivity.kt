@@ -16,10 +16,15 @@ open class BasicGlobeActivity :  AppCompatActivity(){
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(this.layoutResourceId)
+        createWorldWindow()
+    }
+
+    open protected fun createWorldWindow() : WorldWindow{
         wwd = WorldWindow(this)
         val globeLayout = findViewById(R.id.globe) as FrameLayout
         globeLayout.addView(wwd)
         wwd.layers.addLayer(BackgroundLayer())
         wwd.layers.addLayer(BlueMarbleLandsatLayer())
+        return wwd
     }
 }

@@ -1,12 +1,13 @@
 package com.atom.wyz.worldwind.globe
 
+import com.atom.wyz.worldwind.RenderContext
 import com.atom.wyz.worldwind.geom.BoundingBox
 import com.atom.wyz.worldwind.geom.Frustum
 import com.atom.wyz.worldwind.geom.Sector
-import com.atom.wyz.worldwind.RenderContext
 import com.atom.wyz.worldwind.util.Level
 import com.atom.wyz.worldwind.util.Logger
 import com.atom.wyz.worldwind.util.LruMemoryCache
+import com.atom.wyz.worldwind.util.SimpleFloatArray
 
 open class Tile {
 
@@ -63,18 +64,25 @@ open class Tile {
          * Creates all tiles for a specified level within a [LevelSet].
          * 创建一个指定级别内的所有图块
          */
-        fun assembleTilesForLevel(level: Level?, tileFactory: TileFactory?, result: MutableCollection<Tile>?): Collection<Tile> {
+        fun assembleTilesForLevel(
+            level: Level?,
+            tileFactory: TileFactory?,
+            result: MutableCollection<Tile>?
+        ): Collection<Tile> {
             if (level == null) {
                 throw java.lang.IllegalArgumentException(
-                        Logger.logMessage(Logger.ERROR, "Tile", "assembleTilesForLevel", "missingLevel"))
+                    Logger.logMessage(Logger.ERROR, "Tile", "assembleTilesForLevel", "missingLevel")
+                )
             }
             if (tileFactory == null) {
                 throw java.lang.IllegalArgumentException(
-                        Logger.logMessage(Logger.ERROR, "Tile", "assembleTilesForLevel", "The tile factory is null"))
+                    Logger.logMessage(Logger.ERROR, "Tile", "assembleTilesForLevel", "The tile factory is null")
+                )
             }
             if (result == null) {
                 throw java.lang.IllegalArgumentException(
-                        Logger.logMessage(Logger.ERROR, "Tile", "assembleTilesForLevel", "missingResult"))
+                    Logger.logMessage(Logger.ERROR, "Tile", "assembleTilesForLevel", "missingResult")
+                )
             }
             val sector: Sector = level.parent.sector
             val tileDelta: Double = level.tileDelta
@@ -120,6 +128,8 @@ open class Tile {
 
     protected var extent: BoundingBox? = null
 
+    protected var samplePoints: FloatArray? = null
+
     constructor(sector: Sector?, level: Level?, row: Int, column: Int) {
         if (sector == null) {
             throw IllegalArgumentException(Logger.logMessage(Logger.ERROR, "Tile", "constructor", "missingSector"))
@@ -142,7 +152,8 @@ open class Tile {
     open fun intersectsFrustum(rc: RenderContext, frustum: Frustum?): Boolean {
         if (frustum == null) {
             throw java.lang.IllegalArgumentException(
-                    Logger.logMessage(Logger.ERROR, "Tile", "intersectsFrustum", "missingFrustum"))
+                Logger.logMessage(Logger.ERROR, "Tile", "intersectsFrustum", "missingFrustum")
+            )
         }
         return this.getExtent(rc).intersectsFrustum(frustum);
     }
@@ -150,10 +161,12 @@ open class Tile {
     open fun intersectsSector(sector: Sector?): Boolean {
         if (sector == null) {
             throw java.lang.IllegalArgumentException(
-                    Logger.logMessage(Logger.ERROR, "Tile", "intersectsSector", "missingSector"))
+                Logger.logMessage(Logger.ERROR, "Tile", "intersectsSector", "missingSector")
+            )
         }
         return this.sector.intersects(sector)
     }
+
     /**
      * 根据眼睛和图块的距离判断是否需要细分
      */
@@ -174,7 +187,8 @@ open class Tile {
     open fun subdivide(tileFactory: TileFactory?): Array<Tile?>? {
         if (tileFactory == null) {
             throw java.lang.IllegalArgumentException(
-                    Logger.logMessage(Logger.ERROR, "Tile", "subdivide", "missingTileFactory"))
+                Logger.logMessage(Logger.ERROR, "Tile", "subdivide", "missingTileFactory")
+            )
         }
         val childLevel = level.nextLevel() ?: return null
         val children: Array<Tile?> = arrayOfNulls<Tile>(4)
@@ -224,14 +238,20 @@ open class Tile {
      * 如果缓存中存在一个，则将其返回，而不是创建一个新的子代集合。
      * 如果以与{@link #subdivide（TileFactory）}相同的方式创建新集合并将其添加到缓存中。
      */
-    open fun subdivideToCache(tileFactory: TileFactory?, cache: LruMemoryCache<String?, Array<Tile?>?>?, cacheSize: Int): Array<Tile?>? {
+    open fun subdivideToCache(
+        tileFactory: TileFactory?,
+        cache: LruMemoryCache<String?, Array<Tile?>?>?,
+        cacheSize: Int
+    ): Array<Tile?>? {
         if (tileFactory == null) {
             throw java.lang.IllegalArgumentException(
-                    Logger.logMessage(Logger.ERROR, "Tile", "subdivideToCache", "missingTileFactory"))
+                Logger.logMessage(Logger.ERROR, "Tile", "subdivideToCache", "missingTileFactory")
+            )
         }
         if (cache == null) {
             throw java.lang.IllegalArgumentException(
-                    Logger.logMessage(Logger.ERROR, "Tile", "subdivideToCache", "missingCache"))
+                Logger.logMessage(Logger.ERROR, "Tile", "subdivideToCache", "missingCache")
+            )
         }
 
         var children: Array<Tile?>? = cache.get(tileKey)
@@ -258,4 +278,27 @@ open class Tile {
         return "Tile(sector=$sector, level=$level, row=$row, column=$column, tileKey=$tileKey, extent=$extent)"
     }
 
+
+    protected open fun distanceTo(rc: RenderContext): Double {
+        if (sector.contains(rc.camera.latitude, rc.camera.longitude)) {
+            return rc.camera.altitude
+        }
+        if (samplePoints == null) {
+            samplePoints = rc.globe!!.geographicToCartesianGrid(sector, 3, 3, null, null, FloatArray(27), 3, 0)
+        }
+        var distance = Double.MAX_VALUE
+        var i = 0
+        val len = samplePoints!!.size
+        while (i < len) {
+            val dx = rc.cameraPoint.x - samplePoints!!.get(i)
+            val dy = rc.cameraPoint.y - samplePoints!!.get(i + 1)
+            val dz = rc.cameraPoint.z - samplePoints!!.get(i + 2)
+            val pointDistance = dx * dx + dy * dy + dz * dz
+            if (pointDistance < distance) {
+                distance = pointDistance
+            }
+            i += 3
+        }
+        return Math.sqrt(distance)
+    }
 }

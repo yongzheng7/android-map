@@ -1,5 +1,6 @@
 package com.atom.wyz.worldwind.app
 
+import android.graphics.Typeface
 import android.os.AsyncTask
 import android.os.Bundle
 import android.view.GestureDetector
@@ -10,13 +11,11 @@ import com.atom.wyz.worldwind.BasicWorldWindowController
 import com.atom.wyz.worldwind.R
 import com.atom.wyz.worldwind.WorldWind
 import com.atom.wyz.worldwind.geom.Color
+import com.atom.wyz.worldwind.geom.Offset
 import com.atom.wyz.worldwind.geom.Position
 import com.atom.wyz.worldwind.layer.RenderableLayer
 import com.atom.wyz.worldwind.render.Renderable
-import com.atom.wyz.worldwind.shape.Highlightable
-import com.atom.wyz.worldwind.shape.Path
-import com.atom.wyz.worldwind.shape.Polygon
-import com.atom.wyz.worldwind.shape.ShapeAttributes
+import com.atom.wyz.worldwind.shape.*
 import com.atom.wyz.worldwind.util.Logger
 import com.atom.wyz.worldwind.util.WWUtil
 import java.io.BufferedReader
@@ -41,14 +40,16 @@ class PathsAndPolygonsActivity : BasicWorldWindActivity() {
     inner protected class CreateRenderablesTask : AsyncTask<Void?, Renderable?, Void?>() {
         private var numCountriesCreated = 0
         private var numHighwaysCreated = 0
-        private val random = Random(19) // for Random color fills.
+        private var numPlacesCreated = 0
+        private val random = Random(22) // for Random color fills.
         /**
          * Loads the world_highways and world_political_areas files a background thread. The [Renderable]
          * objects are added to the RenderableLayer on the UI thread via onProgressUpdate.
          */
-        protected override fun doInBackground(vararg params: Void?): Void? {
+         override fun doInBackground(vararg params: Void?): Void? {
             loadCountriesFile()
-            loadHighwaysFile()
+            loadHighways()
+            loadPlaceNames()
             return null
         }
 
@@ -71,10 +72,56 @@ class PathsAndPolygonsActivity : BasicWorldWindActivity() {
             getWorldWindow().requestRedraw()
         }
 
+        private fun loadPlaceNames() { // Define the text attributes used for places
+            val placeAttrs: TextAttributes = TextAttributes().apply {
+                this.typeface= (Typeface.DEFAULT_BOLD) // Override the normal Typeface
+                this.textSize = (28f) // default size is 24
+                this.textOffset = (Offset.bottomRight()) // anchor the label's bottom-right corner at its position
+            }
+
+            // Define the text attribute used for lakes
+            val lakeAttrs: TextAttributes = TextAttributes().apply {
+                this.typeface = (Typeface.create("serif", Typeface.BOLD_ITALIC))
+                this.textSize = (32f) // default size is 24
+                this.textColor = (Color(0f, 1f, 1f, 0.70f)) // cyan, with 7% opacity
+                this.textOffset = (Offset.center()) // center the label over its position
+            }
+            // Load the place names
+            var reader: BufferedReader? = null
+            try {
+                val `in` = resources.openRawResource(R.raw.world_placenames)
+                reader = BufferedReader(InputStreamReader(`in`))
+                // Process the header in the first line of the CSV file ...
+                var line = reader.readLine()
+                val headers =
+                    Arrays.asList(*line.split(",").toTypedArray())
+                val LAT = headers.indexOf("LAT")
+                val LON = headers.indexOf("LON")
+                val NAM = headers.indexOf("PLACE_NAME")
+                // ... and process the remaining lines in the CSV
+                while (reader.readLine().also { line = it } != null) {
+                    val fields = line.split(",").toTypedArray()
+                    val label = Label(
+                        Position.fromDegrees(fields[LAT].toDouble(), fields[LON].toDouble(), 0.0),
+                        fields[NAM],
+                        if (fields[NAM].contains("Lake")) lakeAttrs else placeAttrs
+                    )
+                    label.displayName = label.text!!
+                    // Add the Label object to the RenderableLayer on the UI Thread (see onProgressUpdate)
+                    publishProgress(label)
+                    numPlacesCreated++
+                }
+            } catch (e: IOException) {
+                Logger.log(Logger.ERROR, "Exception attempting to read/parse world_placenames file.")
+            } finally {
+                WWUtil.closeSilently(reader)
+            }
+        }
+
         /**
          * Called by doInBackground(); loads the VMAP0 World Highways data.
          */
-        private fun loadHighwaysFile() {
+        private fun loadHighways() {
             val attrs = ShapeAttributes()
             attrs.outlineColor.set(1.0f, 1.0f, 0.0f, 1.0f)
             attrs.outlineWidth= (3f)

@@ -1,9 +1,11 @@
 package com.atom.wyz.worldwind.draw
 
 import com.atom.wyz.worldwind.geom.Color
+import com.atom.wyz.worldwind.geom.Matrix3
 import com.atom.wyz.worldwind.geom.Vec3
 import com.atom.wyz.worldwind.render.BasicProgram
 import com.atom.wyz.worldwind.render.BufferObject
+import com.atom.wyz.worldwind.render.GpuTexture
 
 class DrawShapeState {
     companion object {
@@ -18,6 +20,8 @@ class DrawShapeState {
 
     var vertexOrigin: Vec3 = Vec3()
 
+    var vertexStride = 0
+
     var enableCullFace = true
 
     var enableDepthTest = true
@@ -26,7 +30,15 @@ class DrawShapeState {
 
     var lineWidth = 1f
 
+    var depthOffset = 0.0
+
     var primCount = 0
+
+    var texture: GpuTexture? = null
+
+    var texCoordMatrix: Matrix3 = Matrix3()
+
+    var texCoordAttrib: VertexAttrib = VertexAttrib()
 
     var prims: Array<DrawElements>
 
@@ -43,11 +55,20 @@ class DrawShapeState {
         vertexBuffer = null
         elementBuffer = null
         vertexOrigin.set(0.0, 0.0, 0.0)
+        vertexStride = 0
         color.set(1f, 1f, 1f, 1f)
         enableDepthTest = true
         enableCullFace = true
+        depthOffset = 0.0
         lineWidth = 1f
         primCount = 0
+        texture = null
+        texCoordMatrix.setToIdentity()
+        texCoordAttrib.size = 0
+        texCoordAttrib.offset = 0
+        for (idx in 0 until MAX_DRAW_ELEMENTS) {
+            prims[idx].texture = null
+        }
     }
 
     fun color(color: Color) {
@@ -66,6 +87,10 @@ class DrawShapeState {
         prim.offset = offset
         prim.color.set(color)
         prim.lineWidth = lineWidth
+        prim.texture = texture
+        prim.texCoordMatrix.set(texCoordMatrix)
+        prim.texCoordAttrib.size = texCoordAttrib.size
+        prim.texCoordAttrib.offset = texCoordAttrib.offset
     }
 
     class DrawElements {
@@ -75,5 +100,14 @@ class DrawShapeState {
         var offset = 0
         var color = Color()
         var lineWidth = 0f
+        var texture: GpuTexture? = null
+        var texCoordMatrix = Matrix3()
+        var texCoordAttrib = VertexAttrib()
+    }
+
+
+    class VertexAttrib {
+        var size = 0
+        var offset = 0
     }
 }

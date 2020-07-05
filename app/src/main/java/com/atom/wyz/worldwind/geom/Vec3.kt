@@ -52,7 +52,7 @@ class Vec3(var x: Double, var y: Double, var z: Double) {
         return this
     }
 
-    fun set(vector: Vec3?): Vec3? {
+    fun set(vector: Vec3?): Vec3 {
         if (vector == null) {
             throw IllegalArgumentException(
                     Logger.logMessage(Logger.ERROR, "Vec3", "set", "missingVector"))

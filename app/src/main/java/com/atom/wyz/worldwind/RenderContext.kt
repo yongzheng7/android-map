@@ -1,6 +1,7 @@
 package com.atom.wyz.worldwind
 
 import android.content.res.Resources
+import android.graphics.Typeface
 import com.atom.wyz.worldwind.draw.Drawable
 import com.atom.wyz.worldwind.draw.DrawableList
 import com.atom.wyz.worldwind.draw.DrawableQueue
@@ -13,6 +14,7 @@ import com.atom.wyz.worldwind.layer.LayerList
 import com.atom.wyz.worldwind.pick.PickedObject
 import com.atom.wyz.worldwind.pick.PickedObjectList
 import com.atom.wyz.worldwind.render.*
+import com.atom.wyz.worldwind.shape.TextAttributes
 import com.atom.wyz.worldwind.util.Logger
 import com.atom.wyz.worldwind.util.RenderResourceCache
 import com.atom.wyz.worldwind.util.glu.GLU
@@ -42,7 +44,7 @@ open class RenderContext {
     var verticalExaggeration = 1.0
 
     var fieldOfView = 0.0
-
+    // 摄像机视线和地球相切，摄像机到切点的距离
     var horizonDistance = 0.0
 
     var camera = Camera()
@@ -84,9 +86,13 @@ open class RenderContext {
 
     var pixelSizeFactor = 0.0
 
-    private var drawablePools = HashMap<Any, Pool<*>?>()
+    var drawablePools = HashMap<Any, Pool<*>?>()
 
-    private var userProperties: HashMap<Any, Any> = HashMap()
+    var userProperties: HashMap<Any, Any> = HashMap()
+
+    val textRenderer = TextRenderer()
+
+    val scratchTextCacheKey = TextCacheKey()
 
     private var tessellator: GLUtessellator? = null
 
@@ -222,26 +228,26 @@ open class RenderContext {
         if (w == 0.0) {
             return false
         }
-        // Complete the conversion from model coordinates to clip coordinates by dividing by W. The resultant X, Y
-        // and Z coordinates are in the range [-1,1].
+        // 透视除法
         x /= w
         y /= w
         z /= w
-        // Clip the point against the near and far clip planes.
+        // 判断z 的大小是否在 视锥体内
         if (z < -1 || z > 1) {
             return false
         }
-
+        //  -1 < z < 1
+        //  再次计算z的深度 此时加上偏移 depthOffset
         z = p[8] * ex + p[9] * ey + p[10] * ez * (1 + depthOffset) + p[11] * ew
         z /= w
 
         z = if (z < -1) (-1.0) else if (z > 1) 1.0 else z
 
-
         x = x * 0.5 + 0.5
         y = y * 0.5 + 0.5
-        z = z * 0.5 + 0.5
+        z = z * 0.5 + 0.5  // 换算到 0 - 1 范围内
 
+        // 计算在屏幕上的位置
         x = x * viewport.width + viewport.x
         y = y * viewport.height + viewport.y
 
@@ -262,7 +268,7 @@ open class RenderContext {
     }
 
     open fun getTessellator(): GLUtessellator {
-        tessellator ?.let{ return it }
+        tessellator?.let { return it }
         val tess: GLUtessellator = GLU.gluNewTess()
         return tess.also { tessellator = it }
     }
@@ -357,6 +363,22 @@ open class RenderContext {
         return buffer
     }
 
+    open fun getText(text: String, attributes: TextAttributes): GpuTexture? {
+        val key = scratchTextCacheKey.set(text, attributes)
+        return renderResourceCache ?.get(key) as GpuTexture?
+    }
+
+    open fun renderText(text: String, attributes: TextAttributes): GpuTexture? {
+        val key = TextCacheKey().set(text, attributes)
+        textRenderer.textSize = (attributes.textSize)
+        attributes.typeface ?.also { textRenderer.typeface = it }
+        textRenderer.enableOutline = (attributes.enableOutline)
+        textRenderer.outlineWidth = (attributes.outlineWidth)
+        val texture: GpuTexture ?= textRenderer.renderText(text)
+        renderResourceCache?.put(key, texture!!, texture.textureByteCount)
+        return texture
+    }
+
     open fun geographicToCartesian(
         latitude: Double, longitude: Double, altitude: Double,
         @WorldWind.AltitudeMode altitudeMode: Int, result: Vec3?
@@ -394,6 +416,52 @@ open class RenderContext {
             }
         }
         return result
+    }
+
+
+    class TextCacheKey {
+
+        var text: String ?=null
+
+        var textSize: Float = 0f
+
+        var typeface: Typeface ?=null
+
+        var enableOutline: Boolean = false
+
+        var outlineWidth: Float = 0f
+
+        fun set(text: String, attributes: TextAttributes): TextCacheKey {
+            this.text = text;
+            this.textSize = attributes.textSize
+            this.typeface = attributes.typeface
+            this.enableOutline = attributes.enableOutline
+            this.outlineWidth = attributes.outlineWidth
+            return this;
+        }
+
+        override fun equals(other: Any?): Boolean {
+            if (this === other) {
+                return true
+            }
+            if (other == null || this.javaClass != other.javaClass) {
+                return false
+            }
+            val that = other as TextCacheKey
+            return ((if (text == null) that.text == null else text == that.text)
+                    && textSize == that.textSize && (if (typeface == null) that.typeface == null else typeface == that.typeface)
+                    && enableOutline == that.enableOutline && outlineWidth == that.outlineWidth)
+        }
+
+        override fun hashCode(): Int {
+            var result = if (text != null) text.hashCode() else 0
+            result = 31 * result + if (textSize != +0.0f) java.lang.Float.floatToIntBits(textSize) else 0
+            result = 31 * result + if (typeface != null) typeface.hashCode() else 0
+            result = 31 * result + if (enableOutline) 1 else 0
+            result =
+                31 * result + if (outlineWidth != +0.0f) java.lang.Float.floatToIntBits(outlineWidth) else 0
+            return result
+        }
     }
 
 }

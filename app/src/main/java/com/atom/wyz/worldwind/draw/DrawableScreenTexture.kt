@@ -41,46 +41,58 @@ class DrawableScreenTexture : Drawable {
 
         if (!dc.unitSquareBuffer().bindBuffer(dc)) return
 
-        program.loadColor(color)
+        program.enablePickMode(dc.pickMode)
 
         dc.activeTextureUnit(GLES20.GL_TEXTURE0)
-        if (texture != null && texture!!.bindTexture(dc)) {
-            program.enableTexture(true)
-            program.loadTexCoordMatrix(texture!!.texCoordTransform)
-        } else {
-            program.enableTexture(false)
-        }
 
         GLES20.glDepthMask(false)
-        if (!enableDepthTest) {
-            GLES20.glDisable(GLES20.GL_DEPTH_TEST)
-        }
 
         GLES20.glEnableVertexAttribArray(1)
-
         GLES20.glVertexAttribPointer(0 /*vertexPoint*/, 2, GLES20.GL_FLOAT, false, 0, 0)
         GLES20.glVertexAttribPointer(1 /*vertexTexCoord*/, 2, GLES20.GL_FLOAT, false, 0, 0)
-        // Use a modelview-projection matrix that transforms the unit square to screen coordinates.
 
-        mvpMatrix.setToMultiply(dc.screenProjection, unitSquareTransform)
-        program.loadModelviewProjection(mvpMatrix)
-
-        GLES20.glDrawArrays(GLES20.GL_TRIANGLE_STRIP, 0, 4)
+        // Draw this DrawableScreenTextures.
+        this.doDraw(dc, this)
 
         var next: Drawable?
-        while (dc.peekDrawable().also { next = it } != null && next?.let { canBatchWith(it) } ?: false) {
-            val drawable = dc.pollDrawable() as DrawableScreenTexture? ?:continue
-            mvpMatrix.setToMultiply(dc.screenProjection, drawable.unitSquareTransform)
-            program.loadModelviewProjection(mvpMatrix)
-            GLES20.glDrawArrays(GLES20.GL_TRIANGLE_STRIP, 0, 4)
+        while (dc.peekDrawable() .also {
+                next = it
+            } != null && canBatchWith(next!!)) {
+            val drawable = dc.pollDrawable() as DrawableScreenTexture // take it off the queue
+            this.doDraw(dc, drawable)
         }
 
         GLES20.glDepthMask(true)
+        GLES20.glDisableVertexAttribArray(1)
+    }
 
-        if (!enableDepthTest) {
+    protected fun doDraw(dc: DrawContext, drawable: DrawableScreenTexture){
+        // Use the drawable's color.
+        drawable.program!!.loadColor(drawable.color)
+
+        // Attempt to bind the drawable's texture, configuring the shader program appropriately if there is no texture
+        // or if the texture failed to bind.
+        if (drawable.texture != null && drawable.texture!!.bindTexture(dc)) {
+            drawable.program!!.enableTexture(true)
+            drawable.program!!.loadTexCoordMatrix(drawable.texture!!.texCoordTransform)
+        } else {
+            drawable.program!!.enableTexture(false)
+        }
+        // Use a modelview-projection matrix that transforms the unit square to screen coordinates.
+        drawable.mvpMatrix.setToMultiply(dc.screenProjection, drawable.unitSquareTransform)
+        drawable.program!!.loadModelviewProjection(drawable.mvpMatrix)
+
+        // Disable depth testing if requested.
+        if (!drawable.enableDepthTest) {
+            GLES20.glDisable(GLES20.GL_DEPTH_TEST)
+        }
+        // Draw the unit square as triangles.
+        GLES20.glDrawArrays(GLES20.GL_TRIANGLE_STRIP, 0, 4)
+
+        // Restore the default World Wind OpenGL state.
+        if (!drawable.enableDepthTest) {
             GLES20.glEnable(GLES20.GL_DEPTH_TEST)
         }
-        GLES20.glDisableVertexAttribArray(1)
     }
 
     override fun recycle() {
@@ -91,7 +103,6 @@ class DrawableScreenTexture : Drawable {
     }
 
     protected fun canBatchWith(that: Drawable): Boolean {
-        return (this.javaClass == that::javaClass && program === (that as DrawableScreenTexture).program && color.equals((that as DrawableScreenTexture).color)
-                && texture === that.texture && enableDepthTest == that.enableDepthTest)
+        return this.javaClass == that.javaClass && this.program === (that as DrawableScreenTexture).program
     }
 }

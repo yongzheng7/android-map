@@ -3,6 +3,8 @@ package com.atom.wyz.worldwind
 import androidx.annotation.IntDef
 import com.atom.wyz.worldwind.util.MessageService
 import com.atom.wyz.worldwind.util.TaskService
+import java.lang.annotation.Retention
+import java.lang.annotation.RetentionPolicy
 
 class WorldWind {
     /**
@@ -64,6 +66,22 @@ class WorldWind {
     @IntDef(NAVIGATOR_MOVED, NAVIGATOR_STOPPED)
     @kotlin.annotation.Retention(AnnotationRetention.SOURCE)
     annotation class NavigatorAction
+
+    /**
+     * Wrap mode indicates how World Wind displays the contents of an image when attempting to draw a region outside of
+     * the image bounds. Accepted values are [WorldWind.CLAMP] and [WorldWind.REPEAT].
+     */
+    @IntDef(CLAMP, REPEAT)
+    @kotlin.annotation.Retention(AnnotationRetention.SOURCE)
+    annotation class WrapMode
+
+    /**
+     * Resampling mode indicates the image sampling algorithm used by World Wind to display images that appear larger or
+     * smaller on screen than their native resolution. Accepted values are [WorldWind.BILINEAR] and [ ][WorldWind.NEAREST_NEIGHBOR].
+     */
+    @IntDef(BILINEAR, NEAREST_NEIGHBOR)
+    @kotlin.annotation.Retention(AnnotationRetention.SOURCE)
+    annotation class ResamplingMode
 
     companion object {
         /**
@@ -229,6 +247,31 @@ class WorldWind {
          * [ImageFormat] constant indicating 16-bit RGBA_565 image format.
          */
         const val RGB_565 = 1
+
+        ///////////////////////////////////////////////////////////////////////////////////////////////
+        /**
+         * [ResamplingMode] constant indicating bilinear image sampling.
+         */
+        const val BILINEAR = 0
+
+        /**
+         * [ResamplingMode] constant indicating nearest neighbor image sampling.
+         */
+        const val NEAREST_NEIGHBOR = 1
+
+        ///////////////////////////////////////////////////////////////////////////////////////////////
+
+        /**
+         * [WrapMode] constant indicating that the image's edge pixels should be displayed outside of the image
+         * bounds.
+         */
+        const val CLAMP = 0
+
+        /**
+         * [WrapMode] constant indicating that the image should display as a repeating pattern outside of the image
+         * bounds.
+         */
+        const val REPEAT = 1
 
         ///////////////////////////////////////////////////////////////////////////////////////////////
 

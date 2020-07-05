@@ -7,11 +7,11 @@ import com.atom.wyz.worldwind.draw.DrawShapeState
 import com.atom.wyz.worldwind.draw.Drawable
 import com.atom.wyz.worldwind.draw.DrawableShape
 import com.atom.wyz.worldwind.draw.DrawableSurfaceShape
-import com.atom.wyz.worldwind.geom.Location
-import com.atom.wyz.worldwind.geom.Position
-import com.atom.wyz.worldwind.geom.Vec3
+import com.atom.wyz.worldwind.geom.*
 import com.atom.wyz.worldwind.render.BasicProgram
 import com.atom.wyz.worldwind.render.BufferObject
+import com.atom.wyz.worldwind.render.GpuTexture
+import com.atom.wyz.worldwind.render.ImageOptions
 import com.atom.wyz.worldwind.util.Logger
 import com.atom.wyz.worldwind.util.SimpleFloatArray
 import com.atom.wyz.worldwind.util.SimpleShortArray
@@ -31,8 +31,20 @@ class Polygon : AbstractShape {
 
         protected const val VERTEX_COMBINED = 2
 
+        protected const val VERTEX_STRIDE = 6
+
+        protected val defaultInteriorImageOptions: ImageOptions = ImageOptions()
+
+        protected val defaultOutlineImageOptions: ImageOptions = ImageOptions()
+
         protected fun nextCacheKey(): Any {
             return Any()
+        }
+
+        init {
+            defaultInteriorImageOptions.wrapMode = WorldWind.REPEAT
+            defaultOutlineImageOptions.resamplingMode = WorldWind.NEAREST_NEIGHBOR
+            defaultOutlineImageOptions.wrapMode = WorldWind.REPEAT
         }
     }
 
@@ -55,7 +67,9 @@ class Polygon : AbstractShape {
 
     protected var vertexArray: SimpleFloatArray = SimpleFloatArray()
 
-    protected var interiorElements: SimpleShortArray = SimpleShortArray()
+    protected var topElements: SimpleShortArray = SimpleShortArray()
+
+    protected var sideElements: SimpleShortArray = SimpleShortArray()
 
     protected var outlineElements: SimpleShortArray = SimpleShortArray()
 
@@ -68,6 +82,10 @@ class Polygon : AbstractShape {
     protected var vertexOrigin: Vec3 = Vec3()
 
     protected var isSurfaceShape = false
+
+    protected var cameraDistance = 0.0
+
+    protected var texCoord1d = 0.0
 
     protected var tessCallback: GLUtessellatorCallbackAdapter = object : GLUtessellatorCallbackAdapter() {
 
@@ -104,7 +122,15 @@ class Polygon : AbstractShape {
 
     val point = Vec3()
 
-    val loc: Location = Location()
+    val prevPoint = Vec3()
+
+    val texCoord2d = Vec3()
+
+    val texCoordMatrix = Matrix3()
+
+    var modelToLocal = Matrix4()
+
+    val intermediateLocation: Location = Location()
 
     val tessCoords = DoubleArray(3)
 
@@ -211,7 +237,8 @@ class Polygon : AbstractShape {
 
     override fun reset() {
         vertexArray.clear()
-        interiorElements.clear()
+        topElements.clear()
+        sideElements.clear()
         outlineElements.clear()
         verticalElements.clear()
     }
@@ -228,21 +255,27 @@ class Polygon : AbstractShape {
         }
 
         // Obtain a drawable form the render context pool.
-        // Obtain a drawable form the render context pool.
         val drawable: Drawable
         val drawState: DrawShapeState
         if (isSurfaceShape) {
             val pool: Pool<DrawableSurfaceShape> = rc.getDrawablePool(DrawableSurfaceShape::class.java)
             drawable = DrawableSurfaceShape.obtain(pool)
-            drawState = (drawable as DrawableSurfaceShape).drawState
-            (drawable as DrawableSurfaceShape).sector.set(boundingSector)
+            drawState = drawable.drawState
+            cameraDistance = this.cameraDistanceGeographic(rc, boundingSector)
+            drawable.sector.set(boundingSector)
         } else {
             val pool: Pool<DrawableShape> = rc.getDrawablePool(DrawableShape::class.java)
             drawable = DrawableShape.obtain(pool)
-            drawState = (drawable as DrawableShape).drawState
+            drawState = drawable.drawState
+            cameraDistance = cameraDistanceCartesian(
+                rc,
+                vertexArray.array(),
+                vertexArray.size(),
+                VERTEX_STRIDE,
+                vertexOrigin
+            )
         }
 
-        // Use the basic GLSL program to draw the shape.
         // Use the basic GLSL program to draw the shape.
         drawState.program = rc.getProgram(BasicProgram.KEY) as BasicProgram?
         if (drawState.program == null) {
@@ -265,10 +298,11 @@ class Polygon : AbstractShape {
         drawState.elementBuffer = rc.getBufferObject(elementBufferKey)
         if (drawState.elementBuffer == null) {
             val size =
-                interiorElements.size() * 2 + outlineElements.size() * 2 + verticalElements.size() * 2
+                topElements.size() * 2 + sideElements.size() * 2 + outlineElements.size() * 2 + verticalElements.size() * 2
             val buffer =
                 ByteBuffer.allocateDirect(size).order(ByteOrder.nativeOrder()).asShortBuffer()
-            buffer.put(interiorElements.array(), 0, interiorElements.size())
+            buffer.put(topElements.array(), 0, topElements.size())
+            buffer.put(sideElements.array(), 0, sideElements.size())
             buffer.put(outlineElements.array(), 0, outlineElements.size())
             buffer.put(verticalElements.array(), 0, verticalElements.size())
             drawState.elementBuffer = BufferObject(GLES20.GL_ELEMENT_ARRAY_BUFFER, size, buffer.rewind())
@@ -286,6 +320,7 @@ class Polygon : AbstractShape {
         // Configure the drawable according to the shape's attributes. Disable triangle backface culling when we're
         // displaying a polygon without extruded sides, so we want to draw the top and the bottom.
         drawState.vertexOrigin.set(vertexOrigin)
+        drawState.vertexStride = VERTEX_STRIDE * 4
         drawState.enableCullFace = extrude
         drawState.enableDepthTest = activeAttributes!!.depthTest
 
@@ -293,7 +328,6 @@ class Polygon : AbstractShape {
         if (isSurfaceShape) {
             rc.offerSurfaceDrawable(drawable, 0.0 /*zOrder*/)
         } else {
-            val cameraDistance = boundingBox.distanceTo(rc.cameraPoint)
             rc.offerShapeDrawable(drawable, cameraDistance)
         }
 
@@ -316,34 +350,98 @@ class Polygon : AbstractShape {
         rc: RenderContext,
         drawState: DrawShapeState
     ) {
-        // Configure the drawable to display the shape's interior (and its optional extruded interior).
-        if (activeAttributes!!.drawInterior) {
-            drawState.color(if (rc.pickMode) pickColor else activeAttributes!!.interiorColor)
+        if (!activeAttributes!!.drawInterior) {
+            return
+        }
+        // Configure the drawable to use the interior texture when drawing the interior.
+        if (activeAttributes!!.interiorImageSource != null) {
+            var texture: GpuTexture? = rc.getTexture(activeAttributes!!.interiorImageSource!!)
+            if (texture == null) {
+                texture = rc.retrieveTexture(
+                    activeAttributes!!.interiorImageSource, defaultInteriorImageOptions
+                )
+            }
+            if (texture != null) {
+                val metersPerPixel = rc.pixelSizeAtDistance(cameraDistance)
+                val texCoordMatrix = this.texCoordMatrix.setToIdentity();
+                texCoordMatrix.setScale(
+                    1.0 / (texture.textureWidth * metersPerPixel),
+                    1.0 / (texture.textureHeight * metersPerPixel)
+                )
+                texCoordMatrix.multiplyByMatrix(texture.texCoordTransform)
+                drawState.texture = (texture)
+                drawState.texCoordMatrix = (texCoordMatrix)
+            }
+        } else {
+            drawState.texture = (null)
+        }
+
+        // Configure the drawable to display the shape's interior top.
+        drawState.color(if (rc.pickMode) pickColor else activeAttributes!!.interiorColor)
+        drawState.texCoordAttrib.size = (2 /*size*/)
+        drawState.texCoordAttrib.offset = (12 /*offset in bytes*/)
+        drawState.drawElements(
+            GLES20.GL_TRIANGLES, topElements.size(),
+            GLES20.GL_UNSIGNED_SHORT, 0 /*offset*/
+        )
+
+        // Configure the drawable to display the shape's interior sides.
+        if (extrude) {
+            drawState.texture = (null)
             drawState.drawElements(
-                GLES20.GL_TRIANGLES, interiorElements.size(),
-                GLES20.GL_UNSIGNED_SHORT, 0
+                GLES20.GL_TRIANGLES, sideElements.size(),
+                GLES20.GL_UNSIGNED_SHORT, topElements.size() * 2 /*offset*/
             )
         }
     }
 
     protected fun drawOutline(rc: RenderContext, drawState: DrawShapeState) {
-        // Configure the drawable to display the shape's outline.
-        if (activeAttributes!!.drawOutline) {
-            drawState.color(if (rc.pickMode) pickColor else activeAttributes!!.outlineColor)
-            drawState.lineWidth(activeAttributes!!.outlineWidth)
-            drawState.drawElements(
-                GLES20.GL_LINES, outlineElements.size(),
-                GLES20.GL_UNSIGNED_SHORT, interiorElements.size() * 2
-            )
+        if (!activeAttributes!!.drawOutline) {
+            return
+        }
+        // Configure the drawable to use the outline texture when drawing the outline.
+        if (activeAttributes!!.outlineImageSource != null) {
+            var texture: GpuTexture? = rc.getTexture(activeAttributes!!.outlineImageSource!!)
+            if (texture == null) {
+                texture = rc.retrieveTexture(
+                    activeAttributes!!.outlineImageSource,
+                    defaultOutlineImageOptions
+                )
+            }
+            if (texture != null) {
+                val metersPerPixel = rc.pixelSizeAtDistance(cameraDistance)
+                val texCoordMatrix = texCoordMatrix.setToIdentity()
+                texCoordMatrix.setScale(1.0 / (texture.textureWidth * metersPerPixel), 1.0)
+                texCoordMatrix.multiplyByMatrix(texture.texCoordTransform)
+                drawState.texture = (texture)
+                drawState.texCoordMatrix = (texCoordMatrix)
+            }
+        } else {
+            drawState.texture = (null)
         }
 
+        // Configure the drawable to display the shape's outline.
+        // Configure the drawable to display the shape's outline.
+        drawState.color(if (rc.pickMode) pickColor else activeAttributes!!.outlineColor)
+        drawState.lineWidth(activeAttributes!!.outlineWidth)
+        drawState.texCoordAttrib.size = (1 /*size*/)
+        drawState.texCoordAttrib.offset = (20 /*offset in bytes*/)
+        drawState.drawElements(
+            GLES20.GL_LINES, outlineElements.size(),
+            GLES20.GL_UNSIGNED_SHORT, topElements.size() * 2 + sideElements.size() * 2 /*offset*/
+        )
+
         // Configure the drawable to display the shape's extruded verticals.
-        if (activeAttributes!!.drawOutline && activeAttributes!!.drawVerticals && extrude) {
+        // Configure the drawable to display the shape's extruded verticals.
+        if (activeAttributes!!.drawVerticals && extrude) {
             drawState.color(if (rc.pickMode) pickColor else activeAttributes!!.outlineColor)
             drawState.lineWidth(activeAttributes!!.outlineWidth)
+            drawState.texture = (null)
             drawState.drawElements(
-                GLES20.GL_LINES, verticalElements.size(),
-                GLES20.GL_UNSIGNED_SHORT, interiorElements.size() * 2 + outlineElements.size() * 2
+                GLES20.GL_LINES,
+                verticalElements.size(),
+                GLES20.GL_UNSIGNED_SHORT,
+                topElements.size() * 2 + sideElements.size() * 2 + outlineElements.size() * 2 /*offset*/
             )
         }
     }
@@ -356,11 +454,16 @@ class Polygon : AbstractShape {
         // Determine whether the shape geometry must be assembled as Cartesian geometry or as geographic geometry.
         isSurfaceShape = altitudeMode == WorldWind.CLAMP_TO_GROUND && followTerrain
         // Clear the shape's vertex array and element arrays. These arrays will accumulate values as the shapes's
-// geometry is assembled.
+        // geometry is assembled.
         vertexArray.clear()
-        interiorElements.clear()
+        topElements.clear()
+        sideElements.clear()
         outlineElements.clear()
         verticalElements.clear()
+
+        this.determineShapeOrigin(rc)
+
+
         val tess: GLUtessellator = rc.getTessellator()
         GLU.gluTessNormal(tess, 0.0, 0.0, 1.0)
         GLU.gluTessCallback(tess, GLU.GLU_TESS_COMBINE_DATA, tessCallback)
@@ -378,16 +481,15 @@ class Polygon : AbstractShape {
             }
             GLU.gluTessBeginContour(tess)
             // Assemble the vertices for each edge between boundary positions.
-            var begin = positions[0]
-            if (vertexArray.size() == 0) {
-                rc.geographicToCartesian(
-                    begin.latitude,
-                    begin.longitude,
-                    begin.altitude,
-                    altitudeMode,
-                    vertexOrigin
-                )
-            }
+            var begin: Position = positions[0]
+            rc.geographicToCartesian(
+                begin.latitude,
+                begin.longitude,
+                begin.altitude,
+                altitudeMode,
+                prevPoint
+            )
+            texCoord1d = 0.0
             addVertex(
                 rc,
                 begin.latitude,
@@ -423,13 +525,14 @@ class Polygon : AbstractShape {
         GLU.gluTessCallback(tess, GLU.GLU_TESS_VERTEX_DATA, null)
         GLU.gluTessCallback(tess, GLU.GLU_TESS_EDGE_FLAG_DATA, null)
         GLU.gluTessCallback(tess, GLU.GLU_TESS_ERROR_DATA, null)
+
         // Compute the shape's bounding box or bounding sector from its assembled coordinates.
         if (isSurfaceShape) {
             boundingSector.setEmpty()
-            boundingSector.union(vertexArray.array(), vertexArray.size(), 2)
+            boundingSector.union(vertexArray.array(), vertexArray.size(), VERTEX_STRIDE)
             boundingBox.setToUnitBox() // Surface/geographic shape bounding box is unused
         } else {
-            boundingBox.setToPoints(vertexArray.array(), vertexArray.size(), 3)
+            boundingBox.setToPoints(vertexArray.array(), vertexArray.size(), VERTEX_STRIDE)
             boundingBox.translate(vertexOrigin.x, vertexOrigin.y, vertexOrigin.z)
             boundingSector.setEmpty() // Cartesian shape bounding sector is unused
         }
@@ -467,6 +570,8 @@ class Polygon : AbstractShape {
         var alt = begin.altitude + deltaAlt
 
         for (idx in 1 until numSubsegments) {
+            val loc = intermediateLocation
+
             if (pathType == WorldWind.GREAT_CIRCLE) {
                 begin.greatCircleLocation(azimuth, dist, loc)
             } else if (pathType == WorldWind.RHUMB_LINE) {
@@ -489,63 +594,95 @@ class Polygon : AbstractShape {
         latitude: Double,
         longitude: Double,
         altitude: Double,
-        intermediate: Int
+        type: Int
     ): Int {
-        return if (isSurfaceShape) {
-            addVertexGeographic(rc, latitude, longitude, altitude, intermediate)
-        } else {
-            addVertexCartesian(rc, latitude, longitude, altitude, intermediate)
-        }
-    }
+        val vertex: Int = vertexArray.size() / VERTEX_STRIDE
+        var point = rc.geographicToCartesian(latitude, longitude, altitude, altitudeMode, point)
+        val texCoord2d = texCoord2d.set(point).multiplyByMatrix(modelToLocal)
 
-    protected fun addVertexGeographic(
-        rc: RenderContext,
-        latitude: Double,
-        longitude: Double,
-        altitude: Double,
-        intermediate: Int
-    ): Int {
-        val vertex = vertexArray.size() / 2
-        vertexArray.add(longitude.toFloat())
-        vertexArray.add(latitude.toFloat())
-        if (intermediate != VERTEX_COMBINED) {
+        if (type != VERTEX_COMBINED) {
             tessCoords[0] = longitude
             tessCoords[1] = latitude
             tessCoords[2] = altitude
             GLU.gluTessVertex(rc.getTessellator(), tessCoords, 0 /*coords_offset*/, vertex)
         }
-        return vertex
-    }
 
-    protected fun addVertexCartesian(
-        rc: RenderContext,
-        latitude: Double,
-        longitude: Double,
-        altitude: Double,
-        intermediate: Int
-    ): Int {
-        rc.geographicToCartesian(latitude, longitude, altitude, altitudeMode, point)
-        val vertex = vertexArray.size() / 3
-        vertexArray.add((point.x - vertexOrigin.x).toFloat())
-        vertexArray.add((point.y - vertexOrigin.y).toFloat())
-        vertexArray.add((point.z - vertexOrigin.z).toFloat())
-        if (extrude) {
-            rc.geographicToCartesian(latitude, longitude, 0.0, WorldWind.CLAMP_TO_GROUND, point)
+        texCoord1d += point.distanceTo(prevPoint)
+        prevPoint.set(point)
+
+        if (isSurfaceShape) {
+            vertexArray.add(longitude.toFloat())
+            vertexArray.add(latitude.toFloat())
+            vertexArray.add(altitude.toFloat())
+            vertexArray.add((longitude - texCoord2d.x).toFloat())
+            vertexArray.add((latitude - texCoord2d.y).toFloat())
+            vertexArray.add(texCoord1d.toFloat())
+        } else {
+            point = rc.geographicToCartesian(latitude, longitude, altitude, altitudeMode, this.point)
             vertexArray.add((point.x - vertexOrigin.x).toFloat())
             vertexArray.add((point.y - vertexOrigin.y).toFloat())
             vertexArray.add((point.z - vertexOrigin.z).toFloat())
+            vertexArray.add((longitude - texCoord2d.x).toFloat())
+            vertexArray.add((latitude - texCoord2d.y).toFloat())
+            vertexArray.add(texCoord1d.toFloat())
+            if (extrude) {
+                point = rc.geographicToCartesian(latitude, longitude, 0.0, WorldWind.CLAMP_TO_GROUND, this.point)
+                vertexArray.add((point.x - vertexOrigin.x).toFloat())
+                vertexArray.add((point.y - vertexOrigin.y).toFloat())
+                vertexArray.add((point.z - vertexOrigin.z).toFloat())
+                vertexArray.add(0.toFloat() /*unused*/)
+                vertexArray.add(0.toFloat() /*unused*/)
+                vertexArray.add(0.toFloat() /*unused*/)
+                if (type == VERTEX_ORIGINAL) {
+                    verticalElements.add(vertex.toShort())
+                    verticalElements.add((vertex + 1).toShort())
+                }
+            }
         }
-        if (extrude && intermediate == VERTEX_ORIGINAL) {
-            verticalElements.add(vertex.toShort())
-            verticalElements.add((vertex + 1).toShort())
-        }
-        if (intermediate != VERTEX_COMBINED) {
-            tessCoords[0] = longitude
-            tessCoords[1] = latitude
-            tessCoords[2] = altitude
-            GLU.gluTessVertex(rc.getTessellator(), tessCoords, 0 /*coords_offset*/, vertex)
-        }
+
         return vertex
+    }
+
+    protected fun determineShapeOrigin(rc: RenderContext) {
+        var mx = 0.0
+        var my = 0.0
+        var mz = 0.0
+        var numPoints = 0.0
+
+        var boundaryIdx = 0
+        val boundaryCount = boundaries.size
+        while (boundaryIdx < boundaryCount) {
+            val positions = boundaries[boundaryIdx]
+            if (positions.isEmpty()) {
+                boundaryIdx++
+                continue  // no boundary positions
+            }
+            var idx = 0
+            val len = positions.size
+            while (idx < len) {
+                val pos = positions[idx]
+                val point = rc.geographicToCartesian(
+                    pos.latitude,
+                    pos.longitude,
+                    pos.altitude,
+                    WorldWind.ABSOLUTE,
+                    point
+                )
+                mx += point.x
+                my += point.y
+                mz += point.z
+                numPoints++
+                idx++
+            }
+            boundaryIdx++
+        }
+
+        mx /= numPoints
+        my /= numPoints
+        mz /= numPoints
+
+        vertexOrigin.set(mx, my, mz)
+        modelToLocal = rc.globe!!.cartesianToLocalTransform(mx, my, mz, modelToLocal)!!.invertOrthonormal()
     }
 
     protected fun tessCombine(
@@ -579,18 +716,18 @@ class Polygon : AbstractShape {
         val v0 = tessVertices[0]
         val v1 = tessVertices[1]
         val v2 = tessVertices[2]
-        interiorElements.add(v0.toShort()).add(v1.toShort()).add(v2.toShort())
+        topElements.add(v0.toShort()).add(v1.toShort()).add(v2.toShort())
         if (tessEdgeFlags[0] && extrude && !isSurfaceShape) {
-            interiorElements.add(v0.toShort()).add((v0 + 1).toShort()).add(v1.toShort())
-            interiorElements.add(v1.toShort()).add((v0 + 1).toShort()).add((v1 + 1).toShort())
+            sideElements.add(v0.toShort()).add((v0 + 1).toShort()).add(v1.toShort())
+            sideElements.add(v1.toShort()).add((v0 + 1).toShort()).add((v1 + 1).toShort())
         }
         if (tessEdgeFlags[1] && extrude && !isSurfaceShape) {
-            interiorElements.add(v1.toShort()).add((v1 + 1).toShort()).add(v2.toShort())
-            interiorElements.add(v2.toShort()).add((v1 + 1).toShort()).add((v2 + 1).toShort())
+            sideElements.add(v1.toShort()).add((v1 + 1).toShort()).add(v2.toShort())
+            sideElements.add(v2.toShort()).add((v1 + 1).toShort()).add((v2 + 1).toShort())
         }
         if (tessEdgeFlags[2] && extrude && !isSurfaceShape) {
-            interiorElements.add(v2.toShort()).add((v2 + 1).toShort()).add(v0.toShort())
-            interiorElements.add(v0.toShort()).add((v2 + 1).toShort()).add((v0 + 1).toShort())
+            sideElements.add(v2.toShort()).add((v2 + 1).toShort()).add(v0.toShort())
+            sideElements.add(v0.toShort()).add((v2 + 1).toShort()).add((v0 + 1).toShort())
         }
         if (tessEdgeFlags[0]) {
             outlineElements.add(v0.toShort())

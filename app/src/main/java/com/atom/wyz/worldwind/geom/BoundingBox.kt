@@ -264,17 +264,17 @@ class BoundingBox() {
             minDist2 = dist2
         }
 
-        endPoint1.x = center.x - 0.5 * r.x
-        endPoint1.y = center.y - 0.5 * r.y
-        endPoint1.z = center.z - 0.5 * r.z
+        endPoint1.x = center.x - 0.5 * s.x
+        endPoint1.y = center.y - 0.5 * s.y
+        endPoint1.z = center.z - 0.5 * s.z
         dist2 = endPoint1.distanceToSquared(point)
         if (minDist2 > dist2) {
             minDist2 = dist2
         }
 
-        endPoint1.x = center.x + 0.5 * r.x
-        endPoint1.y = center.y + 0.5 * r.y
-        endPoint1.z = center.z + 0.5 * r.z
+        endPoint1.x = center.x + 0.5 * s.x
+        endPoint1.y = center.y + 0.5 * s.y
+        endPoint1.z = center.z + 0.5 * s.z
         dist2 = endPoint1.distanceToSquared(point)
         if (minDist2 > dist2) {
             minDist2 = dist2

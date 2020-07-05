@@ -40,11 +40,13 @@ class DrawableShape() : Drawable {
         // Use the draw context's pick mode.
         program.enablePickMode(dc.pickMode)
 
-        // Disable texturing.
-        program.enableTexture(false)
-
         // Use the draw context's modelview projection matrix, transformed to shape local coordinates.
-        mvpMatrix.set(dc.modelviewProjection)
+        if (drawState.depthOffset != 0.0) {
+            mvpMatrix.set(dc.projection).offsetProjectionDepth(drawState.depthOffset)
+            mvpMatrix.multiplyByMatrix(dc.modelview)
+        } else {
+            mvpMatrix.set(dc.modelviewProjection)
+        }
         mvpMatrix.multiplyByTranslation(
             drawState.vertexOrigin.x,
             drawState.vertexOrigin.y,
@@ -61,14 +63,32 @@ class DrawableShape() : Drawable {
             GLES20.glDisable(GLES20.GL_DEPTH_TEST)
         }
 
-
-        // Use the shape's vertex point attribute.
-        GLES20.glVertexAttribPointer(0 /*vertexPoint*/, 3, GLES20.GL_FLOAT, false, 0, 0)
+        // Make multi-texture unit 0 active.
+        dc.activeTextureUnit(GLES20.GL_TEXTURE0)
+        GLES20.glEnableVertexAttribArray(1 /*vertexTexCoord*/)
+        GLES20.glVertexAttribPointer(0 /*vertexPoint*/, 3, GLES20.GL_FLOAT, false, this.drawState.vertexStride, 0)
 
         // Draw the specified primitives.
         for (idx in 0 until drawState.primCount) {
             val prim= drawState.prims[idx]
             program.loadColor(prim.color)
+            if (prim.texture != null && prim.texture!!.bindTexture(dc)) {
+                drawState.program!!.loadTexCoordMatrix(prim.texCoordMatrix)
+                drawState.program!!.enableTexture(true)
+            } else {
+                drawState.program!!.enableTexture(false)
+            }
+
+            GLES20.glVertexAttribPointer(
+                1 /*vertexTexCoord*/,
+                prim.texCoordAttrib.size,
+                GLES20.GL_FLOAT,
+                false,
+                drawState.vertexStride,
+                prim.texCoordAttrib.offset
+            )
+
+
             GLES20.glLineWidth(prim.lineWidth)
             GLES20.glDrawElements(prim.mode, prim.count, prim.type, prim.offset)
         }
@@ -84,6 +104,7 @@ class DrawableShape() : Drawable {
         }
         GLES20.glLineWidth(1f)
         GLES20.glEnable(GLES20.GL_CULL_FACE)
+        GLES20.glDisableVertexAttribArray(1 /*vertexTexCoord*/)
     }
 
     override fun recycle() {
