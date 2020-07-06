@@ -3,24 +3,10 @@ package com.atom.wyz.worldwind.geom
 import com.atom.wyz.worldwind.util.Logger
 
 class Viewport() {
-    /**
-     * The X component of the viewport's origin.
-     */
+    // 原点在左下角
     var x = 0
-
-    /**
-     * The Y component of the viewport's origin.
-     */
     var y = 0
-
-    /**
-     * The viewport's width.
-     */
     var width = 0
-
-    /**
-     * The viewport's height.
-     */
     var height = 0
 
     constructor(x: Int, y: Int, width: Int, height: Int) : this() {
@@ -37,7 +23,7 @@ class Viewport() {
         height = viewport.height
     }
 
-    operator fun set(x: Int, y: Int, width: Int, height: Int): Viewport {
+    fun set(x: Int, y: Int, width: Int, height: Int): Viewport {
         this.x = x
         this.y = y
         this.width = width
@@ -62,54 +48,29 @@ class Viewport() {
     fun isEmpty(): Boolean {
         return width <= 0 || height <= 0
     }
-
-    fun intersects(viewport: Viewport): Boolean {
-        val that: Viewport = viewport
-        return if (this.isEmpty() || that.isEmpty()) {
-            false
-        } else x < that.x + that.width && that.x < x + width && y < that.y + that.height && that.y < y + height
-    }
-
-    fun intersect(viewport: Viewport?): Boolean {
-        if (viewport == null) {
-            throw IllegalArgumentException(
-                Logger.logMessage(Logger.ERROR, "Viewport", "intersect", "missingViewport")
-            )
-        }
-        val that: Viewport = viewport
-        if (this.isEmpty() || that.isEmpty()) {
-            return false
-        }
-        if (this.x < that.x + that.width && that.x < this.x + this.width && this.y < that.y + that.height && that.y < this.y + this.height
-        ) {
-            if (x < that.x) {
-                width -= that.x - x
-                x = that.x
-            }
-            if (y < that.y) {
-                height -= that.y - y
-                y = that.y
-            }
-            if (x + width > that.x + that.width) {
-                width = that.x + that.width - x
-            }
-            if (y + height > that.y + that.height) {
-                height = that.y + that.height - y
-            }
-            return true
-        }
-        return false
-    }
-
+    /**
+     * 判断是否包含某点
+     */
     fun contains(x: Int, y: Int): Boolean {
         return x >= this.x && x < this.x + width && y >= this.y && y < this.y + height
+    }
+    /**
+     * 判断是否相交
+     */
+    fun intersects(viewport: Viewport): Boolean {
+        return intersects(viewport.x , viewport.y , viewport.width , viewport.height)
     }
     fun intersects(x: Int, y: Int, width: Int, height: Int): Boolean {
         return this.width > 0 && this.height > 0 && width > 0 && height > 0 && this.x < x + width && x < this.x + this.width && this.y < y + height && y < this.y + this.height
     }
+    /**
+     * 判断是否相交,若相交则取出相交区域
+     */
+    fun intersect(viewport: Viewport): Boolean {
+        return intersect(viewport.x , viewport.y , viewport.width , viewport.height)
+    }
     fun intersect(x: Int, y: Int, width: Int, height: Int): Boolean {
-        if (this.width > 0 && this.height > 0 && width > 0 && height > 0 && this.x < x + width && x < this.x + this.width && this.y < y + height && y < this.y + this.height
-        ) {
+        if (intersects(x , y , width , height)) {
             if (this.x < x) {
                 this.width -= x - this.x
                 this.x = x

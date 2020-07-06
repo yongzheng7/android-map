@@ -279,18 +279,21 @@ class WorldWind {
          * [OffsetMode] constant indicating that the associated parameters are fractional values of the virtual
          * rectangle's width or height in the range [0, 1], where 0 indicates the rectangle's origin and 1 indicates the
          * corner opposite its origin.
+         * 该模式是比例模式,offset x y 成对应的x y的比例进行偏移
          */
         const val OFFSET_FRACTION = 0
 
         /**
          * [OffsetMode] constant indicating that the associated parameters are in units of pixels relative to the
          * virtual rectangle's corner opposite its origin corner.
+         * 该模式是相减 x y 的值减去偏移量的值
          */
         const val OFFSET_INSET_PIXELS = 1
 
         /**
          * [OffsetMode] constant indicating that the associated parameters are in units of pixels relative to the
          * virtual rectangle's origin.
+         * 该模式是直接取 offset的值作为偏移后的值
          */
         const val OFFSET_PIXELS = 2
 

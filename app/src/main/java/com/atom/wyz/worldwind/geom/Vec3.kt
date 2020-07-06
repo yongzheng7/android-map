@@ -52,22 +52,11 @@ class Vec3(var x: Double, var y: Double, var z: Double) {
         return this
     }
 
-    fun set(vector: Vec3?): Vec3 {
-        if (vector == null) {
-            throw IllegalArgumentException(
-                    Logger.logMessage(Logger.ERROR, "Vec3", "set", "missingVector"))
-        }
-        x = vector.x
-        y = vector.y
-        z = vector.z
-        return this
+    fun set(vector: Vec3): Vec3 {
+        return set(vector.x , vector.y , vector.z)
     }
 
-    fun swap(vector: Vec3?): Vec3 {
-        if (vector == null) {
-            throw IllegalArgumentException(
-                    Logger.logMessage(Logger.ERROR, "Vec3", "swap", "missingVector"))
-        }
+    fun swap(vector: Vec3): Vec3 {
         var tmp = x
         x = vector.x
         vector.x = tmp
@@ -80,11 +69,7 @@ class Vec3(var x: Double, var y: Double, var z: Double) {
         return this
     }
 
-    fun add(vector: Vec3?): Vec3 {
-        if (vector == null) {
-            throw IllegalArgumentException(
-                    Logger.logMessage(Logger.ERROR, "Vec3", "add", "missingVector"))
-        }
+    fun add(vector: Vec3): Vec3 {
         x += vector.x
         y += vector.y
         z += vector.z
@@ -94,11 +79,7 @@ class Vec3(var x: Double, var y: Double, var z: Double) {
     /**
      * 减去
      */
-    fun subtract(vector: Vec3?): Vec3 {
-        if (vector == null) {
-            throw IllegalArgumentException(
-                    Logger.logMessage(Logger.ERROR, "Vec3", "subtract", "missingVector"))
-        }
+    fun subtract(vector: Vec3): Vec3 {
         x -= vector.x
         y -= vector.y
         z -= vector.z
@@ -112,11 +93,10 @@ class Vec3(var x: Double, var y: Double, var z: Double) {
         return this
     }
 
-    fun multiplyByMatrix(matrix: Matrix4?): Vec3 {
-        if (matrix == null) {
-            throw IllegalArgumentException(
-                    Logger.logMessage(Logger.ERROR, "Vec3", "multiplyByMatrix", "missingMatrix"))
-        }
+    /**
+     * 和4x4矩阵相乘并进行透视除法
+     */
+    fun multiplyByMatrix(matrix: Matrix4): Vec3 {
         val m: DoubleArray = matrix.m
         val x = m[0] * x + m[1] * y + m[2] * z + m[3]
         val y = m[4] * this.x + m[5] * y + m[6] * z + m[7]
@@ -138,6 +118,9 @@ class Vec3(var x: Double, var y: Double, var z: Double) {
         return this
     }
 
+    /**
+     * 取反
+     */
     fun negate(): Vec3 {
         x = -x
         y = -y
@@ -147,49 +130,33 @@ class Vec3(var x: Double, var y: Double, var z: Double) {
 
     fun normalize(): Vec3 {
         val magnitude = magnitude()
-        val magnitudeInverse = 1 / magnitude
-        x *= magnitudeInverse
-        y *= magnitudeInverse
-        z *= magnitudeInverse
+        if(magnitude != 0.0)
+        multiply(1 / magnitude)
         return this
     }
 
     /**
      * 点积
      */
-    fun dot(vector: Vec3?): Double {
-        if (vector == null) {
-            throw IllegalArgumentException(
-                    Logger.logMessage(Logger.ERROR, "Vec3", "dot", "missingVector"))
-        }
+    fun dot(vector: Vec3): Double {
         return x * vector.x + y * vector.y + z * vector.z
     }
 
     /**
      * 叉积
      */
-    fun cross(vector: Vec3?): Vec3 {
-        if (vector == null) {
-            throw IllegalArgumentException(
-                    Logger.logMessage(Logger.ERROR, "Vec3", "cross", "missingVector"))
-        }
+    fun cross(vector: Vec3): Vec3 {
         val x: Double = y * vector.z - z * vector.y
         val y: Double = z * vector.x - this.x * vector.z
         val z: Double = this.x * vector.y - this.y * vector.x
-        this.x = x
-        this.y = y
-        this.z = z
+        set(x , y , z)
         return this
     }
 
     /**
      * 根据权重取两个点的数据组成一个新的点
      */
-    fun mix(vector: Vec3?, weight: Double): Vec3 {
-        if (vector == null) {
-            throw IllegalArgumentException(
-                    Logger.logMessage(Logger.ERROR, "Vec3", "mix", "missingVector"))
-        }
+    fun mix(vector: Vec3, weight: Double): Vec3 {
         val w0 = 1 - weight
         x = x * w0 + vector.x * weight
         y = y * w0 + vector.y * weight
@@ -223,11 +190,7 @@ class Vec3(var x: Double, var y: Double, var z: Double) {
     /**
      * 计算三点组成的三角形的法向量并赋值给自己
      */
-    fun triangleNormal(a: Vec3?, b: Vec3?, c: Vec3?): Vec3 {
-        if (a == null || b == null || c == null) {
-            throw IllegalArgumentException(
-                    Logger.logMessage(Logger.ERROR, "Vec3", "triangleNormal", "missingVector"))
-        }
+    fun triangleNormal(a: Vec3, b: Vec3, c: Vec3): Vec3 {
         val x: Double = (b.y - a.y) * (c.z - a.z) - (b.z - a.z) * (c.y - a.y)
         val y: Double = (b.z - a.z) * (c.x - a.x) - (b.x - a.x) * (c.z - a.z)
         val z: Double = (b.x - a.x) * (c.y - a.y) - (b.y - a.y) * (c.x - a.x)
@@ -256,22 +219,14 @@ class Vec3(var x: Double, var y: Double, var z: Double) {
         return x * x + y * y + z * z
     }
 
-    fun distanceToSquared(vector: Vec3?): Double {
-        if (vector == null) {
-            throw IllegalArgumentException(
-                    Logger.logMessage(Logger.ERROR, "Vec3", "distanceToSquared", "missingVector"))
-        }
+    fun distanceToSquared(vector: Vec3): Double {
         val dx: Double = x - vector.x
         val dy: Double = y - vector.y
         val dz: Double = z - vector.z
         return dx * dx + dy * dy + dz * dz
     }
 
-    fun distanceTo(vector: Vec3?): Double {
-        if (vector == null) {
-            throw IllegalArgumentException(
-                    Logger.logMessage(Logger.ERROR, "Vec3", "distanceTo", "missingVector"))
-        }
+    fun distanceTo(vector: Vec3): Double {
         return Math.sqrt(this.distanceToSquared(vector))
     }
 
@@ -294,21 +249,9 @@ class Vec3(var x: Double, var y: Double, var z: Double) {
         return result
     }
 
-    override fun toString(): String {
-        return x.toString() + ", " + y + ", " + z
-    }
-
-    /**
-     * 将此向量的分量复制到指定的单精度数组。
-     * 结果与GLSL统一向量兼容，并且可以传递给函数glUniform3fv。
-     *
-     * @param result a pre-allocated array of length 3 in which to return the components
-     *
-     * @return the result argument set to this vector's components
-     */
-    fun toArray(result: FloatArray?, offset: Int): FloatArray? {
+    fun toArray(result: FloatArray, offset: Int): FloatArray? {
         var offset_temp = offset
-        if (result == null || result.size - offset < 3) {
+        if (result.size - offset < 3) {
             throw java.lang.IllegalArgumentException(
                      Logger.logMessage( Logger.ERROR, "Vec3", "toArray", "missingResult"))
         }
@@ -317,4 +260,9 @@ class Vec3(var x: Double, var y: Double, var z: Double) {
         result[offset_temp] = z.toFloat()
         return result
     }
+
+    override fun toString(): String {
+        return "Vec3(x=$x, y=$y, z=$z)"
+    }
+
 }

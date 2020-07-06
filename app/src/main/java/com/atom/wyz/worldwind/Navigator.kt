@@ -44,6 +44,7 @@ class Navigator  {
         result.tilt = this.tilt
         result.roll = this.roll
 
+
         return result
     }
 

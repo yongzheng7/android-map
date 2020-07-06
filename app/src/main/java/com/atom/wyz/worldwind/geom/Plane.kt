@@ -35,10 +35,7 @@ class Plane {
         this.normalizeIfNeeded()
     }
 
-    constructor(plane : Plane? ) {
-        if (plane == null) {
-            throw java.lang.IllegalArgumentException(Logger.logMessage(Logger.ERROR, "Plane", "constructor", "missingPlane"))
-        }
+    constructor(plane : Plane ) {
         normal.set(plane.normal)
         this.distance =plane.distance
     }
@@ -66,11 +63,7 @@ class Plane {
     /**
      * 通过三个点确定一个面
      */
-    fun fromPoints(pa: Vec3?, pb: Vec3?, pc: Vec3?): Plane {
-        if (pa == null || pb == null || pc == null) {
-            throw IllegalArgumentException(
-                    Logger.logMessage(Logger.ERROR, "Plane", "fromPoints", "missingVector"))
-        }
+    fun fromPoints(pa: Vec3, pb: Vec3, pc: Vec3): Plane {
         val vab: Vec3 = Vec3(pb.x, pb.y, pb.z)
         vab.subtract(pa)
         val vac: Vec3 = Vec3(pc.x, pc.y, pc.z)
@@ -90,11 +83,7 @@ class Plane {
      * @throws IllegalArgumentException If the specified vector is null or undefined.
      * @return The computed dot product.
      */
-    fun dot(vector: Vec3?): Double {
-        if (vector == null) {
-            throw IllegalArgumentException(
-                    Logger.logMessage(Logger.ERROR, "Plane", "dot", "missingVector"))
-        }
+    fun dot(vector: Vec3): Double {
         return normal.dot(vector) + distance //TODO
     }
 
@@ -103,24 +92,19 @@ class Plane {
      * 如果是正数则在面的正面
      * 反之负面
      */
-    fun distanceToPoint(point: Vec3?): Double {
+    fun distanceToPoint(point: Vec3): Double {
         return dot(point)
     }
 
     /**
      * 变换矩阵
      */
-    fun transformByMatrix(matrix: Matrix4?): Plane {
-        if (matrix == null) {
-            throw java.lang.IllegalArgumentException(
-                    Logger.logMessage(Logger.ERROR, "Plane", "transformByMatrix", "missingMatrix"))
-        }
-
+    fun transformByMatrix(matrix: Matrix4): Plane {
         val m: DoubleArray = matrix.m
-        val x = m[0] * normal.x + m[1] * normal.y + m[2] * normal.z + m[3] * distance
-        val y = m[4] * normal.x + m[5] * normal.y + m[6] * normal.z + m[7] * distance
-        val z = m[8] * normal.x + m[9] * normal.y + m[10] * normal.z + m[11] * distance
-        val distance = m[12] * normal.x + m[13] * normal.y + m[14] * normal.z + m[15] * distance
+        val x =         m[0] * normal.x +   m[1] * normal.y +   m[2] * normal.z +   m[3] * distance
+        val y =         m[4] * normal.x +   m[5] * normal.y +   m[6] * normal.z +   m[7] * distance
+        val z =         m[8] * normal.x +   m[9] * normal.y +   m[10] * normal.z +  m[11] * distance
+        val distance =  m[12] * normal.x +  m[13] * normal.y +  m[14] * normal.z +  m[15] * distance
         normal.x = x
         normal.y = y
         normal.z = z
@@ -129,28 +113,14 @@ class Plane {
         return this
     }
 
-    /**
-     * Normalizes the components of this plane.
-     *  待定
-     * @return This plane with its components normalized.
-     */
     fun normalizeIfNeeded() {
-        // Compute the plane normal's magnitude in order to determine whether or not the plane needs normalization.
         val magnitude = normal.magnitude()
-
-        // Don't normalize a zero vector; the result is NaN when it should be 0.0.
         if (magnitude == 0.0) {
             return
         }
-
-        // Don't normalize a unit vector, this indicates that the caller has already normalized the vector, but floating
-        // point roundoff results in a length not exactly 1.0. Since we're normalizing on the caller's behalf, we want
-        // to avoid unnecessary any normalization that modifies the specified values.
         if (magnitude >= 1 - NEAR_ZERO_THRESHOLD && magnitude <= 1 + NEAR_ZERO_THRESHOLD) {
             return
         }
-
-        // Normalize the caller-specified plane coordinates.
         normal.x /= magnitude
         normal.y /= magnitude
         normal.z /= magnitude
@@ -229,9 +199,9 @@ class Plane {
         // Get the projection of the segment onto the plane.
         val line: Line = Line().setToSegment(pointA, pointB)
         val lDotV = normal.dot(line.direction) // 先用线的方向和面的法向量进行点积
-        // Are the line and plane parallel?
-        if (lDotV == 0.0) { // 线和平面平行，和法向量垂直
-            val lDotS = dot(line.origin) //面的法向量和线的原点进行点积 并减去面和原点的距离
+
+        if (lDotV == 0.0) { // 线段和平行
+            val lDotS = dot(line.origin) //求出线段起点和面的巨鹿 == 0 那么就在面内
             return if (lDotS == 0.0) {
                 arrayOf<Vec3>(pointA, pointB) // line is coincident with the plane
             } else {

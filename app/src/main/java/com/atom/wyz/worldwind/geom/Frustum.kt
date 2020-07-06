@@ -3,7 +3,7 @@ package com.atom.wyz.worldwind.geom
 import com.atom.wyz.worldwind.util.Logger
 
 class Frustum {
-    val left: Plane = Plane(1.0, 0.0, 0.0, 1.0)
+    val left: Plane = Plane(1.0, 0.0, 0.0, 1.0) // 该面是距离原点1个单位 且法向量指向原点方向
 
     val right: Plane = Plane(-1.0, 0.0, 0.0, 1.0)
 
@@ -22,13 +22,7 @@ class Frustum {
     private val scratchMatrix = Matrix4()
 
     constructor()
-    constructor(left: Plane?, right: Plane?, bottom: Plane?, top: Plane?, near: Plane?, far: Plane?, viewport: Viewport ) {
-        if (left == null || right == null || bottom == null || top == null || near == null || far == null) {
-            throw IllegalArgumentException(
-                    Logger.logMessage(Logger.ERROR, "Frustum", "constructor", "missingPlane"))
-        }
-        // Internal. Intentionally not documented. See property accessors below for public interface.
-        requireNotNull(viewport) { Logger.logMessage(Logger.ERROR, "Frustum", "constructor", "missingViewport") }
+    constructor(left: Plane, right: Plane, bottom: Plane, top: Plane, near: Plane, far: Plane, viewport: Viewport ) {
         this.left.set(left)
         this.right.set(right)
         this.bottom.set(bottom)
@@ -55,11 +49,7 @@ class Frustum {
     /**
      * 视口变换 通过矩阵
      */
-    fun transformByMatrix(matrix: Matrix4?): Frustum {
-        if (matrix == null) {
-            throw java.lang.IllegalArgumentException(
-                    Logger.logMessage(Logger.ERROR, "Frustum", "transformByMatrix", "missingMatrix"))
-        }
+    fun transformByMatrix(matrix: Matrix4): Frustum {
         left.transformByMatrix(matrix)
         right.transformByMatrix(matrix)
         bottom.transformByMatrix(matrix)
@@ -85,25 +75,7 @@ class Frustum {
     /**
      * 来自透视矩阵 变为视口
      */
-    fun setToModelviewProjection(projection: Matrix4?, modelview: Matrix4? , viewport: Viewport ): Frustum {
-        require(!(projection == null || modelview == null)) {
-            Logger.logMessage(
-                Logger.ERROR,
-                "Frustum",
-                "setToModelviewProjection",
-                "missingMatrix"
-            )
-        }
-
-        requireNotNull(viewport) {
-            Logger.logMessage(
-                Logger.ERROR,
-                "Frustum",
-                "setToModelviewProjection",
-                "missingViewport"
-            )
-        }
-        // Compute the transpose of the modelview matrix.
+    fun setToModelviewProjection(projection: Matrix4, modelview: Matrix4 , viewport: Viewport ): Frustum {
         scratchMatrix.transposeMatrix(modelview)
         /**
          * 0  1  2  3
@@ -170,27 +142,11 @@ class Frustum {
     }
 
     fun setToModelviewProjection(
-        projection: Matrix4?,
-        modelview: Matrix4?,
-        viewport: Viewport?,
-        subViewport: Viewport?
-    ): Frustum? {
-        require(!(projection == null || modelview == null)) {
-            Logger.logMessage(
-                Logger.ERROR,
-                "Frustum",
-                "setToModelviewProjection",
-                "missingMatrix"
-            )
-        }
-        require(!(viewport == null || subViewport == null)) {
-            Logger.logMessage(
-                Logger.ERROR,
-                "Frustum",
-                "setToModelviewProjection",
-                "missingViewport"
-            )
-        }
+        projection: Matrix4,
+        modelview: Matrix4,
+        viewport: Viewport,
+        subViewport: Viewport
+    ): Frustum {
         // Compute the sub-viewport's four edges in screen coordinates.
         val left = subViewport.x.toDouble()
         val right = (subViewport.x + subViewport.width).toDouble()
@@ -241,31 +197,19 @@ class Frustum {
         val nf = va.cross(vb)
         far.set(nf.x, nf.y, nf.z, -nf.dot(blf))
 
-        // Copy the specified sub-viewport.
         this.viewport.set(subViewport)
         return this
     }
     /**
-     * 判断视锥是否包含点 TODO 有问题
+     * 判断视锥是否包含点
      */
-    fun containsPoint(point: Vec3?): Boolean {
-        if (point == null) {
-            throw java.lang.IllegalArgumentException(
-                    Logger.logMessage(Logger.ERROR, "Frustum", "containsPoint", "missingPoint"))
-        }
-        // See if the point is entirely within the frustum. The dot product of the point with each plane's vector
-        // provides a distance to each plane. If this distance is less than 0, the point is clipped by that plane and
-        // neither intersects nor is contained by the space enclosed by this Frustum.
-
-        // 查看该点是否完全在视锥范围内。 点与每个平面向量的点积提供了到每个平面的距离。
-        // 如果此距离小于0，则该点将被该平面修剪，并且该截锥既不相交也不包含在该视锥体中。
-
+    fun containsPoint(point: Vec3): Boolean {
         if (far.dot(point) <= 0) return false
         if (left.dot(point) <= 0) return false
         if (right.dot(point) <= 0) return false
         if (top.dot(point) <= 0) return false
         if (bottom.dot(point) <= 0) return false
-        return if (near.dot(point) <= 0) false else true
+        return near.dot(point) > 0
     }
 
     /**

@@ -5,7 +5,7 @@ import java.util.*
 
 class Matrix3 {
     companion object {
-        protected val identity = doubleArrayOf(1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0)
+        val identity = doubleArrayOf(1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0)
     }
 
     val m = doubleArrayOf(1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0)
@@ -56,11 +56,7 @@ class Matrix3 {
     /**
      * 设置矩阵
      */
-    fun set(matrix: Matrix3?): Matrix3 {
-        if (matrix == null) {
-            throw java.lang.IllegalArgumentException(
-                    Logger.logMessage(Logger.ERROR, "Matrix3", "set", "missingMatrix"))
-        }
+    fun set(matrix: Matrix3): Matrix3 {
         System.arraycopy(matrix.m, 0, m, 0, 9)
         return this
     }
@@ -82,7 +78,7 @@ class Matrix3 {
         return this
     }
 
-    fun invert(): Matrix3? {
+    fun invert(): Matrix3 {
         throw UnsupportedOperationException("Matrix3.invert is not implemented") // TODO
     }
 
@@ -485,7 +481,7 @@ class Matrix3 {
         return this
     }
 
-    fun invertMatrix(matrix: Matrix3?): Matrix3? {
+    fun invertMatrix(matrix: Matrix3?): Matrix3 {
         if (matrix == null) {
             throw java.lang.IllegalArgumentException(
                     Logger.logMessage(Logger.ERROR, "Matrix3", "invertMatrix", "missingMatrix"))

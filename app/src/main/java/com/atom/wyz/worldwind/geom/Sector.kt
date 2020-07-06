@@ -3,19 +3,31 @@ package com.atom.wyz.worldwind.geom
 import com.atom.wyz.worldwind.util.Logger
 
 class Sector() {
-
     companion object {
-        fun fromDegrees(latitudeDegrees: Double, longitudeDegrees: Double,
-                        deltaLatitudeDegrees: Double, deltaLongitudeDegrees: Double): Sector {
-            return Sector(latitudeDegrees, longitudeDegrees,
-                    deltaLatitudeDegrees, deltaLongitudeDegrees)
+        /**
+         * 来自角度
+         */
+        fun fromDegrees(
+            latitudeDegrees: Double, longitudeDegrees: Double,
+            deltaLatitudeDegrees: Double, deltaLongitudeDegrees: Double
+        ): Sector {
+            return Sector(
+                latitudeDegrees, longitudeDegrees,
+                deltaLatitudeDegrees, deltaLongitudeDegrees
+            )
         }
 
-        fun fromRadians(latitudeRadians: Double, longitudeRadians: Double,
-                        deltaLatitudeRadians: Double, deltaLongitudeRadians: Double): Sector {
+        /**
+         * 来自弧度
+         */
+        fun fromRadians(
+            latitudeRadians: Double, longitudeRadians: Double,
+            deltaLatitudeRadians: Double, deltaLongitudeRadians: Double
+        ): Sector {
             return Sector(
-                    Math.toDegrees(latitudeRadians), Math.toDegrees(longitudeRadians),
-                    Math.toDegrees(deltaLatitudeRadians), Math.toDegrees(deltaLongitudeRadians))
+                Math.toDegrees(latitudeRadians), Math.toDegrees(longitudeRadians),
+                Math.toDegrees(deltaLatitudeRadians), Math.toDegrees(deltaLongitudeRadians)
+            )
         }
     }
 
@@ -25,33 +37,34 @@ class Sector() {
     var maxLongitude: Double = Double.NaN
 
     constructor(sector: Sector) : this() {
-        this.minLatitude = sector.minLatitude
-        this.maxLatitude = sector.maxLatitude
-        this.minLongitude = sector.minLongitude
-        this.maxLongitude = sector.maxLongitude
+        set(sector)
     }
 
-    constructor(minLatitude: Double, minLongitude: Double, deltaLatitude: Double, deltaLongitude: Double) : this() {
-        this.minLatitude = minLatitude
-        this.minLongitude = minLongitude
-        maxLatitude = Location.clampLatitude(minLatitude + if (deltaLatitude > 0) deltaLatitude else Double.NaN)
-        maxLongitude = Location.clampLongitude(minLongitude + if (deltaLongitude > 0) deltaLongitude else Double.NaN)
-
+    constructor(
+        minLatitude: Double,
+        minLongitude: Double,
+        deltaLatitude: Double,
+        deltaLongitude: Double
+    ) : this() {
+        set(minLatitude, minLongitude, deltaLatitude, deltaLongitude)
     }
 
-    operator fun set(minLatitude: Double, minLongitude: Double, deltaLatitude: Double, deltaLongitude: Double): Sector {
+    operator fun set(
+        minLatitude: Double,
+        minLongitude: Double,
+        deltaLatitude: Double,
+        deltaLongitude: Double
+    ): Sector {
         this.minLatitude = minLatitude
         this.minLongitude = minLongitude
-        maxLatitude = Location.clampLatitude(minLatitude + if (deltaLatitude > 0) deltaLatitude else Double.NaN)
-        maxLongitude = Location.clampLongitude(minLongitude + if (deltaLongitude > 0) deltaLongitude else Double.NaN)
+        this.maxLatitude =
+            Location.clampLatitude(minLatitude + if (deltaLatitude > 0) deltaLatitude else Double.NaN)
+        this.maxLongitude =
+            Location.clampLongitude(minLongitude + if (deltaLongitude > 0) deltaLongitude else Double.NaN)
         return this
     }
 
-    fun set(sector: Sector?): Sector {
-        if (sector == null) {
-            throw java.lang.IllegalArgumentException(
-                    Logger.logMessage(Logger.ERROR, "Sector", "set", "missingSector"))
-        }
+    fun set(sector: Sector): Sector {
         minLatitude = sector.minLatitude
         maxLatitude = sector.maxLatitude
         minLongitude = sector.minLongitude
@@ -78,69 +91,80 @@ class Sector() {
     /**
      * 是否相交
      */
-    fun intersects(minLatitude: Double, minLongitude: Double, deltaLatitude: Double, deltaLongitude: Double): Boolean { // Assumes normalized angles: [-90, +90], [-180, +180]
+    fun intersects(
+        minLatitude: Double,
+        minLongitude: Double,
+        deltaLatitude: Double,
+        deltaLongitude: Double
+    ): Boolean {
         // Assumes normalized latitude and longitude: [-90, +90], [-180, +180]
-        val maxLatitude: Double = Location.clampLatitude(minLatitude + if (deltaLatitude > 0) deltaLatitude else Double.NaN)
-        val maxLongitude: Double = Location.clampLongitude(minLongitude + if (deltaLongitude > 0) deltaLongitude else Double.NaN)
-        // Note: comparisons with NaN are always false.
-        // Note: comparisons with NaN are always false.
+        val maxLatitude: Double =
+            Location.clampLatitude(minLatitude + if (deltaLatitude > 0) deltaLatitude else Double.NaN)
+        val maxLongitude: Double =
+            Location.clampLongitude(minLongitude + if (deltaLongitude > 0) deltaLongitude else Double.NaN)
+        return _intersects(minLatitude, minLongitude, maxLatitude, maxLongitude)
+    }
+
+    private fun _intersects(
+        minLatitude: Double,
+        minLongitude: Double,
+        maxLatitude: Double,
+        maxLongitude: Double
+    ): Boolean {
         return this.minLatitude < maxLatitude && this.maxLatitude > minLatitude && this.minLongitude < maxLongitude && this.maxLongitude > minLongitude
     }
 
     /**
      * 是否相交
      */
-    fun intersects(sector: Sector?): Boolean {
-        if (sector == null) {
-            throw java.lang.IllegalArgumentException(
-                    Logger.logMessage(Logger.ERROR, "Sector", "intersects", "missingSector"))
-        }
+    fun intersects(sector: Sector): Boolean {
         // Assumes normalized angles: [-90, +90], [-180, +180]
-        return minLatitude < sector.maxLatitude
-                && maxLatitude > sector.minLatitude
-                && minLongitude < sector.maxLongitude
-                && maxLongitude > sector.minLongitude
+        return _intersects(
+            sector.minLatitude,
+            sector.minLongitude,
+            sector.maxLatitude,
+            sector.maxLongitude
+        )
     }
 
     /**
      * 判断相交后 合并
      */
-    fun intersect(minLatitude: Double, minLongitude: Double, deltaLatitude: Double, deltaLongitude: Double): Boolean { // Assumes normalized angles: [-90, +90], [-180, +180]
+    fun intersect(
+        minLatitude: Double,
+        minLongitude: Double,
+        deltaLatitude: Double,
+        deltaLongitude: Double
+    ): Boolean { // Assumes normalized angles: [-90, +90], [-180, +180]
         // Assumes normalized latitude and longitude: [-90, +90], [-180, +180]
-        val maxLatitude: Double = Location.clampLatitude(minLatitude + if (deltaLatitude > 0) deltaLatitude else Double.NaN)
-        val maxLongitude: Double = Location.clampLongitude(minLongitude + if (deltaLongitude > 0) deltaLongitude else Double.NaN)
-        // Note: comparisons with NaN are always false
-        if (this.minLatitude < maxLatitude && this.maxLatitude > minLatitude // latitudes intersect
-                && this.minLongitude < maxLongitude && this.maxLongitude > minLongitude) { // longitudes intersect
+        val maxLatitude: Double =
+            Location.clampLatitude(minLatitude + if (deltaLatitude > 0) deltaLatitude else Double.NaN)
+        val maxLongitude: Double =
+            Location.clampLongitude(minLongitude + if (deltaLongitude > 0) deltaLongitude else Double.NaN)
+        val intersects = _intersects(minLatitude, minLongitude, maxLatitude, maxLongitude)
+        if (intersects) {
             if (this.minLatitude < minLatitude) this.minLatitude = minLatitude
             if (this.maxLatitude > maxLatitude) this.maxLatitude = maxLatitude
             if (this.minLongitude < minLongitude) this.minLongitude = minLongitude
             if (this.maxLongitude > maxLongitude) this.maxLongitude = maxLongitude
-            return true
         }
 
-        return false // the two sectors do not intersect
+        return intersects
 
     }
 
     /**
      * 判断相交后 合并
      */
-    fun intersect(sector: Sector?): Boolean {
-        if (sector == null) {
-            throw java.lang.IllegalArgumentException(
-                    Logger.logMessage(Logger.ERROR, "Sector", "intersect", "missingSector"))
-        }
+    fun intersect(sector: Sector): Boolean {
         // Assumes normalized angles: [-90, +90], [-180, +180] and comparisons with NaN are always false
-        if (minLatitude < sector.maxLatitude && maxLatitude > sector.minLatitude // latitudes intersect
-                && minLongitude < sector.maxLongitude && maxLongitude > sector.minLongitude) { // longitudes intersect
+        if (intersects(sector)) { // longitudes intersect
             if (minLatitude < sector.minLatitude) minLatitude = sector.minLatitude
             if (maxLatitude > sector.maxLatitude) maxLatitude = sector.maxLatitude
             if (minLongitude < sector.minLongitude) minLongitude = sector.minLongitude
             if (maxLongitude > sector.maxLongitude) maxLongitude = sector.maxLongitude
             return true
         }
-
         return false // the two sectors do not intersect
 
     }
@@ -148,50 +172,59 @@ class Sector() {
     /**
      * 判断是否包含该经纬度
      */
-    fun contains(latitude: Double, longitude: Double): Boolean { // Assumes normalized angles: [-90, +90], [-180, +180]
+    fun contains(latitude: Double, longitude: Double): Boolean {
         // Assumes normalized angles: [-90, +90], [-180, +180] and comparisons with NaN are always false
-        // Assumes normalized angles: [-90, +90], [-180, +180] and comparisons with NaN are always false
-        return minLatitude <= latitude
-                && maxLatitude >= latitude
-                && minLongitude <= longitude
-                && maxLongitude >= longitude
+        return latitude in minLatitude..maxLatitude && longitude in minLongitude..maxLongitude
     }
 
     /**
      * 判断是否包含该区域
      */
-    fun contains(minLatitude: Double, minLongitude: Double, deltaLatitude: Double, deltaLongitude: Double): Boolean { // Assumes normalized angles: [-90, +90], [-180, +180]
-        // Assumes normalized latitude and longitude: [-90, +90], [-180, +180]
-        val maxLatitude: Double = Location.clampLatitude(minLatitude + if (deltaLatitude > 0) deltaLatitude else Double.NaN)
-        val maxLongitude: Double = Location.clampLongitude(minLongitude + if (deltaLongitude > 0) deltaLongitude else Double.NaN)
-
-        // Note: comparisons with NaN are always false
+    fun contains(
+        minLatitude: Double,
+        minLongitude: Double,
+        deltaLatitude: Double,
+        deltaLongitude: Double
+    ): Boolean {
+        val maxLatitude: Double =
+            Location.clampLatitude(minLatitude + if (deltaLatitude > 0) deltaLatitude else Double.NaN)
+        val maxLongitude: Double =
+            Location.clampLongitude(minLongitude + if (deltaLongitude > 0) deltaLongitude else Double.NaN)
+        return _contains(minLatitude , minLongitude , maxLatitude , maxLongitude)
+    }
+    private fun _contains(
+        minLatitude: Double,
+        minLongitude: Double,
+        maxLatitude: Double,
+        maxLongitude: Double) : Boolean {
         return this.minLatitude <= minLatitude && this.maxLatitude >= maxLatitude && this.minLongitude <= minLongitude && this.maxLongitude >= maxLongitude
     }
 
     /**
      * 判断是否包含该区域
      */
-    operator fun contains(sector: Sector?): Boolean {
-        if (sector == null) {
-            throw java.lang.IllegalArgumentException(
-                    Logger.logMessage(Logger.ERROR, "Sector", "contains", "missingSector"))
-        }
+    operator fun contains(sector: Sector): Boolean {
         // Assumes normalized angles: [-90, +90], [-180, +180], and comparisons with NaN are always false
-        return minLatitude <= sector.minLatitude && maxLatitude >= sector.maxLatitude && minLongitude <= sector.minLongitude && maxLongitude >= sector.maxLongitude
+        return _contains(sector.minLatitude , sector.minLongitude , sector.maxLatitude , sector.maxLongitude)
     }
 
     /**
      * 判断两个区域是否存在
      * 接着进行获取两个区域想融合的大小
      */
-    fun union(minLatitude: Double, minLongitude: Double, deltaLatitude: Double, deltaLongitude: Double): Sector { // Assumes normalized angles: [-90, +90], [-180, +180]
+    fun union(
+        minLatitude: Double,
+        minLongitude: Double,
+        deltaLatitude: Double,
+        deltaLongitude: Double
+    ): Sector { // Assumes normalized angles: [-90, +90], [-180, +180]
         // Assumes normalized latitude and longitude: [-90, +90], [-180, +180]
-        val maxLatitude: Double = Location.clampLatitude(minLatitude + if (deltaLatitude > 0) deltaLatitude else Double.NaN)
-        val maxLongitude: Double = Location.clampLongitude(minLongitude + if (deltaLongitude > 0) deltaLongitude else Double.NaN)
-
+        val maxLatitude: Double =
+            Location.clampLatitude(minLatitude + if (deltaLatitude > 0) deltaLatitude else Double.NaN)
+        val maxLongitude: Double =
+            Location.clampLongitude(minLongitude + if (deltaLongitude > 0) deltaLongitude else Double.NaN)
         if (minLatitude < maxLatitude && minLongitude < maxLongitude) { // specified sector not empty
-            if (this.minLatitude < this.maxLatitude && this.minLongitude < this.maxLongitude) { // this sector not empty
+            if (!isEmpty()) { // this sector not empty
                 if (this.minLatitude > minLatitude) this.minLatitude = minLatitude
                 if (this.maxLatitude < maxLatitude) this.maxLatitude = maxLatitude
                 if (this.minLongitude > minLongitude) this.minLongitude = minLongitude
@@ -211,14 +244,10 @@ class Sector() {
      * 判断两个区域是否存在
      * 接着进行获取两个区域想融合的大小
      */
-    fun union(sector: Sector?): Sector {
-        if (sector == null) {
-            throw java.lang.IllegalArgumentException(
-                    Logger.logMessage(Logger.ERROR, "Sector", "union", "missingSector"))
-        }
+    fun union(sector: Sector): Sector {
         // Assumes normalized angles: [-90, +90], [-180, +180]
-        if (sector.minLatitude < sector.maxLatitude && sector.minLongitude < sector.maxLongitude) { // specified sector not empty
-            if (minLatitude < maxLatitude && minLongitude < maxLongitude) { // this sector not empty
+        if (!sector.isEmpty()) { // specified sector not empty
+            if (!isEmpty()) { // this sector not empty
                 if (minLatitude > sector.minLatitude) minLatitude = sector.minLatitude
                 if (maxLatitude < sector.maxLatitude) maxLatitude = sector.maxLatitude
                 if (minLongitude > sector.minLongitude) minLongitude = sector.minLongitude
@@ -235,8 +264,7 @@ class Sector() {
 
     fun union(latitude: Double, longitude: Double): Sector {
         // Assumes normalized angles: [-90, +90], [-180, +180], and comparisons with NaN are always false
-        // Assumes normalized angles: [-90, +90], [-180, +180], and comparisons with NaN are always false
-        if (minLatitude < maxLatitude && minLongitude < maxLongitude) {
+        if (!isEmpty()) {
             maxLatitude = Math.max(maxLatitude, latitude)
             minLatitude = Math.min(minLatitude, latitude)
             maxLongitude = Math.max(maxLongitude, longitude)
@@ -259,8 +287,8 @@ class Sector() {
      * 判断多个是否存在
      * 接着进行获取两个区域想融合的大小
      */
-    fun union(array : FloatArray? , count:Int , stride:Int ): Sector {
-        require(!(array == null || array.size < stride)) {
+    fun union(array: FloatArray, count: Int, stride: Int): Sector {
+        require(array.size >= stride) {
             Logger.logMessage(
                 Logger.ERROR,
                 "Sector",
@@ -374,7 +402,8 @@ class Sector() {
     fun centroid(result: Location?): Location {
         if (result == null) {
             throw IllegalArgumentException(
-                    Logger.logMessage(Logger.ERROR, "Sector", "centroid", "missingResult"))
+                Logger.logMessage(Logger.ERROR, "Sector", "centroid", "missingResult")
+            )
         }
         result.latitude = centroidLatitude()
         result.longitude = centroidLongitude()

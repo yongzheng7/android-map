@@ -29,27 +29,10 @@ class Offset {
             return Offset(WorldWind.OFFSET_FRACTION, 1.0, WorldWind.OFFSET_FRACTION, 1.0)
         }
     }
-    /**
-     * The offset in the X dimension, interpreted according to this instance's xUnits argument.
-     */
     var x = 0.0
-
-    /**
-     * The offset in the Y dimension, interpreted according to this instance's yUnits argument.
-     */
     var y = 0.0
-
-    /**
-     * The units of this instance's X offset. See this class' constructor description for a list of the possible
-     * values.
-     */
     @WorldWind.OffsetMode
     var xUnits = 0
-
-    /**
-     * The units of this instance's Y offset. See this class' constructor description for a list of the possible
-     * values.
-     */
     @WorldWind.OffsetMode
     var yUnits = 0
 
@@ -65,10 +48,7 @@ class Offset {
      * Creates a new copy of this offset with identical property values.
      */
     constructor(offset: Offset) {
-        x = offset.x
-        y = offset.y
-        xUnits = offset.xUnits
-        yUnits = offset.yUnits
+        set(offset)
     }
 
     fun set(offset: Offset): Offset {
@@ -112,27 +92,29 @@ class Offset {
                 '}'
     }
 
-    fun offsetForSize(width: Double, height: Double  , result : Vec2? ): Vec2 {
-        if (result == null) {
-            throw IllegalArgumentException(
-                Logger.logMessage(Logger.ERROR, "Offset", "offsetForSize", "missingResult")
-            )
+    fun offsetForSize(width: Double, height: Double , result : Vec2 ): Vec2 {
+        val x: Double =
+            when (xUnits) {
+            WorldWind.OFFSET_FRACTION -> {
+                width * this.x
+            }
+            WorldWind.OFFSET_INSET_PIXELS -> {
+                width - this.x
+            }
+            else -> { // default to OFFSET_PIXELS
+                this.x
+            }
         }
-        val x: Double
-        val y: Double
-        x = if (xUnits == WorldWind.OFFSET_FRACTION) {
-            width * this.x
-        } else if (xUnits == WorldWind.OFFSET_INSET_PIXELS) {
-            width - this.x
-        } else { // default to OFFSET_PIXELS
-            this.x
-        }
-        y = if (yUnits == WorldWind.OFFSET_FRACTION) {
-            height * this.y
-        } else if (yUnits == WorldWind.OFFSET_INSET_PIXELS) {
-            height - this.y
-        } else { // default to OFFSET_PIXELS
-            this.y
+        val y: Double = when (yUnits) {
+            WorldWind.OFFSET_FRACTION -> {
+                height * this.y
+            }
+            WorldWind.OFFSET_INSET_PIXELS -> {
+                height - this.y
+            }
+            else -> { // default to OFFSET_PIXELS
+                this.y
+            }
         }
         return result.set(x ,y)
     }

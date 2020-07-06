@@ -58,12 +58,7 @@ class Line {
      *
      * @throws IllegalArgumentException If the specified result argument is null or undefined.
      */
-    fun pointAt(distance: Double, result: Vec3?): Vec3 {
-        if (result == null) {
-            throw IllegalArgumentException(
-                Logger.logMessage(Logger.ERROR, "Line", "pointAt", "missingResult.")
-            )
-        }
+    fun pointAt(distance: Double, result: Vec3): Vec3 {
         result.x = origin.x + direction.x * distance
         result.y = origin.y + direction.y * distance
         result.z = origin.z + direction.z * distance

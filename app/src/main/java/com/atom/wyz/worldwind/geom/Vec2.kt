@@ -33,19 +33,11 @@ class Vec2(var x: Double, var y: Double) {
     /**
      * 距离目标点的长度 标量
      */
-    fun distanceTo(vector: Vec2?): Double {
-        if (vector == null) {
-            throw IllegalArgumentException(
-                    Logger.logMessage(Logger.ERROR, "Vec2", "distanceTo", "missingVector"))
-        }
+    fun distanceTo(vector: Vec2): Double {
         return Math.sqrt(this.distanceToSquared(vector))
     }
 
-    fun distanceToSquared(vector: Vec2?): Double {
-        if (vector == null) {
-            throw java.lang.IllegalArgumentException(
-                    Logger.logMessage(Logger.ERROR, "Vec2", "distanceToSquared", "missingVector"))
-        }
+    fun distanceToSquared(vector: Vec2): Double {
         val dx: Double = x - vector.x
         val dy: Double = y - vector.y
         return dx * dx + dy * dy
@@ -57,24 +49,14 @@ class Vec2(var x: Double, var y: Double) {
         return this
     }
 
-    fun set(vector: Vec2?): Vec2 {
-        if (vector == null) {
-            throw java.lang.IllegalArgumentException(
-                    Logger.logMessage(Logger.ERROR, "Vec2", "set", "missingVector"))
-        }
-        x = vector.x
-        y = vector.y
-        return this
+    fun set(vector: Vec2): Vec2 {
+        return set(vector.x , vector.y)
     }
 
     /**
      * 对象交换并将数据赋给自己
      */
-    fun swap(vector: Vec2?): Vec2 {
-        if (vector == null) {
-            throw java.lang.IllegalArgumentException(
-                    Logger.logMessage(Logger.ERROR, "Vec2", "swap", "missingVector"))
-        }
+    fun swap(vector: Vec2): Vec2 {
         var tmp = x
         x = vector.x
         vector.x = tmp
@@ -86,9 +68,8 @@ class Vec2(var x: Double, var y: Double) {
 
     /**
      * add 加
-     * TODO 可以优化为 plus
      */
-    fun add(vector: Vec2?): Vec2 {
+     fun add(vector: Vec2?): Vec2 {
         if (vector == null) {
             throw java.lang.IllegalArgumentException(
                     Logger.logMessage(Logger.ERROR, "Vec2", "add", "missingVector"))
@@ -122,11 +103,7 @@ class Vec2(var x: Double, var y: Double) {
         return this
     }
 
-    fun multiplyByMatrix(matrix: Matrix3?): Vec2 {
-        if (matrix == null) {
-            throw java.lang.IllegalArgumentException(
-                    Logger.logMessage(Logger.ERROR, "Vec2", "multiplyByMatrix", "missingMatrix"))
-        }
+    fun multiplyByMatrix(matrix: Matrix3): Vec2 {
         val m: DoubleArray = matrix.m
         val x = m[0] * x + m[1] * y + m[2]
         val y = m[3] * this.x + m[4] * y + m[5]
@@ -163,29 +140,20 @@ class Vec2(var x: Double, var y: Double) {
             x /= magnitude
             y /= magnitude
         }
-
         return this
     }
 
     /**
      * 计算点积操作
      */
-    fun dot(vector: Vec2?): Double {
-        if (vector == null) {
-            throw java.lang.IllegalArgumentException(
-                    Logger.logMessage(Logger.ERROR, "Vec2", "dot", "missingVector"))
-        }
+    fun dot(vector: Vec2): Double {
         return x * vector.x + y * vector.y
     }
 
     /**
      * 插值根据权重操作
      */
-    fun mix(vector: Vec2?, weight: Double): Vec2 {
-        if (vector == null) {
-            throw java.lang.IllegalArgumentException(
-                    Logger.logMessage(Logger.ERROR, "Vec2", "mix", "missingVector"))
-        }
+    fun mix(vector: Vec2, weight: Double): Vec2 {
         val w0 = 1 - weight
         x = x * w0 + vector.x * weight
         y = y * w0 + vector.y * weight
@@ -200,9 +168,9 @@ class Vec2(var x: Double, var y: Double) {
      *
      * @return the result argument set to this vector's components
      */
-    fun toArray(result: FloatArray?, offset: Int): FloatArray {
+    fun toArray(result: FloatArray, offset: Int): FloatArray {
         var offset_temp = offset
-        if (result == null || result.size - offset < 2) {
+        if (result.size - offset < 2) {
             throw java.lang.IllegalArgumentException(
                     Logger.logMessage(Logger.ERROR, "Vec2", "toArray", "missingResult"))
         }

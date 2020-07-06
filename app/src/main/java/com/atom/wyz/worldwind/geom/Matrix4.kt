@@ -1239,29 +1239,14 @@ class Matrix4 {
     fun unProject(
         x: Double,
         y: Double,
-        viewport: Viewport?,
-        nearResult: Vec3?,
-        farResult: Vec3?
+        viewport: Viewport,
+        nearResult: Vec3,
+        farResult: Vec3
     ): Boolean {
-        requireNotNull(viewport) { Logger.logMessage(Logger.ERROR, "Matrix4", "unProject", "missingViewport") }
-        require(!(nearResult == null || farResult == null)) {
-            Logger.logMessage(
-                Logger.ERROR,
-                "Matrix4",
-                "unProject",
-                "missingResult"
-            )
-        }
-        // Convert the XY screen coordinates to coordinates in the range [0, 1]. This enables the XY coordinates to
-        // be converted to clip coordinates.
         var sx = (x - viewport.x) / viewport.width
         var sy = (y - viewport.y) / viewport.height
-        // Convert from coordinates in the range [0, 1] to clip coordinates in the range [-1, 1].
         sx = sx * 2 - 1
         sy = sy * 2 - 1
-        // Transform the screen point from clip coordinates to model coordinates. This is a partial transformation that
-// factors out the contribution from the screen point's X and Y components. The contribution from the Z
-// component, which is both -1 and +1, is included next.
         val m = m
         val mx = m[0] * sx + m[1] * sy + m[3]
         val my = m[4] * sx + m[5] * sy + m[7]
