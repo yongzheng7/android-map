@@ -79,7 +79,7 @@ class AtmosphereLayer : AbstractLayer {
         if (nightImageSource != null && lightLocation != null) {
             drawable.nightTexture = rc.getTexture(nightImageSource!!)
             if (drawable.nightTexture == null) {
-                drawable.nightTexture = rc.retrieveTexture(nightImageSource, nightImageOptions)
+                drawable.nightTexture = rc.retrieveTexture(nightImageSource!!, nightImageOptions)
             }
         } else {
             drawable.nightTexture = null

@@ -65,25 +65,10 @@ open class Tile {
          * 创建一个指定级别内的所有图块
          */
         fun assembleTilesForLevel(
-            level: Level?,
-            tileFactory: TileFactory?,
-            result: MutableCollection<Tile>?
+            level: Level,
+            tileFactory: TileFactory,
+            result: MutableCollection<Tile>
         ): Collection<Tile> {
-            if (level == null) {
-                throw java.lang.IllegalArgumentException(
-                    Logger.logMessage(Logger.ERROR, "Tile", "assembleTilesForLevel", "missingLevel")
-                )
-            }
-            if (tileFactory == null) {
-                throw java.lang.IllegalArgumentException(
-                    Logger.logMessage(Logger.ERROR, "Tile", "assembleTilesForLevel", "The tile factory is null")
-                )
-            }
-            if (result == null) {
-                throw java.lang.IllegalArgumentException(
-                    Logger.logMessage(Logger.ERROR, "Tile", "assembleTilesForLevel", "missingResult")
-                )
-            }
             val sector: Sector = level.parent.sector
             val tileDelta: Double = level.tileDelta
             // 0   1    2    3    4    5   6
@@ -99,8 +84,6 @@ open class Tile {
 
             var lat = firstRowLat
             var lon: Double
-
-
             for (row in firstRow..lastRow) {
                 lon = firstRowLon
                 for (col in firstCol..lastCol) {

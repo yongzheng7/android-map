@@ -1,5 +1,6 @@
 package com.atom.wyz.worldwind.util
 
+import android.util.Log
 import com.atom.wyz.worldwind.WorldWind
 import com.atom.wyz.worldwind.util.pool.Pool
 import com.atom.wyz.worldwind.util.pool.Pools
@@ -10,20 +11,20 @@ abstract class Retriever<K, O, V>(maxSimultaneousRetrievals: Int) {
     interface Callback<K, O, V> {
         fun retrievalSucceeded(retriever: Retriever<K, O, V>, key: K, options: O?, value: V)
         fun retrievalFailed(retriever: Retriever<K, O, V>, key: K, ex: Throwable?)
-        fun retrievalRejected(retriever: Retriever<K, O, V>, key: K)
+        fun retrievalRejected(retriever: Retriever<K, O, V>, key: K, msg: String)
     }
 
     protected val lock = Any()
 
     protected var maxAsyncTasks = 0
 
-    protected var asyncTaskSet: HashSet<K>
+    protected var asyncTaskSet: MutableSet<K>
 
     protected var asyncTaskPool: Pool<AsyncTask<K, O, V>>
 
     init {
         this.maxAsyncTasks = maxSimultaneousRetrievals
-        this.asyncTaskSet = HashSet()
+        this.asyncTaskSet = mutableSetOf()
         this.asyncTaskPool = Pools.newPool(maxSimultaneousRetrievals)
     }
 
@@ -32,7 +33,9 @@ abstract class Retriever<K, O, V>(maxSimultaneousRetrievals: Int) {
     protected open fun recycleAsyncTask(instance: AsyncTask<K, O, V>) {
         synchronized(lock) {
             asyncTaskSet.remove(instance.key)
+            Log.e("asyncTaskSet" , "recycleAsyncTask > ${asyncTaskSet.size}") ;
             asyncTaskPool.release(instance.reset())
+            Log.e("addTile" , "recycleAsyncTask end \'$instance.key\'  ${asyncTaskSet.size} >= ${maxAsyncTasks}")
         }
     }
 
@@ -45,7 +48,7 @@ abstract class Retriever<K, O, V>(maxSimultaneousRetrievals: Int) {
                 return null
             }
             asyncTaskSet.add(key)
-
+            Log.e("asyncTaskSet" , "obtainAsyncTask > ${asyncTaskSet.size}") ;
             return asyncTaskPool.acquire() ?: let { AsyncTask<K, O, V>().set(this, key, options, callback) }
         }
     }
@@ -58,16 +61,18 @@ abstract class Retriever<K, O, V>(maxSimultaneousRetrievals: Int) {
     }
 
     fun retrieve(key: K, options: O?, callback: Callback<K, O, V>) {
+        Log.e("addTile" , "retrieve start 1 ${key}")
         val task = obtainAsyncTask(key, options, callback) ?: let {
-            callback.retrievalRejected(this, key)
+            callback.retrievalRejected(this, key, "obtain this key or ${asyncTaskSet.size} >= ${maxAsyncTasks}")
             return
         }
-
+        Log.e("addTile" , "retrieve start 2 ${key}")
         try {
             WorldWind.taskService.execute(task)
         } catch (ignored: RejectedExecutionException) {
+            Log.e("addTile" , "retrieve start 3 ${key}")
             recycleAsyncTask(task)
-            callback.retrievalRejected(this, key)
+            callback.retrievalRejected(this, key, ignored.localizedMessage ?: ignored.toString())
         }
     }
 
@@ -101,13 +106,22 @@ abstract class Retriever<K, O, V>(maxSimultaneousRetrievals: Int) {
         }
 
         override fun run() {
-            if (this.retriever == null || this.key == null || this.callback == null ) return
-            try {
-                retriever!!.retrieveAsync(key!!, options, callback!!)
-            } catch (ex: Throwable) {
-                callback!!.retrievalFailed(retriever!!, key!!, ex)
-            } finally {
-                retriever!!.recycleAsyncTask(this)
+            run(this.retriever, this.key, this.callback, { r, k, c ->
+                try {
+                    Log.e("addTile" , "AsyncTask  run() 1")
+                    r.retrieveAsync(k, options, c)
+                    Log.e("addTile" , "AsyncTask  run() 2")
+                } catch (ex: Throwable) {
+                    c.retrievalFailed(r, k, ex)
+                } finally {
+                    Log.e("addTile" , "recycleAsyncTask  run()")
+                    r.recycleAsyncTask(this)
+                }
+            })
+        }
+        fun <R, K, C> run(retriever: R?, key: K?, callback: C?, block: (R, K, C) -> Unit) {
+            if (retriever != null && key != null && callback != null) {
+                block(retriever, key, callback)
             }
         }
     }

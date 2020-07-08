@@ -256,7 +256,7 @@ open class Placemark : AbstractRenderable, Highlightable, Movable {
         val activeAttributes = this.activeAttributes ?: return
         if (activeAttributes.imageSource != null) {
             if (activeTexture == null) {
-                activeTexture = rc.retrieveTexture(activeAttributes.imageSource , null) // puts retrieved textures in the cache
+                activeTexture = rc.retrieveTexture(activeAttributes.imageSource!! , null) // puts retrieved textures in the cache
             }
         } else {
             activeTexture = null // there is no imageSource; draw a simple colored square

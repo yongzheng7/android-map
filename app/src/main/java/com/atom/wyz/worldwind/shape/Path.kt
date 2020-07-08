@@ -156,7 +156,7 @@ class Path : AbstractShape {
         if (activeAttributes!!.drawOutline && activeAttributes!!.outlineImageSource != null) {
             var texture: GpuTexture? = rc.getTexture(activeAttributes!!.outlineImageSource!!)
             if (texture == null) {
-                texture = rc.retrieveTexture(activeAttributes!!.outlineImageSource, defaultOutlineImageOptions)
+                texture = rc.retrieveTexture(activeAttributes!!.outlineImageSource!!, defaultOutlineImageOptions)
             }
             if (texture != null) {
                 val metersPerPixel = rc.pixelSizeAtDistance(cameraDistance)

@@ -9,8 +9,8 @@ class TaskService {
 
     constructor()
 
-    fun execute(command: Runnable?) {
-        command ?.let { this.executorService().execute(it) }
+    fun execute(command: Runnable) {
+        this.executorService().execute(command)
     }
 
     protected fun executorService(): ExecutorService {

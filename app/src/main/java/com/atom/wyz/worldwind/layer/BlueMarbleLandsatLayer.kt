@@ -51,13 +51,12 @@ class BlueMarbleLandsatLayer : WmsLayer, TileUrlFactory {
         this.levelSet = LevelSet(levelsConfig)
         this.tileUrlFactory = this
         this.imageFormat = ("image/png")
-        // Configure this layer's image options to reduce memory usage by using a 16-bit format with no alpha.
         this.imageOptions = ImageOptions(WorldWind.RGB_565)
 
     }
 
-    override fun urlForTile(tile: Tile?, imageFormat: String?): String {
-        val metersPerPixel: Double = tile!!.level.texelHeight * WorldWind.WGS84_SEMI_MAJOR_AXIS
+    override fun urlForTile(tile: Tile, imageFormat: String): String {
+        val metersPerPixel: Double = tile.level.texelHeight * WorldWind.WGS84_SEMI_MAJOR_AXIS
         return if (metersPerPixel < 2.0e3) { // switch to Landsat at 2km resolution
             landsatUrlFactory.urlForTile(tile, imageFormat)
         } else {

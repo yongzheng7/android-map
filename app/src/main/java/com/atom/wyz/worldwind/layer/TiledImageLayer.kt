@@ -1,5 +1,6 @@
 package com.atom.wyz.worldwind.layer
 
+import android.util.Log
 import com.atom.wyz.worldwind.RenderContext
 import com.atom.wyz.worldwind.draw.Drawable
 import com.atom.wyz.worldwind.draw.DrawableSurfaceTexture
@@ -96,14 +97,6 @@ open class TiledImageLayer : AbstractLayer, TileFactory {
         Tile.assembleTilesForLevel(firstLevel, this, topLevelTiles)
     }
 
-    protected open fun fetchTileTexture(rc: RenderContext, tile: ImageTile): GpuTexture? {
-        var texture: GpuTexture? = rc.getTexture(tile.imageSource!!)
-        if (texture == null) {
-            texture = rc.retrieveTexture(tile.imageSource!! , imageOptions)
-        }
-        return texture
-    }
-
     protected fun addTileOrDescendants(rc: RenderContext, tile: ImageTile) {
         if (!tile.intersectsSector(this.levelSet.sector) || !tile.intersectsFrustum(rc, rc.frustum)) {
             return  // ignore the tile and its descendants if it's not visible
@@ -131,22 +124,26 @@ open class TiledImageLayer : AbstractLayer, TileFactory {
     }
 
     protected fun addTile(rc: RenderContext, tile: ImageTile) {
-        val texture = fetchTileTexture(rc, tile)
+        Log.e("addTile" , "tile 1")
+        val imageSource = tile.imageSource ?: return
+        var texture: GpuTexture? = rc.getTexture(imageSource)
+        if (texture == null) {
+            Log.e("addTile" , "tile 2${tile}")
+            texture = rc.retrieveTexture(imageSource , imageOptions)
+        }
+
         if (texture != null) { // use the tile's own texture
             val pool: Pool<DrawableSurfaceTexture> = rc.getDrawablePool(DrawableSurfaceTexture::class.java)
             val drawable = DrawableSurfaceTexture.obtain(pool)
                 .set(this.activeProgram, tile.sector, texture, texture.texCoordTransform)
             rc.offerSurfaceDrawable(drawable, 0.0 /*z-order*/)
-        }
-
-        else if (this.ancestorTile != null) {
+        }else if (this.ancestorTile != null) {
             // use the ancestor tile's texture, transformed to fill the tile sector
             this.ancestorTexCoordMatrix.set(this.ancestorTexture!!.texCoordTransform)
             this.ancestorTexCoordMatrix.multiplyByTileTransform(tile.sector, this.ancestorTile!!.sector)
-
             val pool: Pool<DrawableSurfaceTexture> = rc.getDrawablePool(DrawableSurfaceTexture::class.java)
             val drawable: Drawable = DrawableSurfaceTexture.obtain(pool)
-                .set(this.activeProgram, tile.sector, this.ancestorTexture, ancestorTexture?.texCoordTransform)
+                .set(this.activeProgram, tile.sector, this.ancestorTexture, this.ancestorTexCoordMatrix)
             rc.offerSurfaceDrawable(drawable, 0.0 /*z-order*/)
         }
     }
@@ -154,7 +151,7 @@ open class TiledImageLayer : AbstractLayer, TileFactory {
     override fun createTile(sector: Sector?, level: Level?, row: Int, column: Int): Tile {
         val tile = ImageTile(sector, level, row, column)
         if (tileUrlFactory != null && this.imageFormat != null) {
-            tile.imageSource = ImageSource.fromUrl(tileUrlFactory!!.urlForTile(tile, imageFormat))
+            tile.imageSource = ImageSource.fromUrl(tileUrlFactory!!.urlForTile(tile, this.imageFormat!!))
         }
         return tile
     }

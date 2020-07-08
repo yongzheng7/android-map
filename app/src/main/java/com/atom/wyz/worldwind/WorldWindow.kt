@@ -297,7 +297,9 @@ class WorldWindow : GLSurfaceView, GLSurfaceView.Renderer, MessageListener, Fram
         rc.modelview.set(frame.modelview)
         rc.modelviewProjection.setToMultiply(frame.projection, frame.modelview)
         if (pickMode) {
-            rc.frustum.setToModelviewProjection(frame.projection, frame.modelview, frame.viewport, frame.pickViewport)
+            frame.pickViewport ?.let {
+                rc.frustum.setToModelviewProjection(frame.projection, frame.modelview, frame.viewport, it)
+            }
         } else {
             rc.frustum.setToModelviewProjection(frame.projection, frame.modelview, frame.viewport)
         }

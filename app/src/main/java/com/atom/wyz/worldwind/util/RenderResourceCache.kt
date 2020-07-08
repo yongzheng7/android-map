@@ -7,6 +7,7 @@ import android.graphics.Bitmap
 import android.opengl.GLES20
 import android.os.Handler
 import android.os.Message
+import android.util.Log
 import com.atom.wyz.worldwind.DrawContext
 import com.atom.wyz.worldwind.WorldWind
 import com.atom.wyz.worldwind.render.*
@@ -106,24 +107,25 @@ class RenderResourceCache
         }
     }
 
-    fun retrieveTexture(imageSource: ImageSource?, imageOptions: ImageOptions?): GpuTexture? {
-        if (imageSource == null) {
-            return null
-        }
+    fun retrieveTexture(imageSource: ImageSource, imageOptions: ImageOptions?): GpuTexture? {
+        Log.e("addTile" , "imageSource 1${imageSource}")
         if (imageSource.isBitmap()) {
             val texture = this.createTexture(imageSource, imageOptions, imageSource.asBitmap());
             put(imageSource, texture, texture.textureByteCount)
             return texture
         }
+        Log.e("addTile" , "imageSource 2${imageSource}")
         imageRetrieverCache.remove(imageSource)?.let {
             val texture = this.createTexture(imageSource, imageOptions, it);
             put(imageSource, texture, texture.textureByteCount)
             return texture
         }
-
+        Log.e("addTile" , "imageSource 3${imageSource}")
         if (imageSource.isUrl()) {
+            Log.e("addTile" , "imageSource 31${imageSource}")
             urlImageRetriever.retrieve(imageSource, imageOptions, this)
         } else {
+            Log.e("addTile" , "imageSource 32${imageSource}")
             imageRetriever.retrieve(imageSource, imageOptions, this)
         }
         return null
@@ -156,9 +158,7 @@ class RenderResourceCache
                 TRIM_STALE_RETRIEVALS_DELAY.toLong()
             )
         }
-        if (Logger.isLoggable(Logger.DEBUG)) {
-            Logger.log(Logger.DEBUG, "Image retrieval succeeded \'$key\'")
-        }
+        Log.e("addTile" , "Image retrieval succeeded \'$key\'")
     }
 
     override fun retrievalFailed(
@@ -167,18 +167,17 @@ class RenderResourceCache
         ex: Throwable?
     ) {
         if (ex is SocketTimeoutException) {
-            Logger.log(Logger.ERROR, "Socket timeout retrieving image \'$key\'")
+            Log.e("addTile" , "Image retrieval Socket timeout  \'$key\'")
         } else if (ex != null) {
-            Logger.log(Logger.ERROR, "Image retrieval failed with exception \'$key\'")
+            Log.e("addTile" , "Image retrieval failed with exception \'$key\'")
         } else {
-            Logger.log(Logger.ERROR, "Image retrieval failed \'$key\'")
+            Log.e("addTile" , "Image retrieval failed \'$key\'")
+
         }
     }
 
-    override fun retrievalRejected(retriever: Retriever<ImageSource, ImageOptions, Bitmap>, key: ImageSource) {
-        if (Logger.isLoggable(Logger.DEBUG)) {
-            Logger.log(Logger.DEBUG, "Image retrieval rejected \'$key\'")
-        }
+    override fun retrievalRejected(retriever: Retriever<ImageSource, ImageOptions, Bitmap>, key: ImageSource , msg:String) {
+        Log.e("addTile" , "Image retrieval rejected \'$key\'   msg ${msg}")
     }
 
     override fun handleMessage(msg: Message): Boolean {

@@ -350,16 +350,15 @@ class Polygon : AbstractShape {
         rc: RenderContext,
         drawState: DrawShapeState
     ) {
-        if (!activeAttributes!!.drawInterior) {
+        val shapeAttributes = activeAttributes ?: return
+        if (!shapeAttributes.drawInterior) {
             return
         }
         // Configure the drawable to use the interior texture when drawing the interior.
-        if (activeAttributes!!.interiorImageSource != null) {
-            var texture: GpuTexture? = rc.getTexture(activeAttributes!!.interiorImageSource!!)
+        shapeAttributes.interiorImageSource?.let {
+            var texture: GpuTexture? = rc.getTexture(it)
             if (texture == null) {
-                texture = rc.retrieveTexture(
-                    activeAttributes!!.interiorImageSource, defaultInteriorImageOptions
-                )
+                texture = rc.retrieveTexture(it, defaultInteriorImageOptions)
             }
             if (texture != null) {
                 val metersPerPixel = rc.pixelSizeAtDistance(cameraDistance)
@@ -369,11 +368,11 @@ class Polygon : AbstractShape {
                     1.0 / (texture.textureHeight * metersPerPixel)
                 )
                 texCoordMatrix.multiplyByMatrix(texture.texCoordTransform)
-                drawState.texture = (texture)
-                drawState.texCoordMatrix = (texCoordMatrix)
+                drawState.texture = texture
+                drawState.texCoordMatrix = texCoordMatrix
             }
-        } else {
-            drawState.texture = (null)
+        } ?: let {
+            drawState.texture = null
         }
 
         // Configure the drawable to display the shape's interior top.
@@ -396,17 +395,15 @@ class Polygon : AbstractShape {
     }
 
     protected fun drawOutline(rc: RenderContext, drawState: DrawShapeState) {
-        if (!activeAttributes!!.drawOutline) {
+        val shapeAttributes = activeAttributes ?: return
+        if (!shapeAttributes.drawOutline) {
             return
         }
         // Configure the drawable to use the outline texture when drawing the outline.
-        if (activeAttributes!!.outlineImageSource != null) {
-            var texture: GpuTexture? = rc.getTexture(activeAttributes!!.outlineImageSource!!)
+        shapeAttributes.outlineImageSource ?.let {
+            var texture: GpuTexture? = rc.getTexture(it)
             if (texture == null) {
-                texture = rc.retrieveTexture(
-                    activeAttributes!!.outlineImageSource,
-                    defaultOutlineImageOptions
-                )
+                texture = rc.retrieveTexture(it, defaultOutlineImageOptions)
             }
             if (texture != null) {
                 val metersPerPixel = rc.pixelSizeAtDistance(cameraDistance)
@@ -416,7 +413,7 @@ class Polygon : AbstractShape {
                 drawState.texture = (texture)
                 drawState.texCoordMatrix = (texCoordMatrix)
             }
-        } else {
+        } ?:let {
             drawState.texture = (null)
         }
 

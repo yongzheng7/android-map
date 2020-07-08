@@ -8,17 +8,16 @@ import java.util.*
 
 class WmsGetMapUrlFactory : TileUrlFactory {
 
-     var serviceAddress: String? = null
+     var serviceAddress: String
 
     /**
      * The WMS protocol version.
      */
-     var wmsVersion: String? = null
-
+     var wmsVersion: String
     /**
      * The comma-separated list of WMS layer names.
      */
-     var layerNames: String? = null
+     var layerNames: String
 
     /**
      * The comma-separated list of WMS style names. May be null in which case the default style is assumed.
@@ -43,51 +42,21 @@ class WmsGetMapUrlFactory : TileUrlFactory {
      */
      var timeString: String? = null
 
-    constructor(serviceAddress: String?, wmsVersion: String?, layerNames: String?, styleNames: String?) {
-        if (serviceAddress == null) {
-            throw IllegalArgumentException(
-                    Logger.logMessage(Logger.ERROR, "WmsGetMapUrlFactory", "constructor", "missingServiceAddress"))
-        }
-        if (wmsVersion == null) {
-            throw IllegalArgumentException(
-                    Logger.logMessage(Logger.ERROR, "WmsGetMapUrlFactory", "constructor", "missingVersion"))
-        }
-        if (layerNames == null) {
-            throw IllegalArgumentException(
-                    Logger.logMessage(Logger.ERROR, "WmsGetMapUrlFactory", "constructor", "missingLayerNames"))
-        }
+    constructor(serviceAddress: String, wmsVersion: String, layerNames: String, styleNames: String?) {
         this.serviceAddress = serviceAddress
         this.wmsVersion = wmsVersion
         this.layerNames = layerNames
+
         this.styleNames = styleNames
     }
 
-    constructor(config: WmsLayerConfig?) {
-        if (config == null) {
-            throw IllegalArgumentException(
-                    Logger.logMessage(Logger.ERROR, "WmsGetMapUrlFactory", "constructor", "missingConfig"))
-        }
-        if (config.serviceAddress == null) {
-            throw IllegalArgumentException(
-                    Logger.logMessage(Logger.ERROR, "WmsGetMapUrlFactory", "constructor", "missingServiceAddress"))
-        }
-        if (config.wmsVersion == null) {
-            throw IllegalArgumentException(
-                    Logger.logMessage(Logger.ERROR, "WmsGetMapUrlFactory", "constructor", "missingVersion"))
-        }
-        if (config.layerNames == null) {
-            throw IllegalArgumentException(
-                    Logger.logMessage(Logger.ERROR, "WmsGetMapUrlFactory", "constructor", "missingLayerNames"))
-        }
-        if (config.coordinateSystem == null) {
-            throw IllegalArgumentException(
-                    Logger.logMessage(Logger.ERROR, "WmsGetMapUrlFactory", "constructor", "missingCoordinateSystem"))
-        }
+    constructor(config: WmsLayerConfig) {
         serviceAddress = config.serviceAddress
         wmsVersion = config.wmsVersion
         layerNames = config.layerNames
-        styleNames = config.styleNames
         coordinateSystem = config.coordinateSystem
+
+        styleNames = config.styleNames
         transparent = config.transparent
         timeString = config.timeString
     }
@@ -95,15 +64,7 @@ class WmsGetMapUrlFactory : TileUrlFactory {
     /**
      * 根据tile 和 图片格式 返回url
      */
-    override fun urlForTile(tile: Tile?, imageFormat: String?): String {
-        if (tile == null) {
-            throw IllegalArgumentException(
-                    Logger.logMessage(Logger.ERROR, "WmsGetMapUrlFactory", "urlForTile", "missingTile"))
-        }
-        if (imageFormat == null) {
-            throw IllegalArgumentException(
-                    Logger.logMessage(Logger.ERROR, "WmsGetMapUrlFactory", "urlForTile", "missingFormat"))
-        }
+    override fun urlForTile(tile: Tile, imageFormat: String): String {
         val url = StringBuilder(serviceAddress!!)
         var index = url.indexOf("?")
         if (index < 0) { // if service address contains no query delimiter

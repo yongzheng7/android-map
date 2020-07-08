@@ -40,7 +40,7 @@ open class SurfaceImage : AbstractRenderable, Movable {
         }
         var texture: GpuTexture? = rc.getTexture(imageSource!!)
         if (texture == null) {
-            texture = rc.retrieveTexture(imageSource , imageOptions)
+            texture = rc.retrieveTexture(imageSource!! , imageOptions)
         }
         if (texture == null) {
             return

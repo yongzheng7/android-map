@@ -156,22 +156,6 @@ class ImageSource {
         return this.type + 31 * this.source.hashCode();
     }
 
-    override fun toString(): String {
-        return if (isBitmap()) {
-            "Bitmap " + source.toString()
-        } else if (type == TYPE_BITMAP_FACTORY) {
-            "BitmapFactory " + source.toString()
-        } else if (type == TYPE_RESOURCE) {
-            "Resource " + source.toString()
-        } else if (type == TYPE_FILE_PATH) {
-            source.toString()
-        } else if (type == TYPE_URL) {
-            source.toString()
-        } else {
-            source.toString()
-        }
-    }
-
     fun isBitmap(): Boolean {
         return type == TYPE_BITMAP
     }
@@ -217,7 +201,11 @@ class ImageSource {
         return source
     }
 
-     class LineStippleBitmapFactory(protected var factor: Int, protected var pattern: Short) : BitmapFactory {
+    override fun toString(): String {
+        return "ImageSource(source=$source, type=$type)"
+    }
+
+    class LineStippleBitmapFactory(protected var factor: Int, protected var pattern: Short) : BitmapFactory {
 
          override fun createBitmap(): Bitmap {
             val transparent = Color.argb(0, 0, 0, 0)
@@ -251,4 +239,6 @@ class ImageSource {
         }
 
     }
+
+
 }
