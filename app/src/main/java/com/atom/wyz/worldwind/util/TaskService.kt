@@ -15,10 +15,14 @@ class TaskService {
 
     protected fun executorService(): ExecutorService {
         if (executorService == null) {
-            executorService = ThreadPoolExecutor(0, Int.MAX_VALUE, 60, TimeUnit.SECONDS,
-                    SynchronousQueue(),
-                    this.threadFactory(),
-                    this.rejectedExecutionHandler())
+            executorService = ThreadPoolExecutor(
+                0,
+                Int.MAX_VALUE,
+                60,
+                TimeUnit.SECONDS,
+                SynchronousQueue(),
+                this.threadFactory(),
+                this.rejectedExecutionHandler())
         }
         return executorService!!
     }
@@ -34,7 +38,7 @@ class TaskService {
     }
 
     protected fun rejectedExecutionHandler(): RejectedExecutionHandler? {
-        return RejectedExecutionHandler { r, executor ->
+        return RejectedExecutionHandler { _, _ ->
             throw RejectedExecutionException() // throw an exception but suppress the message to avoid string allocation
         }
     }

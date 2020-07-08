@@ -32,5 +32,5 @@ open class BasicPool<T>(initialCapacity: Int = 10) : Pool<T> {
         }
     }
 
-
+    override fun size() : Int = size
 }

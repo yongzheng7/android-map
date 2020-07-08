@@ -202,7 +202,7 @@ class ImageSource {
     }
 
     override fun toString(): String {
-        return "ImageSource(source=$source, type=$type)"
+        return "\n source=$source "
     }
 
     class LineStippleBitmapFactory(protected var factor: Int, protected var pattern: Short) : BitmapFactory {

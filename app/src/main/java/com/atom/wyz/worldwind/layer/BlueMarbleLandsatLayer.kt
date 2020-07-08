@@ -4,14 +4,13 @@ import com.atom.wyz.worldwind.WorldWind
 import com.atom.wyz.worldwind.globe.Tile
 import com.atom.wyz.worldwind.globe.TileUrlFactory
 import com.atom.wyz.worldwind.ogc.WmsGetMapUrlFactory
-import com.atom.wyz.worldwind.ogc.WmsLayer
 import com.atom.wyz.worldwind.ogc.WmsLayerConfig
 import com.atom.wyz.worldwind.render.ImageOptions
 import com.atom.wyz.worldwind.util.LevelSet
 import com.atom.wyz.worldwind.util.LevelSetConfig
 import com.atom.wyz.worldwind.util.Logger
 
-class BlueMarbleLandsatLayer : WmsLayer, TileUrlFactory {
+class BlueMarbleLandsatLayer : TiledImageLayer, TileUrlFactory {
 
     protected var blueMarbleUrlFactory: TileUrlFactory
 

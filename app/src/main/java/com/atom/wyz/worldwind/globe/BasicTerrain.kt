@@ -25,12 +25,7 @@ class BasicTerrain() : Terrain {
 
     override var verticalExaggeration: Double = 1.0
 
-    fun addTile(tile: TerrainTile?) {
-        if (tile == null) {
-            throw IllegalArgumentException(
-                Logger.logMessage(Logger.ERROR, "BasicTerrain", "addTile", "missingTile")
-            )
-        }
+    fun addTile(tile: TerrainTile) {
         tiles.add(tile)
         sector.union(tile.sector)
     }
@@ -48,20 +43,12 @@ class BasicTerrain() : Terrain {
         longitude: Double,
         altitude: Double,
         altitudeMode: Int,
-        result: Vec3?
+        result: Vec3
     ): Vec3 {
-        if (result == null) {
-            throw java.lang.IllegalArgumentException(
-                Logger.logMessage(Logger.ERROR, "BasicTerrain", "geographicToCartesian", "missingResult")
-            )
-        }
         return result // TODO
     }
 
-    override fun intersect(line: Line?, result: Vec3?): Boolean {
-        requireNotNull(line) { Logger.logMessage(Logger.ERROR, "BasicTerrain", "intersect", "missingLine") }
-        requireNotNull(result) { Logger.logMessage(Logger.ERROR, "BasicTerrain", "intersect", "missingResult") }
-
+    override fun intersect(line: Line, result: Vec3): Boolean {
         var minDist2 = Double.POSITIVE_INFINITY
         var idx = 0
         val len = tiles.size
@@ -87,9 +74,8 @@ class BasicTerrain() : Terrain {
         latitude: Double,
         longitude: Double,
         offset: Double,
-        result: Vec3?
+        result: Vec3
     ): Boolean {
-        requireNotNull(result) { Logger.logMessage(Logger.ERROR, "BasicTerrain", "surfacePoint", "missingResult") }
         var idx = 0
         val len = tiles.size
         while (idx < len) {

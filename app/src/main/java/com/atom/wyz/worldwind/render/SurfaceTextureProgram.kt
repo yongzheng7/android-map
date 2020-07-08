@@ -42,9 +42,9 @@ class SurfaceTextureProgram(resources: Resources) : GpuProgram() {
     init {
         try {
             val vs: String =
-                WWUtil.readResourceAsText(resources, R.raw.gov_nasa_worldwind_surfacetextureprogram_vert)
+                WWUtil.readResourceAsText(resources, R.raw.surface_texture_program_vert)
             val fs: String =
-                WWUtil.readResourceAsText(resources, R.raw.gov_nasa_worldwind_surfacetextureprogram_frag)
+                WWUtil.readResourceAsText(resources, R.raw.surface_texture_program_frag)
             this.programSources = arrayOf(vs, fs)
             this.attribBindings = arrayOf("vertexPoint", "vertexTexCoord")
         } catch (logged: Exception) {

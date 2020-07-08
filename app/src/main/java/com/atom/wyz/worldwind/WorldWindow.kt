@@ -56,7 +56,6 @@ class WorldWindow : GLSurfaceView, GLSurfaceView.Renderer, MessageListener, Fram
     var navigator = Navigator()
 
     var fieldOfView = 45.0
-        get() = field
         set(value) {
             require(!(value <= 0 || value >= 180)) {
                 Logger.logMessage(
@@ -72,6 +71,7 @@ class WorldWindow : GLSurfaceView, GLSurfaceView.Renderer, MessageListener, Fram
     var navigatorEvents = NavigatorEventSupport(this)
 
     var frameController: FrameController = BasicFrameController()
+
     var frameMetrics = FrameMetrics()
 
     var worldWindowController: WorldWindowController = BasicWorldWindowController()
@@ -80,15 +80,15 @@ class WorldWindow : GLSurfaceView, GLSurfaceView.Renderer, MessageListener, Fram
             field = value
             field.worldWindow = (this)
         }
+    var renderResourceCache: RenderResourceCache? = null
+
+    var rc = RenderContext()
+
+    var dc = DrawContext()
 
     var viewport = Viewport()
 
     var depthBits = 0
-
-    var renderResourceCache: RenderResourceCache? = null
-
-    var rc = RenderContext()
-    var dc = DrawContext()
 
     protected var framePool: Pool<Frame> = SynchronizedPool()
 
@@ -99,12 +99,13 @@ class WorldWindow : GLSurfaceView, GLSurfaceView.Renderer, MessageListener, Fram
     protected var currentFrame: Frame? = null
 
     protected var isPaused = false
+
     protected var isWaitingForRedraw = false
 
     protected var mainLoopHandler =
         Handler(Looper.getMainLooper(), Handler.Callback {
             if (it.what == MSG_ID_CLEAR_CACHE) {
-                renderResourceCache!!.clear()
+                renderResourceCache?.clear()
             } else if (it.what == MSG_ID_REQUEST_REDRAW) {
                 requestRedraw()
             } else if (it.what == MSG_ID_SET_VIEWPORT) {
@@ -114,6 +115,18 @@ class WorldWindow : GLSurfaceView, GLSurfaceView.Renderer, MessageListener, Fram
             }
             false
         })
+
+
+
+    private val scratchCamera = Camera()
+
+    private val scratchModelview = Matrix4()
+
+    private val scratchProjection = Matrix4()
+
+    private val scratchPoint: Vec3 = Vec3()
+
+    private val scratchRay = Line()
 
     constructor(context: Context) : super(context) {
         this.init(null)
@@ -131,9 +144,9 @@ class WorldWindow : GLSurfaceView, GLSurfaceView.Renderer, MessageListener, Fram
         val initLocation: Location = Location.fromTimeZone(TimeZone.getDefault())
         val initAltitude: Double = this.distanceToViewGlobeExtents() * 1.1
 
-        navigator.latitude = initLocation.latitude
-        navigator.longitude = initLocation.longitude
-        navigator.altitude = initAltitude
+        navigator.latitude  = 39.916527
+        navigator.longitude = 116.397128
+        navigator.altitude  = initAltitude
 
         this.worldWindowController.worldWindow = this
 
@@ -145,9 +158,17 @@ class WorldWindow : GLSurfaceView, GLSurfaceView.Renderer, MessageListener, Fram
         this.setEGLContextClientVersion(2) // must be called before setRenderer
         this.setRenderer(this)
         this.renderMode = RENDERMODE_WHEN_DIRTY // must be called after setRenderer
-
     }
 
+    protected fun reset() {
+        navigatorEvents.reset()
+        renderResourceCache?.clear()
+        viewport.setEmpty()
+        clearFrameQueue()
+        Choreographer.getInstance().removeFrameCallback(this)
+        this.mainLoopHandler.removeMessages(MSG_ID_REQUEST_REDRAW)
+        isWaitingForRedraw = false
+    }
     override fun surfaceCreated(holder: SurfaceHolder?) {
         super.surfaceCreated(holder)
         WorldWind.messageService.addListener(this)
@@ -204,8 +225,6 @@ class WorldWindow : GLSurfaceView, GLSurfaceView.Renderer, MessageListener, Fram
             currentFrame = nextFrame
             super.requestRender()
         }
-        // Process and display the Drawables accumulated in the last frame taken from the front of the queue. This frame
-        // may be drawn multiple times if the OpenGL thread executes more often than the World Window enqueues frames.
         try {
             currentFrame?.let {
                 drawFrame(it)
@@ -226,10 +245,6 @@ class WorldWindow : GLSurfaceView, GLSurfaceView.Renderer, MessageListener, Fram
     override fun onPause() {
         super.onPause()
         isPaused = true
-        // Reset the World Window's internal state. The OpenGL thread is paused, so frames in the queue will not be
-        // processed. Clear the frame queue and recycle pending frames back into the frame pool. We also don't know
-        // whether or not the render resources are valid, so we reset and let the GLSurfaceView establish the new
-        // EGL context and viewport.
         reset()
     }
 
@@ -241,8 +256,6 @@ class WorldWindow : GLSurfaceView, GLSurfaceView.Renderer, MessageListener, Fram
         val far = globe.horizonDistance(navigator.altitude, 160000.0)
         viewport.set(this.viewport)
 
-        // Computes the near clip distance that provides a minimum resolution at the far clip plane, based on the OpenGL
-        // context's depth buffer precision.
         if (depthBits != 0) {
             val maxDepthValue = (1 shl depthBits) - 1.toDouble()
             val farResolution = 10.0
@@ -265,7 +278,6 @@ class WorldWindow : GLSurfaceView, GLSurfaceView.Renderer, MessageListener, Fram
     }
 
     protected fun renderFrame(frame: Frame) {
-
         val pickMode = frame.pickMode
         if (!pickMode) {
             frameMetrics.beginRendering(this.rc)
@@ -390,17 +402,16 @@ class WorldWindow : GLSurfaceView, GLSurfaceView.Renderer, MessageListener, Fram
         GLES20.glEnable(GLES20.GL_CULL_FACE)
         // 深度测试
         GLES20.glEnable(GLES20.GL_DEPTH_TEST)
+        //在世界窗口渲染期间默认情况下启用GL顶点属性数组0
+        GLES20.glEnableVertexAttribArray(0)
 
         GLES20.glDisable(GLES20.GL_DITHER)
         // 混合因子
         GLES20.glBlendFunc(GLES20.GL_ONE, GLES20.GL_ONE_MINUS_SRC_ALPHA)
         // 深度小或相等的时候也渲染 （GL_LESS = 深度小的时候才渲染）
         GLES20.glDepthFunc(GLES20.GL_LEQUAL)
-        //在世界窗口渲染期间默认情况下启用GL顶点属性数组0
-        GLES20.glEnableVertexAttribArray(0)
 
         this.dc.contextLost()
-
         // Set the World Window's depth bits.
         val depthBits = IntArray(1)
         GLES20.glGetIntegerv(GLES20.GL_DEPTH_BITS, depthBits, 0)
@@ -413,7 +424,6 @@ class WorldWindow : GLSurfaceView, GLSurfaceView.Renderer, MessageListener, Fram
         )
         // Clear the render resource cache on the main thread.
         this.mainLoopHandler.sendEmptyMessage(MSG_ID_CLEAR_CACHE /*msg.what*/)
-
     }
 
     /**
@@ -440,32 +450,16 @@ class WorldWindow : GLSurfaceView, GLSurfaceView.Renderer, MessageListener, Fram
 
     override fun onMessage(name: String?, sender: Any?, userProperties: Map<Any?, Any?>?) {
         if (name == WorldWind.REQUEST_REDRAW) {
-            requestRender() // inherited from GLSurfaceView; may be called on any thread
+            requestRedraw() // inherited from GLSurfaceView; may be called on any thread
         }
     }
 
 
-    fun addNavigatorListener(listener: NavigatorListener?) {
-        requireNotNull(listener) {
-            Logger.logMessage(
-                Logger.ERROR,
-                "WorldWindow",
-                "addNavigatorListener",
-                "missingListener"
-            )
-        }
+    fun addNavigatorListener(listener: NavigatorListener) {
         navigatorEvents.addNavigatorListener(listener)
     }
 
-    fun removeNavigatorListener(listener: NavigatorListener?) {
-        requireNotNull(listener) {
-            Logger.logMessage(
-                Logger.ERROR,
-                "WorldWindow",
-                "removeNavigatorListener",
-                "missingListener"
-            )
-        }
+    fun removeNavigatorListener(listener: NavigatorListener) {
         navigatorEvents.addNavigatorListener(listener)
     }
 
@@ -508,15 +502,7 @@ class WorldWindow : GLSurfaceView, GLSurfaceView.Renderer, MessageListener, Fram
         }
     }
 
-    protected fun reset() {
-        navigatorEvents.reset()
-        renderResourceCache?.clear()
-        viewport.setEmpty()
-        clearFrameQueue()
-        Choreographer.getInstance().removeFrameCallback(this)
-        this.mainLoopHandler.removeMessages(MSG_ID_REQUEST_REDRAW)
-        isWaitingForRedraw = false
-    }
+
 
     protected fun clearFrameQueue() {
 
@@ -535,30 +521,6 @@ class WorldWindow : GLSurfaceView, GLSurfaceView.Renderer, MessageListener, Fram
         currentFrame = null
     }
 
-    /**
-     * Determines the World Wind objects displayed at a screen point. The screen point is interpreted as coordinates in
-     * Android screen pixels relative to this View.
-     * <p/>
-     * If the screen point intersects any number of World Wind shapes, the returned list contains a picked object
-     * identifying the top shape at the screen point. This picked object includes the shape renderable or its non-null
-     * pick delegate, the shape's geographic position, and the World Wind layer that displayed the shape. Shapes which
-     * are either hidden behind another shape at the screen point or hidden behind terrain at the screen point are
-     * omitted from the returned list. Therefore if the returned list contains a picked object identifying a shape, it
-     * is always marked as 'on top'.
-     * <p/>
-     * If the screen point intersects the World Wind terrain, the returned list contains a picked object identifying the
-     * associated geographic position. If there are no shapes in the World Wind scene between the terrain and the screen
-     * point, the terrain picked object is marked as 'on top'.
-     * <p/>
-     * This returns an empty list when nothing in the World Wind scene intersects the screen point, when the screen
-     * point is outside this View's bounds, or if the OpenGL thread displaying the World Window scene is paused (or
-     * becomes paused while this method is executing).
-     *
-     * @param x the screen point's X coordinate in Android screen pixels
-     * @param y the screen point's Y coordinate in Android screen pixels
-     *
-     * @return A list of World Wind objects at the screen point
-     */
     fun pick(
         x: Float,
         y: Float
@@ -595,12 +557,6 @@ class WorldWindow : GLSurfaceView, GLSurfaceView.Renderer, MessageListener, Fram
         frame.awaitDone()
         return pickedObjects
     }
-
-    private val scratchCamera = Camera()
-    private val scratchModelview = Matrix4()
-    private val scratchProjection = Matrix4()
-    private val scratchPoint: Vec3 = Vec3()
-    private val scratchRay = Line()
 
     fun cartesianToScreenPoint(
         x: Double,

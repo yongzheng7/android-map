@@ -7,7 +7,6 @@ import android.graphics.Bitmap
 import android.opengl.GLES20
 import android.os.Handler
 import android.os.Message
-import android.util.Log
 import com.atom.wyz.worldwind.DrawContext
 import com.atom.wyz.worldwind.WorldWind
 import com.atom.wyz.worldwind.render.*
@@ -22,7 +21,7 @@ class RenderResourceCache
     companion object {
         protected const val STALE_RETRIEVAL_AGE = 3000
         protected const val TRIM_STALE_RETRIEVALS = 1
-        protected const val TRIM_STALE_RETRIEVALS_DELAY = 6000
+        protected const val TRIM_STALE_RETRIEVALS_DELAY = 6000L
         fun recommendedCapacity(context: Context?): Int {
             val am =
                 if (context != null) context.getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager else null
@@ -108,24 +107,19 @@ class RenderResourceCache
     }
 
     fun retrieveTexture(imageSource: ImageSource, imageOptions: ImageOptions?): GpuTexture? {
-        Log.e("addTile" , "imageSource 1${imageSource}")
         if (imageSource.isBitmap()) {
             val texture = this.createTexture(imageSource, imageOptions, imageSource.asBitmap());
             put(imageSource, texture, texture.textureByteCount)
             return texture
         }
-        Log.e("addTile" , "imageSource 2${imageSource}")
-        imageRetrieverCache.remove(imageSource)?.let {
+        imageRetrieverCache.remove(imageSource) ?.let {
             val texture = this.createTexture(imageSource, imageOptions, it);
             put(imageSource, texture, texture.textureByteCount)
             return texture
         }
-        Log.e("addTile" , "imageSource 3${imageSource}")
         if (imageSource.isUrl()) {
-            Log.e("addTile" , "imageSource 31${imageSource}")
             urlImageRetriever.retrieve(imageSource, imageOptions, this)
         } else {
-            Log.e("addTile" , "imageSource 32${imageSource}")
             imageRetriever.retrieve(imageSource, imageOptions, this)
         }
         return null
@@ -150,15 +144,16 @@ class RenderResourceCache
         options: ImageOptions?,
         value: Bitmap
     ) {
+        Logger.log(Logger.ERROR, "Image retrieval Succeeded ----")
         imageRetrieverCache.put(key, value, value.byteCount)
+        Logger.log(Logger.ERROR, "Image retrieval Succeeded ----1----")
         WorldWind.requestRedraw()
         if (!handler.hasMessages(TRIM_STALE_RETRIEVALS)) {
             handler.sendEmptyMessageDelayed(
                 TRIM_STALE_RETRIEVALS,
-                TRIM_STALE_RETRIEVALS_DELAY.toLong()
+                TRIM_STALE_RETRIEVALS_DELAY
             )
         }
-        Log.e("addTile" , "Image retrieval succeeded \'$key\'")
     }
 
     override fun retrievalFailed(
@@ -167,17 +162,16 @@ class RenderResourceCache
         ex: Throwable?
     ) {
         if (ex is SocketTimeoutException) {
-            Log.e("addTile" , "Image retrieval Socket timeout  \'$key\'")
+            Logger.log(Logger.ERROR, "Image retrieval Socket timeout retrieving image \'$key\'")
         } else if (ex != null) {
-            Log.e("addTile" , "Image retrieval failed with exception \'$key\'")
+            Logger.log(Logger.ERROR, "Image retrieval failed with exception \'$key\'")
         } else {
-            Log.e("addTile" , "Image retrieval failed \'$key\'")
-
+            Logger.log(Logger.ERROR, "Image retrieval failed \'$key\'")
         }
     }
 
-    override fun retrievalRejected(retriever: Retriever<ImageSource, ImageOptions, Bitmap>, key: ImageSource , msg:String) {
-        Log.e("addTile" , "Image retrieval rejected \'$key\'   msg ${msg}")
+    override fun retrievalRejected(retriever: Retriever<ImageSource,ImageOptions, Bitmap>, key: ImageSource , smg : String) {
+        Logger.log(Logger.ERROR, "Image retrieval rejected \'$key\'  $smg")
     }
 
     override fun handleMessage(msg: Message): Boolean {

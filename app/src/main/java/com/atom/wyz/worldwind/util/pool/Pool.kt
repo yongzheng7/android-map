@@ -10,4 +10,7 @@ interface Pool<T> {
      * Releases an instance to the pool. This has no effect if the instance is null.
      */
     fun release(instance: T?)
+
+
+    fun size() : Int
 }

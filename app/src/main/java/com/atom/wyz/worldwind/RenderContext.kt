@@ -301,7 +301,6 @@ open class RenderContext {
     }
 
     open fun retrieveTexture(imageSource: ImageSource, imageOptions: ImageOptions?): GpuTexture? {
-        Log.e("addTile" , "retrieveTexture ${imageSource}")
         return renderResourceCache?.retrieveTexture(imageSource, imageOptions)
     }
 

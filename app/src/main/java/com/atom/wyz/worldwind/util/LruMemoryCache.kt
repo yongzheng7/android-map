@@ -92,7 +92,7 @@ open class LruMemoryCache<K, V> {
     }
 
     open fun remove(key: K): V? {
-        return entries.remove(key)?.let {
+        return entries.remove(key) ?.let {
             usedCapacity -= it.size
             entryRemoved(it.key, it.value, null, false)
             it.value

@@ -11,8 +11,8 @@ class GroundProgram(resources: Resources) : AtmosphereProgram() {
     }
     init {
         try {
-            val vs: String = WWUtil.readResourceAsText(resources, R.raw.gov_nasa_worldwind_groundprogram_vert)
-            val fs: String = WWUtil.readResourceAsText(resources, R.raw.gov_nasa_worldwind_groundprogram_frag)
+            val vs: String = WWUtil.readResourceAsText(resources, R.raw.ground_program_vert)
+            val fs: String = WWUtil.readResourceAsText(resources, R.raw.ground_program_frag)
             this.programSources = arrayOf(vs, fs)
             this.attribBindings = arrayOf("vertexPoint", "vertexTexCoord")
         } catch (logged: Exception) {

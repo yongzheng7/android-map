@@ -41,8 +41,8 @@ class BasicProgram(resources: Resources) : GpuProgram() {
 
     init {
         try {
-            val vert = WWUtil.readResourceAsText(resources, R.raw.gov_nasa_worldwind_basicprogram_vert)
-            val frag = WWUtil.readResourceAsText(resources, R.raw.gov_nasa_worldwind_basicprogram_frag)
+            val vert = WWUtil.readResourceAsText(resources, R.raw.basic_program_vert)
+            val frag = WWUtil.readResourceAsText(resources, R.raw.basic_program_frag)
             this.programSources = arrayOf(vert, frag)
             this.attribBindings = arrayOf("vertexPoint", "vertexTexCoord")
         } catch (e: Exception) {

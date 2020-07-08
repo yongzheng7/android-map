@@ -3,7 +3,6 @@ package com.atom.wyz.worldwind.render
 import android.content.res.Resources
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
-import android.util.Log
 import com.atom.wyz.worldwind.WorldWind
 import com.atom.wyz.worldwind.util.Logger
 import com.atom.wyz.worldwind.util.Retriever
@@ -17,22 +16,16 @@ class ImageRetriever(maxSimultaneousRetrievals : Int = 8 ) : Retriever<ImageSour
 
     var resources: Resources? = null
 
+    @Throws(Exception::class)
     override fun retrieveAsync(key: ImageSource, options: ImageOptions?, callback: Callback<ImageSource,ImageOptions , Bitmap>) {
-        Log.e("addTile" , "AsyncTask  run() -> retrieveAsync 1")
-        try {
-            this.decodeImage(key , options) ?.let{
-                Log.e("addTile" , "AsyncTask  run() -> Succeeded")
-
-                callback.retrievalSucceeded(this, key, options ,it)
-            } ?:let{
-                Log.e("addTile" , "AsyncTask  run() -> Failed")
-
-                callback.retrievalFailed(this, key, null) // failed but no exception
-            }
-        } catch (logged: Throwable) {
-            Log.e("addTile" , "AsyncTask  run() ->Throwable > Failed")
-
-            callback.retrievalFailed(this, key, logged) // failed with exception
+        this.decodeImage(key , options) ?.let{
+            Logger.log(Logger.ERROR, "retrieveAsync Succeeded ----A-----")
+            callback.retrievalSucceeded(this, key, options ,it)
+            Logger.log(Logger.ERROR, "retrieveAsync Succeeded ----A1----")
+        } ?:let{
+            Logger.log(Logger.ERROR, "retrieveAsync    Failed ----B-----")
+            callback.retrievalFailed(this, key, null) // failed but no exception
+            Logger.log(Logger.ERROR, "retrieveAsync    Failed ----B1----")
         }
     }
 
@@ -50,9 +43,10 @@ class ImageRetriever(maxSimultaneousRetrievals : Int = 8 ) : Retriever<ImageSour
         if (imageSource.isFilePath()) {
             return this.decodeFilePath(imageSource.asFilePath(), imageOptions)
         }
-        return if (imageSource.isUrl()) {
-            this.decodeUrl(imageSource.asUrl(), imageOptions)
-        } else this.decodeUnrecognized(imageSource)
+        if (imageSource.isUrl()) {
+            return decodeUrl(imageSource.asUrl(), imageOptions)
+        }
+        return decodeUnrecognized(imageSource)
     }
 
     protected fun decodeResource(id: Int, imageOptions: ImageOptions?): Bitmap? {
@@ -65,33 +59,24 @@ class ImageRetriever(maxSimultaneousRetrievals : Int = 8 ) : Retriever<ImageSour
         return BitmapFactory.decodeFile(pathName, options)
     }
 
-    @Throws(IOException::class)
+    @Throws(Exception::class)
     protected fun decodeUrl(urlString: String?, imageOptions: ImageOptions?): Bitmap? {
         var stream: InputStream? = null
         try {
-            Log.e("addTile" , "decodeUrl start 1  ${urlString}") ;
-            val conn = URL(urlString).openConnection()
+            val url = URL(urlString)
+            val conn = url.openConnection()
             conn.connectTimeout = 3000
             conn.readTimeout = 30000
             stream = BufferedInputStream(conn.getInputStream())
-            Log.e("addTile" , "decodeUrl start 2")
             val options = bitmapFactoryOptions(imageOptions)
-            Log.e("addTile" , "decodeUrl start 21")
             val decodeStream = BitmapFactory.decodeStream(stream, null, options)
-            Log.e("addTile" , "decodeUrl start 3")
             return decodeStream
-        } catch (e : Throwable){
-            Log.e("addTile" , "decodeUrl ------------Throwable") ;
-            WWUtil.closeSilently(stream)
         } finally {
-            Log.e("addTile" , "decodeUrl -----------------------finally") ;
             WWUtil.closeSilently(stream)
         }
-        return null
     }
 
     protected fun decodeUnrecognized(imageSource: ImageSource): Bitmap? {
-        Logger.log(Logger.WARN, "Unrecognized image source \'$imageSource\'")
         return null
     }
 

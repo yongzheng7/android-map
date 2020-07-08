@@ -1,8 +1,7 @@
 package com.atom.wyz.worldwind.util
 
 class SynchronizedMemoryCache<K, V> : LruMemoryCache<K, V> {
-    protected val lock = Any()
-
+    private val lock = Any()
 
     override var capacity = 0
         get() = synchronized(lock) { return field }
@@ -29,8 +28,8 @@ class SynchronizedMemoryCache<K, V> : LruMemoryCache<K, V> {
         synchronized(lock) { return super.remove(key) }
     }
 
-    override fun trimToAge(timeMillis: Long): Int {
-        synchronized(lock) { return super.trimToAge(timeMillis) }
+    override fun trimToAge(maxAgeMillis: Long): Int {
+        synchronized(lock) { return super.trimToAge(maxAgeMillis) }
     }
 
     override fun containsKey(key: K): Boolean {
