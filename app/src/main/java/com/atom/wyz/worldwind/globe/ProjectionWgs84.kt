@@ -15,16 +15,7 @@ class ProjectionWgs84() : GeographicProjection {
         return "WGS84"
     }
 
-    override fun geographicToCartesian(globe: Globe?, latitude: Double, longitude: Double, altitude: Double, offset: Vec3?, result: Vec3?): Vec3 {
-        if (globe == null) {
-            throw IllegalArgumentException(
-                    Logger.logMessage(Logger.ERROR, "ProjectionWgs84", "geographicToCartesian", "missingGlobe"))
-        }
-
-        if (result == null) {
-            throw IllegalArgumentException(
-                    Logger.logMessage(Logger.ERROR, "ProjectionWgs84", "geographicToCartesian", "missingResult"))
-        }
+    override fun geographicToCartesian(globe: Globe, latitude: Double, longitude: Double, altitude: Double, offset: Vec3?, result: Vec3): Vec3 {
         // 经纬度转弧度
         val radLat = Math.toRadians(latitude)
         val radLon = Math.toRadians(longitude)
@@ -47,16 +38,7 @@ class ProjectionWgs84() : GeographicProjection {
     /**
      * 经纬度 转法向量
      */
-    override fun geographicToCartesianNormal(globe: Globe?, latitude: Double, longitude: Double, result: Vec3?): Vec3 {
-        if (globe == null) {
-            throw java.lang.IllegalArgumentException(
-                    Logger.logMessage(Logger.ERROR, "ProjectionWgs84", "geographicToCartesianNormal", "missingGlobe"))
-        }
-
-        if (result == null) {
-            throw java.lang.IllegalArgumentException(
-                    Logger.logMessage(Logger.ERROR, "ProjectionWgs84", "geographicToCartesianNormal", "missingResult"))
-        }
+    override fun geographicToCartesianNormal(globe: Globe, latitude: Double, longitude: Double, result: Vec3): Vec3 {
 
         val radLat = Math.toRadians(latitude)
         val radLon = Math.toRadians(longitude)
@@ -74,15 +56,8 @@ class ProjectionWgs84() : GeographicProjection {
         return result.normalize()
     }
 
-    fun geographicToCartesianNorth(globe: Globe?, latitude: Double, longitude: Double, result: Vec3?): Vec3 {
-        if (globe == null) {
-            throw java.lang.IllegalArgumentException(
-                    Logger.logMessage(Logger.ERROR, "ProjectionWgs84", "geographicToCartesianNormal", "missingGlobe"))
-        }
-        if (result == null) {
-            throw java.lang.IllegalArgumentException(
-                    Logger.logMessage(Logger.ERROR, "ProjectionWgs84", "geographicToCartesianNormal", "missingResult"))
-        }
+    fun geographicToCartesianNorth(globe: Globe, latitude: Double, longitude: Double, result: Vec3): Vec3 {
+
         val radLat = Math.toRadians(latitude)
         val radLon = Math.toRadians(longitude)
         val cosLat = Math.cos(radLat)
@@ -99,16 +74,7 @@ class ProjectionWgs84() : GeographicProjection {
     /**
      * 地理>>转变>>笛卡尔
      */
-    override fun geographicToCartesianTransform(globe: Globe?, latitude: Double, longitude: Double, altitude: Double, offset: Vec3?, result: Matrix4?): Matrix4 {
-        if (globe == null) {
-            throw java.lang.IllegalArgumentException(
-                    Logger.logMessage(Logger.ERROR, "ProjectionWgs84", "geographicToCartesianTransform", "missingGlobe"))
-        }
-
-        if (result == null) {
-            throw java.lang.IllegalArgumentException(
-                    Logger.logMessage(Logger.ERROR, "ProjectionWgs84", "geographicToCartesianTransform", "missingResult"))
-        }
+    override fun geographicToCartesianTransform(globe: Globe, latitude: Double, longitude: Double, altitude: Double, offset: Vec3?, result: Matrix4): Matrix4 {
 
         val radLat = Math.toRadians(latitude)
         val radLon = Math.toRadians(longitude)
@@ -158,18 +124,8 @@ class ProjectionWgs84() : GeographicProjection {
     }
 
 
-    override fun geographicToCartesianGrid(globe: Globe?, sector: Sector?, numLat: Int, numLon: Int, elevations: DoubleArray?, origin: Vec3?, offset: Vec3?, result: FloatArray?, stride: Int ,  poss : Int): FloatArray {
+    override fun geographicToCartesianGrid(globe: Globe, sector: Sector, numLat: Int, numLon: Int, elevations: DoubleArray?, origin: Vec3?, offset: Vec3?, result: FloatArray, stride: Int ,  poss : Int): FloatArray {
         var pos = poss
-        if (globe == null) {
-            throw java.lang.IllegalArgumentException(
-                    Logger.logMessage(Logger.ERROR, "ProjectionWgs84", "geographicToCartesianGrid", "missingGlobe"))
-        }
-
-        if (sector == null) {
-            throw java.lang.IllegalArgumentException(
-                    Logger.logMessage(Logger.ERROR, "ProjectionWgs84", "geographicToCartesianGrid", "missingSector"))
-        }
-
         if (numLat < 1 || numLon < 1) {
             throw java.lang.IllegalArgumentException(Logger.logMessage(Logger.ERROR, "ProjectionWgs84",
                     "geographicToCartesianGrid", "Number of latitude or longitude locations is less than one"))
@@ -182,7 +138,7 @@ class ProjectionWgs84() : GeographicProjection {
                     "geographicToCartesianGrid", "missingArray"))
         }
 
-        if (result == null || result.size < numPoints * stride + pos) {
+        if ( result.size < numPoints * stride + pos) {
             throw java.lang.IllegalArgumentException(
                     Logger.logMessage(Logger.ERROR, "BasicGlobe", "geographicToCartesianGrid", "missingResult"))
         }
@@ -257,19 +213,7 @@ class ProjectionWgs84() : GeographicProjection {
     /**
      * 笛卡尔地心坐标系转大地经纬度坐标系
      */
-    override fun cartesianToGeographic(globe: Globe?, x: Double, y: Double, z: Double, offset: Vec3?, result: Position?): Position? {
-        if (globe == null) {
-            throw java.lang.IllegalArgumentException(
-                    Logger.logMessage(Logger.ERROR, "ProjectionWgs84", "cartesianToGeographic", "missingGlobe"))
-        }
-
-        if (result == null) {
-            throw java.lang.IllegalArgumentException(
-                    Logger.logMessage(Logger.ERROR, "ProjectionWgs84", "cartesianToGeographic", "missingResult"))
-        }
-
-
-
+    override fun cartesianToGeographic(globe: Globe, x: Double, y: Double, z: Double, offset: Vec3?, result: Position): Position {
         val XXpYY = z * z + x * x
         val sqrtXXpYY = Math.sqrt(XXpYY)
 
@@ -347,19 +291,8 @@ class ProjectionWgs84() : GeographicProjection {
     /**
      * 笛卡尔坐标系 到 本地的位移
      */
-    override fun cartesianToLocalTransform(globe: Globe?, x: Double, y: Double, z: Double, offset: Vec3?, result: Matrix4?): Matrix4? {
-
-        if (globe == null) {
-            throw java.lang.IllegalArgumentException(
-                    Logger.logMessage(Logger.ERROR, "ProjectionWgs84", "cartesianToLocalTransform", "missingGlobe"))
-        }
-
-        if (result == null) {
-            throw java.lang.IllegalArgumentException(
-                    Logger.logMessage(Logger.ERROR, "ProjectionWgs84", "cartesianToLocalTransform", "missingResult"))
-        }
-
-        val pos: Position = cartesianToGeographic(globe, x, y, z, offset, scratchPos) ?: return null
+    override fun cartesianToLocalTransform(globe: Globe, x: Double, y: Double, z: Double, offset: Vec3?, result: Matrix4): Matrix4 {
+        val pos: Position = cartesianToGeographic(globe, x, y, z, offset, scratchPos)
         val radLat = Math.toRadians(pos.latitude)
         val radLon = Math.toRadians(pos.longitude)
         val cosLat = Math.cos(radLat)
@@ -407,21 +340,7 @@ class ProjectionWgs84() : GeographicProjection {
     /**
      * 计算视线和地球的交点
      */
-    override fun intersect(globe: Globe?, line: Line?, offset: Vec3?, result: Vec3?): Boolean {
-        if (globe == null) {
-            throw java.lang.IllegalArgumentException(
-                    Logger.logMessage(Logger.ERROR, "ProjectionWgs84", "cartesianToGeographic", "missingGlobe"))
-        }
-
-        if (line == null) {
-            throw java.lang.IllegalArgumentException(
-                    Logger.logMessage(Logger.ERROR, "ProjectionWgs84", "intersect", "missingLine"))
-        }
-
-        if (result == null) {
-            throw java.lang.IllegalArgumentException(
-                    Logger.logMessage(Logger.ERROR, "ProjectionWgs84", "intersect", "missingResult"))
-        }
+    override fun intersect(globe: Globe, line: Line, offset: Vec3?, result: Vec3): Boolean {
 
         // Taken from "Mathematics for 3D Game Programming and Computer Graphics, Second Edition", Section 5.2.3.
         //

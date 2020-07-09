@@ -250,7 +250,7 @@ class WorldWindow : GLSurfaceView, GLSurfaceView.Renderer, MessageListener, Fram
 
     protected fun computeViewingTransform(
         projection: Matrix4,
-        modelview: Matrix4?
+        modelview: Matrix4
     ) {
         var near = navigator.altitude * 0.5
         val far = globe.horizonDistance(navigator.altitude, 160000.0)
@@ -274,7 +274,7 @@ class WorldWindow : GLSurfaceView, GLSurfaceView.Renderer, MessageListener, Fram
             far
         )
         navigator.getAsCamera(globe, scratchCamera)
-        globe.cameraToCartesianTransform(scratchCamera, modelview)!!.invertOrthonormal()
+        globe.cameraToCartesianTransform(scratchCamera, modelview).invertOrthonormal()
     }
 
     protected fun renderFrame(frame: Frame) {
@@ -650,7 +650,7 @@ class WorldWindow : GLSurfaceView, GLSurfaceView.Renderer, MessageListener, Fram
      *
      * @return true if the screen point could be converted; false if the screen point is not on the globe
      */
-    fun screenPointToGeographic(screenX: Float, screenY: Float, result: Position?): Boolean {
+    fun screenPointToGeographic(screenX: Float, screenY: Float, result: Position): Boolean {
         val ray = Line()
         val intersection = Vec3()
         if (rayThroughScreenPoint(screenX, screenY, scratchRay)) {

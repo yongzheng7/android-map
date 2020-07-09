@@ -107,7 +107,7 @@ class PlacemarksDraggerActivity : BasicWorldWindActivity() {
                 wwd: WorldWindow,
                 screenX: Float,
                 screenY: Float,
-                result: Position?
+                result: Position
             ): Boolean {
                 val ray = Line()
                 val intersection = Vec3()

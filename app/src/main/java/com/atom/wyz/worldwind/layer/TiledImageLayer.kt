@@ -129,8 +129,7 @@ open class TiledImageLayer : AbstractLayer, TileFactory {
             addTileOrDescendants(rc, child as ImageTile) // recursively process the tile's children
         }
 
-        this.ancestorTile =
-            currentAncestorTile // restore the last fallback tile, even if it was null
+        this.ancestorTile = currentAncestorTile // restore the last fallback tile, even if it was null
         this.ancestorTexture = currentAncestorTexture
     }
 

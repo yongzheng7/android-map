@@ -37,7 +37,7 @@ interface Globe {
     /**
      * 地理学位置转笛卡尔坐标 vec3
      */
-    fun geographicToCartesian(latitude: Double, longitude: Double, altitude: Double, result: Vec3?): Vec3
+    fun geographicToCartesian(latitude: Double, longitude: Double, altitude: Double, result: Vec3): Vec3
 
     /**
      *
@@ -46,36 +46,36 @@ interface Globe {
      * @param result
      * @return
      */
-    fun geographicToCartesianNormal(latitude: Double, longitude: Double, result: Vec3?): Vec3?
+    fun geographicToCartesianNormal(latitude: Double, longitude: Double, result: Vec3): Vec3
 
     /**
      * 区域到笛卡尔变换
      * 输入经纬度 和高度 转笛卡尔矩阵
      */
-    fun geographicToCartesianTransform(latitude: Double, longitude: Double, altitude: Double, result: Matrix4?): Matrix4?
+    fun geographicToCartesianTransform(latitude: Double, longitude: Double, altitude: Double, result: Matrix4): Matrix4
 
     /**
      * 通过经纬度范围，以及分割线 进行转化出对应的顶点
      * 区域经纬度 转笛卡尔网络
      */
-    fun geographicToCartesianGrid(sector: Sector?, numLat: Int, numLon: Int, elevations: DoubleArray?,
-                                  origin: Vec3?, result: FloatArray? , stride : Int , pos : Int ): FloatArray
+    fun geographicToCartesianGrid(sector: Sector, numLat: Int, numLon: Int, elevations: DoubleArray?,
+                                  origin: Vec3?, result: FloatArray , stride : Int , pos : Int ): FloatArray
 
     /**
      * 笛卡尔转地域
      */
-    fun cartesianToGeographic(x: Double, y: Double, z: Double, result: Position?): Position?
+    fun cartesianToGeographic(x: Double, y: Double, z: Double, result: Position): Position
 
 
-    fun cartesianToLocalTransform(x: Double, y: Double, z: Double, result: Matrix4?): Matrix4?
+    fun cartesianToLocalTransform(x: Double, y: Double, z: Double, result: Matrix4): Matrix4?
 
-    fun cameraToCartesianTransform(camera: Camera?, result: Matrix4?): Matrix4?
+    fun cameraToCartesianTransform(camera: Camera, result: Matrix4): Matrix4
 
-    fun cameraToLookAt(camera: Camera?, result: LookAt?): LookAt?
+    fun cameraToLookAt(camera: Camera, result: LookAt): LookAt
 
-    fun lookAtToCartesianTransform(lookAt: LookAt?, result: Matrix4?): Matrix4?
+    fun lookAtToCartesianTransform(lookAt: LookAt, result: Matrix4): Matrix4
 
-    fun lookAtToCamera(lookAt: LookAt?, result: Camera?): Camera?
+    fun lookAtToCamera(lookAt: LookAt, result: Camera): Camera
 
     /**
      * 指示在指定位置的水平距离，以米为单位。
@@ -86,5 +86,5 @@ interface Globe {
     /**
      * 用指定的线计算地球仪的第一个交点。 该线被解释为射线。 线原点后的交点将被忽略。
      */
-    fun intersect(line: Line?, result: Vec3?): Boolean
+    fun intersect(line: Line, result: Vec3): Boolean
 }

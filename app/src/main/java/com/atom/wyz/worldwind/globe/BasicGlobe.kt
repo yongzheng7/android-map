@@ -59,36 +59,16 @@ open class BasicGlobe: Globe {
         val rpm = equatorialRadius / Math.sqrt(1 - ec2 * sinLat * sinLat)
         return rpm * Math.sqrt(1 + (ec2 * ec2 - 2 * ec2) * sinLat * sinLat)
     }
-    override fun geographicToCartesian(latitude: Double, longitude: Double, altitude: Double, result: Vec3?): Vec3 {
-        if (result == null) {
-            throw java.lang.IllegalArgumentException(
-                    Logger.logMessage(Logger.ERROR, "BasicGlobe", "geographicToCartesian", "missingResult"))
-        }
-
+    override fun geographicToCartesian(latitude: Double, longitude: Double, altitude: Double, result: Vec3): Vec3 {
         return projection.geographicToCartesian(this, latitude, longitude, altitude, null, result)
     }
-    override fun geographicToCartesianNormal(latitude: Double, longitude: Double, result: Vec3?): Vec3? {
-        if (result == null) {
-            throw java.lang.IllegalArgumentException(
-                    Logger.logMessage(Logger.ERROR, "BasicGlobe", "geographicToCartesianNormal", "missingResult"))
-        }
-
+    override fun geographicToCartesianNormal(latitude: Double, longitude: Double, result: Vec3): Vec3 {
         return projection.geographicToCartesianNormal(this, latitude, longitude, result)
     }
-    override fun geographicToCartesianTransform(latitude: Double, longitude: Double, altitude: Double, result: Matrix4?): Matrix4? {
-        if (result == null) {
-            throw java.lang.IllegalArgumentException(
-                    Logger.logMessage(Logger.ERROR, "BasicGlobe", "geographicToCartesianTransform", "missingResult"))
-        }
-
+    override fun geographicToCartesianTransform(latitude: Double, longitude: Double, altitude: Double, result: Matrix4): Matrix4 {
         return projection.geographicToCartesianTransform(this, latitude, longitude, altitude, null, result)
     }
-    override fun geographicToCartesianGrid(sector: Sector?, numLat: Int, numLon: Int, elevations: DoubleArray?, origin: Vec3?, result: FloatArray?, stride: Int, pos : Int): FloatArray {
-        if (sector == null) {
-            throw java.lang.IllegalArgumentException(
-                    Logger.logMessage(Logger.ERROR, "BasicGlobe", "geographicToCartesianGrid", "missingSector"))
-        }
-
+    override fun geographicToCartesianGrid(sector: Sector, numLat: Int, numLon: Int, elevations: DoubleArray?, origin: Vec3?, result: FloatArray, stride: Int, pos : Int): FloatArray {
         if (numLat < 1 || numLon < 1) {
             throw java.lang.IllegalArgumentException(Logger.logMessage(Logger.ERROR, "BasicGlobe",
                     "geographicToCartesianGrid", "Number of latitude or longitude locations is less than one"))
@@ -100,75 +80,35 @@ open class BasicGlobe: Globe {
                     "geographicToCartesianGrid", "missingArray"))
         }
 
-        if (result == null || result.size < numPoints * stride + pos) {
+        if (result.size < numPoints * stride + pos) {
             throw java.lang.IllegalArgumentException(
                     Logger.logMessage(Logger.ERROR, "BasicGlobe", "geographicToCartesianGrid", "missingResult"))
         }
 
         return projection.geographicToCartesianGrid(this, sector, numLat, numLon, elevations, origin, null, result, stride , pos)
     }
-    override fun cartesianToGeographic(x: Double, y: Double, z: Double, result: Position?): Position? {
-        if (result == null) {
-            throw java.lang.IllegalArgumentException(
-                    Logger.logMessage(Logger.ERROR, "BasicGlobe", "cartesianToGeographic", "missingResult"))
-        }
-
+    override fun cartesianToGeographic(x: Double, y: Double, z: Double, result: Position): Position {
         return projection.cartesianToGeographic(this, x, y, z, null, result)
     }
-    override fun cartesianToLocalTransform(x: Double, y: Double, z: Double, result: Matrix4?): Matrix4? {
-        if (result == null) {
-            throw java.lang.IllegalArgumentException(
-                    Logger.logMessage(Logger.ERROR, "BasicGlobe", "cartesianToLocalTransform", "missingResult"))
-        }
-
+    override fun cartesianToLocalTransform(x: Double, y: Double, z: Double, result: Matrix4): Matrix4 {
         return projection.cartesianToLocalTransform(this, x, y, z, null, result)
-
-
     }
-    override fun cameraToCartesianTransform(camera: Camera?, result: Matrix4?): Matrix4? {
-        if (camera == null) {
-            throw java.lang.IllegalArgumentException(
-                    Logger.logMessage(Logger.ERROR, "BasicGlobe", "cameraToCartesianTransform", "missingCamera"))
-        }
-
-        if (result == null) {
-            throw java.lang.IllegalArgumentException(
-                    Logger.logMessage(Logger.ERROR, "BasicGlobe", "cameraToCartesianTransform", "missingResult"))
-        }
-
+    override fun cameraToCartesianTransform(camera: Camera, result: Matrix4): Matrix4 {
         geographicToCartesianTransform(camera.latitude, camera.longitude, camera.altitude, result)
-
         // Transform by the heading, tilt and roll.
         result.multiplyByRotation(0.0, 0.0, 1.0, -camera.heading) // rotate clockwise about the Z axis
-
         result.multiplyByRotation(1.0, 0.0, 0.0, camera.tilt) // rotate counter-clockwise about the X axis
-
         result.multiplyByRotation(0.0, 0.0, 1.0, camera.roll) // rotate counter-clockwise about the Z axis (again)
-
-
         return result
     }
-    override fun cameraToLookAt(camera: Camera?, result: LookAt?): LookAt? {
-        if (camera == null) {
-            throw java.lang.IllegalArgumentException(
-                    Logger.logMessage(Logger.ERROR, "BasicGlobe", "cameraToLookAt", "missingCamera"))
-        }
-
-        if (result == null) {
-            throw java.lang.IllegalArgumentException(
-                    Logger.logMessage(Logger.ERROR, "BasicGlobe", "cameraToLookAt", "missingResult"))
-        }
-
+    override fun cameraToLookAt(camera: Camera, result: LookAt): LookAt {
         cameraToCartesianTransform(camera, modelview)!!.invertOrthonormal()
-
         modelview.extractEyePoint(forwardRay.origin)
         modelview.extractForwardVector(forwardRay.direction)
-
         if (!this.intersect(forwardRay, originPoint)) {
             val horizon = this.horizonDistance(camera.altitude)
             forwardRay.pointAt(horizon, originPoint)
         }
-
         cartesianToGeographic(originPoint.x, originPoint.y, originPoint.z, originPos)
         cartesianToLocalTransform(originPoint.x, originPoint.y, originPoint.z, origin)
         modelview.multiplyByMatrix(origin)
@@ -181,17 +121,7 @@ open class BasicGlobe: Globe {
         result.roll = camera.roll
         return result
     }
-    override fun lookAtToCartesianTransform(lookAt: LookAt?, result: Matrix4?): Matrix4? {
-        if (lookAt == null) {
-            throw java.lang.IllegalArgumentException(
-                    Logger.logMessage(Logger.ERROR, "BasicGlobe", "lookAtToCartesianTransform", "missingLookAt"))
-        }
-
-        if (result == null) {
-            throw java.lang.IllegalArgumentException(
-                    Logger.logMessage(Logger.ERROR, "BasicGlobe", "lookAtToCartesianTransform", "missingResult"))
-        }
-
+    override fun lookAtToCartesianTransform(lookAt: LookAt, result: Matrix4): Matrix4 {
         geographicToCartesianTransform(lookAt.latitude, lookAt.longitude, lookAt.altitude, result)
 
         result.multiplyByRotation(0.0, 0.0, 1.0, -lookAt.heading) // rotate clockwise about the Z axis
@@ -204,17 +134,7 @@ open class BasicGlobe: Globe {
 
         return result
     }
-    override fun lookAtToCamera(lookAt: LookAt?, result: Camera?): Camera? {
-        if (lookAt == null) {
-            throw java.lang.IllegalArgumentException(
-                    Logger.logMessage(Logger.ERROR, "BasicGlobe", "lookAtToCamera", "missingLookAt"))
-        }
-
-        if (result == null) {
-            throw java.lang.IllegalArgumentException(
-                    Logger.logMessage(Logger.ERROR, "BasicGlobe", "lookAtToCamera", "missingResult"))
-        }
-
+    override fun lookAtToCamera(lookAt: LookAt, result: Camera): Camera {
         lookAtToCartesianTransform(lookAt, modelview)!!.invertOrthonormal()
         modelview.extractEyePoint(originPoint)
 
@@ -229,8 +149,6 @@ open class BasicGlobe: Globe {
 
         result.tilt = this.computeViewTilt(modelview)
         result.roll = lookAt.roll // roll passes straight through
-
-
         return result
     }
     protected open fun computeViewHeading(matrix: Matrix4, roll: Double): Double {
@@ -258,17 +176,7 @@ open class BasicGlobe: Globe {
         val horDistance = Math.sqrt(objectAltitude * (2 * eqr + objectAltitude)) // distance from object altitude to globe MSL horizon
         return eyeDistance + horDistance // desired distance is the sum of the two horizon distances
     }
-    override fun intersect(line: Line?, result: Vec3?): Boolean {
-        if (line == null) {
-            throw java.lang.IllegalArgumentException(
-                    Logger.logMessage(Logger.ERROR, "BasicGlobe", "intersect", "missingLine"))
-        }
-
-        if (result == null) {
-            throw java.lang.IllegalArgumentException(
-                    Logger.logMessage(Logger.ERROR, "BasicGlobe", "intersect", "missingResult"))
-        }
-
+    override fun intersect(line: Line, result: Vec3): Boolean {
         return projection.intersect(this, line, null, result)
     }
 }

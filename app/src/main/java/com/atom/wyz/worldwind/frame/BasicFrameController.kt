@@ -162,16 +162,15 @@ class BasicFrameController : FrameController {
         pickedObjects.keepTopObjects()
     }
 
-    protected fun resolveTerrainPickPosition(rc: RenderContext, result: Position?): Boolean {
+    protected fun resolveTerrainPickPosition(rc: RenderContext, result: Position): Boolean {
         val terrain = rc.terrain ?: return false
         val globe = rc.globe ?: return false
         if (rc.pickRay != null && terrain.intersect(rc.pickRay!!, pickPoint)) {
-            globe.cartesianToGeographic(pickPoint.x, pickPoint.y, pickPoint.z, result)?.let {
-                result?.set(it)
-                result?.altitude = 0.0
+            globe.cartesianToGeographic(pickPoint.x, pickPoint.y, pickPoint.z, result).let {
+                result.set(it)
+                result.altitude = 0.0
                 return true
-            } ?: let { return false }
-
+            }
         }
         return false
     }
