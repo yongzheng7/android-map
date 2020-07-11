@@ -3,14 +3,13 @@ package com.atom.wyz.worldwind.ogc
 import com.atom.wyz.worldwind.WorldWind
 import com.atom.wyz.worldwind.geom.Sector
 import com.atom.wyz.worldwind.globe.Globe
+import com.atom.wyz.worldwind.layer.TiledImageLayer
 import com.atom.wyz.worldwind.util.LevelSet
 import com.atom.wyz.worldwind.util.LevelSetConfig
-import com.atom.wyz.worldwind.layer.TiledImageLayer
 import com.atom.wyz.worldwind.util.Logger
 
 open class WmsLayer : TiledImageLayer {
     constructor(diaplayername : String = "WMS Layer" ) : super(diaplayername) {
-        this.imageFormat = ("image/png")
     }
 
     constructor(sector: Sector?, metersPerPixel: Double, config: WmsLayerConfig?) : super("WMS Layer") {
@@ -27,7 +26,6 @@ open class WmsLayer : TiledImageLayer {
             throw IllegalArgumentException(
                     Logger.logMessage(Logger.ERROR, "WmsLayer", "constructor", "missingConfig"))
         }
-        this.imageFormat = ("image/png")
         this.setConfiguration(sector, metersPerPixel, config)
     }
 
@@ -48,7 +46,6 @@ open class WmsLayer : TiledImageLayer {
             throw java.lang.IllegalArgumentException(
                     Logger.logMessage(Logger.ERROR, "WmsLayer", "constructor", "missingConfig"))
         }
-        this.imageFormat = ("image/png")
         this.setConfiguration(sector, globe ,metersPerPixel, config)
     }
 
@@ -70,7 +67,7 @@ open class WmsLayer : TiledImageLayer {
         levelsConfig.sector?.set(sector)
         levelsConfig.numLevels = levelsConfig.numLevelsForResolution(radiansPerPixel)
         this.levelSet = (LevelSet(levelsConfig))
-        this.tileUrlFactory = (WmsGetMapUrlFactory(config))
+        this.tileFactory = (WmsTileFactory(config))
     }
 
     open fun setConfiguration(sector: Sector?, globe: Globe?, metersPerPixel: Double, config: WmsLayerConfig?) {
@@ -95,6 +92,6 @@ open class WmsLayer : TiledImageLayer {
         levelsConfig.sector?.set(sector)
         levelsConfig.numLevels = levelsConfig.numLevelsForResolution(radiansPerPixel)
         this.levelSet = (LevelSet(levelsConfig))
-        this.tileUrlFactory = (WmsGetMapUrlFactory(config))
+        this.tileFactory = (WmsTileFactory(config))
     }
 }

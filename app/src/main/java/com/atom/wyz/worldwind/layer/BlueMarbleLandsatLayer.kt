@@ -1,20 +1,22 @@
 package com.atom.wyz.worldwind.layer
 
 import com.atom.wyz.worldwind.WorldWind
+import com.atom.wyz.worldwind.geom.Sector
 import com.atom.wyz.worldwind.globe.Tile
-import com.atom.wyz.worldwind.globe.TileUrlFactory
-import com.atom.wyz.worldwind.ogc.WmsGetMapUrlFactory
+import com.atom.wyz.worldwind.globe.TileFactory
 import com.atom.wyz.worldwind.ogc.WmsLayerConfig
+import com.atom.wyz.worldwind.ogc.WmsTileFactory
 import com.atom.wyz.worldwind.render.ImageOptions
+import com.atom.wyz.worldwind.util.Level
 import com.atom.wyz.worldwind.util.LevelSet
 import com.atom.wyz.worldwind.util.LevelSetConfig
 import com.atom.wyz.worldwind.util.Logger
 
-class BlueMarbleLandsatLayer : TiledImageLayer, TileUrlFactory {
+class BlueMarbleLandsatLayer : TiledImageLayer, TileFactory {
 
-    protected var blueMarbleUrlFactory: TileUrlFactory
+    protected var blueMarbleUrlFactory: TileFactory
 
-    protected var landsatUrlFactory: TileUrlFactory
+    protected var landsatUrlFactory: TileFactory
     
     constructor():this("https://worldwind25.arc.nasa.gov/wms")
 
@@ -30,7 +32,7 @@ class BlueMarbleLandsatLayer : TiledImageLayer, TileUrlFactory {
         blueMarbleConfig.coordinateSystem = "EPSG:4326"
         blueMarbleConfig.transparent = false // the BlueMarble layer is opaque
 
-        blueMarbleUrlFactory = WmsGetMapUrlFactory(blueMarbleConfig)
+        blueMarbleUrlFactory = WmsTileFactory(blueMarbleConfig)
 
         val landsatConfig  = WmsLayerConfig()
         landsatConfig.serviceAddress = serviceAddress
@@ -40,7 +42,7 @@ class BlueMarbleLandsatLayer : TiledImageLayer, TileUrlFactory {
         landsatConfig.coordinateSystem = "EPSG:4326"
         landsatConfig.transparent = false // combining BlueMarble and esat layers results in opaque images
 
-        landsatUrlFactory = WmsGetMapUrlFactory(landsatConfig)
+        landsatUrlFactory = WmsTileFactory(landsatConfig)
 
         val metersPerPixel = 15.0
         val radiansPerPixel: Double = metersPerPixel / WorldWind.WGS84_SEMI_MAJOR_AXIS
@@ -48,18 +50,19 @@ class BlueMarbleLandsatLayer : TiledImageLayer, TileUrlFactory {
         levelsConfig.numLevels = levelsConfig.numLevelsForResolution(radiansPerPixel)
 
         this.levelSet = LevelSet(levelsConfig)
-        this.tileUrlFactory = this
+        this.tileFactory = this
         this.imageFormat = ("image/png")
         this.imageOptions = ImageOptions(WorldWind.RGB_565)
 
     }
 
-    override fun urlForTile(tile: Tile, imageFormat: String): String {
-        val metersPerPixel: Double = tile.level.texelHeight * WorldWind.WGS84_SEMI_MAJOR_AXIS
+    override fun createTile(sector: Sector?, level: Level?, row: Int, column: Int): Tile {
+        val radiansPerPixel: Double = level!!.texelHeight
+        val metersPerPixel = radiansPerPixel * WorldWind.WGS84_SEMI_MAJOR_AXIS
         return if (metersPerPixel < 2.0e3) { // switch to Landsat at 2km resolution
-            landsatUrlFactory.urlForTile(tile, imageFormat)
+            this.landsatUrlFactory.createTile(sector, level, row, column)
         } else {
-            blueMarbleUrlFactory.urlForTile(tile, imageFormat)
+            this.blueMarbleUrlFactory.createTile(sector, level, row, column)
         }
     }
 }

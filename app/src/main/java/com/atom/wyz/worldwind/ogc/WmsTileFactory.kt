@@ -2,11 +2,14 @@ package com.atom.wyz.worldwind.ogc
 
 import com.atom.wyz.worldwind.geom.Sector
 import com.atom.wyz.worldwind.globe.Tile
-import com.atom.wyz.worldwind.globe.TileUrlFactory
+import com.atom.wyz.worldwind.globe.TileFactory
+import com.atom.wyz.worldwind.render.ImageSource
+import com.atom.wyz.worldwind.render.ImageTile
+import com.atom.wyz.worldwind.util.Level
 import com.atom.wyz.worldwind.util.Logger
 import java.util.*
 
-class WmsGetMapUrlFactory : TileUrlFactory {
+class WmsTileFactory : TileFactory {
 
      var serviceAddress: String
 
@@ -42,6 +45,12 @@ class WmsGetMapUrlFactory : TileUrlFactory {
      */
      var timeString: String? = null
 
+    /**
+     * The image MIME format to use in Get Map URLs. May be null in which case a default format is assumed.
+     */
+     var imageFormat: String? = null
+
+
     constructor(serviceAddress: String, wmsVersion: String, layerNames: String, styleNames: String?) {
         this.serviceAddress = serviceAddress
         this.wmsVersion = wmsVersion
@@ -55,17 +64,36 @@ class WmsGetMapUrlFactory : TileUrlFactory {
         wmsVersion = config.wmsVersion
         layerNames = config.layerNames
         coordinateSystem = config.coordinateSystem
-
+        imageFormat = config.imageFormat
         styleNames = config.styleNames
         transparent = config.transparent
         timeString = config.timeString
     }
 
+
+    override fun createTile(sector: Sector?, level: Level?, row: Int, column: Int): Tile {
+        if (sector == null) {
+            throw IllegalArgumentException(
+                Logger.logMessage(Logger.ERROR, "WmsTileFactory", "createTile", "missingSector")
+            )
+        }
+
+        if (level == null) {
+            throw IllegalArgumentException(
+                Logger.logMessage(Logger.ERROR, "WmsTileFactory", "createTile", "missingLevel")
+            )
+        }
+
+        val tile = ImageTile(sector, level, row, column)
+        val urlString = urlForTile(sector, level.tileWidth, level.tileHeight)
+        tile.imageSource = (ImageSource.fromUrl(urlString))
+        return tile
+    }
     /**
      * 根据tile 和 图片格式 返回url
      */
-    override fun urlForTile(tile: Tile, imageFormat: String): String {
-        val url = StringBuilder(serviceAddress!!)
+     fun urlForTile(sector: Sector , width: Int , height:Int ): String {
+        val url = StringBuilder(serviceAddress)
         var index = url.indexOf("?")
         if (index < 0) { // if service address contains no query delimiter
             url.append("?") // add one
@@ -75,7 +103,7 @@ class WmsGetMapUrlFactory : TileUrlFactory {
                 url.append("&") // add a parameter delimiter
             }
         }
-        index = serviceAddress!!.toUpperCase(Locale.US).indexOf("SERVICE=WMS")
+        index = serviceAddress.toUpperCase(Locale.US).indexOf("SERVICE=WMS")
         if (index < 0) {
             url.append("SERVICE=WMS")
         }
@@ -83,7 +111,6 @@ class WmsGetMapUrlFactory : TileUrlFactory {
         url.append("&REQUEST=GetMap")
         url.append("&LAYERS=").append(layerNames)
         url.append("&STYLES=").append(if (styleNames != null) styleNames else "")
-        val sector: Sector = tile.sector
         if (wmsVersion == "1.3.0") {
             url.append("&CRS=").append(coordinateSystem)
             url.append("&BBOX=")
@@ -100,13 +127,14 @@ class WmsGetMapUrlFactory : TileUrlFactory {
             url.append(sector.minLongitude).append(",").append(sector.minLatitude).append(",")
             url.append(sector.maxLongitude).append(",").append(sector.maxLatitude)
         }
-        url.append("&WIDTH=").append(tile.level.tileWidth)
-        url.append("&HEIGHT=").append(tile.level.tileHeight)
-        url.append("&FORMAT=").append(imageFormat)
+        url.append("&WIDTH=").append(width)
+        url.append("&HEIGHT=").append(height)
+        url.append("&FORMAT=").append(this.imageFormat ?: "image/png")
         url.append("&TRANSPARENT=").append(if (transparent) "TRUE" else "FALSE")
         if (timeString != null) {
             url.append("&TIME=").append(timeString)
         }
         return url.toString()
     }
+
 }

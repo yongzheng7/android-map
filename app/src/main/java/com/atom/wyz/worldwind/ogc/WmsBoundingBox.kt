@@ -78,7 +78,7 @@ class WmsBoundingBox : XmlModel {
     constructor(namespaceURI: String?) :super(namespaceURI)
 
     @Throws(XmlPullParserException::class, IOException::class)
-    protected fun doParseEventAttributes(ctx: XmlPullParserContext) {
+    protected override fun doParseEventAttributes(ctx: XmlPullParserContext) {
         val xpp: XmlPullParser = ctx.parser ?: return
         var referenceSystem = xpp.getAttributeValue(
             CRS.namespaceURI,

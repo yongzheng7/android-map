@@ -1,29 +1,29 @@
 package com.atom.wyz.worldwind.layer
 
-import android.util.Log
 import com.atom.wyz.worldwind.RenderContext
 import com.atom.wyz.worldwind.draw.Drawable
 import com.atom.wyz.worldwind.draw.DrawableSurfaceTexture
 import com.atom.wyz.worldwind.geom.Matrix3
-import com.atom.wyz.worldwind.geom.Sector
 import com.atom.wyz.worldwind.globe.Tile
 import com.atom.wyz.worldwind.globe.TileFactory
-import com.atom.wyz.worldwind.globe.TileUrlFactory
-import com.atom.wyz.worldwind.render.*
+import com.atom.wyz.worldwind.render.GpuTexture
+import com.atom.wyz.worldwind.render.ImageOptions
+import com.atom.wyz.worldwind.render.ImageTile
+import com.atom.wyz.worldwind.render.SurfaceTextureProgram
 import com.atom.wyz.worldwind.util.Level
 import com.atom.wyz.worldwind.util.LevelSet
 import com.atom.wyz.worldwind.util.LruMemoryCache
 import com.atom.wyz.worldwind.util.pool.Pool
 import java.util.*
 
-open class TiledImageLayer : AbstractLayer, TileFactory {
+open class TiledImageLayer : AbstractLayer {
 
     var levelSet: LevelSet = LevelSet()
         set(value) {
             field = value
             this.invalidateTiles()
         }
-    var tileUrlFactory: TileUrlFactory? = null
+    var tileFactory: TileFactory? = null
         set(value) {
             field = value
             this.invalidateTiles()
@@ -96,7 +96,7 @@ open class TiledImageLayer : AbstractLayer, TileFactory {
 
     protected fun createTopLevelTiles() {
         val firstLevel: Level = levelSet.firstLevel() ?: return
-        Tile.assembleTilesForLevel(firstLevel, this, topLevelTiles)
+        Tile.assembleTilesForLevel(firstLevel, tileFactory!!, topLevelTiles)
     }
 
     protected fun addTileOrDescendants(rc: RenderContext, tile: ImageTile) {
@@ -122,7 +122,7 @@ open class TiledImageLayer : AbstractLayer, TileFactory {
         }
 
         for (child in tile.subdivideToCache(
-            this,
+            tileFactory!!,
             tileCache,
             4
         )!!) { // each tile has a cached size of 1
@@ -166,15 +166,6 @@ open class TiledImageLayer : AbstractLayer, TileFactory {
                 )
             rc.offerSurfaceDrawable(drawable, 0.0 /*z-order*/)
         }
-    }
-
-    override fun createTile(sector: Sector?, level: Level?, row: Int, column: Int): Tile {
-        val tile = ImageTile(sector, level, row, column)
-        if (tileUrlFactory != null && this.imageFormat != null) {
-            tile.imageSource =
-                ImageSource.fromUrl(tileUrlFactory!!.urlForTile(tile, this.imageFormat!!))
-        }
-        return tile
     }
 
     protected fun invalidateTiles() {

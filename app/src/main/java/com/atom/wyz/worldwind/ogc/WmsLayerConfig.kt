@@ -44,6 +44,10 @@ class WmsLayerConfig {
     var timeString: String? = null
 
     /**
+     * The image MIME format to use in Get Map requests.
+     */
+    var imageFormat: String? = null
+    /**
      * Constructs a WMS layer configuration with values all null (or false).
      */
     constructor() {}
@@ -59,12 +63,21 @@ class WmsLayerConfig {
      * @param transparent      indicates whether Get Map requests should include transparency
      * @param timeString       the time parameter to include in Get Map requests
      */
-    constructor(serviceAddress: String, wmsVersion: String, layerNames: String, styleNames: String?, coordinateSystem: String?, transparent: Boolean, timeString: String?) {
+    constructor(
+        serviceAddress: String,
+        wmsVersion: String,
+        layerNames: String,
+        styleNames: String?,
+        coordinateSystem: String?,
+        imageFormat : String? ,
+        transparent: Boolean,
+        timeString: String?) {
         this.serviceAddress = serviceAddress
         this.wmsVersion = wmsVersion
         this.layerNames = layerNames
         this.styleNames = styleNames
         this.coordinateSystem = coordinateSystem
+        this.imageFormat = imageFormat
         this.transparent = transparent
         this.timeString = timeString
     }
