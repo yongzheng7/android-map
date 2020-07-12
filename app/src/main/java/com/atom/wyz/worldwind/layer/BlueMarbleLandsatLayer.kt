@@ -1,5 +1,6 @@
 package com.atom.wyz.worldwind.layer
 
+import com.atom.wyz.worldwind.RenderContext
 import com.atom.wyz.worldwind.WorldWind
 import com.atom.wyz.worldwind.geom.Sector
 import com.atom.wyz.worldwind.globe.Tile
@@ -12,11 +13,12 @@ import com.atom.wyz.worldwind.util.LevelSet
 import com.atom.wyz.worldwind.util.LevelSetConfig
 import com.atom.wyz.worldwind.util.Logger
 
-class BlueMarbleLandsatLayer : TiledImageLayer, TileFactory {
+class BlueMarbleLandsatLayer : RenderableLayer, TileFactory {
+    lateinit var surfaceImage: TiledSurfaceImage
 
-    protected var blueMarbleUrlFactory: TileFactory
+    lateinit var blueMarbleUrlFactory: TileFactory
 
-    protected var landsatUrlFactory: TileFactory
+    lateinit var landsatUrlFactory: TileFactory
     
     constructor():this("https://worldwind25.arc.nasa.gov/wms")
 
@@ -49,10 +51,12 @@ class BlueMarbleLandsatLayer : TiledImageLayer, TileFactory {
         val levelsConfig = LevelSetConfig()
         levelsConfig.numLevels = levelsConfig.numLevelsForResolution(radiansPerPixel)
 
-        this.levelSet = LevelSet(levelsConfig)
-        this.tileFactory = this
-        this.imageFormat = ("image/png")
-        this.imageOptions = ImageOptions(WorldWind.RGB_565)
+        this.pickEnabled = (false)
+        val surfaceImage = TiledSurfaceImage()
+        surfaceImage.levelSet = (LevelSet(levelsConfig))
+        surfaceImage.tileFactory = (this)
+        surfaceImage.imageOptions = (ImageOptions(WorldWind.RGB_565)) // reduce memory usage by using a 16-bit configuration with no alpha
+        this.addRenderable(surfaceImage)
 
     }
 
@@ -65,4 +69,5 @@ class BlueMarbleLandsatLayer : TiledImageLayer, TileFactory {
             this.blueMarbleUrlFactory.createTile(sector, level, row, column)
         }
     }
+
 }

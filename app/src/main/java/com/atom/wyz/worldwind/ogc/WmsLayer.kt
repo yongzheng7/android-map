@@ -1,17 +1,26 @@
 package com.atom.wyz.worldwind.ogc
 
+import com.atom.wyz.worldwind.RenderContext
 import com.atom.wyz.worldwind.WorldWind
 import com.atom.wyz.worldwind.geom.Sector
 import com.atom.wyz.worldwind.globe.Globe
-import com.atom.wyz.worldwind.layer.TiledImageLayer
+import com.atom.wyz.worldwind.layer.RenderableLayer
+import com.atom.wyz.worldwind.layer.TiledSurfaceImage
 import com.atom.wyz.worldwind.util.LevelSet
 import com.atom.wyz.worldwind.util.LevelSetConfig
 import com.atom.wyz.worldwind.util.Logger
 
-open class WmsLayer : TiledImageLayer {
-    constructor(diaplayername : String = "WMS Layer" ) : super(diaplayername) {
+open class WmsLayer : RenderableLayer {
+
+    init {
+        this.displayName = ("WMS Layer")
+        this.pickEnabled = (false)
+        this.addRenderable(TiledSurfaceImage())
     }
 
+    constructor(diaplayername : String = "WMS Layer" ) : super(diaplayername) {
+
+    }
     constructor(sector: Sector?, metersPerPixel: Double, config: WmsLayerConfig?) : super("WMS Layer") {
 
         if (sector == null) {
@@ -29,7 +38,7 @@ open class WmsLayer : TiledImageLayer {
         this.setConfiguration(sector, metersPerPixel, config)
     }
 
-    constructor(sector: Sector?, globe: Globe?, metersPerPixel: Double, config: WmsLayerConfig?) {
+    constructor(sector: Sector?, globe: Globe?, metersPerPixel: Double, config: WmsLayerConfig?): super("WMS Layer") {
         if (sector == null) {
             throw java.lang.IllegalArgumentException(
                     Logger.logMessage(Logger.ERROR, "WmsLayer", "constructor", "missingSector"))
@@ -66,8 +75,10 @@ open class WmsLayer : TiledImageLayer {
         val levelsConfig = LevelSetConfig()
         levelsConfig.sector?.set(sector)
         levelsConfig.numLevels = levelsConfig.numLevelsForResolution(radiansPerPixel)
-        this.levelSet = (LevelSet(levelsConfig))
-        this.tileFactory = (WmsTileFactory(config))
+        val surfaceImage = getRenderable(0) as TiledSurfaceImage?
+        surfaceImage?.levelSet = (LevelSet(levelsConfig))
+        surfaceImage?.tileFactory = (WmsTileFactory(config))
+
     }
 
     open fun setConfiguration(sector: Sector?, globe: Globe?, metersPerPixel: Double, config: WmsLayerConfig?) {
@@ -87,11 +98,13 @@ open class WmsLayer : TiledImageLayer {
             throw java.lang.IllegalArgumentException(
                     Logger.logMessage(Logger.ERROR, "WmsLayer", "setConfiguration", "missingConfig"))
         }
+
         val radiansPerPixel: Double = metersPerPixel / globe.equatorialRadius
         val levelsConfig: LevelSetConfig = LevelSetConfig()
         levelsConfig.sector?.set(sector)
         levelsConfig.numLevels = levelsConfig.numLevelsForResolution(radiansPerPixel)
-        this.levelSet = (LevelSet(levelsConfig))
-        this.tileFactory = (WmsTileFactory(config))
+        val surfaceImage = getRenderable(0) as TiledSurfaceImage?
+        surfaceImage?.levelSet = (LevelSet(levelsConfig))
+        surfaceImage?.tileFactory = (WmsTileFactory(config))
     }
 }

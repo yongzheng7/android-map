@@ -5,7 +5,7 @@ import org.xmlpull.v1.XmlPullParser
 import org.xmlpull.v1.XmlPullParserException
 import java.io.IOException
 
-class WmsAuthorityUrl : WmsLayerInfoURL {
+class WmsAuthorityUrl : WmsLayerInfoUrl {
 
     protected var authority: String? = null
 

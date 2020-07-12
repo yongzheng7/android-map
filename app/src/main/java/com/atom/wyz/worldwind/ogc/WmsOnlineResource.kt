@@ -11,10 +11,10 @@ class WmsOnlineResource : XmlModel {
     companion object {
         const val DEFAULT_NAMESPACE = "http://www.w3.org/1999/xlink"
 
-        var href =
+        var HREF =
             QName(DEFAULT_NAMESPACE, "href")
 
-        var type =
+        var TYPE =
             QName(DEFAULT_NAMESPACE, "type")
     }
 
@@ -28,24 +28,24 @@ class WmsOnlineResource : XmlModel {
     @Throws(XmlPullParserException::class, IOException::class)
     override fun doParseEventAttributes(ctx: XmlPullParserContext) {
         val xpp: XmlPullParser = ctx.parser ?: return
-        this.setType(xpp.getAttributeValue(type.namespaceURI, "type"))
-        this.setHref(xpp.getAttributeValue(href.namespaceURI, "href"))
+        this.setType(xpp.getAttributeValue(TYPE.namespaceURI, "type"))
+        this.setHref(xpp.getAttributeValue(HREF.namespaceURI, "href"))
     }
 
     fun getType(): String? {
-        return this.getField(type) as String?
+        return this.getField(TYPE) as String?
     }
 
     fun setType(type: String?) {
-        this.setField(Companion.type, type)
+        this.setField(Companion.TYPE, type)
     }
 
     fun getHref(): String? {
-        return this.getField(href) as String?
+        return this.getField(HREF) as String?
     }
 
     fun setHref(href: String?) {
-        this.setField(Companion.href, href)
+        this.setField(Companion.HREF, href)
     }
 
     override fun toString(): String {

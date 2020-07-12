@@ -1,25 +1,39 @@
 package com.atom.wyz.worldwind.app
 
-import android.os.Bundle
-import com.atom.wyz.worldwind.geom.Sector
-import com.atom.wyz.worldwind.ogc.WmsLayer
-import com.atom.wyz.worldwind.ogc.WmsLayerConfig
+import android.util.Log
+import com.atom.wyz.worldwind.WorldWindow
+import com.atom.wyz.worldwind.layer.Layer
+import com.atom.wyz.worldwind.layer.LayerFactory
 
-class WmsLayerActivity : BasicWorldWindActivity() {
+class WmsLayerActivity : BasicGlobeActivity() {
+    override fun createWorldWindow(): WorldWindow {
+        val wwd : WorldWindow  =super.createWorldWindow()
+        // Configure an OGC Web Map Service (WMS) layer to display the
+        // surface temperature layer from NASA's Near Earth Observations WMS.
+        val layerFactory = LayerFactory()
+        val layer = layerFactory.createFromWms(
+            "http://neowms.sci.gsfc.nasa.gov/wms/wms",
+            "MOD_LSTD_CLIM_M",
+            object : LayerFactory.Callback {
+                override fun creationSucceeded(factory: LayerFactory, layer: Layer) {
+                    Log.d("gov.nasa.worldwind", "MOD_LSTD_CLIM_M created successfully")
+                }
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
+                override fun creationFailed(
+                    factory: LayerFactory,
+                    layer: Layer,
+                    ex: Throwable?
+                ) {
+                    Log.e(
+                        "gov.nasa.worldwind",
+                        "MOD_LSTD_CLIM_M failed: " + (ex?.toString() ?: "")
+                    )
+                }
+            }
+        )
 
-        val config: WmsLayerConfig = WmsLayerConfig()
-        config.serviceAddress = "http://neowms.sci.gsfc.nasa.gov/wms/wms"
-        config.wmsVersion = "1.1.1" // NEO server works best with WMS 1.1.1
-        config.layerNames = "MOD_LSTD_CLIM_M" // Sea surface temperature (MODIS)
-//        config.layerNames = "MYD28M" // Sea surface temperature (MODIS)
+        wwd.layers.addLayer(layer)
 
-        val layer: WmsLayer = WmsLayer(Sector().setFullSphere(), 1e3, config) // 1km resolution
-
-
-        // Add the WMS layer to the World Window.
-        getWorldWindow().layers.addLayer(layer)
+        return wwd
     }
 }

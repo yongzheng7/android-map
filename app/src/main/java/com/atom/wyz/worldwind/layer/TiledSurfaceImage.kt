@@ -6,17 +6,14 @@ import com.atom.wyz.worldwind.draw.DrawableSurfaceTexture
 import com.atom.wyz.worldwind.geom.Matrix3
 import com.atom.wyz.worldwind.globe.Tile
 import com.atom.wyz.worldwind.globe.TileFactory
-import com.atom.wyz.worldwind.render.GpuTexture
-import com.atom.wyz.worldwind.render.ImageOptions
-import com.atom.wyz.worldwind.render.ImageTile
-import com.atom.wyz.worldwind.render.SurfaceTextureProgram
+import com.atom.wyz.worldwind.render.*
 import com.atom.wyz.worldwind.util.Level
 import com.atom.wyz.worldwind.util.LevelSet
 import com.atom.wyz.worldwind.util.LruMemoryCache
 import com.atom.wyz.worldwind.util.pool.Pool
 import java.util.*
 
-open class TiledImageLayer : AbstractLayer {
+open class TiledSurfaceImage : AbstractRenderable {
 
     var levelSet: LevelSet = LevelSet()
         set(value) {
@@ -56,7 +53,6 @@ open class TiledImageLayer : AbstractLayer {
     protected var ancestorTexCoordMatrix: Matrix3 = Matrix3()
 
     constructor(displayName: String = "Tiled Image Layer") : super(displayName) {
-        this.pickEnabled = false
     }
 
 
@@ -115,10 +111,13 @@ open class TiledImageLayer : AbstractLayer {
         val currentAncestorTile = this.ancestorTile
         val currentAncestorTexture = this.ancestorTexture
 
-        val tileTexture = rc.getTexture(tile.imageSource!!)
-        if (tileTexture != null) { // use it as a fallback tile for descendants
-            this.ancestorTile = tile
-            this.ancestorTexture = tileTexture
+        val tileImageSource = tile.imageSource
+        if (tileImageSource != null) { // tile has an image source; its level is not empty
+            val tileTexture = rc.getTexture(tileImageSource)
+            if (tileTexture != null) { // tile has a texture; use it as a fallback tile for descendants
+                ancestorTile = tile
+                ancestorTexture = tileTexture
+            }
         }
 
         for (child in tile.subdivideToCache(
@@ -134,13 +133,12 @@ open class TiledImageLayer : AbstractLayer {
     }
 
     protected fun addTile(rc: RenderContext, tile: ImageTile) {
-        var texture: GpuTexture? = null
-        tile.imageSource?.let {
-            texture = rc.getTexture(it)
-            if (texture == null) {
-                texture = rc.retrieveTexture(it, imageOptions)
-            }
+        val imageSource = tile.imageSource ?: return  // no image source indicates an empty level or an image missing from the tiled data store
+        var texture = rc.getTexture(imageSource) // try to get the texture from the cache
+        if (texture == null) {
+            texture = rc.retrieveTexture(imageSource, imageOptions) // puts retrieved textures in the cache
         }
+
 
         if (texture != null) { // use the tile's own texture
             val pool: Pool<DrawableSurfaceTexture> =

@@ -5,9 +5,7 @@ import android.widget.FrameLayout
 import androidx.appcompat.app.AppCompatActivity
 import com.atom.wyz.worldwind.R
 import com.atom.wyz.worldwind.WorldWindow
-import com.atom.wyz.worldwind.layer.AtmosphereLayer
 import com.atom.wyz.worldwind.layer.BackgroundLayer
-import com.atom.wyz.worldwind.layer.BlueMarbleLandsatLayer
 
 open class BasicGlobeActivity :  AppCompatActivity(){
 
@@ -19,12 +17,12 @@ open class BasicGlobeActivity :  AppCompatActivity(){
         createWorldWindow()
     }
 
-    open protected fun createWorldWindow() : WorldWindow{
+    protected open fun createWorldWindow() : WorldWindow{
         wwd = WorldWindow(this)
-        val globeLayout = findViewById(R.id.globe) as FrameLayout
+        val globeLayout = findViewById<FrameLayout>(R.id.globe)
         globeLayout.addView(wwd)
         wwd.layers.addLayer(BackgroundLayer())
-        wwd.layers.addLayer(BlueMarbleLandsatLayer())
+        //wwd.layers.addLayer(BlueMarbleLandsatLayer())
         return wwd
     }
 }

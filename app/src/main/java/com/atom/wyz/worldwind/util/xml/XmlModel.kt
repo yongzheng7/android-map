@@ -10,11 +10,11 @@ open class XmlModel {
          const val CHARACTERS_CONTENT = "CharactersContent"
     }
 
-    protected var namespaceUri : String = ""
+    var namespaceUri : String = ""
 
     protected var fields: HashMap<String, Any?>? = null
 
-    protected var parent: XmlModel? = null
+    var parent: XmlModel? = null
 
 
     constructor (namespaceUri: String?) {
@@ -59,6 +59,18 @@ open class XmlModel {
             attributeName = xpp.getAttributeName(i)
             attributeValue = xpp.getAttributeValue(i)
             setField(attributeName, attributeValue)
+
+
+            // Update the namespace based on the WMS version
+            if (attributeName.equals("version", ignoreCase = true)) {
+                if (attributeValue.equals("1.3.0", ignoreCase = true)) {
+                    this.namespaceUri = (XmlPullParserContext.DEFAULT_NAMESPACE)
+                    ctx.namespaceUri = (XmlPullParserContext.DEFAULT_NAMESPACE)
+                } else if (attributeValue.equals("1.1.1", ignoreCase = true)) {
+                    this.namespaceUri = ("")
+                    ctx.namespaceUri = ("")
+                }
+            }
         }
     }
     protected fun doAddCharacters(ctx: XmlPullParserContext) {
@@ -83,6 +95,7 @@ open class XmlModel {
             }
 
             if (model != null) {
+                model.parent = this
                 val o = model.read(ctx)
                 if (o == null) {
                     return
@@ -98,7 +111,7 @@ open class XmlModel {
         this.setField(QName(xpp.namespace, xpp.name), o)
     }
 
-    fun setField(keyName: QName, value: Any?) {
+    open fun setField(keyName: QName, value: Any?) {
         this.setField(keyName.localPart, value)
     }
 
@@ -122,6 +135,32 @@ open class XmlModel {
         return fields ?.get(keyName)
     }
 
+    protected open fun getInheritedField(keyName: QName): Any? {
+        var model: XmlModel? = this
+        var value: Any? = null
+        while (model != null && value == null) {
+            value = model.getField(keyName)
+            model = model.parent
+        }
+        return value
+    }
+
+    protected open fun <T> getAdditiveInheritedField(
+        keyName: QName,
+        values: MutableCollection<T>
+    ): Collection<T>? {
+        var model: XmlModel? = this
+        var value: Any? = null
+        while (model != null) {
+            value = model.getField(keyName)
+            if (value is Collection<*>) {
+                values.addAll((value as Collection<T>))
+            }
+            model = model.parent
+        }
+        return values
+    }
+
     fun hasField(keyName: QName): Boolean {
         return this.hasField(keyName.localPart)
     }
@@ -141,8 +180,11 @@ open class XmlModel {
     fun getFields(): Map<String, Any?>? {
         return fields
     }
+    open fun getCharactersContent(): String? {
+        return this.getField(CHARACTERS_CONTENT)?.toString()
+    }
 
-    protected open fun getChildCharacterValue(name: QName): String? {
+    open fun getChildCharacterValue(name: QName): String? {
         val model = this.getField(name) as XmlModel?
         if (model != null) {
             val o = model.getField(CHARACTERS_CONTENT)
@@ -164,6 +206,69 @@ open class XmlModel {
             model = XmlModel(this.namespaceUri)
             model.setField(CHARACTERS_CONTENT, value)
             this.setField(name, model)
+        }
+    }
+
+    open fun getDoubleAttributeValue(name: QName ,  inherited:Boolean ): Double? {
+        val o: Any? = if (inherited) {
+            getInheritedField(name)
+        } else {
+            this.getField(name)
+        }
+        return if (o != null) {
+            if (o is java.lang.StringBuilder) {
+                try {
+                    o.toString().toDouble()
+                } catch (ignore: Exception) {
+                    null
+                }
+            } else {
+                null
+            }
+        } else {
+            null
+        }
+    }
+
+    open fun getIntegerAttributeValue(name: QName ,  inherited:Boolean): Int? {
+        val o: Any? = if (inherited) {
+            getInheritedField(name)
+        } else {
+            this.getField(name)
+        }
+        return if (o != null) {
+            if (o is java.lang.StringBuilder) {
+                try {
+                    o.toString().toInt()
+                } catch (ignore: Exception) {
+                    null
+                }
+            } else {
+                null
+            }
+        } else {
+            null
+        }
+    }
+
+    open fun getBooleanAttributeValue(name: QName,  inherited:Boolean): Boolean? {
+        val o: Any? = if (inherited) {
+            getInheritedField(name)
+        } else {
+            this.getField(name)
+        }
+        return if (o != null) {
+            if (o is java.lang.StringBuilder) {
+                try {
+                    java.lang.Boolean.parseBoolean(o.toString())
+                } catch (ignore: Exception) {
+                    false
+                }
+            } else {
+                false
+            }
+        } else {
+            false
         }
     }
 }

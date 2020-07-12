@@ -7,7 +7,7 @@ import org.xmlpull.v1.XmlPullParserException
 import java.io.IOException
 import javax.xml.namespace.QName
 
-open class WmsLayerInfoURL : XmlModel {
+open class WmsLayerInfoUrl : XmlModel {
 
     lateinit var FORMAT: QName
     lateinit var ONLINE_RESOURCE: QName

@@ -22,8 +22,9 @@ class BlueMarbleLayer : WmsLayer {
         config.layerNames = "BlueMarble-200405"
         config.coordinateSystem = "EPSG:4326"
         config.transparent = false // the BlueMarble layer is opaque
-
-        this.imageOptions = ImageOptions(WorldWind.RGB_565)
         setConfiguration(Sector().setFullSphere(), 500.0, config)
+        val surfaceImage = getRenderable(0) as TiledSurfaceImage?
+        surfaceImage?.imageOptions = (ImageOptions(WorldWind.RGB_565)) // exploit opaque imagery to reduce memory usage
+
     }
 }

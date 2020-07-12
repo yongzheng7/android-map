@@ -1,7 +1,6 @@
 package com.atom.wyz.worldwind.util.xml
 
 import android.util.Xml
-import com.atom.wyz.worldwind.ogc.*
 import org.xmlpull.v1.XmlPullParser
 import org.xmlpull.v1.XmlPullParserException
 import java.io.IOException
@@ -9,10 +8,8 @@ import java.io.InputStream
 import java.lang.reflect.Constructor
 import javax.xml.namespace.QName
 
-class XmlPullParserContext {
+open class XmlPullParserContext {
     companion object {
-        const val UNRECOGNIZED_ELEMENT_PARSER =
-            "gov.nasa.worldwind.util.xml.UnknownElementParser"
         const val DEFAULT_NAMESPACE = "http://www.opengis.net/wms"
 
     }
@@ -21,89 +18,19 @@ class XmlPullParserContext {
 
     var parserModels: HashMap<QName, XmlModel?> = hashMapOf()
 
-    var defaultNamespaceUri :String ?= null
+    var namespaceUri :String ?= null
+    set(value) {
+        field = value
+        parserModels.clear()
+        initializeParsers()
+    }
 
-    constructor(defaultNamespaceUri: String?) {
-        this.defaultNamespaceUri = defaultNamespaceUri
+    constructor(namespaceUri: String?) {
+        this.namespaceUri = namespaceUri
         this.initializeParsers()
     }
 
-    protected fun initializeParsers() {
-
-        // Wms Element Registration
-        registerParsableModel(
-            QName(defaultNamespaceUri, "ContactAddress"),
-            WmsAddress(defaultNamespaceUri)
-        )
-        // TODO check wms schema for element name
-        registerParsableModel(
-            QName(defaultNamespaceUri, "AuthorityUrl"),
-            WmsAuthorityUrl(defaultNamespaceUri)
-        )
-        registerParsableModel(
-            QName(defaultNamespaceUri, "BoundingBox"),
-            WmsBoundingBox(defaultNamespaceUri)
-        )
-        registerParsableModel(
-            QName(defaultNamespaceUri, "DCPType"),
-            WmsDcpType(defaultNamespaceUri)
-        )
-        // TODO check wms schema for element name
-        registerParsableModel(
-            QName(defaultNamespaceUri, "LayerInfo"),
-            WmsLayerInfoURL(defaultNamespaceUri)
-        )
-        registerParsableModel(
-            QName(defaultNamespaceUri, "OnlineResource"),
-            WmsOnlineResource(defaultNamespaceUri)
-        )
-        registerParsableModel(
-            QName(defaultNamespaceUri, "LogoURL"),
-            WmsLogoUrl(defaultNamespaceUri)
-        )
-        registerParsableModel(
-            QName(defaultNamespaceUri, "Attribution"),
-            WmsLayerAttribution(defaultNamespaceUri)
-        )
-        registerParsableModel(
-            QName(
-                defaultNamespaceUri,
-                "AddressType"
-            ), XmlModel(defaultNamespaceUri)
-        )
-        registerParsableModel(
-            QName(defaultNamespaceUri, "Address"),
-            XmlModel(defaultNamespaceUri)
-        )
-        registerParsableModel(
-            QName(defaultNamespaceUri, "City"),
-            XmlModel(defaultNamespaceUri)
-        )
-        registerParsableModel(
-            QName(
-                defaultNamespaceUri,
-                "StateOrProvince"
-            ), XmlModel(defaultNamespaceUri)
-        )
-        registerParsableModel(
-            QName(defaultNamespaceUri, "PostCode"),
-            XmlModel(defaultNamespaceUri)
-        )
-        registerParsableModel(
-            QName(defaultNamespaceUri, "Country"),
-            XmlModel(defaultNamespaceUri)
-        )
-
-        registerParsableModel(
-            QName(defaultNamespaceUri, "HTTP"),
-            NameStringModel(defaultNamespaceUri)
-        )
-        registerParsableModel(
-            QName(defaultNamespaceUri, "Get"),
-            NameStringModel(defaultNamespaceUri)
-        )
-
-    }
+    protected open fun initializeParsers() {}
 
     @Throws(XmlPullParserException::class)
     fun setParserInput(`is`: InputStream?) {
@@ -129,7 +56,7 @@ class XmlPullParserContext {
     }
 
     fun getUnrecognizedElementModel(): XmlModel {
-        return XmlModel(this.defaultNamespaceUri)
+        return XmlModel(this.namespaceUri)
     }
 
     @Throws(XmlPullParserException::class, IOException::class)

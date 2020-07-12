@@ -93,6 +93,14 @@ class WmsTileFactory : TileFactory {
      * 根据tile 和 图片格式 返回url
      */
      fun urlForTile(sector: Sector , width: Int , height:Int ): String {
+        require(!(width < 1 || height < 1)) {
+            Logger.logMessage(
+                Logger.ERROR,
+                "WmsTileFactory",
+                "urlForTile",
+                "invalidWidthOrHeight"
+            )
+        }
         val url = StringBuilder(serviceAddress)
         var index = url.indexOf("?")
         if (index < 0) { // if service address contains no query delimiter
