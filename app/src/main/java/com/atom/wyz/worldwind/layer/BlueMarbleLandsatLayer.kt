@@ -1,12 +1,11 @@
 package com.atom.wyz.worldwind.layer
 
-import com.atom.wyz.worldwind.RenderContext
 import com.atom.wyz.worldwind.WorldWind
 import com.atom.wyz.worldwind.geom.Sector
 import com.atom.wyz.worldwind.globe.Tile
 import com.atom.wyz.worldwind.globe.TileFactory
-import com.atom.wyz.worldwind.ogc.WmsLayerConfig
-import com.atom.wyz.worldwind.ogc.WmsTileFactory
+import com.atom.wyz.worldwind.ogc.wms.WmsLayerConfig
+import com.atom.wyz.worldwind.ogc.wms.WmsTileFactory
 import com.atom.wyz.worldwind.render.ImageOptions
 import com.atom.wyz.worldwind.util.Level
 import com.atom.wyz.worldwind.util.LevelSet
@@ -34,7 +33,8 @@ class BlueMarbleLandsatLayer : RenderableLayer, TileFactory {
         blueMarbleConfig.coordinateSystem = "EPSG:4326"
         blueMarbleConfig.transparent = false // the BlueMarble layer is opaque
 
-        blueMarbleUrlFactory = WmsTileFactory(blueMarbleConfig)
+        blueMarbleUrlFactory =
+            WmsTileFactory(blueMarbleConfig)
 
         val landsatConfig  = WmsLayerConfig()
         landsatConfig.serviceAddress = serviceAddress
@@ -44,7 +44,8 @@ class BlueMarbleLandsatLayer : RenderableLayer, TileFactory {
         landsatConfig.coordinateSystem = "EPSG:4326"
         landsatConfig.transparent = false // combining BlueMarble and esat layers results in opaque images
 
-        landsatUrlFactory = WmsTileFactory(landsatConfig)
+        landsatUrlFactory =
+            WmsTileFactory(landsatConfig)
 
         val metersPerPixel = 15.0
         val radiansPerPixel: Double = metersPerPixel / WorldWind.WGS84_SEMI_MAJOR_AXIS

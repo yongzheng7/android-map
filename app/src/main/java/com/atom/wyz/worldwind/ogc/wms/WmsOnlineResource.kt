@@ -1,4 +1,4 @@
-package com.atom.wyz.worldwind.ogc
+package com.atom.wyz.worldwind.ogc.wms
 
 import com.atom.wyz.worldwind.util.xml.XmlModel
 import com.atom.wyz.worldwind.util.xml.XmlPullParserContext
@@ -37,7 +37,7 @@ class WmsOnlineResource : XmlModel {
     }
 
     fun setType(type: String?) {
-        this.setField(Companion.TYPE, type)
+        this.setField(TYPE, type)
     }
 
     fun getHref(): String? {
@@ -45,7 +45,7 @@ class WmsOnlineResource : XmlModel {
     }
 
     fun setHref(href: String?) {
-        this.setField(Companion.HREF, href)
+        this.setField(HREF, href)
     }
 
     override fun toString(): String {

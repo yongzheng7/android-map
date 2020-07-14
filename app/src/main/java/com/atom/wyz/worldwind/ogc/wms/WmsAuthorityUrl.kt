@@ -1,4 +1,4 @@
-package com.atom.wyz.worldwind.ogc
+package com.atom.wyz.worldwind.ogc.wms
 
 import com.atom.wyz.worldwind.util.xml.XmlPullParserContext
 import org.xmlpull.v1.XmlPullParser

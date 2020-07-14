@@ -5,10 +5,10 @@ import android.os.Handler
 import android.os.Looper
 import android.util.Log
 import com.atom.wyz.worldwind.WorldWind
-import com.atom.wyz.worldwind.ogc.WmsCapabilities
-import com.atom.wyz.worldwind.ogc.WmsLayerCapabilities
-import com.atom.wyz.worldwind.ogc.WmsLayerConfig
-import com.atom.wyz.worldwind.ogc.WmsTileFactory
+import com.atom.wyz.worldwind.ogc.wms.WmsCapabilities
+import com.atom.wyz.worldwind.ogc.wms.WmsLayerCapabilities
+import com.atom.wyz.worldwind.ogc.wms.WmsLayerConfig
+import com.atom.wyz.worldwind.ogc.wms.WmsTileFactory
 import com.atom.wyz.worldwind.util.LevelSet
 import com.atom.wyz.worldwind.util.LevelSetConfig
 import com.atom.wyz.worldwind.util.Logger
@@ -173,7 +173,9 @@ open class LayerFactory() {
         val surfaceImage = TiledSurfaceImage()
         val finalLayer = layer as RenderableLayer
 
-        surfaceImage.tileFactory = (WmsTileFactory(wmsLayerConfig))
+        surfaceImage.tileFactory = (WmsTileFactory(
+            wmsLayerConfig
+        ))
         surfaceImage.levelSet = (LevelSet(levelSetConfig))
 
         // Add the tiled surface image to the layer on the main thread and notify the caller. Request a redraw to ensure

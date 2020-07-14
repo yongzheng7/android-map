@@ -1,8 +1,6 @@
-package com.atom.wyz.worldwind.ogc
+package com.atom.wyz.worldwind.ogc.wms
 
-import com.atom.wyz.worldwind.WorldWind
 import com.atom.wyz.worldwind.geom.Sector
-import com.atom.wyz.worldwind.util.LevelSetConfig
 import com.atom.wyz.worldwind.util.xml.DoubleModel
 import com.atom.wyz.worldwind.util.xml.XmlModel
 import java.util.*

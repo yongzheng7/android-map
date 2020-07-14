@@ -1,7 +1,6 @@
 package com.atom.wyz.worldwind.geom
 
 import com.atom.wyz.worldwind.globe.Globe
-import com.atom.wyz.worldwind.util.Logger
 import java.util.*
 
 /**
@@ -76,24 +75,12 @@ class BoundingBox() {
     private val endPoint2 = Vec3()
 
 
-    fun setToSector(sector: Sector?, globe: Globe?, minElevation: Double, maxElevation: Double): BoundingBox? {
-        if (sector == null) {
-            throw IllegalArgumentException(
-                Logger.logMessage(Logger.ERROR, "BoundingBox", "setToSector", "missingSector")
-            )
-        }
-        if (globe == null) {
-            throw IllegalArgumentException(
-                Logger.logMessage(Logger.ERROR, "BoundingBox", "setToSector", "missingGlobe")
-            )
-        }
+    fun setToSector(sector: Sector, globe: Globe, minElevation: Double, maxElevation: Double): BoundingBox? {
         val numLat = 3
         val numLon = 3
         val count = numLat * numLon
         val stride = 3
-
         val elevations = DoubleArray(count)
-
         Arrays.fill(elevations, maxElevation)
         /**
          * 0 1 2
@@ -180,12 +167,7 @@ class BoundingBox() {
     /**
      * 指示此边界框是否与指定的视锥相交。
      */
-    fun intersectsFrustum(frustum: Frustum?): Boolean {
-        if (frustum == null) {
-            throw IllegalArgumentException(
-                Logger.logMessage(Logger.ERROR, "BoundingBox", "intersectsFrustum", "missingFrustum")
-            )
-        }
+    fun intersectsFrustum(frustum: Frustum): Boolean {
         endPoint1.set(bottomCenter)
         endPoint2.set(topCenter)
 
@@ -225,7 +207,6 @@ class BoundingBox() {
         if (bq1 == bq2) { // endpoints less distant from plane than effective radius; can't draw any conclusions
             return 0.0
         }
-        // Compute and return the endpoints of the box on the positive side of the plane
         // Compute and return the endpoints of the box on the positive side of the plane
         val dot =
             n.x * (endPoint1.x - endPoint2.x) + n.y * (endPoint1.y - endPoint2.y) + n.z * (endPoint1.z - endPoint2.z)
@@ -391,8 +372,4 @@ class BoundingBox() {
     override fun toString(): String {
         return "center=[$center], bottomCenter=[$bottomCenter], topCenter=[$topCenter], r=[$r], s=[$s], t=[$t], radius=$radius"
     }
-
-
-
-
 }

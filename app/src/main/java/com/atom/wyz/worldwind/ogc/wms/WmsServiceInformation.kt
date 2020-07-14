@@ -1,5 +1,8 @@
-package com.atom.wyz.worldwind.ogc
+package com.atom.wyz.worldwind.ogc.wms
 
+import com.atom.wyz.worldwind.ogc.wms.WmsContactInformation
+import com.atom.wyz.worldwind.ogc.wms.WmsKeywords
+import com.atom.wyz.worldwind.ogc.wms.WmsOnlineResource
 import com.atom.wyz.worldwind.util.xml.IntegerModel
 import com.atom.wyz.worldwind.util.xml.XmlModel
 import javax.xml.namespace.QName

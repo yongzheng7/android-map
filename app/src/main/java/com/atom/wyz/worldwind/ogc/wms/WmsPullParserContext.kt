@@ -1,4 +1,4 @@
-package com.atom.wyz.worldwind.ogc
+package com.atom.wyz.worldwind.ogc.wms
 
 import com.atom.wyz.worldwind.util.xml.*
 import javax.xml.namespace.QName
@@ -105,7 +105,8 @@ class WmsPullParserContext : XmlPullParserContext {
             QName(
                 namespaceUri,
                 "EX_GeographicBoundingBox"
-            ), WmsGeographicBoundingBox(namespaceUri)
+            ),
+            WmsGeographicBoundingBox(namespaceUri)
         )
         registerParsableModel(
             QName(
@@ -167,7 +168,8 @@ class WmsPullParserContext : XmlPullParserContext {
             QName(
                 namespaceUri,
                 "LatLonBoundingBox"
-            ), WmsGeographicBoundingBox(namespaceUri)
+            ),
+            WmsGeographicBoundingBox(namespaceUri)
         )
         registerParsableModel(
             QName(namespaceUri, "Layer"),

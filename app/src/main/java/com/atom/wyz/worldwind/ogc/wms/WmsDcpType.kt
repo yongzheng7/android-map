@@ -1,4 +1,4 @@
-package com.atom.wyz.worldwind.ogc
+package com.atom.wyz.worldwind.ogc.wms
 
 import com.atom.wyz.worldwind.util.xml.NameStringModel
 import com.atom.wyz.worldwind.util.xml.XmlModel
@@ -38,7 +38,9 @@ class WmsDcpType : XmlModel {
         if (httpModel != null) {
             var model = httpModel.getField(get) as NameStringModel?
             if (model != null) {
-                val dcpInfo = DcpInfo(httpModel.getField(CHARACTERS_CONTENT).toString())
+                val dcpInfo = DcpInfo(
+                    httpModel.getField(CHARACTERS_CONTENT).toString()
+                )
                 dcpInfo.method = model.getField(CHARACTERS_CONTENT).toString()
                 dcpInfo.onlineResource = model.getField(onlineResource) as WmsOnlineResource?
                 infos.add(dcpInfo)
@@ -46,7 +48,11 @@ class WmsDcpType : XmlModel {
             model = httpModel.getField(post) as NameStringModel?
             if (model != null) {
                 val dcpInfo =
-                    DcpInfo(httpModel.getField(CHARACTERS_CONTENT).toString())
+                    DcpInfo(
+                        httpModel.getField(
+                            CHARACTERS_CONTENT
+                        ).toString()
+                    )
                 dcpInfo.method = model.getField(CHARACTERS_CONTENT).toString()
                 dcpInfo.onlineResource = model.getField(onlineResource) as WmsOnlineResource?
                 infos.add(dcpInfo)

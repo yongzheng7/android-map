@@ -7,7 +7,6 @@ import com.atom.wyz.worldwind.geom.Sector
 import com.atom.wyz.worldwind.util.Level
 import com.atom.wyz.worldwind.util.Logger
 import com.atom.wyz.worldwind.util.LruMemoryCache
-import com.atom.wyz.worldwind.util.SimpleFloatArray
 
 open class Tile {
 
@@ -252,7 +251,7 @@ open class Tile {
      */
     protected open fun getExtent(rc: RenderContext): BoundingBox {
         if (extent == null) {
-            extent = BoundingBox().setToSector(sector, rc.globe, 0.0, 0.0)
+            extent = BoundingBox().setToSector(sector, rc.globe!!, 0.0, 0.0)
         }
         return extent!!
     }

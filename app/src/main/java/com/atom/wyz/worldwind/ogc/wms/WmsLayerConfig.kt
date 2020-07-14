@@ -1,4 +1,4 @@
-package com.atom.wyz.worldwind.ogc
+package com.atom.wyz.worldwind.ogc.wms
 
 class WmsLayerConfig {
     /**

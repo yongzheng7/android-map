@@ -2,7 +2,6 @@ package com.atom.wyz.worldwind.globe
 
 import com.atom.wyz.worldwind.geom.*
 import com.atom.wyz.worldwind.util.Logger
-import java.nio.FloatBuffer
 
 open class BasicGlobe: Globe {
 
@@ -123,13 +122,9 @@ open class BasicGlobe: Globe {
     }
     override fun lookAtToCartesianTransform(lookAt: LookAt, result: Matrix4): Matrix4 {
         geographicToCartesianTransform(lookAt.latitude, lookAt.longitude, lookAt.altitude, result)
-
         result.multiplyByRotation(0.0, 0.0, 1.0, -lookAt.heading) // rotate clockwise about the Z axis
-
         result.multiplyByRotation(1.0, 0.0, 0.0, lookAt.tilt) // rotate counter-clockwise about the X axis
-
         result.multiplyByRotation(0.0, 0.0, 1.0, lookAt.roll) // rotate counter-clockwise about the Z axis (again)
-
         result.multiplyByTranslation(0.0, 0.0, lookAt.range)
 
         return result

@@ -1,6 +1,5 @@
-package com.atom.wyz.worldwind.ogc
+package com.atom.wyz.worldwind.ogc.wms
 
-import com.atom.wyz.worldwind.RenderContext
 import com.atom.wyz.worldwind.WorldWind
 import com.atom.wyz.worldwind.geom.Sector
 import com.atom.wyz.worldwind.globe.Globe
@@ -77,7 +76,9 @@ open class WmsLayer : RenderableLayer {
         levelsConfig.numLevels = levelsConfig.numLevelsForResolution(radiansPerPixel)
         val surfaceImage = getRenderable(0) as TiledSurfaceImage?
         surfaceImage?.levelSet = (LevelSet(levelsConfig))
-        surfaceImage?.tileFactory = (WmsTileFactory(config))
+        surfaceImage?.tileFactory = (WmsTileFactory(
+            config
+        ))
 
     }
 
@@ -105,6 +106,8 @@ open class WmsLayer : RenderableLayer {
         levelsConfig.numLevels = levelsConfig.numLevelsForResolution(radiansPerPixel)
         val surfaceImage = getRenderable(0) as TiledSurfaceImage?
         surfaceImage?.levelSet = (LevelSet(levelsConfig))
-        surfaceImage?.tileFactory = (WmsTileFactory(config))
+        surfaceImage?.tileFactory = (WmsTileFactory(
+            config
+        ))
     }
 }

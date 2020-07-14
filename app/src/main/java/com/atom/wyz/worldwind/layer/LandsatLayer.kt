@@ -1,8 +1,8 @@
 package com.atom.wyz.worldwind.layer
 
 import com.atom.wyz.worldwind.geom.Sector
-import com.atom.wyz.worldwind.ogc.WmsLayer
-import com.atom.wyz.worldwind.ogc.WmsLayerConfig
+import com.atom.wyz.worldwind.ogc.wms.WmsLayer
+import com.atom.wyz.worldwind.ogc.wms.WmsLayerConfig
 import com.atom.wyz.worldwind.util.Logger
 
 class LandsatLayer : WmsLayer {
@@ -23,7 +23,8 @@ class LandsatLayer : WmsLayer {
             throw IllegalArgumentException(
                     Logger.logMessage(Logger.ERROR, "LandsatLayer", "constructor", "missingServiceAddress"))
         }
-        val config: WmsLayerConfig = WmsLayerConfig()
+        val config: WmsLayerConfig =
+            WmsLayerConfig()
         config.serviceAddress = serviceAddress
         config.wmsVersion = "1.3.0"
         config.layerNames = "esat"

@@ -1,4 +1,4 @@
-package com.atom.wyz.worldwind.ogc
+package com.atom.wyz.worldwind.ogc.wms
 
 import com.atom.wyz.worldwind.util.xml.XmlModel
 import com.atom.wyz.worldwind.util.xml.XmlPullParserContext
@@ -20,12 +20,16 @@ class WmsCapabilities : XmlModel {
         fun getCapabilities(`is`: InputStream ): WmsCapabilities {
 
             // Initialize the pull parser context
-            val ctx = WmsPullParserContext(XmlPullParserContext.DEFAULT_NAMESPACE)
+            val ctx = WmsPullParserContext(
+                XmlPullParserContext.DEFAULT_NAMESPACE
+            )
             ctx.setParserInput(`is`)
 
             // Parse the Xml document until a Wms service is discovered
             val wmsCapabilities =
-                WmsCapabilities(XmlPullParserContext.DEFAULT_NAMESPACE)
+                WmsCapabilities(
+                    XmlPullParserContext.DEFAULT_NAMESPACE
+                )
             wmsCapabilities.read(ctx)
             return wmsCapabilities
         }
