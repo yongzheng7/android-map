@@ -8,15 +8,14 @@ import com.atom.wyz.worldwind.layer.LayerFactory
 class WmsLayerActivity : BasicGlobeActivity() {
     override fun createWorldWindow(): WorldWindow {
         val wwd : WorldWindow  =super.createWorldWindow()
-        // Configure an OGC Web Map Service (WMS) layer to display the
-        // surface temperature layer from NASA's Near Earth Observations WMS.
         val layerFactory = LayerFactory()
-        val layer = layerFactory.createFromWms(
-            "http://neowms.sci.gsfc.nasa.gov/wms/wms",
-            "MOD_LSTD_CLIM_M",
+        layerFactory.createFromWms(
+            "http://neowms.sci.gsfc.nasa.gov/wms/wms",  // WMS server URL
+            "MOD_LSTD_CLIM_M",  // WMS layer name
             object : LayerFactory.Callback {
                 override fun creationSucceeded(factory: LayerFactory, layer: Layer) {
-                    Log.d("gov.nasa.worldwind", "MOD_LSTD_CLIM_M created successfully")
+                    // Add the finished WMS layer to the World Window.
+                    wwd.layers.addLayer(layer)
                 }
 
                 override fun creationFailed(
@@ -24,15 +23,9 @@ class WmsLayerActivity : BasicGlobeActivity() {
                     layer: Layer,
                     ex: Throwable?
                 ) {
-                    Log.e(
-                        "gov.nasa.worldwind",
-                        "MOD_LSTD_CLIM_M failed: " + (ex?.toString() ?: "")
-                    )
                 }
             }
         )
-
-        wwd.layers.addLayer(layer)
 
         return wwd
     }

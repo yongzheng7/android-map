@@ -6,6 +6,12 @@
         <LinearLayout android:layout_width="match_parent" android:layout_height="match_parent"
         android:orientation="vertical">
             <Button
+                    android:id="@+id/Zip_Activity"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Zip_Activity"
+                    android:onClick="menuButton"/>
+            <Button
                     android:id="@+id/ShapesDashAndFillFragment"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"

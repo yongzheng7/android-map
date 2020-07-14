@@ -124,19 +124,13 @@ class DrawableSurfaceTexture : Drawable, SurfaceTexture {
                     continue  // texture failed to bind
                 }
 
-                if (!usingTerrainAttrs ||
+                if (!usingTerrainAttrs &&
                     terrain.useVertexPointAttrib(dc, 0) &&
                     terrain.useVertexTexCoordAttrib(dc, 1)) {
-                    // Use the draw context's modelview projection matrix, transformed to terrain local coordinates.
-                    // Suppress subsequent tile state application until the next terrain.
                     usingTerrainAttrs = true
                     this.program!!.mvpMatrix.set(dc.modelviewProjection)
                     this.program!!.mvpMatrix.multiplyByTranslation(terrainOrigin.x, terrainOrigin.y, terrainOrigin.z)
                     this.program!!.loadModelviewProjection()
-                    // Use the terrain's vertex point attribute and vertex tex coord attribute.
-                    terrain.useVertexPointAttrib(dc, 0 /*vertexPoint*/)
-                    terrain.useVertexTexCoordAttrib(dc, 1 /*vertexTexCoord*/)
-                    // Suppress subsequent tile state application until the next terrain.
                 }
                 if (!usingTerrainAttrs) {
                     continue  // terrain vertex attribute failed to bind
@@ -164,6 +158,6 @@ class DrawableSurfaceTexture : Drawable, SurfaceTexture {
     }
 
     protected fun canBatchWith(that: Drawable): Boolean {
-        return this.javaClass == that::javaClass && this.program === (that as DrawableSurfaceTexture).program
+        return this.javaClass == that::javaClass && this.program == (that as DrawableSurfaceTexture).program
     }
 }

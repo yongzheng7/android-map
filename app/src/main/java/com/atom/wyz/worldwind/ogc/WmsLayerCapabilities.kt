@@ -274,25 +274,7 @@ class WmsLayerCapabilities : XmlModel {
         }
         return null
     }
-    fun getNumberOfLevels(imageWidth: Int): Int {
-        var value = getMinScaleDenominator()
-        if (value == null) {
-            // try the 1.1.1 version
-            value = getMinScaleHint()
-            if (value != null) {
-                value /= WorldWind.WGS84_SEMI_MAJOR_AXIS
-            } else {
-                // this is a fallback value used when no minimum scale hint or denominator is provided
-                return 12
-            }
-        } else {
-            // this conversion is based on the WMS 1.3.0 spec page 28
-            // the hard coded value 0.00028 is detailed in the spec
-            value = value * imageWidth * 0.00028 / WorldWind.WGS84_SEMI_MAJOR_AXIS
-        }
-        val levelSetConfig = LevelSetConfig()
-        return levelSetConfig.numLevelsForResolution(value)
-    }
+
     fun getKeywords(): Set<String>? {
         val keywords = this.getField(keywordList) as WmsKeywords?
         return if (keywords != null) {

@@ -3,11 +3,14 @@ package com.atom.wyz.worldwind.layer
 import android.net.Uri
 import android.os.Handler
 import android.os.Looper
+import android.util.Log
 import com.atom.wyz.worldwind.WorldWind
-import com.atom.wyz.worldwind.geom.Sector
 import com.atom.wyz.worldwind.ogc.WmsCapabilities
+import com.atom.wyz.worldwind.ogc.WmsLayerCapabilities
+import com.atom.wyz.worldwind.ogc.WmsLayerConfig
 import com.atom.wyz.worldwind.ogc.WmsTileFactory
 import com.atom.wyz.worldwind.util.LevelSet
+import com.atom.wyz.worldwind.util.LevelSetConfig
 import com.atom.wyz.worldwind.util.Logger
 import java.io.BufferedInputStream
 import java.io.InputStream
@@ -15,6 +18,10 @@ import java.net.URL
 import java.util.concurrent.RejectedExecutionException
 
 open class LayerFactory() {
+    companion object{
+        protected const val DEFAULT_WMS_RADIANS_PER_PIXEL =
+            10.0 / WorldWind.WGS84_SEMI_MAJOR_AXIS
+    }
     interface Callback {
         fun creationSucceeded(factory: LayerFactory, layer: Layer)
         fun creationFailed(
@@ -59,7 +66,6 @@ open class LayerFactory() {
         } catch (logged: RejectedExecutionException) { // singleton task service is full; this should never happen but we check anyway
             callback.creationFailed(this, layer, logged)
         }
-
         return layer
     }
 
@@ -80,99 +86,105 @@ open class LayerFactory() {
         // Retrieve and parse the WMS capabilities at the specified service address, looking for the named layers
         // specified by the comma-delimited layerNames
         val serviceUri = Uri.parse(serviceAddress).buildUpon()
-            .appendQueryParameter("REQUEST", "GetCapabilities")
-            .appendQueryParameter("SERVICE", "WMS")
             .appendQueryParameter("VERSION", "1.3.0")
+            .appendQueryParameter("SERVICE", "WMS")
+            .appendQueryParameter("REQUEST", "GetCapabilities")
             .build()
-
+        Log.e("createWmsLayerAsync" ,"serviceUri > $serviceUri")
         val conn = URL(serviceUri.toString()).openConnection()
         conn.connectTimeout = 3000
         conn.readTimeout = 30000
         val inputStream: InputStream = BufferedInputStream(conn.getInputStream())
-
-        // Parse and read capabilities document
         val wmsCapabilities = WmsCapabilities.getCapabilities(inputStream)
+        val wmsLayerConfig = WmsLayerConfig()
+        wmsLayerConfig.wmsVersion = wmsCapabilities.getVersion()!!
 
-        // Establish Version
-        val version = wmsCapabilities.getVersion()
-
-        // TODO work with multiple layer names
-        val wmsLayerCapabilities = wmsCapabilities.getLayerByName(layerNames)
-            ?: throw IllegalArgumentException(
-                Logger.makeMessage(
-                    "LayerFactory",
-                    "createWmsLayerAsync",
-                    "Provided layer did not match available layers"
-                )
+        val requestUrl = wmsCapabilities.getRequestURL("GetMap", "Get")
+        checkNotNull(requestUrl) {
+            Logger.makeMessage(
+                "LayerFactory",
+                "createWmsLayerAsync",
+                "Unable to resolve GetMap URL"
             )
+        }
+        wmsLayerConfig.serviceAddress = requestUrl
 
-        val getCapabilitiesRequestUrl =
-            wmsCapabilities.getRequestURL("GetMap", "Get")
-                ?: throw IllegalStateException(
-                    Logger.makeMessage(
-                        "LayerFactory",
-                        "createWmsLayerAsync",
-                        "Unable to resolve GetCapabilities URL"
-                    )
-                )
+        val layerCapabilities: WmsLayerCapabilities? = wmsCapabilities.getLayerByName(layerNames)
+        requireNotNull(layerCapabilities) {
+            Logger.makeMessage(
+                "LayerFactory",
+                "createWmsLayerAsync",
+                "Provided layer did not match available layers"
+            )
+        }
+        wmsLayerConfig.layerNames = layerCapabilities.getName()!!
 
-        val wmsTileFactory = WmsTileFactory(
-            getCapabilitiesRequestUrl,
-            version!!,
-            layerNames,
-            ""
-        )
-
-        val coordinateSystems: Set<String> =
-            wmsLayerCapabilities.getReferenceSystem() ?: throw RuntimeException(
+        val coordinateSystems: Set<String> = layerCapabilities.getReferenceSystem()!!
+        if (coordinateSystems.contains("EPSG:4326")) {
+            wmsLayerConfig.coordinateSystem = "EPSG:4326"
+        } else if (coordinateSystems.contains("CRS:84")) {
+            wmsLayerConfig.coordinateSystem = "CRS:84"
+        } else {
+            throw RuntimeException(
                 Logger.makeMessage(
                     "LayerFactory",
                     "createWmsLayerAsync",
                     "Coordinate systems not compatible"
                 )
             )
-        when {
-            coordinateSystems.contains("CRS:84") -> {
-                wmsTileFactory.coordinateSystem = ("CRS:84")
-            }
-            coordinateSystems.contains("EPSG:4326") -> {
-                wmsTileFactory.coordinateSystem = ("EPSG:4326")
-            }
-            else -> {
-                throw RuntimeException(
-                    Logger.makeMessage(
-                        "LayerFactory",
-                        "createWmsLayerAsync",
-                        "Coordinate systems not compatible"
-                    )
-                )
-            }
         }
 
         val imageFormats =
             wmsCapabilities.getImageFormats()
         if (imageFormats!!.contains("image/png")) {
-            wmsTileFactory.imageFormat = ("image/png")
+            wmsLayerConfig.imageFormat = "image/png"
         } else {
-            wmsTileFactory.imageFormat = (imageFormats.iterator().next())
+            wmsLayerConfig.imageFormat = imageFormats!!.iterator().next()
         }
 
-        var sector = wmsLayerCapabilities.getGeographicBoundingBox()
-        if (sector == null) {
-            sector = Sector().setFullSphere()
+        val levelSetConfig = LevelSetConfig()
+
+        val sector = layerCapabilities.getGeographicBoundingBox()
+        if (sector != null) {
+            levelSetConfig.sector?.set(sector)
         }
 
-        val levels = Math.max(1, wmsLayerCapabilities.getNumberOfLevels(512))
+        if (layerCapabilities.getMinScaleDenominator() != null && layerCapabilities.getMinScaleDenominator() != 0.0) {
+            // WMS 1.3.0 scale configuration. Based on the WMS 1.3.0 spec page 28. The hard coded value 0.00028 is
+            // detailed in the spec as the common pixel size of 0.28mm x 0.28mm. Configures the maximum level not to
+            // exceed the specified min scale denominator.
+            val minMetersPerPixel: Double = layerCapabilities.getMinScaleDenominator()!! * 0.00028
+            val minRadiansPerPixel =
+                minMetersPerPixel / WorldWind.WGS84_SEMI_MAJOR_AXIS
+            levelSetConfig.numLevels = levelSetConfig.numLevelsForMinResolution(minRadiansPerPixel)
+        } else if (layerCapabilities.getMinScaleHint() != null && layerCapabilities.getMinScaleHint() != 0.0) {
+            // WMS 1.1.1 scale configuration, where ScaleHint indicates approximate resolution in ground distance
+            // meters. Configures the maximum level not to exceed the specified min scale denominator.
+            val minMetersPerPixel: Double = layerCapabilities.getMinScaleHint()!!
+            val minRadiansPerPixel =
+                minMetersPerPixel / WorldWind.WGS84_SEMI_MAJOR_AXIS
+            levelSetConfig.numLevels = levelSetConfig.numLevelsForMinResolution(minRadiansPerPixel)
+        } else {
+            // Default scale configuration when no minimum scale denominator or scale hint is provided.
+            val defaultRadiansPerPixel = DEFAULT_WMS_RADIANS_PER_PIXEL
+            levelSetConfig.numLevels = levelSetConfig.numLevelsForResolution(defaultRadiansPerPixel)
+        }
 
-        val tiledSurfaceImage = TiledSurfaceImage()
-        tiledSurfaceImage.tileFactory = (wmsTileFactory)
-        val levelSet = LevelSet(sector, 90.0, levels, 512, 512)
-        tiledSurfaceImage.levelSet = (levelSet)
+        val surfaceImage = TiledSurfaceImage()
+        val finalLayer = layer as RenderableLayer
 
+        surfaceImage.tileFactory = (WmsTileFactory(wmsLayerConfig))
+        surfaceImage.levelSet = (LevelSet(levelSetConfig))
+
+        // Add the tiled surface image to the layer on the main thread and notify the caller. Request a redraw to ensure
+        // that the image displays on all WorldWindows the layer may be attached to.
+
+        // Add the tiled surface image to the layer on the main thread and notify the caller. Request a redraw to ensure
+        // that the image displays on all WorldWindows the layer may be attached to.
         mainLoopHandler.post {
-            val renderableLayer = layer as RenderableLayer
-            renderableLayer.addRenderable(tiledSurfaceImage)
-            callback.creationSucceeded(this@LayerFactory, layer)
+            finalLayer.addRenderable(surfaceImage)
+            callback.creationSucceeded(this@LayerFactory, finalLayer)
+            WorldWind.requestRedraw()
         }
     }
 
@@ -197,8 +209,7 @@ open class LayerFactory() {
         private val layerNames: String,
         private val layer: Layer,
         private val callback: Callback
-    ) :
-        Runnable {
+    ) : Runnable {
         override fun run() {
             try {
                 factory.createWmsLayerAsync(

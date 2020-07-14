@@ -34,7 +34,7 @@ open class BasicWorldWindActivity : AppCompatActivity() {
     protected var savedInstanceState: Bundle? = null
     protected lateinit var wwd: WorldWindow
     protected open var layoutResourceId: Int = R.layout.activity_main
-    open protected fun getWorldWindow(): WorldWindow {
+    protected open fun getWorldWindow(): WorldWindow {
         return wwd
     }
 
@@ -43,7 +43,7 @@ open class BasicWorldWindActivity : AppCompatActivity() {
         this.savedInstanceState = savedInstanceState
         setContentView(this.layoutResourceId)
         wwd = WorldWindow(this)
-        val globeLayout = findViewById(R.id.globe) as FrameLayout
+        val globeLayout = findViewById<FrameLayout>(R.id.globe)
         globeLayout.addView(wwd)
         wwd.layers.addLayer(BackgroundLayer())
         wwd.layers.addLayer(BlueMarbleLandsatLayer())

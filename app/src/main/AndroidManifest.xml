@@ -1,31 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-          package="com.atom.wyz.worldwind">
+        xmlns:tools="http://schemas.android.com/tools"
+        package="com.atom.wyz.worldwind">
 
     <uses-permission android:name="android.permission.INTERNET"/>
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
-    <uses-feature
-            android:glEsVersion="0x00020000"
-            android:required="true" />
-
-    <meta-data
-            android:name="com.taobao.android.hotfix.IDSECRET"
-            android:value="28797440-1" />
-
-    <meta-data
-            android:name="com.taobao.android.hotfix.APPSECRET"
-            android:value="d359d51d5f495ace4d5d286ea286cea2" />
-
-    <meta-data
-            android:name="com.taobao.android.hotfix.RSASECRET"
-            android:value="MIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQCCKXo1udG/lWnsewGblKQ1yRa2Xwo2YBzRDglt/9ubv3bsLLqG8dzLMxBDDOasFAf9JDVhHSLlmTba9D2Oo59DMAURRcQ2gEjLPYDwMf9UZf6zTx9FN/r+KpsVYEM9I5QfRK/g5I1g9Qce/0JCSzAnjF8FQtK4w16JLHBQrXOjpt8QYsRIlY56/A0HMw6/ghfrGhNR7hnoOrcx578WAFxpkAo4ghtTBqFzIVZALZiWZHd1Kf5UP80xR2opSXxVr38h9AsfA0+TLL+1vvYhAsC76QT6VXpP4awSWLpYvtTvKwiiF/c+0BWgg+USJm4/PVHSxpFJdRIMo18qN/feLvEVAgMBAAECggEASuGfzB7N22ES4hhV8XKPEd5Q8bQ1hNjAW0ivBhhm9/Arc228FXw5YLFMzrYyUpbnjatyBh+j/uCpHUfbzh61tgp/L9OqMQyWVE5aylSJJr3SzMddHw44mFZch+ysYhUA1whGAqSZ7UipwxxouwjUeDwaQkWSQvcqgNIO/2r6FxBGcrjXGrlyU0gD2fyFCXCgGXN41/nEWMBQ4M05OyE5Iag7mMUE7D5ejcOndjHq172fFrHBmJO+qzXF/BrG5p/ag+tVL4AuxV4txRmPAv7uY9602vHY3kvdgXk+ZlTXY3Ry2bGP2ozzLzwV9AZ3QUY/hMhHrwfOjWo2asXGtPrHIQKBgQDm4ntRlS/g41kEjjbM6J0duBmyMijFGrC/hTal7lpNCkzl+I9qXXH2VWwIEuVqiuzniOqsM/Yw8PuJ+JZkyJu8ZYvEggab8y2XKmWAk/UmTjaWINgkrjZzwcOcJh+hQHMuJZZERgLxsXDvZwWyR1AJaBoFteogDOPZcCu2PbclqQKBgQCQUiPPwK5pSaVHl3L+AG/6CuO8z+BoQKFVhh/ZKFaRnDZ7xY/+xReNV2TWLEt6wLM/Jd4Z1CZjsQa52TMaJh3c9cvzdVTfo+a4dh17r3AIsPNOQOpf/DNU9YgP044BQ/DvJadygfjxogpqqidw1wGII8nojiXyvpEL7DJkW997jQKBgDtqMvPmoWCNAN5kPoPypGP+eVZbBBTc7nkKrep7cO98ZBeWJEnp7CbJCrj1K+aEA7z9he50nLkxenmh6Andef48X4BdOZguNyA8f8xbxu1pmTB/GUAvOMIHLfBj+yXC8SEB+S5umdlaoUZqS5P6OAWDrZaknrBKwOO2svj93sCpAoGAEeoQRe6N98XLfVqATKUzQR9u63YGTgqPvDT86RDHxiVU4gJBAIfoh4PsoWU4LVGULmd97UjXRxKnWhRq8nj+xfnAykSrN2N59TW8LSk2x+1nFjSaozWEDay4qfZBr0iGtLjA00bs5tmNX3YllS0rJIIEwxg5/6rGCGvWSXzZ/dUCgYEAj7mz3sbwivSWvxOrefZxdc5ey6pf8xAfDgfpV7ReBN07nqX0pwj7EsTGT+Pz8hYz2V6FWBZr5iphs0RNUjAuTG0tFa9T46sNK9RkPeKpEL/PtiuVdqkkQKM2mfM9CCgovkFvfCmBtrf29vCJ41lkuHR2McwjwWReqEKkTAB1W48=" />
-
 
     <!--android:allowBackup="true"-->
     <application
-            android:name=".application.AtomApp"
             android:icon="@mipmap/ic_launcher"
             android:label="@string/app_name"
             android:roundIcon="@mipmap/ic_launcher_round"
@@ -40,61 +24,92 @@
             </intent-filter>
         </activity>
 
-        <activity android:name=".app.BasicWorldWindActivity">
+        <activity android:name=".app.BasicWorldWindActivity"
+                android:theme="@style/AppTheme">
         </activity>
-        <activity android:name=".app.CameraControlActivity">
+        <activity android:name=".app.CameraControlActivity"
+                android:theme="@style/AppTheme">
         </activity>
-        <activity android:name=".app.CameraViewActivity">
+        <activity android:name=".app.CameraViewActivity"
+                android:theme="@style/AppTheme">
         </activity>
-        <activity android:name=".app.LookAtViewActivity">
+        <activity android:name=".app.LookAtViewActivity"
+                android:theme="@style/AppTheme">
         </activity>
-        <activity android:name=".app.DayNightCycleActivity">
+        <activity android:name=".app.DayNightCycleActivity"
+                android:theme="@style/AppTheme">
         </activity>
-        <activity android:name=".app.ShowTessellationActivity">
+        <activity android:name=".app.ShowTessellationActivity"
+                android:theme="@style/AppTheme">
         </activity>
-        <activity android:name=".app.SurfaceImageActivity">
+        <activity android:name=".app.SurfaceImageActivity"
+                android:theme="@style/AppTheme">
         </activity>
-        <activity android:name=".app.WmsLayerActivity">
+        <activity android:name=".app.WmsLayerActivity"
+                android:theme="@style/AppTheme">
         </activity>
-        <activity android:name=".app.PlacemarksActivity">
+        <activity android:name=".app.PlacemarksActivity"
+                android:theme="@style/AppTheme">
         </activity>
-        <activity android:name=".app.Placemarks2Activity">
+        <activity android:name=".app.Placemarks2Activity"
+                android:theme="@style/AppTheme">
         </activity>
-        <activity android:name=".app.PlacemarksStressTestActivity">
+        <activity android:name=".app.PlacemarksStressTestActivity"
+                android:theme="@style/AppTheme">
         </activity>
-        <activity android:name=".app.BasicPerformanceBenchmarkActivity">
+        <activity android:name=".app.BasicPerformanceBenchmarkActivity"
+                android:theme="@style/AppTheme">
         </activity>
-        <activity android:name=".app.NavigatorEventActivity">
+        <activity android:name=".app.NavigatorEventActivity"
+                android:theme="@style/AppTheme">
         </activity>
-        <activity android:name=".app.PlacemarksSelectDragActivity">
+        <activity android:name=".app.PlacemarksSelectDragActivity"
+                android:theme="@style/AppTheme">
         </activity>
-        <activity android:name=".app.PlacemarksPickingActivity">
+        <activity android:name=".app.PlacemarksPickingActivity"
+                android:theme="@style/AppTheme">
         </activity>
-        <activity android:name=".app.BasicStressTestActivity">
+        <activity android:name=".app.BasicStressTestActivity"
+                android:theme="@style/AppTheme">
         </activity>
-        <activity android:name=".app.PlacemarksDraggerActivity">
+        <activity android:name=".app.PlacemarksDraggerActivity"
+                android:theme="@style/AppTheme">
         </activity>
-        <activity android:name=".app.PlacemarksDragger2Activity">
+        <activity android:name=".app.PlacemarksDragger2Activity"
+                android:theme="@style/AppTheme">
         </activity>
-        <activity android:name=".app.TextureStressTestActivity">
+        <activity android:name=".app.TextureStressTestActivity"
+                android:theme="@style/AppTheme">
         </activity>
-        <activity android:name=".app.PlacemarksDemoActivity">
+        <activity android:name=".app.PlacemarksDemoActivity"
+                android:theme="@style/AppTheme">
         </activity>
-        <activity android:name=".app.BasicGlobeActivity">
+        <activity android:name=".app.BasicGlobeActivity"
+                android:theme="@style/AppTheme">
         </activity>
-        <activity android:name=".app.PathsExampleActivity">
+        <activity android:name=".app.PathsExampleActivity"
+                android:theme="@style/AppTheme">
         </activity>
-        <activity android:name=".app.PathsActivity">
+        <activity android:name=".app.PathsActivity"
+                android:theme="@style/AppTheme">
         </activity>
-        <activity android:name=".app.PolygonsActivity">
+        <activity android:name=".app.PolygonsActivity"
+                android:theme="@style/AppTheme">
         </activity>
-        <activity android:name=".app.PathsAndPolygonsActivity">
+        <activity android:name=".app.PathsAndPolygonsActivity"
+                android:theme="@style/AppTheme">
         </activity>
-        <activity android:name=".app.MultiGlobeActivity">
+        <activity android:name=".app.MultiGlobeActivity"
+                android:theme="@style/AppTheme">
         </activity>
-        <activity android:name=".app.LabelsFragment">
+        <activity android:name=".app.LabelsFragment"
+                android:theme="@style/AppTheme">
         </activity>
-        <activity android:name=".app.ShapesDashAndFillFragment">
+        <activity android:name=".app.ShapesDashAndFillFragment"
+                android:theme="@style/AppTheme">
+        </activity>
+        <activity android:name=".app.ZipActivity"
+                android:theme="@style/AppTheme">
         </activity>
 
     </application>

@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+        android:orientation="vertical">
+
+    <Button
+            android:id="@+id/yasuo"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="压缩"/>
+
+    <Button
+            android:id="@+id/fengpian"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="分片"/>
+
+    <Button
+            android:id="@+id/juhe"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="聚合"/>
+
+    <Button
+            android:id="@+id/jieya"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="解压"/>
+
+    <Button
+            android:id="@+id/upload"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="上传"/>
+
+</LinearLayout>

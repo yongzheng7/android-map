@@ -347,11 +347,7 @@ class Matrix3 {
      *
      * @return this matrix multiplied by the transform matrix implied by values described above
      */
-    fun multiplyByTileTransform(src: Sector?, dst: Sector?): Matrix3 {
-        if (src == null || dst == null) {
-            throw java.lang.IllegalArgumentException(
-                    Logger.logMessage(Logger.ERROR, "Sector", "multiplyByTileTransform", "missingSector"))
-        }
+    fun multiplyByTileTransform(src: Sector, dst: Sector): Matrix3 {
         //源纬度跨度  经度跨度
         val srcDeltaLat: Double = src.deltaLatitude()
         val srcDeltaLon: Double = src.deltaLongitude()
@@ -377,7 +373,7 @@ class Matrix3 {
         // Must be done before modifying m0, m1, etc. below.
         m[2] += m[0] * xt + m[1] * yt
         m[5] += m[3] * xt + m[4] * yt
-        m[8] += m[6] * xt + m[6] * yt
+        m[8] += m[6] * xt + m[7] * yt
         m[0] *= xs
         m[1] *= ys
         m[3] *= xs

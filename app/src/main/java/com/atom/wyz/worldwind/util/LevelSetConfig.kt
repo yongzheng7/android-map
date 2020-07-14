@@ -1,7 +1,8 @@
 package com.atom.wyz.worldwind.util
 
 import com.atom.wyz.worldwind.geom.Sector
-import com.atom.wyz.worldwind.util.Logger
+import kotlin.math.floor
+import kotlin.math.ln
 
 class LevelSetConfig {
 
@@ -78,8 +79,32 @@ class LevelSetConfig {
 
         val level = Math.log(firstLevelDegreesPerPixel / degreesPerPixel) / Math.log(2.0) // fractional level address
 
-        val levelNumber = Math.ceil(level).toInt()
+        var levelNumber = Math.ceil(level).toInt()
 
+        if (levelNumber < 0) {
+            levelNumber = 0 // need at least one level, even if it exceeds the desired resolution
+        }
         return levelNumber + 1
+    }
+
+    fun numLevelsForMinResolution(radiansPerPixel: Double): Int {
+        require(radiansPerPixel > 0) {
+            Logger.logMessage(
+                Logger.ERROR,
+                "LevelSetConfig",
+                "numLevelsForMinResolution",
+                "invalidResolution"
+            )
+        }
+        val degreesPerPixel = Math.toDegrees(radiansPerPixel)
+        val firstLevelDegreesPerPixel = firstLevelDelta / tileHeight
+        val level =
+            ln(firstLevelDegreesPerPixel / degreesPerPixel) / ln(2.0) // fractional level address
+        var levelNumber =
+            floor(level).toInt() // floor prevents exceeding the min scale
+        if (levelNumber < 0) {
+            levelNumber = 0 // need at least one level, even if it exceeds the desired resolution
+        }
+        return levelNumber + 1 // convert level number to level count
     }
 }

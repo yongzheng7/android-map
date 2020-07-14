@@ -23,7 +23,6 @@ class BackgroundLayer : RenderableLayer {
         this.pickEnabled = (false)
         // Delegate display to the SurfaceImage shape.
         this.addRenderable(SurfaceImage(Sector().setFullSphere(), imageSource).apply { this.imageOptions = imageOptions })
-
     }
 
 }

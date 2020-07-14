@@ -15,6 +15,9 @@ class MenuActivity : AppCompatActivity() {
 
     fun menuButton(view: View) {
         when (view.id) {
+            R.id.Zip_Activity -> {
+                startActivity(Intent(this, ZipActivity::class.java))
+            }
             R.id.base_activity -> {
                 startActivity(Intent(this, BasicWorldWindActivity::class.java))
             }

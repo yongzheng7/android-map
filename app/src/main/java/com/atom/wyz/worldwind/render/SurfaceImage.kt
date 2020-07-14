@@ -8,7 +8,6 @@ import com.atom.wyz.worldwind.geom.Sector
 import com.atom.wyz.worldwind.globe.Globe
 import com.atom.wyz.worldwind.pick.PickedObject
 import com.atom.wyz.worldwind.shape.Movable
-import com.atom.wyz.worldwind.util.Logger
 import java.util.*
 
 open class SurfaceImage : AbstractRenderable, Movable {
@@ -16,18 +15,11 @@ open class SurfaceImage : AbstractRenderable, Movable {
         set(value) {
             field.set(value)
         }
-    var imageSource: ImageSource? = null
+    var imageSource: ImageSource
     var imageOptions: ImageOptions? = null
 
-    constructor() : super("Surface Image")
-
-    constructor(sector: Sector?, imageSource: ImageSource) : super("Surface Image") {
-        if (sector == null) {
-            throw java.lang.IllegalArgumentException(
-                Logger.logMessage(Logger.ERROR, "SurfaceImage", "constructor", "missingSector")
-            )
-        }
-        this.sector.set(sector)
+    constructor(sector: Sector, imageSource: ImageSource) : super("Surface Image") {
+        this.sector = sector
         this.imageSource = imageSource
     }
 
@@ -38,9 +30,9 @@ open class SurfaceImage : AbstractRenderable, Movable {
         if (rc.terrain == null || !rc.terrain!!.sector.intersects(sector)) {
             return  // nothing to render on
         }
-        var texture: GpuTexture? = rc.getTexture(imageSource!!)
+        var texture: GpuTexture? = rc.getTexture(imageSource)
         if (texture == null) {
-            texture = rc.retrieveTexture(imageSource!! , imageOptions)
+            texture = rc.retrieveTexture(imageSource , imageOptions)
         }
         if (texture == null) {
             return
