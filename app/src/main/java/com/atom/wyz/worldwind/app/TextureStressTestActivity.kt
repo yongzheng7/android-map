@@ -7,6 +7,7 @@ import android.os.Bundle
 import android.os.Handler
 import android.os.Message
 import com.atom.wyz.worldwind.geom.Sector
+import com.atom.wyz.worldwind.layer.CartesianLayer
 import com.atom.wyz.worldwind.layer.RenderableLayer
 import com.atom.wyz.worldwind.layer.ShowTessellationLayer
 import com.atom.wyz.worldwind.render.ImageSource
@@ -53,6 +54,7 @@ class TextureStressTestActivity : BasicWorldWindActivity(), Handler.Callback {
         // layer configuration in order to gather precise metrics on memory usage.
         getWorldWindow().layers.clearLayers()
         getWorldWindow().layers.addLayer(ShowTessellationLayer())
+        getWorldWindow().layers.addLayer(CartesianLayer())
         getWorldWindow().layers.addLayer(layer)
 
         // Position the viewer so that the surface images will be visible as they're added.

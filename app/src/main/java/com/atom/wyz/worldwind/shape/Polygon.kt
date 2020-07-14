@@ -48,8 +48,7 @@ class Polygon : AbstractShape {
         }
     }
 
-    var boundaries =
-        mutableListOf<List<Position>>()
+    var boundaries = mutableListOf<List<Position>>()
 
     var extrude = false
         get() = field
@@ -85,7 +84,7 @@ class Polygon : AbstractShape {
 
     protected var cameraDistance = 0.0
 
-    protected var texCoord1d = 0.0
+    protected var texCoordId = 0.0
 
     protected var tessCallback: GLUtessellatorCallbackAdapter = object : GLUtessellatorCallbackAdapter() {
 
@@ -99,24 +98,17 @@ class Polygon : AbstractShape {
             tessCombine(polygonData as RenderContext, coords!!, data, weight, outData)
         }
 
-
         override fun vertexData(vertexData: Any?, polygonData: Any?) {
-            fun vertexData(vertexData: Any?, polygonData: Any?) {
-                tessVertex(polygonData as RenderContext?, vertexData!!)
-            }
+            tessVertex(polygonData as RenderContext?, vertexData!!)
         }
 
         override fun edgeFlagData(boundaryEdge: Boolean, polygonData: Any?) {
-            fun edgeFlagData(boundaryEdge: Boolean, polygonData: Any?) {
-                tessEdgeFlag(polygonData as RenderContext?, boundaryEdge)
-            }
+            tessEdgeFlag(polygonData as RenderContext?, boundaryEdge)
         }
 
 
         override fun errorData(errnum: Int, polygonData: Any?) {
-            fun errorData(errnum: Int, polygonData: Any?) {
-                tessError(polygonData as RenderContext?, errnum)
-            }
+            tessError(polygonData as RenderContext?, errnum)
         }
     }
 
@@ -486,7 +478,7 @@ class Polygon : AbstractShape {
                 altitudeMode,
                 prevPoint
             )
-            texCoord1d = 0.0
+            texCoordId = 0.0
             addVertex(
                 rc,
                 begin.latitude,
@@ -604,7 +596,7 @@ class Polygon : AbstractShape {
             GLU.gluTessVertex(rc.getTessellator(), tessCoords, 0 /*coords_offset*/, vertex)
         }
 
-        texCoord1d += point.distanceTo(prevPoint)
+        texCoordId += point.distanceTo(prevPoint)
         prevPoint.set(point)
 
         if (isSurfaceShape) {
@@ -613,7 +605,7 @@ class Polygon : AbstractShape {
             vertexArray.add(altitude.toFloat())
             vertexArray.add((longitude - texCoord2d.x).toFloat())
             vertexArray.add((latitude - texCoord2d.y).toFloat())
-            vertexArray.add(texCoord1d.toFloat())
+            vertexArray.add(texCoordId.toFloat())
         } else {
             point = rc.geographicToCartesian(latitude, longitude, altitude, altitudeMode, this.point)
             vertexArray.add((point.x - vertexOrigin.x).toFloat())
@@ -621,7 +613,7 @@ class Polygon : AbstractShape {
             vertexArray.add((point.z - vertexOrigin.z).toFloat())
             vertexArray.add((longitude - texCoord2d.x).toFloat())
             vertexArray.add((latitude - texCoord2d.y).toFloat())
-            vertexArray.add(texCoord1d.toFloat())
+            vertexArray.add(texCoordId.toFloat())
             if (extrude) {
                 point = rc.geographicToCartesian(latitude, longitude, 0.0, WorldWind.CLAMP_TO_GROUND, this.point)
                 vertexArray.add((point.x - vertexOrigin.x).toFloat())

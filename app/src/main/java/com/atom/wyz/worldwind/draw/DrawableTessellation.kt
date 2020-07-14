@@ -31,7 +31,6 @@ class DrawableTessellation : Drawable {
         this.pool = pool
         return this
     }
-
     operator fun set(program: BasicProgram, color: Color?): DrawableTessellation {
         this.program = program
         if (color != null) {
@@ -50,7 +49,6 @@ class DrawableTessellation : Drawable {
         }
         program.enableTexture(false)
         program.loadColor(color)
-        //禁止写入深度缓存
         GLES20.glDepthMask(false)
 
         offsetMvpMatrix.set(dc.projection)
@@ -62,9 +60,7 @@ class DrawableTessellation : Drawable {
 
         for (idx in 0 until dc.getDrawableTerrainCount()) {
 
-            // Get the drawable terrain associated with the draw context.
             val terrain = dc.getDrawableTerrain(idx) ?: continue
-            // Use the terrain's vertex point attribute.
             if (!terrain.useVertexPointAttrib(dc, 0 /*vertexPoint*/)) {
                 continue  // vertex buffer failed to bind
             }

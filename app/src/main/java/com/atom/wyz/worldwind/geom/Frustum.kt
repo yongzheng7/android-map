@@ -232,10 +232,14 @@ class Frustum {
         }
         return false // segment does not intersect frustum
     }
+
+
     fun intersectsViewport(viewport: Viewport?): Boolean {
         requireNotNull(viewport) { Logger.logMessage(Logger.ERROR, "Frustum", "intersectsViewport", "missingViewport") }
         return this.viewport.intersects(viewport)
     }
+
+
     override fun toString(): String {
         return "left={$left}, right={$right}, bottom={$bottom}, top={$top}, near={$near}, far={$far}"
     }

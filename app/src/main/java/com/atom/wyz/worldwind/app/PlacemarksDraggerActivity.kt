@@ -237,7 +237,7 @@ class PlacemarksDraggerActivity : BasicWorldWindActivity() {
         }
     }
 
-    class MovableSurfaceImage(sector: Sector?, imageSource: ImageSource) :
+    class MovableSurfaceImage(sector: Sector, imageSource: ImageSource) :
         SurfaceImage(sector, imageSource), Movable {
         /**
          * A position associated with the object that indicates its aggregate geographic position. The chosen position
