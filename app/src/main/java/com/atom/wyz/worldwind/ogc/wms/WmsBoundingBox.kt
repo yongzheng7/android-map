@@ -8,8 +8,8 @@ import org.xmlpull.v1.XmlPullParserException
 import java.io.IOException
 import javax.xml.namespace.QName
 
-class WmsBoundingBox : XmlModel {
-    companion object{
+class WmsBoundingBox(namespaceURI: String?) : XmlModel(namespaceURI) {
+    companion object {
         protected var BOUNDING_BOX_ATTRIBUTE_NS = ""
 
         protected var CRS =
@@ -61,21 +61,19 @@ class WmsBoundingBox : XmlModel {
         }
     }
 
-    protected var crs: String? = null
+    var crs: String ?=null
 
-    protected var minx = 0.0
+    var minx = 0.0
 
-    protected var maxx = 0.0
+    var maxx = 0.0
 
-    protected var miny = 0.0
+    var miny = 0.0
 
-    protected var maxy = 0.0
+    var maxy = 0.0
 
-    protected var resx = 0.0
+    var resx = 0.0
 
-    protected var resy = 0.0
-
-    constructor(namespaceURI: String?) :super(namespaceURI)
+    var resy = 0.0
 
     @Throws(XmlPullParserException::class, IOException::class)
     protected override fun doParseEventAttributes(ctx: XmlPullParserContext) {
@@ -131,7 +129,7 @@ class WmsBoundingBox : XmlModel {
         )
         value = this.parseDouble(attrValue)
         if (value != null) {
-            this.resx  =(value)
+            this.resx = (value)
         }
         attrValue = xpp.getAttributeValue(
             RESY.namespaceURI,

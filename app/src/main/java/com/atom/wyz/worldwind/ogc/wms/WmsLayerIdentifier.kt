@@ -3,11 +3,11 @@ package com.atom.wyz.worldwind.ogc.wms
 import com.atom.wyz.worldwind.util.xml.XmlModel
 import javax.xml.namespace.QName
 
-class WmsLayerIdentifier : XmlModel {
+class WmsLayerIdentifier(namespaceUri: String?) : XmlModel(namespaceUri) {
 
     lateinit var authority: QName
 
-    constructor(namespaceUri: String?) : super(namespaceUri) {
+    init {
         initialize()
     }
 
@@ -20,6 +20,11 @@ class WmsLayerIdentifier : XmlModel {
     }
 
     fun getAuthority(): String? {
-        return this.getField(authority).toString()
+        val o = this.getField(authority)
+        return if (o is String) {
+            o
+        } else {
+            null
+        }
     }
 }

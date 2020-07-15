@@ -1,6 +1,7 @@
 package com.atom.wyz.worldwind.util
 
 import com.atom.wyz.worldwind.geom.Sector
+import kotlin.math.pow
 
 class LevelSet {
     /**
@@ -36,20 +37,14 @@ class LevelSet {
         levels = arrayOfNulls<Level>(0)
     }
 
-    constructor(sector: Sector?, firstLevelDelta: Double, numLevels: Int, tileWidth: Int, tileHeight: Int) {
-        if (sector == null) {
-            throw IllegalArgumentException(
-                Logger.logMessage(Logger.ERROR, "LevelSet", "constructor", "missingSector")
-            )
-        }
-
+    constructor(sector: Sector, firstLevelDelta: Double, numLevels: Int, tileWidth: Int, tileHeight: Int) {
         if (firstLevelDelta <= 0) {
             throw IllegalArgumentException(
                 Logger.logMessage(Logger.ERROR, "LevelSet", "constructor", "invalidTileDelta")
             )
         }
 
-        if (numLevels < 1) {
+        if (numLevels < 0) {
             throw IllegalArgumentException(
                 Logger.logMessage(Logger.ERROR, "LevelSet", "constructor", "invalidNumLevels")
             )
@@ -70,17 +65,7 @@ class LevelSet {
     }
 
 
-    constructor(config: LevelSetConfig?) {
-        if (config == null) {
-            throw java.lang.IllegalArgumentException(
-                Logger.logMessage(Logger.ERROR, "LevelSet", "constructor", "missingConfig")
-            )
-        }
-        if (config.sector == null) {
-            throw java.lang.IllegalArgumentException(
-                Logger.logMessage(Logger.ERROR, "LevelSet", "constructor", "missingSector")
-            )
-        }
+    constructor(config: LevelSetConfig) {
         if (config.firstLevelDelta <= 0) {
             throw java.lang.IllegalArgumentException(
                 Logger.logMessage(Logger.ERROR, "LevelSet", "constructor", "invalidTileDelta")
@@ -114,8 +99,8 @@ class LevelSet {
         // 3   8    90/8
         // 4  16    90/16
         // ...
-        for (idx in 0 until levels.size) {
-            val n = Math.pow(2.0, idx.toDouble())
+        for (idx in levels.indices) {
+            val n = 2.0.pow(idx.toDouble())
             val delta = firstLevelDelta / n
             levels[idx] = Level(this, idx, delta)
         }

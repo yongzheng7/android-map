@@ -6,7 +6,7 @@ import com.atom.wyz.worldwind.util.xml.XmlModel
 import java.util.*
 import javax.xml.namespace.QName
 
-class WmsLayerCapabilities : XmlModel {
+class WmsLayerCapabilities(namespaceURI: String?) : XmlModel(namespaceURI) {
     lateinit var layerAbstract: QName
 
     lateinit var attribution: QName
@@ -70,7 +70,7 @@ class WmsLayerCapabilities : XmlModel {
 
     lateinit var cascaded: QName
 
-    constructor(namespaceURI: String?) : super(namespaceURI) {
+    init {
         initialize()
     }
 
@@ -211,7 +211,7 @@ class WmsLayerCapabilities : XmlModel {
 
     fun getIdentifiers(): Set<WmsLayerIdentifier>? {
         val identifiers =
-            this.getInheritedField(identifier) as Set<WmsLayerIdentifier>?
+            this.getField(identifier) as Set<WmsLayerIdentifier>?
         return identifiers ?: emptySet()
     }
 
@@ -338,6 +338,18 @@ class WmsLayerCapabilities : XmlModel {
         }
         val srs = getSRS()
         return srs != null && srs.contains(coordSys)
+    }
+
+    fun getServiceCapabilities(): WmsCapabilities? {
+        var model: XmlModel? = this
+        while (model != null) {
+
+            model = model.parent
+            if (model is WmsCapabilities) {
+                return model
+            }
+        }
+        return null
     }
 
     override fun setField(keyName: QName, value: Any?) {

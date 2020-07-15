@@ -3,9 +3,7 @@ package com.atom.wyz.worldwind.ogc.wms
 import com.atom.wyz.worldwind.util.xml.*
 import javax.xml.namespace.QName
 
-class WmsPullParserContext : XmlPullParserContext {
-
-    constructor(namespaceUri: String?) : super(namespaceUri)
+class WmsPullParserContext(namespaceUri: String?) : XmlPullParserContext(namespaceUri) {
 
     override fun initializeParsers() {
         super.initializeParsers()
@@ -136,6 +134,11 @@ class WmsPullParserContext : XmlPullParserContext {
             QName(namespaceUri, "FeatureListURL"),
             WmsLayerInfoUrl(namespaceUri)
         )
+        registerParsableModel(
+            QName(namespaceUri, "Format"),
+            WmsFormat(namespaceUri)
+        )
+
         registerParsableModel(
             QName(namespaceUri, "Get"),
             NameStringModel(namespaceUri)

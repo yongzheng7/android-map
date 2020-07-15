@@ -14,7 +14,6 @@ class DrawableCartesian : Drawable {
             return pool.acquire()?.setPool(pool) ?: DrawableCartesian().setPool(pool)
         }
     }
-
     protected var pool: Pool<DrawableCartesian>? = null
 
     protected var program: BasicProgram? = null
@@ -53,16 +52,13 @@ class DrawableCartesian : Drawable {
         }
         program.enableTexture(false)
         program.loadColor(color)
-        GLES20.glDepthMask(false)
         program.loadModelviewProjection(dc.modelviewProjection)
-
         GLES20.glVertexAttribPointer(0 /*vertexPoint*/, 4, GLES20.GL_FLOAT, false, 0, 0)
-
-        GLES20.glDepthMask(false)
-
+        //GLES20.glDepthMask(false)
+        GLES20.glDisable(GLES20.GL_DEPTH_TEST)
         GLES20.glDrawElements(GLES20.GL_LINE_STRIP, triStripElements!!.bufferLength, GLES20.GL_UNSIGNED_SHORT, 0)
-
-        GLES20.glDepthMask(true)
+        GLES20.glEnable(GLES20.GL_DEPTH_TEST)
+        //GLES20.glDepthMask(false)
     }
 
     override fun recycle() {

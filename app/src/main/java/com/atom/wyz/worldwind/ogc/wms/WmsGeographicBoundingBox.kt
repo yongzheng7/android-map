@@ -4,7 +4,7 @@ import com.atom.wyz.worldwind.util.xml.DoubleModel
 import com.atom.wyz.worldwind.util.xml.XmlModel
 import javax.xml.namespace.QName
 
-class WmsGeographicBoundingBox : XmlModel {
+class WmsGeographicBoundingBox(namespaceUri: String?) : XmlModel(namespaceUri) {
     lateinit var west: QName
 
     lateinit var east: QName
@@ -21,7 +21,7 @@ class WmsGeographicBoundingBox : XmlModel {
 
     lateinit var maxy: QName
 
-    constructor(namespaceUri: String?) : super(namespaceUri){
+    init {
         initialize()
     }
 

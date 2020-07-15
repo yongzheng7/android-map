@@ -42,7 +42,7 @@ class TextRenderer {
     }
 
     fun renderText(text: String?): GpuTexture? {
-        return if (text != null && text.length > 0) {
+        return if (text != null && text.isNotEmpty()) {
             val bitmap: Bitmap = this.drawText(text)
             GpuTexture(bitmap)
         } else {

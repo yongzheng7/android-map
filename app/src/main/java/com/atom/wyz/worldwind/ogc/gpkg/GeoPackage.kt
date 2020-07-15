@@ -10,28 +10,26 @@ import java.util.concurrent.TimeUnit
 import kotlin.collections.HashMap
 
 class GeoPackage {
-    protected var connection: SQLiteConnection
+     var connection: SQLiteConnection
 
-    protected var spatialReferenceSystems: MutableList<GpkgSpatialReferenceSystem> =
-        ArrayList<GpkgSpatialReferenceSystem>()
+     var spatialReferenceSystem: MutableList<GpkgSpatialReferenceSystem> = ArrayList<GpkgSpatialReferenceSystem>()
 
-    protected var contents: MutableList<GpkgContents> =
-        ArrayList<GpkgContents>()
+     var content: MutableList<GpkgContent> = ArrayList<GpkgContent>()
 
-    protected var tileMatrixSets: MutableList<GpkgTileMatrixSet> =
-        ArrayList<GpkgTileMatrixSet>()
+     var tileMatrixSet: MutableList<GpkgTileMatrixSet> = ArrayList<GpkgTileMatrixSet>()
 
-    protected var tileMatrices: MutableList<GpkgTileMatrix> =
-        ArrayList()
+     var tileMatrix: MutableList<GpkgTileMatrix> = ArrayList()
 
-    protected var srsIdIndex = SparseIntArray()
+     var tileUserMetrics: MutableList<GpkgTileUserMetrics> = ArrayList()
 
-    protected var tileMatrixSetIndex: HashMap<String, Int> =
-        HashMap()
 
-    protected var tileMatrixIndex: HashMap<String, SparseArray<GpkgTileMatrix>> =
-        HashMap()
+    var srsIdIndex = SparseIntArray()
 
+     var tileMatrixSetIndex: MutableMap<String, Int> = HashMap()
+
+     var tileMatrixIndex: MutableMap<String, SparseArray<GpkgTileMatrix>> = HashMap()
+
+     var tileUserMetricsIndex: MutableMap<String, GpkgTileUserMetrics> = HashMap()
 
     constructor(pathName: String) {
         connection = SQLiteConnection(
@@ -40,31 +38,33 @@ class GeoPackage {
             60,
             TimeUnit.SECONDS
         )
-        // TODO verify its a GeoPackage container
-        // TODO select specific columns
-        // TODO parameterize table names and column names as constants
-        this.readSpatialReferenceSystems()
-        this.readContents()
-        this.readTileMatrixSets()
-        this.readTileMatrices()
+
+        this.readSpatialReferenceSystem()
+        this.readContent()
+        this.readTileMatrixSet()
+        this.readTileMatrix()
+        this.readTileUserMetrics()
     }
 
     fun getSpatialReferenceSystem(id: Int): GpkgSpatialReferenceSystem? {
         val index = srsIdIndex[id, -1]
         // -1 if not found; the default is 0, a valid index
-        return if (index < 0) null else spatialReferenceSystems[index]
+        return if (index < 0) null else spatialReferenceSystem[index]
     }
-    fun getTileMatrixSet(tableName: String?): GpkgTileMatrixSet? {
+    fun getTileMatrixSet(tableName: String): GpkgTileMatrixSet? {
         val index = tileMatrixSetIndex[tableName]
-        return if (index == null) null else tileMatrixSets[index]
+        return if (index == null) null else tileMatrixSet[index]
     }
 
-    fun getTileMatrices(tableName: String): SparseArray<GpkgTileMatrix>? {
+    fun getTileMatrix(tableName: String): SparseArray<GpkgTileMatrix>? {
         return tileMatrixIndex.get(tableName)
     }
 
-    fun getTileUserData(
-        tiles: GpkgContents?,
+    fun getTileUserMetrics(tableName: String): GpkgTileUserMetrics? {
+        return tileUserMetricsIndex[tableName]
+    }
+    fun readTileUserData(
+        tiles: GpkgContent?,
         zoomLevel: Int,
         tileColumn: Int,
         tileRow: Int
@@ -77,12 +77,12 @@ class GeoPackage {
         )
     }
 
-    protected fun readSpatialReferenceSystems() {
+    protected fun readSpatialReferenceSystem() {
         var database: SQLiteDatabase? = null
         var cursor: Cursor? = null
         try {
             database = connection.openDatabase()
-            cursor = database.rawQuery("SELECT * FROM gpkg_spatial_ref_sys", null /*selectionArgs*/)
+            cursor = database.rawQuery("SELECT * FROM 'gpkg_spatial_ref_sys'", null /*selectionArgs*/)
             val srs_name = cursor.getColumnIndex("srs_name")
             val srs_id = cursor.getColumnIndex("srs_id")
             val organization = cursor.getColumnIndex("organization")
@@ -98,8 +98,8 @@ class GeoPackage {
                 srs.organizationCoordSysId = (cursor.getInt(organization_coordsys_id))
                 srs.definition = (cursor.getString(definition))
                 srs.description = (cursor.getString(description))
-                val index = spatialReferenceSystems.size
-                spatialReferenceSystems.add(srs)
+                val index = spatialReferenceSystem.size
+                spatialReferenceSystem.add(srs)
                 srsIdIndex.put(srs.srsId, index)
             }
         } finally {
@@ -108,12 +108,12 @@ class GeoPackage {
         }
     }
 
-    protected fun readContents() {
+    protected fun readContent() {
         var database: SQLiteDatabase? = null
         var cursor: Cursor? = null
         try {
             database = connection.openDatabase()
-            cursor = database.rawQuery("SELECT * FROM gpkg_contents", null /*selectionArgs*/)
+            cursor = database.rawQuery("SELECT * FROM 'gpkg_contents'", null /*selectionArgs*/)
             val table_name = cursor.getColumnIndex("table_name")
             val data_type = cursor.getColumnIndex("data_type")
             val identifier = cursor.getColumnIndex("identifier")
@@ -125,19 +125,19 @@ class GeoPackage {
             val max_y = cursor.getColumnIndex("max_y")
             val srs_id = cursor.getColumnIndex("srs_id")
             while (cursor.moveToNext()) {
-                val contents = GpkgContents()
-                contents.container = (this)
-                contents.tableName = (cursor.getString(table_name))
-                contents.dataType = (cursor.getString(data_type))
-                contents.identifier = (cursor.getString(identifier))
-                contents.description = (cursor.getString(description))
-                contents.lastChange = (cursor.getString(last_change))
-                contents.minX = (cursor.getDouble(min_x))
-                contents.minY = (cursor.getDouble(min_y))
-                contents.maxX = (cursor.getDouble(max_x))
-                contents.maxY = (cursor.getDouble(max_y))
-                contents.srsId = (cursor.getInt(srs_id))
-                this.contents.add(contents)
+                val content = GpkgContent()
+                content.container = (this)
+                content.tableName = (cursor.getString(table_name))
+                content.dataType = (cursor.getString(data_type))
+                content.identifier = (cursor.getString(identifier))
+                content.description = (cursor.getString(description))
+                content.lastChange = (cursor.getString(last_change))
+                content.minX = (cursor.getDouble(min_x))
+                content.minY = (cursor.getDouble(min_y))
+                content.maxX = (cursor.getDouble(max_x))
+                content.maxY = (cursor.getDouble(max_y))
+                content.srsId = (cursor.getInt(srs_id))
+                this.content.add(content)
             }
         } finally {
             WWUtil.closeSilently(cursor)
@@ -145,12 +145,12 @@ class GeoPackage {
         }
     }
 
-    protected fun readTileMatrixSets() {
+    protected fun readTileMatrixSet() {
         var database: SQLiteDatabase? = null
         var cursor: Cursor? = null
         try {
             database = connection.openDatabase()
-            cursor = database.rawQuery("SELECT * FROM gpkg_tile_matrix_set", null /*selectionArgs*/)
+            cursor = database.rawQuery("SELECT * FROM 'gpkg_tile_matrix_set'", null /*selectionArgs*/)
             val table_name = cursor.getColumnIndex("table_name")
             val srs_id = cursor.getColumnIndex("srs_id")
             val min_x = cursor.getColumnIndex("min_x")
@@ -166,8 +166,8 @@ class GeoPackage {
                 tileMatrixSet.minY = (cursor.getDouble(min_y))
                 tileMatrixSet.maxX = (cursor.getDouble(max_x))
                 tileMatrixSet.maxY = (cursor.getDouble(max_y))
-                val index = tileMatrixSets.size
-                tileMatrixSets.add(tileMatrixSet)
+                val index = this.tileMatrixSet.size
+                this.tileMatrixSet.add(tileMatrixSet)
                 tileMatrixSetIndex[tileMatrixSet.tableName] = index
                 tileMatrixIndex[tileMatrixSet.tableName] = SparseArray()
             }
@@ -177,12 +177,12 @@ class GeoPackage {
         }
     }
 
-    protected fun readTileMatrices() {
+    protected fun readTileMatrix() {
         var database: SQLiteDatabase? = null
         var cursor: Cursor? = null
         try {
             database = connection.openDatabase()
-            cursor = database.rawQuery("SELECT * FROM gpkg_tile_matrix", null /*selectionArgs*/)
+            cursor = database.rawQuery("SELECT * FROM 'gpkg_tile_matrix'", null /*selectionArgs*/)
             val table_name = cursor.getColumnIndex("table_name")
             val zoom_level = cursor.getColumnIndex("zoom_level")
             val matrix_width = cursor.getColumnIndex("matrix_width")
@@ -202,7 +202,7 @@ class GeoPackage {
                 tileMatrix.tileHeight = (cursor.getInt(tile_height))
                 tileMatrix.pixelXSize = (cursor.getDouble(pixel_x_size))
                 tileMatrix.pixelYSize = (cursor.getDouble(pixel_y_size))
-                tileMatrices.add(tileMatrix)
+                this.tileMatrix.add(tileMatrix)
                 tileMatrixIndex[tileMatrix.tableName]?.put(tileMatrix.zoomLevel, tileMatrix)
             }
         } finally {
@@ -228,7 +228,7 @@ class GeoPackage {
             )
             database = connection.openDatabase()
             cursor = database.rawQuery(
-                "SELECT * FROM $tableName WHERE zoom_level=? AND tile_column=? AND tile_row=? LIMIT 1",
+                "SELECT * FROM '$tableName' WHERE zoom_level=? AND tile_column=? AND tile_row=? LIMIT 1",
                 selectionArgs
             )
             val id = cursor.getColumnIndex("id")
@@ -251,6 +251,46 @@ class GeoPackage {
         } finally {
             WWUtil.closeSilently(cursor)
             WWUtil.closeSilently(database)
+        }
+    }
+
+    protected fun readTileUserMetrics() {
+        var idx = 0
+        val len = content.size
+        while (idx < len) {
+            val content: GpkgContent = content[idx]
+            if (content.tableName == null) {
+                idx++
+                continue
+            }
+            if (content.dataType == null || !content.dataType.equals("tiles" , true)) {
+                idx++
+                continue
+            }
+            var database: SQLiteDatabase? = null
+            var cursor: Cursor? = null
+            try {
+                database = connection.openDatabase()
+                cursor = database.rawQuery(
+                    "SELECT DISTINCT zoom_level FROM '" + content.tableName.toString() + "' ORDER BY zoom_level ASC", null /*selectionArgs*/
+                )
+                val zoom_level = cursor.getColumnIndex("zoom_level")
+                val zoomLevels = IntArray(cursor.count)
+                var pos = 0
+                while (cursor.moveToNext()) {
+                    zoomLevels[pos] = cursor.getInt(zoom_level)
+                    pos++
+                }
+                val userMetrics = GpkgTileUserMetrics()
+                userMetrics.container= (this)
+                userMetrics.zoomLevels = (zoomLevels)
+                tileUserMetrics.add(userMetrics)
+                tileUserMetricsIndex[content.tableName.toString()] = userMetrics
+            } finally {
+                WWUtil.closeSilently(cursor)
+                WWUtil.closeSilently(database)
+            }
+            idx++
         }
     }
 

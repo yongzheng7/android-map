@@ -7,7 +7,7 @@ import com.atom.wyz.worldwind.util.Logger
 
 class GpkgBitmapFactory : ImageSource.BitmapFactory {
 
-    protected var tiles: GpkgContents
+    protected var tiles: GpkgContent
 
     protected var zoomLevel = 0
 
@@ -16,7 +16,7 @@ class GpkgBitmapFactory : ImageSource.BitmapFactory {
     protected var tileRow = 0
 
     constructor(
-        tiles: GpkgContents,
+        tiles: GpkgContent,
         zoomLevel: Int,
         tileColumn: Int,
         tileRow: Int
@@ -30,16 +30,16 @@ class GpkgBitmapFactory : ImageSource.BitmapFactory {
     override fun createBitmap(): Bitmap? {
         // Attempt to read the GeoPackage tile user data, throwing an exception if it cannot be found.
         val geoPackage = tiles.container ?:return null
-        val tileUserData= geoPackage.getTileUserData(tiles, zoomLevel, tileColumn, tileRow)
+        val tileUserData= geoPackage.readTileUserData(tiles, zoomLevel, tileColumn, tileRow)
 
         // Throw an exception if the tile user data cannot be found, but let the caller (likely an ImageFactory)
         // determine whether to log a message.
         if (tileUserData == null) {
-            val msg: String = Logger.makeMessage(
-                "GpkgBitmapFactory", "createBitmap",
+            Logger.logMessage(
+                Logger.WARN, "GpkgBitmapFactory", "createBitmap",
                 "The GeoPackage tile cannot be found (zoomLevel=" + zoomLevel + ", tileColumn=" + tileColumn + ", tileRow=" + tileRow + ")"
             )
-            throw RuntimeException(msg)
+            return null
         }
 
         // Decode the tile user data, either a PNG image or a JPEG image.

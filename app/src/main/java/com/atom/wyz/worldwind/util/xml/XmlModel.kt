@@ -5,34 +5,28 @@ import org.xmlpull.v1.XmlPullParserException
 import java.io.IOException
 import javax.xml.namespace.QName
 
-open class XmlModel {
+open class XmlModel(namespaceUri: String?) {
     companion object{
          const val CHARACTERS_CONTENT = "CharactersContent"
     }
-
     var namespaceUri : String = ""
 
     protected var fields: HashMap<String, Any?>? = null
 
     var parent: XmlModel? = null
 
-
-    constructor (namespaceUri: String?) {
+    init {
         namespaceUri?.let {
             this.namespaceUri = it
         }
     }
-
-
     @Throws(XmlPullParserException::class, IOException::class)
     open fun read(ctx: XmlPullParserContext): Any? {
-
-        val xpp: XmlPullParser = ctx.parser ?: return null
+        val xpp: XmlPullParser = ctx.parser
         if (xpp.eventType == XmlPullParser.START_DOCUMENT) {
             xpp.next()
         }
         this.doParseEventAttributes(ctx)
-        // eliminated the symbol table and the exception call
 
         // Capture the start element name
         val startElementName = xpp.name
@@ -51,7 +45,7 @@ open class XmlModel {
     }
     @Throws(XmlPullParserException::class, IOException::class)
     protected open fun doParseEventAttributes(ctx: XmlPullParserContext) {
-        val xpp: XmlPullParser = ctx.parser ?: return
+        val xpp: XmlPullParser = ctx.parser
         val attributeCount = xpp.attributeCount
         var attributeName: String?
         var attributeValue: String?
@@ -59,9 +53,6 @@ open class XmlModel {
             attributeName = xpp.getAttributeName(i)
             attributeValue = xpp.getAttributeValue(i)
             setField(attributeName, attributeValue)
-
-
-            // Update the namespace based on the WMS version
             if (attributeName.equals("version", ignoreCase = true)) {
                 if (attributeValue.equals("1.3.0", ignoreCase = true)) {
                     this.namespaceUri = (XmlPullParserContext.DEFAULT_NAMESPACE)
@@ -73,8 +64,8 @@ open class XmlModel {
             }
         }
     }
-    protected fun doAddCharacters(ctx: XmlPullParserContext) {
-        var s: String = ctx.parser?.getText() ?.also { if(it.isEmpty()) return } ?: return
+    protected open fun doAddCharacters(ctx: XmlPullParserContext) {
+        var s: String = ctx.parser.getText() ?.also { if(it.isEmpty()) return } ?: return
         s = s.replace("\n".toRegex(), "").trim { it <= ' ' }
         val sb = this.getField(CHARACTERS_CONTENT) as StringBuilder?
         sb?.append(s) ?: this.setField(CHARACTERS_CONTENT, StringBuilder(s))
@@ -82,14 +73,14 @@ open class XmlModel {
 
     @Throws(XmlPullParserException::class, IOException::class)
     open protected fun doParseEventContent(ctx: XmlPullParserContext) {
-        val xpp: XmlPullParser = ctx.parser ?: return
+        val xpp: XmlPullParser = ctx.parser
         if (xpp.eventType == XmlPullParser.START_TAG) {
             val qName = QName(xpp.namespace, xpp.name)
             var model = ctx.createParsableModel(qName)
 
             if (model == null) {
                 model = ctx.getUnrecognizedElementModel()
-                model ?.let{
+                model.let{
                     ctx.registerParsableModel(qName, it)
                 }
             }
@@ -115,12 +106,12 @@ open class XmlModel {
         this.setField(keyName.localPart, value)
     }
 
-    fun setField(keyName: String, value: Any?) {
+    open fun setField(keyName: String, value: Any?) {
         if (fields == null) fields = hashMapOf()
         fields ?.put(keyName , value)
     }
 
-    fun setFields(newFields: Map<String, Any?>) {
+    open fun setFields(newFields: Map<String, Any?>) {
         if (fields == null) fields = hashMapOf()
         for ((key, value) in newFields) {
             this.setField(key, value)
@@ -135,7 +126,7 @@ open class XmlModel {
         return fields ?.get(keyName)
     }
 
-    protected open fun getInheritedField(keyName: QName): Any? {
+    public open fun getInheritedField(keyName: QName): Any? {
         var model: XmlModel? = this
         var value: Any? = null
         while (model != null && value == null) {
@@ -145,7 +136,7 @@ open class XmlModel {
         return value
     }
 
-    protected open fun <T> getAdditiveInheritedField(
+     open fun <T> getAdditiveInheritedField(
         keyName: QName,
         values: MutableCollection<T>
     ): Collection<T>? {
@@ -216,7 +207,7 @@ open class XmlModel {
             this.getField(name)
         }
         return if (o != null) {
-            if (o is java.lang.StringBuilder) {
+            if (o is StringBuilder || o is String) {
                 try {
                     o.toString().toDouble()
                 } catch (ignore: Exception) {
@@ -237,7 +228,7 @@ open class XmlModel {
             this.getField(name)
         }
         return if (o != null) {
-            if (o is java.lang.StringBuilder) {
+            if (o is StringBuilder || o is String) {
                 try {
                     o.toString().toInt()
                 } catch (ignore: Exception) {
@@ -258,9 +249,9 @@ open class XmlModel {
             this.getField(name)
         }
         return if (o != null) {
-            if (o is java.lang.StringBuilder) {
+            if (o is StringBuilder || o is String) {
                 try {
-                    java.lang.Boolean.parseBoolean(o.toString())
+                    o.toString().toBoolean()
                 } catch (ignore: Exception) {
                     false
                 }

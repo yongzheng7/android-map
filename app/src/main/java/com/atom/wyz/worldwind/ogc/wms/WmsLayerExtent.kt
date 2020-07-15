@@ -4,7 +4,7 @@ import android.util.Log
 import com.atom.wyz.worldwind.util.xml.XmlModel
 import javax.xml.namespace.QName
 
-class WmsLayerExtent : XmlModel {
+class WmsLayerExtent(namespaceURI: String?) : XmlModel(namespaceURI) {
 
     companion object{
         const val DEFAULT_ATTRIBUTE_NAMESPACE = ""
@@ -24,8 +24,6 @@ class WmsLayerExtent : XmlModel {
         val CURRENT =
             QName(DEFAULT_ATTRIBUTE_NAMESPACE, "current")
     }
-
-    constructor(namespaceURI: String?) : super(namespaceURI)
 
 
     fun getExtent(): String? {

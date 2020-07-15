@@ -1,10 +1,6 @@
 package com.atom.wyz.worldwind.ogc.wms
 
 import com.atom.wyz.worldwind.util.xml.XmlModel
-import com.atom.wyz.worldwind.util.xml.XmlPullParserContext
-import org.xmlpull.v1.XmlPullParser
-import org.xmlpull.v1.XmlPullParserException
-import java.io.IOException
 import javax.xml.namespace.QName
 
 class WmsAddress : XmlModel {

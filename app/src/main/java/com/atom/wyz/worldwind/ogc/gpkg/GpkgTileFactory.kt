@@ -10,9 +10,9 @@ import com.atom.wyz.worldwind.util.Logger
 
 class GpkgTileFactory : TileFactory {
 
-    protected var tiles: GpkgContents
+    protected var tiles: GpkgContent
 
-    constructor(tiles: GpkgContents) {
+    constructor(tiles: GpkgContent) {
         this.tiles = tiles
     }
 
@@ -30,6 +30,9 @@ class GpkgTileFactory : TileFactory {
         }
 
         val tile = ImageTile(sector, level, row, column)
+        val tableName = tiles.tableName
+        val zoomLevel = level.levelNumber
+
         // Attempt to find the GeoPackage tile matrix associated with the World Wind level. Assumes that the World Wind
         // levels match the GeoPackage tile matrix zoom levels. If there's no match then the GeoPackage contains no
         // tiles for this level and this tile has no image source.
@@ -38,26 +41,22 @@ class GpkgTileFactory : TileFactory {
                 Logger.logMessage(Logger.ERROR, "GpkgTileFactory", "createTile", "GeoPackage is null")
             )
         }
-        val tileMatrices = geoPackage.getTileMatrices(tiles.tableName ?:let{
+        val tileMatrix = geoPackage.getTileMatrix(tableName ?:let{
                 throw IllegalArgumentException(
                     Logger.logMessage(Logger.ERROR, "GpkgTileFactory", "createTile", "tableName is null")
                 )
-            }) ?:let{
-            throw IllegalArgumentException(
-                Logger.logMessage(Logger.ERROR, "GpkgTileFactory", "createTile", "tileMatrices is null")
-            )
-        }
-        val tileMatrix = tileMatrices[level.levelNumber]
-        if (tileMatrix != null) {
-            // Convert the World Wind tile address to the equivalent GeoPackage tile address. Assumes that the World Wind
-            // level set matchs the GeoPackage tile matrix set, with the exception of tile rows which are inverted.
-            val zoomLevel = level.levelNumber
-            val tileRow: Int = tileMatrix.matrixHeight - row - 1
+            }) ?.get(zoomLevel)
+
+        val tileUserMetrics = geoPackage.getTileUserMetrics(tableName) ?: return tile
+        if (tileMatrix != null && tileUserMetrics.hasZoomLevel(zoomLevel)) {
+            // Convert the World Wind tile address to the equivalent GeoPackage tile address. Assumes that the World
+            // Wind level set matchs the GeoPackage tile matrix set, with the exception of tile rows which are inverted.
+            val gpkgRow: Int = tileMatrix.matrixHeight - row - 1
             // Configure the tile with a bitmap factory that reads directly from the GeoPackage.
-            val bitmapFactory: ImageSource.BitmapFactory = GpkgBitmapFactory(tiles, zoomLevel, column, tileRow)
+            val bitmapFactory: ImageSource.BitmapFactory =
+                GpkgBitmapFactory(tiles, zoomLevel, column, gpkgRow)
             tile.imageSource = (ImageSource.fromBitmapFactory(bitmapFactory))
         }
-
         return tile
     }
 }

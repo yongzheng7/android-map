@@ -2,7 +2,6 @@ package com.atom.wyz.worldwind
 
 import android.content.res.Resources
 import android.graphics.Typeface
-import android.util.Log
 import com.atom.wyz.worldwind.draw.Drawable
 import com.atom.wyz.worldwind.draw.DrawableList
 import com.atom.wyz.worldwind.draw.DrawableQueue
@@ -318,6 +317,14 @@ open class RenderContext {
             WorldWind.SHAPE_DRAWABLE,
             -cameraDistance
         ) // order by descending eye distance
+    }
+
+    open fun offerScreenDrawable(drawable: Drawable, distance: Double) {
+        drawableQueue?.offerDrawable(
+            drawable,
+            WorldWind.SCREEN_DRAWABLE,
+            distance
+        )
     }
 
     open fun sortDrawables() {

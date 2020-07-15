@@ -1,6 +1,7 @@
 package com.atom.wyz.worldwind.util
 
 import com.atom.wyz.worldwind.geom.Sector
+import kotlin.math.ceil
 import kotlin.math.floor
 import kotlin.math.ln
 
@@ -9,7 +10,7 @@ class LevelSetConfig {
     /**
      * The sector spanned by the level set.
      */
-    val sector: Sector? = Sector().setFullSphere()
+    val sector: Sector = Sector().setFullSphere()
 
     /**
      * The geographic width and height in degrees of tiles in the first level (lowest resolution) of the level set
@@ -45,9 +46,7 @@ class LevelSetConfig {
     constructor() {}
 
     constructor(sector: Sector?, firstLevelDelta: Double, numLevels: Int, tileWidth: Int, tileHeight: Int) {
-        if (sector != null) {
-            this.sector?.set(sector)
-        }
+        sector ?.let { this.sector.set(it) }
         this.firstLevelDelta = firstLevelDelta
         this.numLevels = numLevels
         this.tileWidth = tileWidth
@@ -77,10 +76,9 @@ class LevelSetConfig {
 
         val firstLevelDegreesPerPixel = firstLevelDelta / Math.min(tileWidth, tileHeight)
 
-        val level = Math.log(firstLevelDegreesPerPixel / degreesPerPixel) / Math.log(2.0) // fractional level address
+        val level = ln(firstLevelDegreesPerPixel / degreesPerPixel) / ln(2.0) // fractional level address
 
-        var levelNumber = Math.ceil(level).toInt()
-
+        var levelNumber = ceil(level).toInt()
         if (levelNumber < 0) {
             levelNumber = 0 // need at least one level, even if it exceeds the desired resolution
         }

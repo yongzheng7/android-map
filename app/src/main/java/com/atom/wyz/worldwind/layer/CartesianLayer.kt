@@ -2,6 +2,7 @@ package com.atom.wyz.worldwind.layer
 
 import android.opengl.GLES20
 import com.atom.wyz.worldwind.RenderContext
+import com.atom.wyz.worldwind.WorldWind
 import com.atom.wyz.worldwind.draw.DrawableCartesian
 import com.atom.wyz.worldwind.geom.Color
 import com.atom.wyz.worldwind.geom.Vec3
@@ -54,7 +55,7 @@ class CartesianLayer : AbstractLayer("CartesianLayer") {
                     this.assembleTriStripElements()
                 )
         }
-        rc.offerSurfaceDrawable(drawable, 1.0)
+        rc.offerDrawable(drawable, WorldWind.SCREEN_DRAWABLE , 10.0)
     }
 
     private fun assembleVertexPoints(

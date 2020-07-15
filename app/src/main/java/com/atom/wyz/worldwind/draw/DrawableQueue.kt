@@ -12,16 +12,22 @@ class DrawableQueue {
     protected var sortComparator = object : Comparator<Entry?> {
         override fun compare(lhs: Entry?, rhs: Entry?): Int {
             if (lhs != null && rhs != null) {
-                if (lhs.groupId < rhs.groupId) { // lhs group is first; sort lhs before rhs
-                    -1
-                } else if (lhs.groupId > rhs.groupId) { // rhs group is first; sort rhs before lhs
-                    1
-                } else if (lhs.order > rhs.order) { // lhs is farther than rhs; sort lhs before rhs
-                    -1
-                } else if (lhs.order < rhs.order) { // lhs is closer than rhs; sort rhs before lhs
-                    1
-                } else { // lhs and rhs have the same depth; sort by insertion order
-                    lhs.ordinal - rhs.ordinal
+                when {
+                    lhs.groupId < rhs.groupId -> { // lhs group is first; sort lhs before rhs
+                        -1
+                    }
+                    lhs.groupId > rhs.groupId -> { // rhs group is first; sort rhs before lhs
+                        1
+                    }
+                    lhs.order > rhs.order -> { // lhs is farther than rhs; sort lhs before rhs
+                        -1
+                    }
+                    lhs.order < rhs.order -> { // lhs is closer than rhs; sort rhs before lhs
+                        1
+                    }
+                    else -> { // lhs and rhs have the same depth; sort by insertion order
+                        lhs.ordinal - rhs.ordinal
+                    }
                 }
             }
             return 0;

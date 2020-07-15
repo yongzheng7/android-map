@@ -4,10 +4,10 @@ import com.atom.wyz.worldwind.util.xml.XmlModel
 import java.util.*
 import javax.xml.namespace.QName
 
-class WmsKeywords : XmlModel {
+class WmsKeywords(namespaceUri: String?) : XmlModel(namespaceUri) {
     lateinit var keywords: QName
 
-    constructor(namespaceUri: String?)  : super(namespaceUri){
+    init {
         initialize()
     }
 

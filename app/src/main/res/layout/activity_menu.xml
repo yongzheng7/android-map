@@ -10,7 +10,8 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="Zip_Activity"
-                    android:onClick="menuButton"/>
+                    android:onClick="menuButton"
+                    android:visibility="gone"/>
             <Button
                     android:id="@+id/ShapesDashAndFillFragment"
                     android:layout_width="wrap_content"

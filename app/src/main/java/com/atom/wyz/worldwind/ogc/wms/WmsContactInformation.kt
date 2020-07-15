@@ -3,7 +3,7 @@ package com.atom.wyz.worldwind.ogc.wms
 import com.atom.wyz.worldwind.util.xml.XmlModel
 import javax.xml.namespace.QName
 
-class WmsContactInformation : XmlModel {
+class WmsContactInformation(namespaceUri: String?) : XmlModel(namespaceUri) {
 
     lateinit var contactPosition: QName
 
@@ -21,7 +21,7 @@ class WmsContactInformation : XmlModel {
 
     lateinit var contactOrganization: QName
 
-    constructor(namespaceUri: String?) : super(namespaceUri) {
+    init {
         initialize()
     }
 

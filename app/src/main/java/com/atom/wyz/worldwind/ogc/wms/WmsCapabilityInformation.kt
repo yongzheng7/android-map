@@ -4,7 +4,7 @@ import com.atom.wyz.worldwind.util.xml.XmlModel
 import java.util.*
 import javax.xml.namespace.QName
 
-class WmsCapabilityInformation : XmlModel {
+class WmsCapabilityInformation(namespaceUri: String?) : XmlModel(namespaceUri) {
 
     lateinit var capabilities: QName
 
@@ -18,7 +18,7 @@ class WmsCapabilityInformation : XmlModel {
 
     lateinit var request: QName
 
-    constructor(namespaceUri: String?) : super(namespaceUri) {
+    init {
         initialize()
     }
 
@@ -37,9 +37,9 @@ class WmsCapabilityInformation : XmlModel {
         return layers ?: emptyList()
     }
 
-    fun getImageFormats(): Set<String>? {
-        val requests = this.getField(request) as XmlModel? ?: return emptySet()
-        val mapInfo = requests.getField(map) as WmsRequestDescription? ?: return emptySet()
+    fun getImageFormats(): MutableSet<String>? {
+        val requests = this.getField(request) as XmlModel? ?: return mutableSetOf()
+        val mapInfo = requests.getField(map) as WmsRequestDescription? ?: return mutableSetOf()
         return mapInfo.getFormats()
     }
 
@@ -75,5 +75,19 @@ class WmsCapabilityInformation : XmlModel {
             }
         }
         super.setField(keyName, value)
+    }
+
+    override fun toString(): String {
+        val sb = StringBuilder()
+        sb.append("Image Formats:\n")
+        for (imageFormat in getImageFormats()!!) {
+            sb.append(imageFormat).append("\n")
+        }
+        sb.append("Capabilities Info: " + getCapabilitiesInfo()).append("\n")
+        sb.append("Map Info: ").append(getMapInfo()).append("\n")
+        sb.append("Feature Info: ")
+            .append(if (getFeatureInfo() != null) getFeatureInfo() else "none")
+            .append("\n")
+        return sb.toString()
     }
 }

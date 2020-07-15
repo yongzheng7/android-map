@@ -25,6 +25,11 @@ class Label : AbstractRenderable, Highlightable, Movable {
 
     var text: String? = null
 
+     var rotation = 0.0
+
+    @WorldWind.OrientationMode
+     var rotationMode = WorldWind.RELATIVE_TO_SCREEN
+
     var attributes: TextAttributes
 
     var highlightAttributes: TextAttributes? = null
@@ -85,7 +90,10 @@ class Label : AbstractRenderable, Highlightable, Movable {
         val drawableCount = rc.drawableCount()
         if (rc.pickMode) {
             renderData.pickedObjectId = rc.nextPickedObjectId()
-            renderData.pickColor = PickedObject.identifierToUniqueColor(renderData.pickedObjectId, renderData.pickColor)
+            renderData.pickColor = PickedObject.identifierToUniqueColor(
+                renderData.pickedObjectId,
+                renderData.pickColor
+            )
         }
 
 
@@ -118,6 +126,10 @@ class Label : AbstractRenderable, Highlightable, Movable {
         }
 
         texture?.let {
+
+            // Initialize the unit square transform to the identity matrix.
+            renderData.unitSquareTransform.setToIdentity()
+
             val w: Int = it.textureWidth
             val h: Int = it.textureHeight
 
@@ -133,7 +145,30 @@ class Label : AbstractRenderable, Highlightable, Movable {
                 renderData.screenPlacePoint.z
             )
 
-            renderData.unitSquareTransform.setScale(w.toDouble(), h.toDouble(), 1.0)
+            // Apply the label's rotation according to its rotation value and orientation mode. The rotation is applied
+            // such that the text rotates around the text offset point.
+            val rotation =
+                if (rotationMode == WorldWind.RELATIVE_TO_GLOBE) rc.camera.heading - rotation else -rotation
+            if (rotation != 0.0) {
+                renderData.unitSquareTransform.multiplyByTranslation(
+                    renderData.offset.x,
+                    renderData.offset.y,
+                    0.0
+                )
+                renderData.unitSquareTransform.multiplyByRotation(
+                    0.0,
+                    0.0,
+                    1.0,
+                    rotation)
+                renderData.unitSquareTransform.multiplyByTranslation(
+                    -renderData.offset.x,
+                    -renderData.offset.y,
+                    0.0
+                )
+            }
+            // Apply the label's translation and scale according to its text size.
+            renderData.unitSquareTransform.multiplyByScale(w.toDouble(), h.toDouble(), 1.0)
+
 
             WWMath.boundingRectForUnitSquare(
                 renderData.unitSquareTransform,
@@ -144,12 +179,14 @@ class Label : AbstractRenderable, Highlightable, Movable {
                 return  // the text is outside the viewport
             }
 
-            val pool: Pool<DrawableScreenTexture> = rc.getDrawablePool(DrawableScreenTexture::class.java)
+            val pool: Pool<DrawableScreenTexture> =
+                rc.getDrawablePool(DrawableScreenTexture::class.java)
             val drawable: DrawableScreenTexture = DrawableScreenTexture.obtain(pool)
 
             drawable.program = rc.getProgram(BasicProgram.KEY) as BasicProgram?
             if (drawable.program == null) {
-                drawable.program = rc.putProgram(BasicProgram.KEY, BasicProgram(rc.resources!!)) as BasicProgram
+                drawable.program =
+                    rc.putProgram(BasicProgram.KEY, BasicProgram(rc.resources!!)) as BasicProgram
             }
             drawable.unitSquareTransform.set(renderData.unitSquareTransform)
 

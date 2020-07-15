@@ -5,11 +5,9 @@ import org.xmlpull.v1.XmlPullParser
 import org.xmlpull.v1.XmlPullParserException
 import java.io.IOException
 
-class WmsAuthorityUrl : WmsLayerInfoUrl {
+class WmsAuthorityUrl(namespaceURI: String?) : WmsLayerInfoUrl(namespaceURI) {
 
     protected var authority: String? = null
-
-    constructor(namespaceURI: String?) : super(namespaceURI)
 
     @Throws(XmlPullParserException::class, IOException::class)
     override fun doParseEventAttributes(ctx: XmlPullParserContext) {

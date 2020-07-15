@@ -5,7 +5,7 @@ import com.atom.wyz.worldwind.util.xml.XmlModel
 import java.util.*
 import javax.xml.namespace.QName
 
-class WmsDcpType : XmlModel {
+class WmsDcpType(namespaceURI: String?) : XmlModel(namespaceURI) {
 
     lateinit var get: QName
 
@@ -20,7 +20,7 @@ class WmsDcpType : XmlModel {
         var onlineResource: WmsOnlineResource? = null
     }
 
-    constructor(namespaceURI: String?) : super(namespaceURI) {
+    init {
         this.initialize()
     }
 

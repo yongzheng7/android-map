@@ -1,6 +1,6 @@
 package com.atom.wyz.worldwind.ogc.gpkg
 
-class GpkgContents() : GpkgEntry() {
+class GpkgContent() : GpkgEntry() {
     var tableName: String? = null
 
     var dataType: String? = null

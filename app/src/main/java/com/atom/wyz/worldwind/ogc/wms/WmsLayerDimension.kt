@@ -3,7 +3,7 @@ package com.atom.wyz.worldwind.ogc.wms
 import com.atom.wyz.worldwind.util.xml.XmlModel
 import javax.xml.namespace.QName
 
-class WmsLayerDimension : XmlModel {
+class WmsLayerDimension(defaultNamespaceUri: String?) : XmlModel(defaultNamespaceUri) {
     lateinit var name: QName
 
     lateinit var units: QName
@@ -18,7 +18,7 @@ class WmsLayerDimension : XmlModel {
 
     lateinit var current: QName
 
-    constructor(defaultNamespaceUri: String?) : super(defaultNamespaceUri) {
+    init {
         initialize()
     }
 

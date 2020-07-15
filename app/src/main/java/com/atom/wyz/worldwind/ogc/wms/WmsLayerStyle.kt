@@ -4,7 +4,13 @@ import com.atom.wyz.worldwind.util.xml.XmlModel
 import java.util.*
 import javax.xml.namespace.QName
 
-class WmsLayerStyle : XmlModel {
+class WmsLayerStyle//    protected String name;
+//    protected String title;
+//    protected String styleAbstract;
+//    protected WmsLayerInfoUrl styleSheetURL;
+//    protected WmsLayerInfoUrl styleURL;
+//    protected Set<WmsLogoUrl> legendURLs;
+    (namespaceURI: String?) : XmlModel(namespaceURI) {
     lateinit var name: QName
 
     lateinit var title: QName
@@ -17,13 +23,7 @@ class WmsLayerStyle : XmlModel {
 
     lateinit var styleUrl: QName
 
-    //    protected String name;
-    //    protected String title;
-    //    protected String styleAbstract;
-    //    protected WmsLayerInfoUrl styleSheetURL;
-    //    protected WmsLayerInfoUrl styleURL;
-    //    protected Set<WmsLogoUrl> legendURLs;
-    constructor(namespaceURI: String?) : super(namespaceURI){
+    init {
         this.initialize()
     }
 

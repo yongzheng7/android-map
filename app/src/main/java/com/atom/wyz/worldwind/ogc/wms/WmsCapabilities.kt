@@ -8,7 +8,7 @@ import java.io.InputStream
 import java.util.*
 import javax.xml.namespace.QName
 
-class WmsCapabilities : XmlModel {
+class WmsCapabilities(namespaceUri: String?) : XmlModel(namespaceUri) {
 
     companion object{
         val VERSION = QName("", "version")
@@ -39,7 +39,7 @@ class WmsCapabilities : XmlModel {
 
     lateinit var serviceInformation: QName
 
-    constructor(namespaceUri: String?) : super(namespaceUri) {
+    init {
         initialize()
     }
 
@@ -55,14 +55,8 @@ class WmsCapabilities : XmlModel {
         val namedLayers: MutableList<WmsLayerCapabilities> =
             ArrayList<WmsLayerCapabilities>()
 
-        for (topLevelLayer in capInfo.getLayerList()) {
-            if (topLevelLayer.getName() != null && !topLevelLayer.getName()!!.isEmpty()) {
-                namedLayers.add(topLevelLayer)
-            }
-            val named = topLevelLayer.getNamedLayers()
-            for (layer in named!!) {
-                namedLayers.addAll(layer.getNamedLayers()!!)
-            }
+        for (layer in getCapabilityInformation()!!.getLayerList()) {
+            namedLayers.addAll(layer.getNamedLayers()!!)
         }
         return namedLayers
     }
@@ -114,7 +108,7 @@ class WmsCapabilities : XmlModel {
         return o?.toString()
     }
 
-    fun getImageFormats(): Set<String?>? {
+    fun getImageFormats(): MutableSet<String>? {
         val capInfo: WmsCapabilityInformation = getCapabilityInformation() ?: return null
         return capInfo.getImageFormats()
     }

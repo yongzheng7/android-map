@@ -3,45 +3,38 @@ package com.atom.wyz.worldwind.util.xml
 import android.util.Xml
 import org.xmlpull.v1.XmlPullParser
 import org.xmlpull.v1.XmlPullParserException
-import java.io.IOException
 import java.io.InputStream
 import java.lang.reflect.Constructor
 import javax.xml.namespace.QName
 
-open class XmlPullParserContext {
+open class XmlPullParserContext(namespaceUri: String?) {
     companion object {
         const val DEFAULT_NAMESPACE = "http://www.opengis.net/wms"
-
     }
 
-    var parser: XmlPullParser? = null
+    lateinit var parser: XmlPullParser
 
     var parserModels: HashMap<QName, XmlModel?> = hashMapOf()
 
-    var namespaceUri :String ?= null
+    var namespaceUri :String ?= namespaceUri
     set(value) {
         field = value
         parserModels.clear()
         initializeParsers()
     }
-
-    constructor(namespaceUri: String?) {
-        this.namespaceUri = namespaceUri
+    init {
         this.initializeParsers()
     }
-
     protected open fun initializeParsers() {}
-
+    // 设置xml文件的字节输入流
     @Throws(XmlPullParserException::class)
     fun setParserInput(`is`: InputStream?) {
         this.parser = Xml.newPullParser()
-        this.parser?.setInput(`is`, null)
+        this.parser.setInput(`is`, null)
     }
-
     fun createParsableModel(eventName: QName): XmlModel? {
         val model = this.parserModels[eventName] ?: return XmlModel(eventName.namespaceURI)
         try {
-            // create a duplicate instance using reflective utilities
             val ctor: Constructor<out XmlModel> = model::class.java.getConstructor(String::class.java)
             //ctor.setAccessible(true);
             return ctor.newInstance(eventName.namespaceURI) as XmlModel
@@ -57,14 +50,5 @@ open class XmlPullParserContext {
 
     fun getUnrecognizedElementModel(): XmlModel {
         return XmlModel(this.namespaceUri)
-    }
-
-    @Throws(XmlPullParserException::class, IOException::class)
-    fun isStartElement(event: QName): Boolean {
-        val xmlPullParser = this.parser ?: return false
-        return xmlPullParser.eventType == XmlPullParser.START_TAG
-                && xmlPullParser.name != null
-                && xmlPullParser.name == event.localPart
-                && xmlPullParser.namespace == event.namespaceURI
     }
 }

@@ -1,31 +1,64 @@
 package com.atom.wyz.worldwind.ogc.wms
 
 import com.atom.wyz.worldwind.util.xml.XmlModel
-import com.atom.wyz.worldwind.util.xml.XmlPullParserContext
-import org.xmlpull.v1.XmlPullParser
-import org.xmlpull.v1.XmlPullParserException
-import java.io.IOException
+import java.util.*
+import javax.xml.namespace.QName
 
-class WmsLogoUrl : XmlModel {
-    protected var width: Int? = null
-    protected var height: Int? = null
-    constructor(namespaceURI: String?) : super(namespaceURI)
+class WmsLogoUrl(namespaceURI: String?) : XmlModel(namespaceURI) {
+    lateinit var format: QName
 
-    @Throws(XmlPullParserException::class, IOException::class)
-    override fun doParseEventAttributes(ctx: XmlPullParserContext) {
-        super.doParseEventAttributes(ctx)
-        val xpp: XmlPullParser = ctx.parser ?: return
-        try {
-            val width = xpp.getAttributeValue("", "width").toInt()
-            this.width = (width)
-        } catch (e: NumberFormatException) {
-            // TODO log the exception
+    lateinit var onlineResource: QName
+
+    var width = QName("", "width")
+
+    var height = QName("", "height")
+
+    init {
+        initialize()
+    }
+    protected fun initialize() {
+        format = QName(this.namespaceUri, "Format")
+        onlineResource = QName(this.namespaceUri, "OnlineResource")
+    }
+
+    override fun setField(keyName: QName, value: Any?) {
+        if (keyName == format) {
+            var formats = this.getField(format) as MutableSet<String?>?
+            if (formats == null) {
+                formats = HashSet()
+                super.setField(format, formats)
+            }
+            if (value is XmlModel) {
+                formats.add(value.getCharactersContent())
+                return
+            }
         }
-        try {
-            val height = xpp.getAttributeValue("", "height").toInt()
-            this.height = (height)
-        } catch (e: NumberFormatException) {
-            // TODO log the exception
+        super.setField(keyName, value)
+    }
+
+    fun getWidth(): Int? {
+        return getIntegerAttributeValue(width, false)
+    }
+
+    fun getHeight(): Int? {
+        return getIntegerAttributeValue(height, false)
+    }
+
+    fun getFormats(): Set<String?>? {
+        val o = this.getField(format)
+        return if (o is Set<*>) {
+            o as Set<String?>?
+        } else {
+            emptySet<String>()
+        }
+    }
+
+    fun getOnlineResource(): WmsOnlineResource? {
+        val o = this.getField(onlineResource)
+        return if (o is WmsOnlineResource) {
+            o
+        } else {
+            null
         }
     }
 }

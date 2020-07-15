@@ -1,13 +1,10 @@
 package com.atom.wyz.worldwind.ogc.wms
 
-import com.atom.wyz.worldwind.ogc.wms.WmsContactInformation
-import com.atom.wyz.worldwind.ogc.wms.WmsKeywords
-import com.atom.wyz.worldwind.ogc.wms.WmsOnlineResource
 import com.atom.wyz.worldwind.util.xml.IntegerModel
 import com.atom.wyz.worldwind.util.xml.XmlModel
 import javax.xml.namespace.QName
 
-class WmsServiceInformation : XmlModel {
+class WmsServiceInformation(namespaceUri: String?) : XmlModel(namespaceUri) {
     lateinit var name: QName
 
     lateinit var title: QName
@@ -32,7 +29,7 @@ class WmsServiceInformation : XmlModel {
 
     lateinit var layerLimit: QName
 
-    constructor(namespaceUri: String?) :  super(namespaceUri) {
+    init {
         initialize()
     }
 

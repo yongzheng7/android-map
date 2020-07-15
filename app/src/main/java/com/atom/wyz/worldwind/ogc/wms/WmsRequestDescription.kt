@@ -7,14 +7,14 @@ import java.io.IOException
 import java.util.*
 import javax.xml.namespace.QName
 
-class WmsRequestDescription : XmlModel {
+class WmsRequestDescription(namespaceURI: String?) : XmlModel(namespaceURI) {
 
     lateinit var format: QName
     lateinit var dcpType: QName
 
     protected var requestName: String? = null
 
-    constructor(namespaceURI: String?):  super(namespaceURI) {
+    init {
         initialize()
     }
 
@@ -42,8 +42,8 @@ class WmsRequestDescription : XmlModel {
         }
         return null
     }
-    fun getFormats(): Set<String>? {
-        return super.getField(format) as Set<String>?
+    fun getFormats(): MutableSet<String>? {
+        return super.getField(format) as MutableSet<String>?
     }
 
 
