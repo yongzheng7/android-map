@@ -1,16 +1,15 @@
 package com.atom.wyz.worldwind.ogc.wms
 
+import com.atom.wyz.worldwind.util.xml.XmlModel
 import java.util.*
 
-open class WmsAuthorityUrl() : WmsInfoUrl() {
+open class WmsInfoUrl : XmlModel() {
 
-    open var name: String? = null
+    open var type: String? = null
 
-    override var type: String? = null
+    open var formats: MutableList<String> = ArrayList()
 
-    override var formats: MutableList<String> = ArrayList()
-
-    override var url: String? = null
+    open var url: String? = null
 
     override fun parseField(keyName: String, value: Any) {
         when (keyName) {
@@ -23,10 +22,6 @@ open class WmsAuthorityUrl() : WmsInfoUrl() {
             "type" -> {
                 type = value as String
             }
-            "name" -> {
-                name = value as String
-            }
         }
     }
-
 }

@@ -1,102 +1,51 @@
 package com.atom.wyz.worldwind.ogc.wms
 
-import com.atom.wyz.worldwind.util.xml.DoubleModel
+import com.atom.wyz.worldwind.geom.Sector
 import com.atom.wyz.worldwind.util.xml.XmlModel
-import javax.xml.namespace.QName
 
-class WmsGeographicBoundingBox(namespaceUri: String?) : XmlModel(namespaceUri) {
-    lateinit var west: QName
+open class WmsGeographicBoundingBox : XmlModel() {
 
-    lateinit var east: QName
+    open var north = Double.NaN
 
-    lateinit var north: QName
+    open var east = Double.NaN
 
-    lateinit var south: QName
+    open var south = Double.NaN
 
-    lateinit var minx: QName
+    open var west = Double.NaN
 
-    lateinit var miny: QName
-
-    lateinit var maxx: QName
-
-    lateinit var maxy: QName
-
-    init {
-        initialize()
+    open fun getGeographicBoundingBox(): Sector {
+        val deltaLongitude = east - west
+        val deltaLatitude = north - south
+        return Sector(south, west, deltaLatitude, deltaLongitude)
     }
 
-    protected fun initialize() {
-        west = QName(this.namespaceUri, "westBoundLongitude")
-        east = QName(this.namespaceUri, "eastBoundLongitude")
-        north = QName(this.namespaceUri, "northBoundLatitude")
-        south = QName(this.namespaceUri, "southBoundLatitude")
-        minx = QName("", "minx")
-        miny = QName("", "miny")
-        maxx = QName("", "maxx")
-        maxy = QName("", "maxy")
-    }
-
-    protected fun getValue(name: QName): Double? {
-        return (getField(name) as DoubleModel?)?.getValue()
-    }
-
-    fun getWestBound(): Double? {
-        // Default to handling the 1.3.0 style
-        var value: Double? = this.getParsedDoubleElementValue(west)
-        if (value == null) {
-            // try the 1.1.1 style
-            value = this.getParsedDoubleAttributeValue(minx)
-        }
-
-        return value
-    }
-
-    fun getEastBound(): Double? {
-        var value: Double? = this.getParsedDoubleElementValue(east)
-        if (value == null) {
-            value = this.getParsedDoubleAttributeValue(maxx)
-        }
-
-        return value
-    }
-
-    fun getNorthBound(): Double? {
-        var value: Double? = this.getParsedDoubleElementValue(north)
-        if (value == null) {
-            value = this.getParsedDoubleAttributeValue(maxy)
-        }
-
-        return value
-    }
-
-    fun getSouthBound(): Double? {
-        var value: Double? = this.getParsedDoubleElementValue(south)
-        if (value == null) {
-            value = this.getParsedDoubleAttributeValue(miny)
-        }
-
-        return value
-    }
-
-    private fun getParsedDoubleElementValue(name: QName): Double? {
-        val textValue = getChildCharacterValue(name)
-        if (textValue != null && !textValue.isEmpty()) {
-            try {
-                return textValue.toDouble()
-            } catch (ignore: NumberFormatException) {
+    override fun parseField(keyName: String, value: Any) {
+        when (keyName) {
+            "minx" -> {
+                west = (value as String).toDouble()
+            }
+            "miny" -> {
+                south = (value as String).toDouble()
+            }
+            "maxx" -> {
+                east = (value as String).toDouble()
+            }
+            "maxy" -> {
+                north = (value as String).toDouble()
+            }
+            "westBoundLongitude" -> {
+                west = (value as String).toDouble()
+            }
+            "southBoundLatitude" -> {
+                south = (value as String).toDouble()
+            }
+            "eastBoundLongitude" -> {
+                east = (value as String).toDouble()
+            }
+            "northBoundLatitude" -> {
+                north = (value as String).toDouble()
             }
         }
-        return null
-    }
-     private fun getParsedDoubleAttributeValue(name: QName?): Double? {
-        val o = this.getField(name!!)
-        if (o != null) {
-            try {
-                return o.toString().toDouble()
-            } catch (ignore: java.lang.NumberFormatException) {
-            }
-        }
-        return null
     }
 
 }

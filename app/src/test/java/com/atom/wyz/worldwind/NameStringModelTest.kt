@@ -1,8 +1,6 @@
 package com.atom.wyz.worldwind
 
-import com.atom.wyz.worldwind.util.xml.NameStringModel
 import com.atom.wyz.worldwind.util.xml.XmlModel
-import com.atom.wyz.worldwind.util.xml.XmlPullParserContext
 import junit.framework.Assert.assertEquals
 import org.junit.Test
 import java.io.ByteArrayInputStream

@@ -5,16 +5,18 @@ import android.os.Handler
 import android.os.Looper
 import com.atom.wyz.worldwind.WorldWind
 import com.atom.wyz.worldwind.geom.Sector
+import com.atom.wyz.worldwind.ogc.WmsLayerConfig
+import com.atom.wyz.worldwind.ogc.WmsTileFactory
 import com.atom.wyz.worldwind.ogc.gpkg.GeoPackage
-import com.atom.wyz.worldwind.ogc.gpkg.GpkgSpatialReferenceSystem
 import com.atom.wyz.worldwind.ogc.gpkg.GpkgTileFactory
+import com.atom.wyz.worldwind.ogc.gpkg.GpkgTileMatrixSet
+import com.atom.wyz.worldwind.ogc.gpkg.GpkgTileUserMetrics
 import com.atom.wyz.worldwind.ogc.wms.WmsCapabilities
-import com.atom.wyz.worldwind.ogc.wms.WmsLayerCapabilities
-import com.atom.wyz.worldwind.ogc.wms.WmsLayerConfig
-import com.atom.wyz.worldwind.ogc.wms.WmsTileFactory
+import com.atom.wyz.worldwind.ogc.wms.WmsLayer
 import com.atom.wyz.worldwind.util.LevelSet
 import com.atom.wyz.worldwind.util.LevelSetConfig
 import com.atom.wyz.worldwind.util.Logger
+import com.atom.wyz.worldwind.util.WWUtil
 import java.io.BufferedInputStream
 import java.io.InputStream
 import java.net.URL
@@ -23,226 +25,7 @@ import java.util.concurrent.RejectedExecutionException
 
 open class LayerFactory() {
     companion object {
-        protected const val DEFAULT_WMS_RADIANS_PER_PIXEL =
-            10.0 / WorldWind.WGS84_SEMI_MAJOR_AXIS
-        protected var compatibleImageFormats: List<String> =
-            listOf(
-                "image/png",
-                "image/jpg",
-                "image/gif",
-                "image/bmp",
-                "image/jpeg"
-            )
-
-        @Throws(Exception::class)
-        protected fun retrieveWmsCapabilities(
-            serviceAddress: String
-        ): WmsCapabilities {
-            var inputStream: InputStream? = null
-            val wmsCapabilities: WmsCapabilities
-            try {
-
-                // Build the appropriate request Uri given the provided service address
-                val serviceUri = Uri.parse(serviceAddress).buildUpon()
-                    .appendQueryParameter("VERSION", "1.3.0")
-                    .appendQueryParameter("SERVICE", "WMS")
-                    .appendQueryParameter("REQUEST", "GetCapabilities")
-                    .build()
-
-                // Open the connection as an input stream
-                val conn = URL(serviceUri.toString()).openConnection()
-                conn.connectTimeout = 3000
-                conn.readTimeout = 30000
-                inputStream = BufferedInputStream(conn.getInputStream())
-                // Parse and read the input stream
-                wmsCapabilities = WmsCapabilities.getCapabilities(inputStream)
-            } catch (e: Exception) {
-                throw java.lang.RuntimeException(
-                    Logger.makeMessage(
-                        "LayerFactory",
-                        "retrieveWmsCapabilities",
-                        "Unable to open connection and read from service address"
-                    )
-                )
-            } finally {
-                inputStream?.close()
-            }
-            return wmsCapabilities
-        }
-
-        protected fun parseLayerNames(
-            wmsCapabilities: WmsCapabilities,
-            layerNames: List<String?>
-        ): List<WmsLayerCapabilities> {
-            val layers: MutableList<WmsLayerCapabilities> =
-                ArrayList()
-            for (layerName in layerNames) {
-                val layerCapabilities =
-                    wmsCapabilities.getLayerByName(layerName)
-                if (layerCapabilities != null) {
-                    layers.add(layerCapabilities)
-                }
-            }
-            return layers
-        }
-
-        fun getLayerConfigFromWmsCapabilities(
-            layerCapabilities: List<WmsLayerCapabilities>
-        ): WmsLayerConfig {
-
-            // Construct the WmsTiledImage renderable from the WMS Capabilities properties
-            val wmsLayerConfig = WmsLayerConfig()
-            val wmsCapabilities = layerCapabilities.iterator().next().getServiceCapabilities()
-            when (val version = wmsCapabilities?.getVersion()) {
-                "1.3.0" -> {
-                    wmsLayerConfig.wmsVersion = version
-                }
-                "1.1.1" -> {
-                    wmsLayerConfig.wmsVersion = version
-                }
-                else -> {
-                    throw java.lang.RuntimeException(
-                        Logger.makeMessage(
-                            "LayerFactory",
-                            "getLayerConfigFromWmsCapabilities",
-                            "Version not compatible"
-                        )
-                    )
-                }
-            }
-            val requestUrl = wmsCapabilities.getRequestURL("GetMap", "Get")
-            if (requestUrl == null) {
-                throw java.lang.RuntimeException(
-                    Logger.makeMessage(
-                        "LayerFactory",
-                        "getLayerConfigFromWmsCapabilities",
-                        "Unable to resolve GetMap URL"
-                    )
-                )
-            } else {
-                wmsLayerConfig.serviceAddress = requestUrl
-            }
-
-            var sb: StringBuilder? = null
-            var matchingCoordinateSystems: MutableSet<String?>? = null
-            for (layerCapability in layerCapabilities) {
-                val layerName = layerCapability.getName()
-                if (sb == null) {
-                    sb = StringBuilder()
-                } else {
-                    sb.append(",").append(layerName)
-                }
-                val layerCoordinateSystems: Set<String?>? = layerCapability.getReferenceSystem()
-                if (matchingCoordinateSystems == null) {
-                    matchingCoordinateSystems = HashSet()
-                    matchingCoordinateSystems.addAll(layerCoordinateSystems!!)
-                } else {
-                    matchingCoordinateSystems.retainAll(layerCoordinateSystems!!)
-                }
-            }
-
-            wmsLayerConfig.layerNames = sb.toString()
-            when {
-                matchingCoordinateSystems!!.contains("EPSG:4326") -> {
-                    wmsLayerConfig.coordinateSystem = "EPSG:4326"
-                }
-                matchingCoordinateSystems.contains("CRS:84") -> {
-                    wmsLayerConfig.coordinateSystem = "CRS:84"
-                }
-                else -> {
-                    throw java.lang.RuntimeException(
-                        Logger.makeMessage(
-                            "LayerFactory",
-                            "getLayerConfigFromWmsCapabilities",
-                            "Coordinate systems not compatible"
-                        )
-                    )
-                }
-            }
-            val imageFormats: MutableSet<String>? = wmsCapabilities.getImageFormats()
-            for (compatibleImageFormat in compatibleImageFormats) {
-                if (imageFormats?.contains(compatibleImageFormat) == true) {
-                    wmsLayerConfig.imageFormat = compatibleImageFormat
-                    break
-                }
-            }
-            if (wmsLayerConfig.imageFormat == null) {
-                throw java.lang.RuntimeException(
-                    Logger.makeMessage(
-                        "LayerFactory",
-                        "getLayerConfigFromWmsCapabilities",
-                        "Image Formats Not Compatible"
-                    )
-                )
-            }
-
-            return wmsLayerConfig
-        }
-
-        fun getLevelSetConfigFromWmsCapabilities(layerCapabilities: List<WmsLayerCapabilities>): LevelSetConfig {
-            val levelSetConfig = LevelSetConfig()
-            var minScaleDenominator = Double.MAX_VALUE
-            var minScaleHint = Double.MAX_VALUE
-            val sector = Sector()
-            for (layerCapability in layerCapabilities) {
-                val layerMinScaleDenominator =
-                    layerCapability.getMinScaleDenominator()
-                if (layerMinScaleDenominator != null) {
-                    minScaleDenominator =
-                        minScaleDenominator.coerceAtMost(layerMinScaleDenominator)
-                }
-                val layerMinScaleHint = layerCapability.getMinScaleHint()
-                if (layerMinScaleHint != null) {
-                    minScaleHint = minScaleHint.coerceAtMost(layerMinScaleHint)
-                }
-                val layerSector = layerCapability.getGeographicBoundingBox()
-                if (layerSector != null) {
-                    sector.union(layerSector)
-                }
-            }
-
-            if (!sector.isEmpty()) {
-                levelSetConfig.sector.set(sector)
-            } else {
-                throw java.lang.RuntimeException(
-                    Logger.makeMessage(
-                        "LayerFactory",
-                        "getLevelSetConfigFromWmsCapabilities",
-                        "Geographic Bounding Box Not Defined"
-                    )
-                )
-            }
-
-            when {
-                minScaleDenominator != Double.MAX_VALUE -> {
-                    // WMS 1.3.0 scale configuration. Based on the WMS 1.3.0 spec page 28. The hard coded value 0.00028 is
-                    // detailed in the spec as the common pixel size of 0.28mm x 0.28mm. Configures the maximum level not to
-                    // exceed the specified min scale denominator.
-                    val minMetersPerPixel = minScaleDenominator * 0.00028
-                    val minRadiansPerPixel =
-                        minMetersPerPixel / WorldWind.WGS84_SEMI_MAJOR_AXIS
-                    levelSetConfig.numLevels =
-                        levelSetConfig.numLevelsForMinResolution(minRadiansPerPixel)
-                }
-                minScaleHint != Double.MAX_VALUE -> {
-                    // WMS 1.1.1 scale configuration, where ScaleHint indicates approximate resolution in ground distance
-                    // meters. Configures the maximum level not to exceed the specified min scale denominator.
-                    val minMetersPerPixel = minScaleHint
-                    val minRadiansPerPixel =
-                        minMetersPerPixel / WorldWind.WGS84_SEMI_MAJOR_AXIS
-                    levelSetConfig.numLevels =
-                        levelSetConfig.numLevelsForMinResolution(minRadiansPerPixel)
-                }
-                else -> {
-                    // Default scale configuration when no minimum scale denominator or scale hint is provided.
-                    val defaultRadiansPerPixel =
-                        DEFAULT_WMS_RADIANS_PER_PIXEL
-                    levelSetConfig.numLevels =
-                        levelSetConfig.numLevelsForResolution(defaultRadiansPerPixel)
-                }
-            }
-            return levelSetConfig
-        }
+        protected const val DEFAULT_WMS_NUM_LEVELS = 20
     }
 
     interface Callback {
@@ -262,41 +45,32 @@ open class LayerFactory() {
 
     private val mainLoopHandler = Handler(Looper.getMainLooper())
 
+    protected var compatibleImageFormats = listOf(
+        "image/png",
+        "image/jpg",
+        "image/jpeg",
+        "image/gif",
+        "image/bmp"
+    )
+    protected var compatibleCoordinateSystems =
+        listOf(
+            "urn:ogc:def:crs:OGC:1.3:CRS84",
+            "urn:ogc:def:crs:EPSG::4326",
+            "http://www.opengis.net/def/crs/OGC/1.3/CRS84"
+        )
 
-    open fun createFromWmsLayerCapabilities(layerCapabilities: WmsLayerCapabilities,callback: Callback ): Layer {
-        return this.createFromWmsLayerCapabilities(listOf(layerCapabilities) , callback)
-    }
-
-    open fun createFromWmsLayerCapabilities(layerCapabilities: List<WmsLayerCapabilities> , callback: Callback ): Layer {
-        require(!(layerCapabilities.isEmpty())) {
-            Logger.logMessage(
-                Logger.ERROR,
-                "LayerFactory",
-                "createFromWmsLayerCapabilities",
-                "missing layers"
-            )
-        }
-        val layer: Layer = RenderableLayer()
-        createWmsLayer(layerCapabilities, layer, callback)
-        return layer
-    }
-
-    fun createFromGeoPackage(
+    open fun createFromGeoPackage(
         pathName: String,
         callback: Callback
-    ): Layer {
+    ): Layer? {
+        // Create a layer in which to asynchronously populate with renderables for the GeoPackage contents.
         val layer = RenderableLayer()
+        // Disable picking for the layer; terrain surface picking is performed automatically by WorldWindow.
         layer.pickEnabled = (false)
-        val task = GeoPackageAsyncTask(
-            this,
-            pathName,
-            layer,
-            callback
-        )
+        val task = GeoPackageAsyncTask(this, pathName, layer, callback)
         try {
             WorldWind.taskService.execute(task)
-        } catch (logged: RejectedExecutionException) {
-            // singleton task service is full; this should never happen but we check anyway
+        } catch (logged: RejectedExecutionException) { // singleton task service is full; this should never happen but we check anyway
             callback.creationFailed(this, layer, logged)
         }
         return layer
@@ -310,11 +84,12 @@ open class LayerFactory() {
         return createFromWms(serviceAddress, listOf(layerName), callback)
     }
 
-    fun createFromWms(
+    open fun createFromWms(
         serviceAddress: String,
         layerNames: List<String>,
         callback: Callback
     ): Layer {
+
         require(!(layerNames.isEmpty())) {
             Logger.logMessage(
                 Logger.ERROR,
@@ -323,105 +98,138 @@ open class LayerFactory() {
                 "missingLayerNames"
             )
         }
+        // Create a layer in which to asynchronously populate with renderables for the GeoPackage contents.
         val layer = RenderableLayer()
+
+        // Disable picking for the layer; terrain surface picking is performed automatically by WorldWindow.
         layer.pickEnabled = (false)
         val task = WmsAsyncTask(this, serviceAddress, layerNames, layer, callback)
         try {
             WorldWind.taskService.execute(task)
-        } catch (logged: RejectedExecutionException) {
-            // singleton task service is full; this should never happen but we check anyway
+        } catch (logged: RejectedExecutionException) { // singleton task service is full; this should never happen but we check anyway
             callback.creationFailed(this, layer, logged)
         }
         return layer
     }
 
-    // 创建基于本地数据库的图层
-    private fun createFromGeoPackageAsync(
+    open fun createFromGeoPackageAsync(
         pathName: String,
         layer: Layer,
         callback: Callback
     ) {
         val geoPackage = GeoPackage(pathName)
         val gpkgRenderables = RenderableLayer()
-        val finalLayer = layer as RenderableLayer
-        for (contents in geoPackage.content) {
-            if (contents.dataType == null || !contents.dataType.equals("tiles", true)) {
+        for (content in geoPackage.content) {
+            if (content.dataType == null || !content.dataType.equals("tiles", true)) {
                 Logger.logMessage(
                     Logger.WARN, "LayerFactory", "createFromGeoPackageAsync",
-                    "Unsupported GeoPackage content data_type: " + contents.dataType
+                    "Unsupported GeoPackage content data_type: " + content.dataType
                 )
                 continue
             }
-            val srs: GpkgSpatialReferenceSystem =
-                geoPackage.spatialReferenceSystem.get(contents.srsId)
-            if (!srs.organization
+            val srs =
+                geoPackage.getSpatialReferenceSystem(content.srsId)
+            if (srs == null || !srs.organization
                     .equals("EPSG", true) || srs.organizationCoordSysId != 4326
             ) {
                 Logger.logMessage(
                     Logger.WARN, "LayerFactory", "createFromGeoPackageAsync",
-                    "Unsupported GeoPackage spatial reference system: " + srs.srsName
+                    "Unsupported GeoPackage spatial reference system: " + if (srs == null) "undefined" else srs.srsName
                 )
                 continue
             }
-            val tileMatrixSet = geoPackage.getTileMatrixSet(contents.tableName!!)
-            if (tileMatrixSet == null || tileMatrixSet.srsId != contents.srsId) {
+            val tileMatrixSet: GpkgTileMatrixSet? =
+                geoPackage.getTileMatrixSet(content.tableName!!)
+            if (tileMatrixSet == null || tileMatrixSet.srsId !== content.srsId) {
                 Logger.logMessage(
                     Logger.WARN, "LayerFactory", "createFromGeoPackageAsync",
                     "Unsupported GeoPackage tile matrix set"
                 )
                 continue
             }
-            val tileMatrices = geoPackage.getTileMatrix(contents.tableName!!)
-            if (tileMatrices == null || tileMatrices.size() == 0) {
+            val tileMetrics: GpkgTileUserMetrics? =
+                geoPackage.getTileUserMetrics(content.tableName!!)
+            if (tileMetrics == null) {
                 Logger.logMessage(
                     Logger.WARN, "LayerFactory", "createFromGeoPackageAsync",
-                    "Undefined GeoPackage tile matrices"
+                    "Unsupported GeoPackage tiles content"
                 )
                 continue
             }
-            var maxZoomLevel = 0
-            var idx = 0
-            val len = tileMatrices.size()
-            while (idx < len) {
-                val zoomLevel: Int = tileMatrices.valueAt(idx).zoomLevel
-                if (maxZoomLevel < zoomLevel) {
-                    maxZoomLevel = zoomLevel
-                }
-                idx++
-            }
             val config = LevelSetConfig()
-            config.sector[contents.minY, contents.minX, contents.maxY - contents.minY] =
-                contents.maxX - contents.minX
+            config.sector[content.minY, content.minX, content.maxY - content.minY] =
+                content.maxX - content.minX
             config.firstLevelDelta = 180.0
-            config.numLevels = maxZoomLevel + 1
+            config.numLevels =
+                tileMetrics.getMaxZoomLevel() + 1 // zero when there are no zoom levels, (0 = -1 + 1)
             config.tileWidth = 256
             config.tileHeight = 256
             val surfaceImage = TiledSurfaceImage()
             surfaceImage.levelSet = (LevelSet(config))
-            surfaceImage.tileFactory = (GpkgTileFactory(contents))
+            surfaceImage.tileFactory = (GpkgTileFactory(content))
             gpkgRenderables.addRenderable(surfaceImage)
         }
+        if (gpkgRenderables.count() == 0) {
+            throw RuntimeException(
+                Logger.makeMessage(
+                    "LayerFactory",
+                    "createFromGeoPackageAsync",
+                    "Unsupported GeoPackage contents"
+                )
+            )
+        }
+        val finalLayer = layer as RenderableLayer
+        val finalCallback = callback
+
         // Add the tiled surface image to the layer on the main thread and notify the caller. Request a redraw to ensure
         // that the image displays on all WorldWindows the layer may be attached to.
         mainLoopHandler.post {
             finalLayer.addAllRenderables(gpkgRenderables)
-            callback.creationSucceeded(this@LayerFactory, finalLayer)
+            finalCallback.creationSucceeded(this@LayerFactory, finalLayer)
             WorldWind.requestRedraw()
         }
     }
 
-    protected open fun createWmsLayer(
-        layerCapabilities: List<WmsLayerCapabilities>,
+    @Throws(Exception::class)
+    open fun createFromWmsAsync(
+        serviceAddress: String,
+        layerNames: List<String>,
         layer: Layer,
         callback: Callback
-    ){
-        // 解析wms文档
-        val wmsCapabilities =
-            layerCapabilities.iterator().next().getServiceCapabilities()
-        // Check if the server supports multiple layer request
-        val layerLimit = wmsCapabilities?.getServiceInformation()?.getLayerLimit()
-        if (layerLimit != null) {
-            if (layerLimit < layerCapabilities.size) {
+    ) {
+        // Parse and read the WMS Capabilities document at the provided service address
+        val wmsCapabilities: WmsCapabilities = this.retrieveWmsCapabilities(serviceAddress)
+        val layerCapabilities: MutableList<WmsLayer> =
+            ArrayList<WmsLayer>()
+        for (layerName in layerNames) {
+            val layerCaps: WmsLayer? = wmsCapabilities.getNamedLayer(layerName)
+            if (layerCaps != null) {
+                layerCapabilities.add(layerCaps)
+            }
+        }
+        if (layerCapabilities.size == 0) {
+            throw java.lang.RuntimeException(
+                Logger.makeMessage(
+                    "LayerFactory",
+                    "createFromWmsAsync",
+                    "Provided layers did not match available layers"
+                )
+            )
+        }
+        this.createWmsLayer(layerCapabilities, layer, callback)
+    }
+
+    open fun createWmsLayer(
+        layerCapabilities: List<WmsLayer>,
+        layer: Layer,
+        callback: Callback
+    ) {
+        val finalLayer = layer as RenderableLayer
+        try {
+            val wmsCapabilities = layerCapabilities[0].getCapability()?.getCapabilities()
+            // Check if the server supports multiple layer request
+            val layerLimit = wmsCapabilities?.service?.layerLimit
+            if (layerLimit != null && layerLimit < layerCapabilities.size) {
                 throw java.lang.RuntimeException(
                     Logger.makeMessage(
                         "LayerFactory",
@@ -430,61 +238,225 @@ open class LayerFactory() {
                     )
                 )
             }
-        }
-        val wmsLayerConfig =
-            getLayerConfigFromWmsCapabilities(layerCapabilities)
-        val levelSetConfig =
-            getLevelSetConfigFromWmsCapabilities(layerCapabilities)
-        // Collect WMS Layer Titles to set the Layer Display Name
-        var sb: StringBuilder? = null
-        for (layerCapability in layerCapabilities) {
-            val s = layerCapability.getTitle() ?: continue
-            if (sb == null) {
-                sb = StringBuilder(s)
-            } else {
-                sb.append(",").append(s)
+            val wmsLayerConfig: WmsLayerConfig =
+                getLayerConfigFromWmsCapabilities(layerCapabilities)
+            val levelSetConfig: LevelSetConfig =
+                getLevelSetConfigFromWmsCapabilities(layerCapabilities)
+
+            // Collect WMS Layer Titles to set the Layer Display Name
+            var sb: StringBuilder? = null
+            for (layerCapability in layerCapabilities) {
+                if (sb == null) {
+                    sb = StringBuilder()
+                    layerCapability.title?.let {
+                        sb.append(it)
+                    }
+                } else {
+                    layerCapability.title?.let {
+                        sb.append(",").append(it)
+                    }
+                }
             }
-        }
+            layer.displayName = (sb.toString())
+            val surfaceImage = TiledSurfaceImage()
+            surfaceImage.tileFactory = (WmsTileFactory(wmsLayerConfig))
+            surfaceImage.levelSet = (LevelSet(levelSetConfig))
 
-        layer.displayName = (sb.toString())
-
-
-        val surfaceImage = TiledSurfaceImage()
-        val finalLayer = layer as RenderableLayer
-        surfaceImage.tileFactory = WmsTileFactory(wmsLayerConfig)
-        surfaceImage.levelSet = LevelSet(levelSetConfig)
-        mainLoopHandler.post {
-            finalLayer.addRenderable(surfaceImage)
-            callback.creationSucceeded(this@LayerFactory, finalLayer)
-            WorldWind.requestRedraw()
+            // Add the tiled surface image to the layer on the main thread and notify the caller. Request a redraw to ensure
+            // that the image displays on all WorldWindows the layer may be attached to.
+            mainLoopHandler.post {
+                finalLayer.addRenderable(surfaceImage)
+                callback.creationSucceeded(this@LayerFactory, finalLayer)
+                WorldWind.requestRedraw()
+            }
+        } catch (ex: Throwable) {
+            mainLoopHandler.post { callback.creationFailed(this@LayerFactory, finalLayer, ex) }
         }
     }
 
-    // 创建基于WMS XML 的图层
-    private fun createFromWmsAsync(
-        serviceAddress: String,
-        layerNames: List<String>,
-        layer: Layer,
-        callback: Callback
-    ) {
-        // 解析wms文档
-        // Parse and read the WMS Capabilities document at the provided service address
-        val wmsCapabilities: WmsCapabilities = retrieveWmsCapabilities(serviceAddress)
-        val layerCapabilities: List<WmsLayerCapabilities> =
-            parseLayerNames(wmsCapabilities, layerNames)
-        if (layerCapabilities.isEmpty()) {
-            throw RuntimeException(
+    open fun getLayerConfigFromWmsCapabilities(
+        wmsLayers: List<WmsLayer>
+    ): WmsLayerConfig {
+        // Construct the WmsTiledImage renderable from the WMS Capabilities properties
+        val wmsLayerConfig = WmsLayerConfig()
+        val wmsCapabilities = wmsLayers[0].getCapability()?.getCapabilities()
+        val version = wmsCapabilities?.version
+        if (version == "1.3.0") {
+            wmsLayerConfig.wmsVersion = version
+        } else if (version == "1.1.1") {
+            wmsLayerConfig.wmsVersion = version
+        } else {
+            throw java.lang.RuntimeException(
                 Logger.makeMessage(
                     "LayerFactory",
-                    "createFromWmsAsync",
-                    "Provided layers did not match available layers"
+                    "getLayerConfigFromWmsCapabilities",
+                    "Version not compatible"
                 )
             )
         }
-        createWmsLayer(layerCapabilities, layer, callback)
+        val requestUrl = wmsCapabilities.capability?.request?.getMap?.getUrl
+        if (requestUrl == null) {
+            throw java.lang.RuntimeException(
+                Logger.makeMessage(
+                    "LayerFactory",
+                    "getLayerConfigFromWmsCapabilities",
+                    "Unable to resolve GetMap URL"
+                )
+            )
+        } else {
+            wmsLayerConfig.serviceAddress = requestUrl
+        }
+        var sb: StringBuilder? = null
+        var matchingCoordinateSystems: MutableSet<String>? = null
+        for (wmsLayer in wmsLayers) {
+            val layerName = wmsLayer.name
+            if (sb == null) {
+                sb = StringBuilder()
+                layerName?.let {
+                    sb.append(it)
+                }
+            } else {
+                sb.append(",").append(layerName)
+            }
+            val wmsLayerCoordinateSystems = wmsLayer.getReferenceSystems()
+            if (matchingCoordinateSystems == null) {
+                matchingCoordinateSystems = HashSet()
+                wmsLayerCoordinateSystems?.let {
+                    matchingCoordinateSystems.addAll(it)
+                }
+            } else {
+                wmsLayerCoordinateSystems?.let {
+                    matchingCoordinateSystems.retainAll(it)
+                }
+            }
+        }
+        wmsLayerConfig.layerNames = sb.toString()
+        if (matchingCoordinateSystems != null) {
+            if (matchingCoordinateSystems.contains("EPSG:4326")) {
+                wmsLayerConfig.coordinateSystem = "EPSG:4326"
+            } else if (matchingCoordinateSystems.contains("CRS:84")) {
+                wmsLayerConfig.coordinateSystem = "CRS:84"
+            } else {
+                throw java.lang.RuntimeException(
+                    Logger.makeMessage(
+                        "LayerFactory",
+                        "getLayerConfigFromWmsCapabilities",
+                        "Coordinate systems not compatible"
+                    )
+                )
+            }
+        }
+
+        // Negotiate Image Formats
+        wmsCapabilities.capability?.request?.getMap?.formats?.let {
+            for (compatibleImageFormat in compatibleImageFormats) {
+                if (it.contains(compatibleImageFormat)) {
+                    wmsLayerConfig.imageFormat = compatibleImageFormat
+                    break
+                }
+            }
+        }
+        if (wmsLayerConfig.imageFormat == null) {
+            throw java.lang.RuntimeException(
+                Logger.makeMessage(
+                    "LayerFactory",
+                    "getLayerConfigFromWmsCapabilities",
+                    "Image Formats Not Compatible"
+                )
+            )
+        }
+        return wmsLayerConfig
     }
 
-    protected class GeoPackageAsyncTask(
+    open fun getLevelSetConfigFromWmsCapabilities(
+        layerCapabilities: List<WmsLayer>
+    ): LevelSetConfig {
+        val levelSetConfig = LevelSetConfig()
+        var minScaleDenominator = Double.MAX_VALUE
+        var minScaleHint = Double.MAX_VALUE
+        val sector = Sector()
+        for (layerCapability in layerCapabilities) {
+            val layerMinScaleDenominator = layerCapability.minScaleDenominator
+            if (layerMinScaleDenominator != null) {
+                minScaleDenominator = Math.min(minScaleDenominator, layerMinScaleDenominator)
+            }
+            val layerMinScaleHint: Double? = layerCapability.scaleHint?.min
+            if (layerMinScaleHint != null) {
+                minScaleHint = Math.min(minScaleHint, layerMinScaleHint)
+            }
+            val layerSector: Sector? = layerCapability.getGeographicBoundingBox()
+            if (layerSector != null) {
+                sector.union(layerSector)
+            }
+        }
+        if (!sector.isEmpty()) {
+            levelSetConfig.sector.set(sector)
+        } else {
+            throw java.lang.RuntimeException(
+                Logger.makeMessage(
+                    "LayerFactory",
+                    "getLevelSetConfigFromWmsCapabilities",
+                    "Geographic Bounding Box Not Defined"
+                )
+            )
+        }
+        if (minScaleDenominator != Double.MAX_VALUE) {
+            // WMS 1.3.0 scale configuration. Based on the WMS 1.3.0 spec page 28. The hard coded value 0.00028 is
+            // detailed in the spec as the common pixel size of 0.28mm x 0.28mm. Configures the maximum level not to
+            // exceed the specified min scale denominator.
+            val minMetersPerPixel = minScaleDenominator * 0.00028
+            val minRadiansPerPixel =
+                minMetersPerPixel / WorldWind.WGS84_SEMI_MAJOR_AXIS
+            levelSetConfig.numLevels = levelSetConfig.numLevelsForMinResolution(minRadiansPerPixel)
+        } else if (minScaleHint != Double.MAX_VALUE) {
+            // WMS 1.1.1 scale configuration, where ScaleHint indicates approximate resolution in ground distance
+            // meters. Configures the maximum level not to exceed the specified min scale denominator.
+            val minMetersPerPixel = minScaleHint
+            val minRadiansPerPixel =
+                minMetersPerPixel / WorldWind.WGS84_SEMI_MAJOR_AXIS
+            levelSetConfig.numLevels = levelSetConfig.numLevelsForMinResolution(minRadiansPerPixel)
+        } else {
+            // Default scale configuration when no minimum scale denominator or scale hint is provided.
+            levelSetConfig.numLevels = DEFAULT_WMS_NUM_LEVELS
+        }
+        return levelSetConfig
+    }
+
+    @Throws(java.lang.Exception::class)
+    open fun retrieveWmsCapabilities(
+        serviceAddress: String
+    ): WmsCapabilities {
+        var inputStream: InputStream? = null
+        var wmsCapabilities: WmsCapabilities? = null
+        try {
+            // Build the appropriate request Uri given the provided service address
+            val serviceUri = Uri.parse(serviceAddress).buildUpon()
+                .appendQueryParameter("VERSION", "1.3.0")
+                .appendQueryParameter("SERVICE", "WMS")
+                .appendQueryParameter("REQUEST", "GetCapabilities")
+                .build()
+
+            // Open the connection as an input stream
+            val conn = URL(serviceUri.toString()).openConnection()
+            conn.connectTimeout = 3000
+            conn.readTimeout = 30000
+            inputStream = BufferedInputStream(conn.getInputStream())
+            // Parse and read the input stream
+            return WmsCapabilities.getCapabilities(inputStream)
+        } catch (e: java.lang.Exception) {
+            throw java.lang.RuntimeException(
+                Logger.makeMessage(
+                    "LayerFactory",
+                    "retrieveWmsCapabilities",
+                    "Unable to open connection and read from service address"
+                )
+            )
+        } finally {
+            WWUtil.closeSilently(inputStream)
+        }
+    }
+
+    class GeoPackageAsyncTask(
         private var factory: LayerFactory,
         private var pathName: String,
         private var layer: Layer,
@@ -499,7 +471,7 @@ open class LayerFactory() {
         }
     }
 
-    protected class WmsAsyncTask(
+    class WmsAsyncTask(
         private val factory: LayerFactory,
         private val serviceAddress: String,
         private val layerNames: List<String>,

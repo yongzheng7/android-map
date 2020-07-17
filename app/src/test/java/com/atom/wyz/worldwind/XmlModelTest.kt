@@ -1,7 +1,6 @@
 package com.atom.wyz.worldwind
 
 import com.atom.wyz.worldwind.util.xml.XmlModel
-import com.atom.wyz.worldwind.util.xml.XmlPullParserContext
 import junit.framework.Assert
 import org.junit.Before
 import org.junit.Test

@@ -1,7 +1,5 @@
 package com.atom.wyz.worldwind
 
-import com.atom.wyz.worldwind.util.xml.DoubleModel
-import com.atom.wyz.worldwind.util.xml.XmlPullParserContext
 import junit.framework.Assert.assertEquals
 import org.junit.Test
 import java.io.ByteArrayInputStream

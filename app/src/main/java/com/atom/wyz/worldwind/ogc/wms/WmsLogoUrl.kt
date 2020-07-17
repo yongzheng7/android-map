@@ -2,63 +2,30 @@ package com.atom.wyz.worldwind.ogc.wms
 
 import com.atom.wyz.worldwind.util.xml.XmlModel
 import java.util.*
-import javax.xml.namespace.QName
 
-class WmsLogoUrl(namespaceURI: String?) : XmlModel(namespaceURI) {
-    lateinit var format: QName
+open class WmsLogoUrl : XmlModel() {
+    open var formats: MutableSet<String> = LinkedHashSet()
 
-    lateinit var onlineResource: QName
+    open var url: String? = null
 
-    var width = QName("", "width")
+    open var width: Int? = null
 
-    var height = QName("", "height")
+    open var height: Int? = null
 
-    init {
-        initialize()
-    }
-    protected fun initialize() {
-        format = QName(this.namespaceUri, "Format")
-        onlineResource = QName(this.namespaceUri, "OnlineResource")
-    }
-
-    override fun setField(keyName: QName, value: Any?) {
-        if (keyName == format) {
-            var formats = this.getField(format) as MutableSet<String?>?
-            if (formats == null) {
-                formats = HashSet()
-                super.setField(format, formats)
+    override fun parseField(keyName: String, value: Any) {
+        when (keyName) {
+            "Format" -> {
+                formats.add((value as String))
             }
-            if (value is XmlModel) {
-                formats.add(value.getCharactersContent())
-                return
+            "OnlineResource" -> {
+                url = (value as WmsOnlineResource).url
             }
-        }
-        super.setField(keyName, value)
-    }
-
-    fun getWidth(): Int? {
-        return getIntegerAttributeValue(width, false)
-    }
-
-    fun getHeight(): Int? {
-        return getIntegerAttributeValue(height, false)
-    }
-
-    fun getFormats(): Set<String?>? {
-        val o = this.getField(format)
-        return if (o is Set<*>) {
-            o as Set<String?>?
-        } else {
-            emptySet<String>()
-        }
-    }
-
-    fun getOnlineResource(): WmsOnlineResource? {
-        val o = this.getField(onlineResource)
-        return if (o is WmsOnlineResource) {
-            o
-        } else {
-            null
+            "width" -> {
+                width = (value as String).toInt()
+            }
+            "height" -> {
+                height = (value as String).toInt()
+            }
         }
     }
 }

@@ -1,4 +1,4 @@
-package com.atom.wyz.worldwind.ogc.wms
+package com.atom.wyz.worldwind.ogc
 
 import com.atom.wyz.worldwind.geom.Sector
 import com.atom.wyz.worldwind.globe.Tile
@@ -9,63 +9,76 @@ import com.atom.wyz.worldwind.util.Level
 import com.atom.wyz.worldwind.util.Logger
 import java.util.*
 
-class WmsTileFactory : TileFactory {
+open class WmsTileFactory : TileFactory {
 
-     var serviceAddress: String
+    /**
+     * The WMS service address used to build Get Map URLs.
+     */
+    protected var serviceAddress: String
 
     /**
      * The WMS protocol version.
      */
-     var wmsVersion: String
+    protected var wmsVersion: String
+
     /**
      * The comma-separated list of WMS layer names.
      */
-     var layerNames: String
+    protected var layerNames: String
 
     /**
      * The comma-separated list of WMS style names. May be null in which case the default style is assumed.
      */
-     var styleNames: String? = null
+    protected var styleNames: String? = null
 
     /**
      * The coordinate reference system to use in Get Map URLs. Defaults to EPSG:4326.
-     * 在“获取地图URL”中使用的坐标参考系统。 默认为EPSG：4326。
      */
-     var coordinateSystem: String? = "EPSG:4326"
+    protected var coordinateSystem = "EPSG:4326"
+
+    /**
+     * The image content type to use in Get Map URLs. May be null in which case a default format is assumed.
+     */
+    protected var imageFormat: String? = null
 
     /**
      * Indicates whether Get Map URLs should include transparency.
-     * 指示“获取地图URL”是否应包括透明度。
      */
-     var transparent = true
+    protected var transparent = true
 
     /**
      * The time parameter to include in Get Map URLs. May be null in which case no time parameter is included.
-     * 要包含在“获取地图URL”中的时间参数。 在没有时间参数的情况下，可以为null。
      */
-     var timeString: String? = null
-
-    /**
-     * The image MIME format to use in Get Map URLs. May be null in which case a default format is assumed.
-     */
-     var imageFormat: String? = null
+    protected var timeString: String? = null
 
 
-    constructor(serviceAddress: String, wmsVersion: String, layerNames: String, styleNames: String?) {
+    constructor(
+        serviceAddress: String,
+        wmsVersion: String,
+        layerNames: String,
+        styleNames: String?
+    ) {
         this.serviceAddress = serviceAddress
         this.wmsVersion = wmsVersion
         this.layerNames = layerNames
-
         this.styleNames = styleNames
     }
 
     constructor(config: WmsLayerConfig) {
+        requireNotNull(config.coordinateSystem) {
+            Logger.logMessage(
+                Logger.ERROR,
+                "WmsTileFactory",
+                "constructor",
+                "missingCoordinateSystem"
+            )
+        }
         serviceAddress = config.serviceAddress
         wmsVersion = config.wmsVersion
         layerNames = config.layerNames
+        styleNames = config.styleNames
         coordinateSystem = config.coordinateSystem
         imageFormat = config.imageFormat
-        styleNames = config.styleNames
         transparent = config.transparent
         timeString = config.timeString
     }

@@ -4,8 +4,8 @@ import com.atom.wyz.worldwind.WorldWind
 import com.atom.wyz.worldwind.geom.Sector
 import com.atom.wyz.worldwind.globe.Tile
 import com.atom.wyz.worldwind.globe.TileFactory
-import com.atom.wyz.worldwind.ogc.wms.WmsLayerConfig
-import com.atom.wyz.worldwind.ogc.wms.WmsTileFactory
+import com.atom.wyz.worldwind.ogc.WmsLayerConfig
+import com.atom.wyz.worldwind.ogc.WmsTileFactory
 import com.atom.wyz.worldwind.render.ImageOptions
 import com.atom.wyz.worldwind.util.Level
 import com.atom.wyz.worldwind.util.LevelSet

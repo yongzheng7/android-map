@@ -1,160 +1,75 @@
 package com.atom.wyz.worldwind.ogc.wms
 
+import android.util.Xml
+import com.atom.wyz.worldwind.util.Logger
 import com.atom.wyz.worldwind.util.xml.XmlModel
-import com.atom.wyz.worldwind.util.xml.XmlPullParserContext
-import org.xmlpull.v1.XmlPullParserException
-import java.io.IOException
+import com.atom.wyz.worldwind.util.xml.XmlModelParser
 import java.io.InputStream
 import java.util.*
-import javax.xml.namespace.QName
 
-class WmsCapabilities(namespaceUri: String?) : XmlModel(namespaceUri) {
+open class WmsCapabilities() : XmlModel() {
 
-    companion object{
-        val VERSION = QName("", "version")
-
-        val UPDATE_SEQUENCE =
-            QName("", "updateSequence")
-
-        @Throws(XmlPullParserException::class, IOException::class)
-        fun getCapabilities(`is`: InputStream ): WmsCapabilities {
-
-            // Initialize the pull parser context
-            val ctx = WmsPullParserContext(
-                XmlPullParserContext.DEFAULT_NAMESPACE
-            )
-            ctx.setParserInput(`is`)
-
-            // Parse the Xml document until a Wms service is discovered
-            val wmsCapabilities =
-                WmsCapabilities(
-                    XmlPullParserContext.DEFAULT_NAMESPACE
+    companion object {
+        @Throws(Exception::class)
+        fun getCapabilities(inputStream: InputStream): WmsCapabilities {
+            val pullParser = Xml.newPullParser()
+            pullParser.setInput(inputStream, null /*inputEncoding*/)
+            val modelParser: XmlModelParser = WmsXmlParser()
+            modelParser.xpp = (pullParser)
+            return modelParser.parse() as? WmsCapabilities
+                ?: throw RuntimeException(
+                    Logger.logMessage(
+                        Logger.ERROR,
+                        "WmsCapabilities",
+                        "getCapability",
+                        "Invalid WMS Capabilities input"
+                    )
                 )
-            wmsCapabilities.read(ctx)
-            return wmsCapabilities
         }
     }
 
-    lateinit var capabilityInformation: QName
+    open var version: String? = null
 
-    lateinit var serviceInformation: QName
+    open var updateSequence: String? = null
 
-    init {
-        initialize()
-    }
+    open var service: WmsService? = null
 
-    protected fun initialize() {
-        capabilityInformation = QName(this.namespaceUri, "Capability")
-        serviceInformation = QName(this.namespaceUri, "Service")
-    }
+    open var capability: WmsCapability? = null
 
-    fun getNamedLayers(): List<WmsLayerCapabilities>? {
-        val capInfo: WmsCapabilityInformation =
-            this.getField(capabilityInformation) as WmsCapabilityInformation?
-                ?: return null
-        val namedLayers: MutableList<WmsLayerCapabilities> =
-            ArrayList<WmsLayerCapabilities>()
-
-        for (layer in getCapabilityInformation()!!.getLayerList()) {
-            namedLayers.addAll(layer.getNamedLayers()!!)
+    open fun getNamedLayers(): List<WmsLayer> {
+        val namedLayers: MutableList<WmsLayer> = ArrayList()
+        capability?.layers?.forEach {
+            namedLayers.addAll(it.getNamedLayers())
         }
         return namedLayers
     }
 
-    fun getLayerByName(name: String?): WmsLayerCapabilities? {
+    open fun getNamedLayer(name: String?): WmsLayer? {
         if (name == null || name.isEmpty()) {
             return null
         }
         val namedLayers = getNamedLayers()
-        if (namedLayers != null) {
-            for (layer in namedLayers) {
-                if (layer.getName().equals(name)) {
-                    return layer
-                }
+        for (layer in namedLayers) {
+            if (layer.name.equals(name)) {
+                return layer
             }
         }
         return null
     }
-
-    fun getCapabilityInformation(): WmsCapabilityInformation? {
-        return this.getField(capabilityInformation) as WmsCapabilityInformation?
-    }
-
-    /**
-     * Returns the document's service information.
-     *
-     * @return the document's service information.
-     */
-    fun getServiceInformation(): WmsServiceInformation? {
-        return this.getField(serviceInformation) as WmsServiceInformation?
-    }
-
-    /**
-     * Returns the document's version number.
-     *
-     * @return the document's version number.
-     */
-    fun getVersion(): String? {
-        return this.getField(VERSION).toString()
-    }
-
-    /**
-     * Returns the document's update sequence.
-     *
-     * @return the document's update sequence.
-     */
-    fun getUpdateSequence(): String? {
-        val o = this.getField(UPDATE_SEQUENCE)
-        return o?.toString()
-    }
-
-    fun getImageFormats(): MutableSet<String>? {
-        val capInfo: WmsCapabilityInformation = getCapabilityInformation() ?: return null
-        return capInfo.getImageFormats()
-    }
-
-    fun getRequestURL(
-        requestName: String?,
-        requestMethod: String?
-    ): String? {
-        if (requestName == null || requestMethod == null) {
-            return null
+    override fun parseField(keyName: String, value: Any) {
+        when (keyName) {
+            "version" -> {
+                version = value as String
+            }
+            "updateSequence" -> {
+                updateSequence = value as String
+            }
+            "Service" -> {
+                service = value as WmsService
+            }
+            "Capability" -> {
+                capability = value as WmsCapability
+            }
         }
-        val capabilityInformation = getCapabilityInformation()
-            ?: return null
-        var requestDescription: WmsRequestDescription? = null
-        if (requestName == "GetCapabilities") {
-            requestDescription = capabilityInformation.getCapabilitiesInfo()
-        } else if (requestName == "GetMap") {
-            requestDescription = capabilityInformation.getMapInfo()
-        } else if (requestName == "GetFeatureInfo") {
-            requestDescription = capabilityInformation.getFeatureInfo()
-        }
-        if (requestDescription == null) {
-            return null
-        }
-        val onlineResource =
-            requestDescription.getOnlineResouce(requestMethod)
-                ?: return null
-        return onlineResource.getHref()
-    }
-
-    override fun toString(): String
-    {
-        val sb = StringBuilder()
-        sb.append("Version: ").append(if (getVersion() != null) getVersion() else "none")
-            .append("\n")
-        sb.append("UpdateSequence: ")
-            .append(if (getUpdateSequence() != null) getUpdateSequence() else "none")
-        sb.append("\n")
-        sb.append(if (getServiceInformation() != null) getServiceInformation() else "Service Information: none")
-        sb.append("\n")
-        sb.append(if (getCapabilityInformation() != null) getCapabilityInformation() else "Capability Information: none")
-        sb.append("\n")
-        sb.append("LAYERS\n")
-        for (layerCaps in getNamedLayers()!!) {
-            sb.append(layerCaps.toString()).append("\n")
-        }
-        return sb.toString()
     }
 }

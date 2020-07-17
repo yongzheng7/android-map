@@ -3,8 +3,6 @@ package com.atom.wyz.worldwind
 import com.atom.wyz.worldwind.geom.Sector
 import com.atom.wyz.worldwind.layer.LayerFactory
 import com.atom.wyz.worldwind.ogc.wms.WmsCapabilities
-import com.atom.wyz.worldwind.ogc.wms.WmsLayerCapabilities
-import com.atom.wyz.worldwind.ogc.wms.WmsLayerConfig
 import com.atom.wyz.worldwind.util.LevelSetConfig
 import com.atom.wyz.worldwind.util.Logger
 import junit.framework.Assert
