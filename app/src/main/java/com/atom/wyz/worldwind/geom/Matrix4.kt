@@ -976,12 +976,7 @@ class Matrix4 {
     /**
      * 提取视点位置
      */
-    fun extractEyePoint(result: Vec3?): Vec3 {
-        if (result == null) {
-            throw java.lang.IllegalArgumentException(
-                Logger.logMessage(Logger.ERROR, "Matrix4", "extractEyePoint", "missingResult")
-            )
-        }
+    fun extractEyePoint(result: Vec3): Vec3 {
         // The eye point of a modelview matrix is computed by transforming the origin (0, 0, 0, 1) by the matrix's inverse.
         // This is equivalent to transforming the inverse of this matrix's translation components in the rightmost column by
         // the transpose of its upper 3x3 components.
@@ -991,12 +986,7 @@ class Matrix4 {
         return result
     }
 
-    fun extractForwardVector(result: Vec3?): Vec3 {
-        if (result == null) {
-            throw java.lang.IllegalArgumentException(
-                Logger.logMessage(Logger.ERROR, "Matrix4", "extractForwardVector", "missingResult")
-            )
-        }
+    fun extractForwardVector(result: Vec3): Vec3 {
         // The forward vector of a modelview matrix is computed by transforming the negative Z axis (0, 0, -1, 0) by the
         // matrix's inverse. We have pre-computed the result inline here to simplify this computation.
         result.x = -m[8]
@@ -1164,6 +1154,26 @@ class Matrix4 {
         return Arrays.hashCode(m)
     }
 
+    /**
+     * 返回此观察矩阵的方位角（以度为单位）。
+     */
+    fun extractHeading(roll: Double): Double {
+        val rad = Math.toRadians(roll)
+        val cr = Math.cos(rad)
+        val sr = Math.sin(rad)
+        val ch = cr * m[0] - sr * m[4]
+        val sh = sr * m[5] - cr * m[1]
+        return Math.toDegrees(Math.atan2(sh, ch))
+    }
+
+    /**
+     * 返回此观察矩阵的倾斜角度（以度为单位）。
+     */
+    fun extractTilt(): Double {
+        val ct = m[10]
+        val st = Math.sqrt(m[2] * m[2] + m[6] * m[6])
+        return Math.toDegrees(Math.atan2(st, ct))
+    }
     /**
      * 转置此矩阵，将结果存储在指定的单精度数组中。
      * 结果与GLSL统一矩阵兼容，并且可以传递给函数glUniformMatrix4fv。

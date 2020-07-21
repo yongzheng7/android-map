@@ -17,7 +17,7 @@ import java.util.*
 class AtmosphereLayer : AbstractLayer {
 
     companion object {
-        private val VERTEX_POINTS_KEY = AtmosphereLayer::class.java.name + ".vertexPoints"
+        private val VERTEX_POINTS_KEY = AtmosphereLayer::class.java.name + ".points"
         private val TRI_STRIP_ELEMENTS_KEY = AtmosphereLayer::class.java.name + ".triStripElements"
     }
 
@@ -40,19 +40,19 @@ class AtmosphereLayer : AbstractLayer {
 
     override fun doRender(rc: RenderContext) {
         determineLightDirection(rc)
-        //renderSky(rc)
+        renderSky(rc)
         drawGround(rc)
     }
 
     protected fun determineLightDirection(rc: RenderContext) {
         if (lightLocation != null) {
-            rc.globe!!.geographicToCartesianNormal(
+            rc.globe.geographicToCartesianNormal(
                 lightLocation!!.latitude,
                 lightLocation!!.longitude,
                 activeLightDirection
             )
         } else {
-            rc.globe!!.geographicToCartesianNormal(
+            rc.globe.geographicToCartesianNormal(
                 rc.camera.latitude,
                 rc.camera.longitude,
                 activeLightDirection
@@ -74,7 +74,7 @@ class AtmosphereLayer : AbstractLayer {
             drawable.program = rc.putProgram(GroundProgram.KEY, GroundProgram(rc.resources!!)) as GroundProgram
         }
         drawable.lightDirection.set(activeLightDirection)
-        drawable.globeRadius = rc.globe!!.equatorialRadius
+        drawable.globeRadius = rc.globe.getEquatorialRadius()
 
         if (nightImageSource != null && lightLocation != null) {
             drawable.nightTexture = rc.getTexture(nightImageSource!!)
@@ -96,7 +96,7 @@ class AtmosphereLayer : AbstractLayer {
             drawable.program = rc.putProgram(SkyProgram.KEY, SkyProgram(rc.resources!!)) as SkyProgram
         }
         drawable.lightDirection.set(activeLightDirection)
-        drawable.globeRadius = rc.globe!!.equatorialRadius
+        drawable.globeRadius = rc.globe.getEquatorialRadius()
 
 
         drawable.vertexPoints = rc.getBufferObject(VERTEX_POINTS_KEY)
@@ -114,7 +114,7 @@ class AtmosphereLayer : AbstractLayer {
             )
         }
         drawable.lightDirection.set(activeLightDirection)
-        drawable.globeRadius = rc.globe!!.equatorialRadius
+        drawable.globeRadius = rc.globe.getEquatorialRadius()
 
         rc.offerSurfaceDrawable(drawable, Double.POSITIVE_INFINITY)
     }
@@ -127,13 +127,10 @@ class AtmosphereLayer : AbstractLayer {
     ): BufferObject {
 
         val count = numLat * numLon
-        val altitudes = DoubleArray(count)
-        Arrays.fill(altitudes, altitude)
-
+        val altitudes = FloatArray(count)
+        Arrays.fill(altitudes, altitude.toFloat())
         val points = FloatArray(count * 3)
-
-        rc.globe!!.geographicToCartesianGrid(fullSphereSector, numLat, numLon, altitudes, null, points, 3, 0)
-
+        rc.globe.geographicToCartesianGrid(fullSphereSector, numLat, numLon, altitudes, 1f, null, points, 0, 0)
         val size = points.size * 4
         val buffer = ByteBuffer.allocateDirect(size).order(ByteOrder.nativeOrder()).asFloatBuffer()
         buffer.put(points).rewind()

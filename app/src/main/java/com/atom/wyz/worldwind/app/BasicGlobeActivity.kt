@@ -26,4 +26,5 @@ open class BasicGlobeActivity :  AppCompatActivity(){
         wwd.layers.addLayer(BlueMarbleLandsatLayer())
         return wwd
     }
+
 }

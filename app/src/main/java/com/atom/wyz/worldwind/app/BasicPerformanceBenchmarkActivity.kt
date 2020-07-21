@@ -69,10 +69,10 @@ class BasicPerformanceBenchmarkActivity : BasicWorldWindActivity() {
 
     class SetCameraCommand private constructor() : Runnable {
         private var wwd: WorldWindow? = null
-        private val camera: Camera? = Camera()
+        private val camera: Camera = Camera()
         private operator fun set(wwd: WorldWindow?, camera: Camera?): SetCameraCommand? {
             this.wwd = wwd
-            this.camera?.set(camera)
+            this.camera.set(camera)
             return this
         }
 
@@ -82,7 +82,7 @@ class BasicPerformanceBenchmarkActivity : BasicWorldWindActivity() {
         }
 
         override fun run() {
-            wwd?.navigator?.setAsCamera(wwd?.globe, camera)
+            wwd?.navigator?.setAsCamera(wwd!!.globe, camera)
             wwd?.requestRender()
             pool.release(reset())
         }

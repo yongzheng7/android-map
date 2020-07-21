@@ -47,6 +47,9 @@ class DrawableTessellation : Drawable {
         if (!program.useProgram(dc)) {
             return  // program failed to build
         }
+
+        // Use the draw context's pick mode.
+        program.enablePickMode(dc.pickMode)
         program.enableTexture(false)
         program.loadColor(color)
         GLES20.glDepthMask(false)

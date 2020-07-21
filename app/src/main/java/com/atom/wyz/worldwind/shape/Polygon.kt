@@ -99,16 +99,16 @@ class Polygon : AbstractShape {
         }
 
         override fun vertexData(vertexData: Any?, polygonData: Any?) {
-            tessVertex(polygonData as RenderContext?, vertexData!!)
+            tessVertex(polygonData as RenderContext, vertexData!!)
         }
 
         override fun edgeFlagData(boundaryEdge: Boolean, polygonData: Any?) {
-            tessEdgeFlag(polygonData as RenderContext?, boundaryEdge)
+            tessEdgeFlag(polygonData as RenderContext, boundaryEdge)
         }
 
 
         override fun errorData(errnum: Int, polygonData: Any?) {
-            tessError(polygonData as RenderContext?, errnum)
+            tessError(polygonData as RenderContext, errnum)
         }
     }
 
@@ -671,7 +671,7 @@ class Polygon : AbstractShape {
         mz /= numPoints
 
         vertexOrigin.set(mx, my, mz)
-        modelToLocal = rc.globe!!.cartesianToLocalTransform(mx, my, mz, modelToLocal)!!.invertOrthonormal()
+        modelToLocal = rc.globe.cartesianToLocalTransform(mx, my, mz, modelToLocal).invertOrthonormal()
     }
 
     protected fun tessCombine(
@@ -693,7 +693,7 @@ class Polygon : AbstractShape {
         }
     }
 
-    protected fun tessVertex(rc: RenderContext?, vertexData: Any) {
+    protected fun tessVertex(rc: RenderContext, vertexData: Any) {
         tessVertices[tessVertexCount] = vertexData as Int
         tessEdgeFlags[tessVertexCount] = tessEdgeFlag
         if (tessVertexCount < 2) {
@@ -732,11 +732,11 @@ class Polygon : AbstractShape {
         }
     }
 
-    protected fun tessEdgeFlag(rc: RenderContext?, boundaryEdge: Boolean) {
+    protected fun tessEdgeFlag(rc: RenderContext, boundaryEdge: Boolean) {
         tessEdgeFlag = boundaryEdge
     }
 
-    protected fun tessError(rc: RenderContext?, errnum: Int) {
+    protected fun tessError(rc: RenderContext, errnum: Int) {
         val errstr = GLU.gluErrorString(errnum)
         Logger.logMessage(
             Logger.WARN,

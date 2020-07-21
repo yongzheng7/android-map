@@ -21,6 +21,19 @@ class WWMath {
         }
 
         /**
+         * 返回指定数字的小数部分
+         */
+        fun fract(value: Double): Double {
+            return value - Math.floor(value)
+        }
+
+        /**
+         * 返回指定数字的整数模数。 这与％运算符的不同之处在于，当模数为正时，结果始终为正。 例如-1％10 = -1，而mod（-1，10）= 1。
+         */
+        fun mod(value: Int, modulus: Int): Int {
+            return (value % modulus + modulus) % modulus
+        }
+        /**
          * 将角度限制在[-180，+180]度范围内，包角不在该范围内。经度
          */
         fun normalizeAngle180(degrees: Double): Double {

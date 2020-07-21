@@ -94,7 +94,7 @@ open class WmsLayer : RenderableLayer{
                 "invalidResolution"
             )
         }
-        val radiansPerPixel: Double = metersPerPixel / globe.equatorialRadius
+        val radiansPerPixel: Double = metersPerPixel / globe.getEquatorialRadius()
         val levelsConfig = LevelSetConfig()
         levelsConfig.sector.set(sector)
         levelsConfig.numLevels = levelsConfig.numLevelsForResolution(radiansPerPixel)

@@ -3,24 +3,24 @@ package com.atom.wyz.worldwind
 import android.content.res.Resources
 import android.graphics.Typeface
 import com.atom.wyz.worldwind.draw.Drawable
-import com.atom.wyz.worldwind.draw.DrawableList
 import com.atom.wyz.worldwind.draw.DrawableQueue
 import com.atom.wyz.worldwind.draw.DrawableTerrain
 import com.atom.wyz.worldwind.geom.*
 import com.atom.wyz.worldwind.globe.Globe
 import com.atom.wyz.worldwind.globe.Terrain
+import com.atom.wyz.worldwind.globe.Tessellator
 import com.atom.wyz.worldwind.layer.Layer
 import com.atom.wyz.worldwind.layer.LayerList
 import com.atom.wyz.worldwind.pick.PickedObject
 import com.atom.wyz.worldwind.pick.PickedObjectList
 import com.atom.wyz.worldwind.render.*
 import com.atom.wyz.worldwind.shape.TextAttributes
-import com.atom.wyz.worldwind.util.Logger
 import com.atom.wyz.worldwind.util.RenderResourceCache
 import com.atom.wyz.worldwind.util.glu.GLU
 import com.atom.wyz.worldwind.util.glu.GLUtessellator
 import com.atom.wyz.worldwind.util.pool.Pool
 import com.atom.wyz.worldwind.util.pool.SynchronizedPool
+import kotlin.math.tan
 
 /**
  * 绘画环境
@@ -31,7 +31,9 @@ open class RenderContext {
         private const val MAX_PICKED_OBJECT_ID = 0xFFFFFF
     }
 
-    var globe: Globe? = null
+    lateinit var globe: Globe
+
+    var terrainTessellator: Tessellator? = null
 
     var terrain: Terrain? = null
 
@@ -44,6 +46,7 @@ open class RenderContext {
     var verticalExaggeration = 1.0
 
     var fieldOfView = 0.0
+
     // 摄像机视线和地球相切，摄像机到切点的距离
     var horizonDistance = 0.0
 
@@ -68,7 +71,7 @@ open class RenderContext {
 
     var drawableQueue: DrawableQueue? = null
 
-    var drawableTerrain: DrawableList? = null
+    var drawableTerrain: DrawableQueue? = null
 
     var redrawRequested = false
 
@@ -96,9 +99,11 @@ open class RenderContext {
 
     private var tessellator: GLUtessellator? = null
 
+    val scratchVector = Vec3()
+
     open fun reset() {
         pickMode = false
-        globe = null
+        terrainTessellator = null
         terrain = null
         layers = null
         currentLayer = null
@@ -141,27 +146,17 @@ open class RenderContext {
     }
 
     open fun pixelSizeAtDistance(distance: Double): Double {
-        if (pixelSizeFactor == 0.0) { // cache the scaling factor used to convert distances to pixel sizes
+        if (pixelSizeFactor == 0.0) {
+            // cache the scaling factor used to convert distances to pixel sizes
             val fovyDegrees = fieldOfView
-            val tanfovy_2 = Math.tan(Math.toRadians(fovyDegrees * 0.5))
+            val tanfovy_2 = tan(Math.toRadians(fovyDegrees * 0.5))
             pixelSizeFactor = 2 * tanfovy_2 / viewport.height
         }
         return distance * pixelSizeFactor
     }
 
-    open fun project(modelPoint: Vec3?, result: Vec3?): Boolean {
-        if (modelPoint == null) {
-            throw IllegalArgumentException(
-                Logger.logMessage(Logger.ERROR, "RenderContext", "project", "missingPoint")
-            )
-        }
-        if (result == null) {
-            throw IllegalArgumentException(
-                Logger.logMessage(Logger.ERROR, "RenderContext", "project", "missingResult")
-            )
-        }
-        // Transform the model point from model coordinates to eye coordinates then to clip coordinates. This
-        // inverts the Z axis and stores the negative of the eye coordinate Z value in the W coordinate.
+    //
+    open fun project(modelPoint: Vec3, result: Vec3): Boolean {
         val mx: Double = modelPoint.x
         val my: Double = modelPoint.y
         val mz: Double = modelPoint.z
@@ -170,11 +165,11 @@ open class RenderContext {
         var y = m[4] * mx + m[5] * my + m[6] * mz + m[7]
         var z = m[8] * mx + m[9] * my + m[10] * mz + m[11]
         val w = m[12] * mx + m[13] * my + m[14] * mz + m[15]
-        if (w == 0.0) {
+        if (w == 0.0) { // 判断是否是方向
             return false
         }
         // Complete the conversion from model coordinates to clip coordinates by dividing by W. The resultant X, Y
-        // and Z coordinates are in the range [-1,1].
+        // and Z coordinates are in the range [-1,1]. 透视除法
         x /= w
         y /= w
         z /= w
@@ -196,18 +191,7 @@ open class RenderContext {
         return true
     }
 
-    open fun projectWithDepth(modelPoint: Vec3?, depthOffset: Double, result: Vec3?): Boolean {
-        if (modelPoint == null) {
-            throw IllegalArgumentException(
-                Logger.logMessage(Logger.ERROR, "RenderContext", "projectWithDepth", "missingPoint")
-            )
-        }
-        if (result == null) {
-            throw IllegalArgumentException(
-                Logger.logMessage(Logger.ERROR, "RenderContext", "projectWithDepth", "missingResult")
-            )
-        }
-
+    open fun projectWithDepth(modelPoint: Vec3, depthOffset: Double, result: Vec3): Boolean {
         val mx: Double = modelPoint.x
         val my: Double = modelPoint.y
         val mz: Double = modelPoint.z
@@ -329,17 +313,19 @@ open class RenderContext {
 
     open fun sortDrawables() {
         drawableQueue?.sortDrawables()
+        drawableTerrain?.sortDrawables()
     }
 
-    open fun offerDrawableTerrain(drawable: DrawableTerrain?) {
-        drawableTerrain?.offerDrawable(drawable)
+    open fun offerDrawableTerrain(drawable: DrawableTerrain, cameraDistance: Double) {
+        drawableTerrain?.offerDrawable(drawable, WorldWind.SURFACE_DRAWABLE, cameraDistance)
     }
 
 
     open fun <T : Drawable> getDrawablePool(key: Class<T>): Pool<T> {
         var pool = drawablePools.get(key) as Pool<T>?
         if (pool == null) {
-            pool = SynchronizedPool() // use SynchronizedPool; acquire and are release may be called in separate threads
+            pool =
+                SynchronizedPool() // use SynchronizedPool; acquire and are release may be called in separate threads
             drawablePools.put(key, pool)
         }
         return pool
@@ -373,35 +359,28 @@ open class RenderContext {
 
     open fun getText(text: String, attributes: TextAttributes): GpuTexture? {
         val key = scratchTextCacheKey.set(text, attributes)
-        return renderResourceCache ?.get(key) as GpuTexture?
+        return renderResourceCache?.get(key) as GpuTexture?
     }
 
     open fun renderText(text: String, attributes: TextAttributes): GpuTexture? {
         val key = TextCacheKey().set(text, attributes)
         textRenderer.textSize = (attributes.textSize)
-        attributes.typeface ?.also { textRenderer.typeface = it }
+        attributes.typeface?.also { textRenderer.typeface = it }
         textRenderer.enableOutline = (attributes.enableOutline)
         textRenderer.outlineWidth = (attributes.outlineWidth)
-        val texture: GpuTexture ?= textRenderer.renderText(text)
+        val texture: GpuTexture? = textRenderer.renderText(text)
         renderResourceCache?.put(key, texture!!, texture.textureByteCount)
         return texture
     }
 
     open fun geographicToCartesian(
         latitude: Double, longitude: Double, altitude: Double,
-        @WorldWind.AltitudeMode altitudeMode: Int, result: Vec3?
+        @WorldWind.AltitudeMode altitudeMode: Int, result: Vec3
     ): Vec3 {
-        requireNotNull(result) {
-            Logger.logMessage(
-                Logger.ERROR,
-                "RenderContext",
-                "geographicToCartesian",
-                "missingResult"
-            )
-        }
         when (altitudeMode) {
             WorldWind.ABSOLUTE -> {
-                return globe!!.geographicToCartesian(
+                // 绝对坐标,经纬度高度直接获取笛卡尔坐标系的位置
+                return globe.geographicToCartesian(
                     latitude,
                     longitude,
                     altitude * verticalExaggeration,
@@ -409,17 +388,28 @@ open class RenderContext {
                 )
             }
             WorldWind.CLAMP_TO_GROUND -> {
-                if (terrain != null && terrain!!.surfacePoint(latitude, longitude, 0.0, result)) {
+                if (terrain != null && terrain!!.surfacePoint(latitude, longitude, result)) {
                     return result // found a point on the terrain
-                } else if (globe != null) {
-                    return globe!!.geographicToCartesian(latitude, longitude, 0.0, result)
+                } else {
+                    //获取地球表面的点
+                    return globe.geographicToCartesian(latitude, longitude, 0.0, result)
                 }
             }
             WorldWind.RELATIVE_TO_GROUND -> {
-                if (terrain != null && terrain!!.surfacePoint(latitude, longitude, altitude, result)) {
+                if (terrain != null && terrain!!.surfacePoint(latitude, longitude, result)) {
+                    if (altitude != 0.0) { // Offset along the normal vector at the terrain surface point.
+                        globe.geographicToCartesianNormal(
+                            latitude,
+                            longitude,
+                            scratchVector
+                        )
+                        result.x += scratchVector.x * altitude
+                        result.y += scratchVector.y * altitude
+                        result.z += scratchVector.z * altitude
+                    }
                     return result // found a point relative to the terrain
-                } else if (globe != null) { // TODO use elevation model height as a fallback
-                    return globe!!.geographicToCartesian(latitude, longitude, altitude, result)
+                } else { // TODO use elevation model height as a fallback
+                    return globe.geographicToCartesian(latitude, longitude, altitude, result)
                 }
             }
         }
@@ -429,11 +419,11 @@ open class RenderContext {
 
     class TextCacheKey {
 
-        var text: String ?=null
+        var text: String? = null
 
         var textSize: Float = 0f
 
-        var typeface: Typeface ?=null
+        var typeface: Typeface? = null
 
         var enableOutline: Boolean = false
 
@@ -463,7 +453,8 @@ open class RenderContext {
 
         override fun hashCode(): Int {
             var result = if (text != null) text.hashCode() else 0
-            result = 31 * result + if (textSize != +0.0f) java.lang.Float.floatToIntBits(textSize) else 0
+            result =
+                31 * result + if (textSize != +0.0f) java.lang.Float.floatToIntBits(textSize) else 0
             result = 31 * result + if (typeface != null) typeface.hashCode() else 0
             result = 31 * result + if (enableOutline) 1 else 0
             result =

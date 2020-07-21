@@ -11,5 +11,4 @@ class ImageTile(sector: Sector?, level: Level?, row: Int, column: Int) : Tile(se
         return "ImageTile(imageSource=$imageSource)"
     }
 
-
 }

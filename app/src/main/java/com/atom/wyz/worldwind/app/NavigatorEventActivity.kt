@@ -158,7 +158,8 @@ class NavigatorEventActivity : BasicWorldWindActivity() , FrameCallback {
     protected fun updateOverlayContents(lookAt: LookAt, camera: Camera) {
         latView!!.text = formatLatitude(lookAt.latitude)
         lonView!!.text = formatLongitude(lookAt.longitude)
-        altView!!.text = formatAltitude(camera.altitude)
+        //altView!!.text = formatAltitude(camera.altitude)
+        altView!!.text = formatElevation(camera.altitude)
     }
 
     /**
@@ -186,11 +187,18 @@ class NavigatorEventActivity : BasicWorldWindActivity() , FrameCallback {
         return String.format("%7.3f°%s", longitude * sign, if (sign >= 0.0) "E" else "W")
     }
 
-    protected fun formatAltitude(altitude: Double): String? {
+    protected fun formatAltitude(altitude: Double): String {
         return String.format(
             "Eye: %,.0f %s",
             if (altitude < 100000) altitude else altitude / 1000,
             if (altitude < 100000) "m" else "km"
+        )
+    }
+    protected fun formatElevation(elevation: Double): String {
+        return String.format(
+            "Elev: %,.0f %s",
+            if (elevation < 100000) elevation else elevation / 1000,
+            if (elevation < 100000) "m" else "km"
         )
     }
 

@@ -174,7 +174,9 @@ class LevelSet {
 
         val levelNumber = Math.round(level).toInt() // nearest neighbor level
 
-        return if (levelNumber < levels.size) {
+        return if (levelNumber < 0) {
+            levels[0] // unable to match the resolution; return the first level
+        } else if (levelNumber < levels.size) {
             levels[levelNumber] // nearest neighbor level is in this level set
         } else {
             levels[levels.size - 1] // unable to match the resolution; return the last level

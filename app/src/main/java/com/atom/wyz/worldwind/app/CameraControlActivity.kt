@@ -1,19 +1,10 @@
 package com.atom.wyz.worldwind.app
 
 import android.os.Bundle
-import android.os.Handler
-import android.os.Looper
-import androidx.annotation.NonNull
 import com.atom.wyz.worldwind.CustomWorldWindowCameraController
 import com.atom.wyz.worldwind.WorldWind
-import com.atom.wyz.worldwind.WorldWindow
 import com.atom.wyz.worldwind.geom.Camera
 import com.atom.wyz.worldwind.globe.Globe
-import java.io.BufferedReader
-import java.io.IOException
-import java.io.InputStreamReader
-import java.util.concurrent.Executor
-import java.util.concurrent.Executors
 
 class CameraControlActivity : BasicWorldWindActivity() {
 

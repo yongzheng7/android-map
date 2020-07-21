@@ -15,7 +15,7 @@ class ProjectionWgs84() : GeographicProjection {
         return "WGS84"
     }
 
-    override fun geographicToCartesian(globe: Globe, latitude: Double, longitude: Double, altitude: Double, offset: Vec3?, result: Vec3): Vec3 {
+    override fun geographicToCartesian(globe: Globe, latitude: Double, longitude: Double, altitude: Double, result: Vec3): Vec3 {
         // 经纬度转弧度
         val radLat = Math.toRadians(latitude)
         val radLon = Math.toRadians(longitude)
@@ -25,8 +25,8 @@ class ProjectionWgs84() : GeographicProjection {
         val cosLon = Math.cos(radLon)
         val sinLon = Math.sin(radLon)
 
-        val ec2: Double = globe.eccentricitySquared
-        val rpm: Double = globe.equatorialRadius / Math.sqrt(1.0 - ec2 * sinLat * sinLat)
+        val ec2: Double = globe.getEccentricitySquared()
+        val rpm: Double = globe.getEquatorialRadius() / Math.sqrt(1.0 - ec2 * sinLat * sinLat)
 
         result.x = (altitude + rpm) * cosLat * sinLon
         result.y = (altitude + rpm * (1.0 - ec2)) * sinLat
@@ -46,11 +46,11 @@ class ProjectionWgs84() : GeographicProjection {
         val sinLat = Math.sin(radLat)
         val cosLon = Math.cos(radLon)
         val sinLon = Math.sin(radLon)
-        val eqr2: Double = globe.equatorialRadius * globe.equatorialRadius
-        val pol2: Double = globe.polarRadius * globe.polarRadius
+        val eqr2: Double = globe.getEquatorialRadius() * globe.getEquatorialRadius()
+        val pol2: Double = globe.getPolarRadius() * globe.getPolarRadius()
 
         result.x = cosLat * sinLon / eqr2
-        result.y = (1 - globe.eccentricitySquared) * sinLat / pol2
+        result.y = (1 - globe.getEccentricitySquared()) * sinLat / pol2
         result.z = cosLat * cosLon / eqr2
 
         return result.normalize()
@@ -74,7 +74,7 @@ class ProjectionWgs84() : GeographicProjection {
     /**
      * 地理>>转变>>笛卡尔
      */
-    override fun geographicToCartesianTransform(globe: Globe, latitude: Double, longitude: Double, altitude: Double, offset: Vec3?, result: Matrix4): Matrix4 {
+    override fun geographicToCartesianTransform(globe: Globe, latitude: Double, longitude: Double, altitude: Double, result: Matrix4): Matrix4 {
 
         val radLat = Math.toRadians(latitude)
         val radLon = Math.toRadians(longitude)
@@ -83,17 +83,17 @@ class ProjectionWgs84() : GeographicProjection {
         val cosLon = Math.cos(radLon)
         val sinLon = Math.sin(radLon)
 
-        val ec2: Double = globe.eccentricitySquared
-        val rpm: Double = globe.equatorialRadius / Math.sqrt(1.0 - ec2 * sinLat * sinLat)
-        val eqr2: Double = globe.equatorialRadius * globe.equatorialRadius
-        val pol2: Double = globe.polarRadius * globe.polarRadius
+        val ec2: Double = globe.getEccentricitySquared()
+        val rpm: Double = globe.getEquatorialRadius() / Math.sqrt(1.0 - ec2 * sinLat * sinLat)
+        val eqr2: Double = globe.getEquatorialRadius() * globe.getEquatorialRadius()
+        val pol2: Double = globe.getPolarRadius() * globe.getPolarRadius()
 
         val px = (rpm + altitude) * cosLat * sinLon
         val py = (rpm * (1.0 - ec2) + altitude) * sinLat
         val pz = (rpm + altitude) * cosLat * cosLon
 
         var ux = cosLat * sinLon / eqr2
-        var uy: Double = (1 - globe.eccentricitySquared) * sinLat / pol2
+        var uy: Double = (1 - globe.getEccentricitySquared()) * sinLat / pol2
         var uz = cosLat * cosLon / eqr2
 
         var len = Math.sqrt(ux * ux + uy * uy + uz * uz)
@@ -124,48 +124,46 @@ class ProjectionWgs84() : GeographicProjection {
     }
 
 
-    override fun geographicToCartesianGrid(globe: Globe, sector: Sector, numLat: Int, numLon: Int, elevations: DoubleArray?, origin: Vec3?, offset: Vec3?, result: FloatArray, stride: Int ,  poss : Int): FloatArray {
-        var pos = poss
+    override fun geographicToCartesianGrid(globe: Globe, sector: Sector, numLat: Int, numLon: Int, height: FloatArray?, verticalExaggeration :Float ,origin: Vec3?, result: FloatArray, offset: Int, val_rowStride : Int): FloatArray {
+        var rowStride = val_rowStride
         if (numLat < 1 || numLon < 1) {
-            throw java.lang.IllegalArgumentException(Logger.logMessage(Logger.ERROR, "ProjectionWgs84",
-                    "geographicToCartesianGrid", "Number of latitude or longitude locations is less than one"))
+            throw java.lang.IllegalArgumentException(
+                Logger.logMessage(Logger.ERROR, "ProjectionWgs84",
+                    "geographicToCartesianGrid",
+                    "瓦块的横纵点数小于1"))
         }
 
         val numPoints = numLat * numLon
-
-        if (elevations != null && elevations.size < numPoints) {
-            throw java.lang.IllegalArgumentException(Logger.logMessage(Logger.ERROR, "ProjectionWgs84",
-                    "geographicToCartesianGrid", "missingArray"))
-        }
-
-        if ( result.size < numPoints * stride + pos) {
+        if (height != null && height.size < numPoints) {
             throw java.lang.IllegalArgumentException(
-                    Logger.logMessage(Logger.ERROR, "BasicGlobe", "geographicToCartesianGrid", "missingResult"))
+                Logger.logMessage(Logger.ERROR,
+                    "ProjectionWgs84",
+                    "geographicToCartesianGrid",
+                    "瓦片的高低点小于总点数"))
         }
 
-        val eqr: Double = globe.equatorialRadius
-        val ec2: Double = globe.eccentricitySquared
+        val minLat = Math.toRadians(sector.minLatitude)
+        val maxLat = Math.toRadians(sector.maxLatitude)
+        val minLon = Math.toRadians(sector.minLongitude)
+        val maxLon = Math.toRadians(sector.maxLongitude)
+        val deltaLat = (maxLat - minLat) / (if (numLat > 1) numLat - 1 else 1) //每一份的纬度
+        val deltaLon = (maxLon - minLon) / (if (numLon > 1) numLon - 1 else 1) //每一份的经度
+
+        val eqr: Double = globe.getEquatorialRadius()
+        val ec2: Double = globe.getEccentricitySquared()
         var cosLat: Double
         var sinLat: Double
         var rpm: Double
         val cosLon = DoubleArray(numLon)
         val sinLon = DoubleArray(numLon)
 
-        val minLat = Math.toRadians(sector.minLatitude)
-        val maxLat = Math.toRadians(sector.maxLatitude)
-        val minLon = Math.toRadians(sector.minLongitude)
-        val maxLon = Math.toRadians(sector.maxLongitude)
-        val deltaLat = (maxLat - minLat) / (if (numLat > 1) numLat - 1 else 1)
-        val deltaLon = (maxLon - minLon) / (if (numLon > 1) numLon - 1 else 1)
-
         var latIndex :Int
         var lonIndex :Int
         var elevIndex  = 0
 
-
         var lat: Double
         var lon: Double
-        var elev: Double
+        var hgt: Float
 
         val xOffset: Double = if (origin != null) -origin.x else 0.0
         val yOffset: Double = if (origin != null) -origin.y else 0.0
@@ -179,14 +177,19 @@ class ProjectionWgs84() : GeographicProjection {
             if (lonIndex == numLon - 1) {
                 lon = maxLon // explicitly set the last lon to the max longitude to ensure alignment
             }
-            cosLon[lonIndex] = Math.cos(lon)
-            sinLon[lonIndex] = Math.sin(lon)
+            cosLon[lonIndex] = Math.cos(lon) //每份的cos 经度
+            sinLon[lonIndex] = Math.sin(lon) //每份的sin 经度
             lonIndex++
             lon += deltaLon
         }
 
-        latIndex = 0
+        var rowIndex = offset // 行的索引起点偏移
+        if (rowStride == 0) {
+            rowStride = numLon * 3 //行的步
+        }
+        // 开始的起点偏移量 加上 该瓦片中 一行(经度点) * 3 就是 中间空余出一行的点数的float的值
         lat = minLat
+        latIndex = 0
         while (latIndex < numLat) {
             if (latIndex == numLat - 1) {
                 lat = maxLat // explicitly set the last lat to the max latitude to ensure alignment
@@ -195,17 +198,85 @@ class ProjectionWgs84() : GeographicProjection {
             cosLat = Math.cos(lat)
             sinLat = Math.sin(lat)
             rpm = eqr / Math.sqrt(1.0 - ec2 * sinLat * sinLat)
+            var colIndex = rowIndex
             lonIndex = 0
             while (lonIndex < numLon) {
-                elev = elevations?.get(elevIndex++) ?: 0.0
-                result[pos+0] = ((elev + rpm) * cosLat * sinLon[lonIndex] + xOffset).toFloat()
-                result[pos+1] = ((elev + rpm * (1.0 - ec2)) * sinLat + yOffset).toFloat()
-                result[pos+2] = ((elev + rpm) * cosLat * cosLon[lonIndex] + zOffset).toFloat()
-                pos += stride
+                hgt = height?.get(elevIndex++) ?:0f * verticalExaggeration
+                result[colIndex++] = ((hgt + rpm) * cosLat * sinLon[lonIndex] + xOffset).toFloat()
+                result[colIndex++] = ((hgt + rpm * (1.0 - ec2)) * sinLat + yOffset).toFloat()
+                result[colIndex++] = ((hgt + rpm) * cosLat * cosLon[lonIndex] + zOffset).toFloat()
                 lonIndex++
             }
+            rowIndex += rowStride
+
             latIndex++
             lat += deltaLat
+        }
+        return result
+    }
+
+    override fun geographicToCartesianBorder(
+        globe: Globe, sector: Sector,
+        numLat: Int, numLon: Int, height: Float,
+        origin: Vec3?, result: FloatArray
+    ): FloatArray {
+        require(!(numLat < 1 || numLon < 1)) {
+            Logger.logMessage(
+                Logger.ERROR, "ProjectionWgs84", "geographicToCartesianBorder",
+                "Number of latitude or longitude locations is less than one"
+            )
+        }
+        val minLat = Math.toRadians(sector.minLatitude)
+        val maxLat = Math.toRadians(sector.maxLatitude)
+        val minLon = Math.toRadians(sector.minLongitude)
+        val maxLon = Math.toRadians(sector.maxLongitude)
+        val deltaLat = (maxLat - minLat) / if (numLat > 1) numLat - 3 else 1 // 16 - 3 == 13
+        val deltaLon = (maxLon - minLon) / if (numLon > 1) numLon - 3 else 1
+        var lat = minLat // 最小的纬度
+        var lon = minLon // 最小的经度
+
+        val eqr = globe.getEquatorialRadius()
+        val ec2 = globe.getEccentricitySquared()
+
+        val xOffset = if (origin != null) -origin.x else 0.toDouble()
+        val yOffset = if (origin != null) -origin.y else 0.toDouble()
+        val zOffset = if (origin != null) -origin.z else 0.toDouble()
+        var resultIndex = 0
+        // Iterate over the edges of the specified sector, computing the Cartesian point at designated latitude and
+        // longitude around the border.
+        for (latIndex in 0 until numLat) {
+            if (latIndex < 2) {
+                lat = minLat // explicitly set the first lat to the min latitude to ensure alignment
+            } else if (latIndex < numLat - 2) {
+                lat += deltaLat
+            } else {
+                lat = maxLat // explicitly set the last lat to the max latitude to ensure alignment
+            }
+            // Latitude is constant for each row. Values that are a function of latitude can be computed once per row.
+            val cosLat = Math.cos(lat)
+            val sinLat = Math.sin(lat)
+            val rpm = eqr / Math.sqrt(1.0 - ec2 * sinLat * sinLat)
+            var lonIndex = 0
+            while (lonIndex < numLon) {
+                if (lonIndex < 2) {
+                    lon = minLon // explicitly set the first lon to the min longitude to ensure alignment
+                } else if (lonIndex < numLon - 2) {
+                    lon += deltaLon
+                } else {
+                    lon = maxLon // explicitly set the last lon to the max longitude to ensure alignment
+                }
+                val cosLon = Math.cos(lon)
+                val sinLon = Math.sin(lon)
+                result[resultIndex++] = ((height + rpm) * cosLat * sinLon + xOffset).toFloat()
+                result[resultIndex++] = ((height + rpm * (1.0 - ec2)) * sinLat + yOffset).toFloat()
+                result[resultIndex++] = ((height + rpm) * cosLat * cosLon + zOffset).toFloat()
+                if (lonIndex == 0 && latIndex != 0 && latIndex != numLat - 1) {
+                    val skip = numLon - 2
+                    lonIndex += skip
+                    resultIndex += skip * 3
+                }
+                lonIndex++
+            }
         }
         return result
     }
@@ -213,13 +284,13 @@ class ProjectionWgs84() : GeographicProjection {
     /**
      * 笛卡尔地心坐标系转大地经纬度坐标系
      */
-    override fun cartesianToGeographic(globe: Globe, x: Double, y: Double, z: Double, offset: Vec3?, result: Position): Position {
+    override fun cartesianToGeographic(globe: Globe, x: Double, y: Double, z: Double, result: Position): Position {
         val XXpYY = z * z + x * x
         val sqrtXXpYY = Math.sqrt(XXpYY)
 
-        val a: Double = globe.equatorialRadius
+        val a: Double = globe.getEquatorialRadius()
         val ra2 = 1 / (a * a)
-        val e2: Double = globe.eccentricitySquared
+        val e2: Double = globe.getEccentricitySquared()
         val e4 = e2 * e2
         // Step 1
         val p = XXpYY * ra2
@@ -291,8 +362,8 @@ class ProjectionWgs84() : GeographicProjection {
     /**
      * 笛卡尔坐标系 到 本地的位移
      */
-    override fun cartesianToLocalTransform(globe: Globe, x: Double, y: Double, z: Double, offset: Vec3?, result: Matrix4): Matrix4 {
-        val pos: Position = cartesianToGeographic(globe, x, y, z, offset, scratchPos)
+    override fun cartesianToLocalTransform(globe: Globe, x: Double, y: Double, z: Double, result: Matrix4): Matrix4 {
+        val pos: Position = cartesianToGeographic(globe, x, y, z, scratchPos)
         val radLat = Math.toRadians(pos.latitude)
         val radLon = Math.toRadians(pos.longitude)
         val cosLat = Math.cos(radLat)
@@ -300,12 +371,12 @@ class ProjectionWgs84() : GeographicProjection {
         val cosLon = Math.cos(radLon)
         val sinLon = Math.sin(radLon)
 
-        val eqr2: Double = globe.equatorialRadius * globe.equatorialRadius
-        val pol2: Double = globe.polarRadius * globe.polarRadius
+        val eqr2: Double = globe.getEquatorialRadius() * globe.getEquatorialRadius()
+        val pol2: Double = globe.getPolarRadius() * globe.getPolarRadius()
 
 
         var ux = cosLat * sinLon / eqr2
-        var uy: Double = (1 - globe.eccentricitySquared) * sinLat / pol2
+        var uy: Double = (1 - globe.getEccentricitySquared()) * sinLat / pol2
         var uz = cosLat * cosLon / eqr2
         var len = Math.sqrt(ux * ux + uy * uy + uz * uz)
         ux /= len
@@ -340,10 +411,9 @@ class ProjectionWgs84() : GeographicProjection {
     /**
      * 计算视线和地球的交点
      */
-    override fun intersect(globe: Globe, line: Line, offset: Vec3?, result: Vec3): Boolean {
+    override fun intersect(globe: Globe, line: Line, result: Vec3): Boolean {
 
         // Taken from "Mathematics for 3D Game Programming and Computer Graphics, Second Edition", Section 5.2.3.
-        //
         // Note that the parameter n from in equations 5.70 and 5.71 is omitted here. For an ellipsoidal globe this
         // parameter is always 1, so its square and its product with any other value simplifies to the identity.
 
@@ -355,29 +425,52 @@ class ProjectionWgs84() : GeographicProjection {
         val sy = line.origin.y
         val sz = line.origin.z
 
-        val eqr: Double = globe.equatorialRadius
+        val eqr: Double = globe.getEquatorialRadius()
         val eqr2 = eqr * eqr // nominal radius squared
         //赤道半径比极半径
-        val m: Double = eqr / globe.polarRadius // ratio of the x semi-axis length to the y semi-axis length
-
+        val m: Double = eqr / globe.getPolarRadius() // ratio of the x semi-axis length to the y semi-axis length
         val m2 = m * m
 
         val a = vx * vx + m2 * vy * vy + vz * vz
         val b = 2 * (sx * vx + m2 * sy * vy + sz * vz)
         val c = sx * sx + m2 * sy * sy + sz * sz - eqr2
-
         val d = b * b - 4 * a * c // discriminant
 
 
-        return if (d < 0) {
-            false
-        } else {
-            val t = (-b - Math.sqrt(d)) / (2 * a)
+//        return if (d < 0) {
+//            false
+//        } else {
+//            val t = (-b - Math.sqrt(d)) / (2 * a)
+//            result.x = sx + vx * t
+//            result.y = sy + vy * t
+//            result.z = sz + vz * t
+//            true
+//        }
+
+        if (d < 0) {
+            return false
+        }
+
+        var t = (-b - Math.sqrt(d)) / (2 * a)
+        // check if the nearest intersection point is in front of the origin of the ray
+        if (t > 0) {
             result.x = sx + vx * t
             result.y = sy + vy * t
             result.z = sz + vz * t
-            true
+            return true
         }
+
+        t = (-b + Math.sqrt(d)) / (2 * a)
+        // check if the second intersection point is in front of the origin of the ray
+        if (t > 0) {
+            result.x = sx + vx * t
+            result.y = sy + vy * t
+            result.z = sz + vz * t
+            return true
+        }
+
+        // the intersection points were behind the origin of the provided line
+        return false
     }
 
 

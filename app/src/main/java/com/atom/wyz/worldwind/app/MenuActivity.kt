@@ -18,6 +18,9 @@ class MenuActivity : AppCompatActivity() {
             R.id.Zip_Activity -> {
                 startActivity(Intent(this, ZipActivity::class.java))
             }
+            R.id.Wcs_Elevation_Fragment -> {
+                startActivity(Intent(this, WcsElevationFragment::class.java))
+            }
             R.id.base_activity -> {
                 startActivity(Intent(this, BasicWorldWindActivity::class.java))
             }
@@ -41,6 +44,9 @@ class MenuActivity : AppCompatActivity() {
             }
             R.id.wms_activity -> {
                 startActivity(Intent(this, WmsLayerActivity::class.java))
+            }
+            R.id.wtmsLayer_Activity -> {
+                startActivity(Intent(this, WtmsLayerActivity::class.java))
             }
             R.id.placemark_activity -> {
                 startActivity(Intent(this, PlacemarksActivity::class.java))

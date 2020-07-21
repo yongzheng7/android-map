@@ -4,9 +4,7 @@ import com.atom.wyz.worldwind.util.xml.XmlModelParser
 
 open class WmtsXmlParser : XmlModelParser() {
     protected var owsNamespace = "http://www.opengis.net/ows/1.1"
-
     protected var wmtsNamespace = "http://www.opengis.net/wmts/1.0"
-
     init {
         registerParsers()
     }
@@ -40,11 +38,7 @@ open class WmtsXmlParser : XmlModelParser() {
         registerXmlModel(owsNamespace, "ProviderSite", WmtsElementLink::class.java)
         registerXmlModel(wmtsNamespace, "ResourceURL", WmtsResourceUrl::class.java)
         registerXmlModel(owsNamespace, "ServiceContact", OwsServiceContact::class.java)
-        registerXmlModel(
-            owsNamespace,
-            "ServiceIdentification",
-            OwsServiceIdentification::class.java
-        )
+        registerXmlModel(owsNamespace, "ServiceIdentification", OwsServiceIdentification::class.java)
         registerXmlModel(wmtsNamespace, "ServiceMetadataURL", WmtsElementLink::class.java)
         registerXmlModel(owsNamespace, "ServiceProvider", OwsServiceProvider::class.java)
         registerXmlModel(wmtsNamespace, "Style", WmtsStyle::class.java)
@@ -53,11 +47,7 @@ open class WmtsXmlParser : XmlModelParser() {
         registerXmlModel(wmtsNamespace, "TileMatrix", WmtsTileMatrix::class.java)
         registerXmlModel(wmtsNamespace, "TileMatrixLimits", WmtsTileMatrixLimits::class.java)
         registerXmlModel(wmtsNamespace, "TileMatrixSet", WmtsTileMatrixSet::class.java)
-        registerXmlModel(
-            wmtsNamespace,
-            "TileMatrixSetLimits",
-            WmtsTileMatrixSetLimits::class.java
-        )
+        registerXmlModel(wmtsNamespace, "TileMatrixSetLimits", WmtsTileMatrixSetLimits::class.java)
         registerXmlModel(wmtsNamespace, "TileMatrixSetLink", WmtsTileMatrixSetLink::class.java)
         registerXmlModel(owsNamespace, "Title", OwsLanguageString::class.java)
         registerXmlModel(owsNamespace, "WGS84BoundingBox", OwsWgs84BoundingBox::class.java)

@@ -3,7 +3,6 @@
  * National Aeronautics and Space Administration. All Rights Reserved.
  */
 
-precision mediump float;
 precision mediump int;
 
 const int FRAGMODE_PRIMARY = 1;

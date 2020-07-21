@@ -152,7 +152,9 @@ class Sector() {
         return intersects
 
     }
-
+    fun isFullSphere(): Boolean {
+        return minLatitude == -90.0 && maxLatitude == 90.0 && minLongitude == -180.0 && maxLongitude == 180.0
+    }
     /**
      * 判断相交后 合并
      */

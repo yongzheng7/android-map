@@ -8,7 +8,6 @@ import com.atom.wyz.worldwind.R
 import com.atom.wyz.worldwind.WorldWind
 import com.atom.wyz.worldwind.WorldWindow
 import com.atom.wyz.worldwind.geom.Camera
-import com.atom.wyz.worldwind.layer.AtmosphereLayer
 import com.atom.wyz.worldwind.layer.BackgroundLayer
 import com.atom.wyz.worldwind.layer.BlueMarbleLandsatLayer
 
@@ -47,12 +46,11 @@ open class BasicWorldWindActivity : AppCompatActivity() {
         globeLayout.addView(wwd)
         wwd.layers.addLayer(BackgroundLayer())
         wwd.layers.addLayer(BlueMarbleLandsatLayer())
-        wwd.layers.addLayer(AtmosphereLayer())
+        //wwd.layers.addLayer(AtmosphereLayer())
     }
 
     override fun onSaveInstanceState(savedInstanceState: Bundle) { // Save the WorldWindow's current navigator state
         this.saveNavigatorState(savedInstanceState)
-        // Always call the superclass so it can save the view hierarchy state
         super.onSaveInstanceState(savedInstanceState)
     }
 

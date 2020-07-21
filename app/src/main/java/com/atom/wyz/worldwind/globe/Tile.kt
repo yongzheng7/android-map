@@ -1,5 +1,6 @@
 package com.atom.wyz.worldwind.globe
 
+import android.util.DisplayMetrics
 import com.atom.wyz.worldwind.RenderContext
 import com.atom.wyz.worldwind.geom.BoundingBox
 import com.atom.wyz.worldwind.geom.Frustum
@@ -7,6 +8,7 @@ import com.atom.wyz.worldwind.geom.Sector
 import com.atom.wyz.worldwind.util.Level
 import com.atom.wyz.worldwind.util.Logger
 import com.atom.wyz.worldwind.util.LruMemoryCache
+import java.util.*
 
 open class Tile {
 
@@ -97,7 +99,6 @@ open class Tile {
         }
     }
 
-
     var sector: Sector
 
     var level: Level
@@ -106,19 +107,41 @@ open class Tile {
 
     var column = 0
 
-    var tileKey: String? = null
+    var tileKey: String
 
-    protected var extent: BoundingBox? = null
+    var extent: BoundingBox = BoundingBox()
 
-    protected var samplePoints: FloatArray? = null
+    var heightLimits: FloatArray = FloatArray(2)
+
+    var heightLimitsTimestamp: Long = 0
+
+    var extentExaggeration : Double = 0.0
+
+    var distanceToCamera = 0.0
+
+    private var samplePoints: FloatArray? = null
 
     constructor(sector: Sector?, level: Level?, row: Int, column: Int) {
         if (sector == null) {
-            throw IllegalArgumentException(Logger.logMessage(Logger.ERROR, "Tile", "constructor", "missingSector"))
+            throw IllegalArgumentException(
+                Logger.logMessage(
+                    Logger.ERROR,
+                    "Tile",
+                    "constructor",
+                    "missingSector"
+                )
+            )
         }
 
         if (level == null) {
-            throw IllegalArgumentException(Logger.logMessage(Logger.ERROR, "Tile", "constructor", "missingLevel"))
+            throw IllegalArgumentException(
+                Logger.logMessage(
+                    Logger.ERROR,
+                    "Tile",
+                    "constructor",
+                    "missingLevel"
+                )
+            )
         }
 
         this.sector = sector
@@ -153,11 +176,18 @@ open class Tile {
      * 根据眼睛和图块的距离判断是否需要细分
      */
     open fun mustSubdivide(rc: RenderContext, detailFactor: Double): Boolean {
-        val distance = getExtent(rc).distanceTo(rc.cameraPoint) //获取此图块和眼睛的距离 笛卡尔
-        val texelSize: Double = level.texelHeight * rc.globe?.equatorialRadius!!
-        val pixelSize = rc.pixelSizeAtDistance(distance)
+        this.distanceToCamera = this.distanceToCamera(rc); //获取此图块和眼睛的距离 笛卡尔
+        val texelSize: Double = level.texelHeight * rc.globe.getEquatorialRadius()
+        val pixelSize = rc.pixelSizeAtDistance(this.distanceToCamera)
 
-        return texelSize > pixelSize * detailFactor
+        var densityFactor = 1.0
+        // Adjust the subdivision factory when the display density is low. Values of detailFactor have been calibrated
+        // against high density devices. Low density devices need roughly half the detailFactor.
+        if (rc.resources!!.displayMetrics.densityDpi <= DisplayMetrics.DENSITY_MEDIUM) {
+            densityFactor = 0.5
+        }
+
+        return texelSize > pixelSize * detailFactor * densityFactor
     }
 
     /**
@@ -174,6 +204,7 @@ open class Tile {
         }
         val childLevel = level.nextLevel() ?: return null
         val children: Array<Tile?> = arrayOfNulls<Tile>(4)
+
         /**
          * 1        1
          *   2   3
@@ -195,22 +226,30 @@ open class Tile {
         var childsubRow = 2 * row
         var childsubCol = 2 * column
         var childSector: Sector = Sector(latMin, lonMin, childDelta, childDelta)
-        children[0] = tileFactory.createTile(childSector, childLevel, childsubRow, childsubCol) // Southwest 西南
+        children[0] = tileFactory.createTile(
+            childSector,
+            childLevel,
+            childsubRow,
+            childsubCol
+        ) // Southwest 西南
 
         childsubRow = 2 * row
         childsubCol = 2 * column + 1
         childSector = Sector(latMin, lonMid, childDelta, childDelta)
-        children[1] = tileFactory.createTile(childSector, childLevel, childsubRow, childsubCol) // Southeast东南
+        children[1] =
+            tileFactory.createTile(childSector, childLevel, childsubRow, childsubCol) // Southeast东南
 
         childsubRow = 2 * row + 1
         childsubCol = 2 * column
         childSector = Sector(latMid, lonMin, childDelta, childDelta)
-        children[2] = tileFactory.createTile(childSector, childLevel, childsubRow, childsubCol) // Northwest
+        children[2] =
+            tileFactory.createTile(childSector, childLevel, childsubRow, childsubCol) // Northwest
 
         childsubRow = 2 * row + 1
         childsubCol = 2 * column + 1
         childSector = Sector(latMid, lonMid, childDelta, childDelta)
-        children[3] = tileFactory.createTile(childSector, childLevel, childsubRow, childsubCol) // Northeast
+        children[3] =
+            tileFactory.createTile(childSector, childLevel, childsubRow, childsubCol) // Northeast
         return children
     }
 
@@ -249,38 +288,54 @@ open class Tile {
     /**
      * 获取范围  获取该图块的 边界框
      */
-    protected open fun getExtent(rc: RenderContext): BoundingBox {
-        if (extent == null) {
-            extent = BoundingBox().setToSector(sector, rc.globe!!, 0.0, 0.0)
+    open fun getExtent(rc: RenderContext): BoundingBox {
+        val elevationTimestamp: Long = rc.globe.elevationModel.getTimestamp()
+        if (elevationTimestamp != heightLimitsTimestamp) {
+            Arrays.fill(heightLimits, 0f)
+            rc.globe.elevationModel.getHeightLimits(sector, heightLimits)
         }
-        return extent!!
+
+        val verticalExaggeration = rc.verticalExaggeration
+        if (verticalExaggeration != extentExaggeration || elevationTimestamp != heightLimitsTimestamp) {
+            val minHeight = (heightLimits[0] * verticalExaggeration).toFloat()
+            val maxHeight = (heightLimits[1] * verticalExaggeration).toFloat()
+            extent.setToSector(sector, rc.globe, minHeight, maxHeight)
+        }
+        heightLimitsTimestamp = elevationTimestamp
+        extentExaggeration = verticalExaggeration
+        return extent
     }
 
     override fun toString(): String {
         return "Tile(sector=$sector, level=$level, row=$row, column=$column, tileKey=$tileKey, extent=$extent)"
     }
 
-
-    protected open fun distanceTo(rc: RenderContext): Double {
+    protected open fun distanceToCamera(rc: RenderContext): Double {
         if (sector.contains(rc.camera.latitude, rc.camera.longitude)) {
             return rc.camera.altitude
         }
-        if (samplePoints == null) {
-            samplePoints = rc.globe!!.geographicToCartesianGrid(sector, 3, 3, null, null, FloatArray(27), 3, 0)
+        samplePoints = samplePoints ?: let {
+            rc.globe.geographicToCartesianGrid(
+                sector, 3, 3,
+                null, 1.0f,null,
+                FloatArray(27),
+                0, 0
+            )
         }
-        var distance = Double.MAX_VALUE
+        val samplePoints1 = samplePoints!!
+        var minDistanceSq = Double.MAX_VALUE
         var i = 0
-        val len = samplePoints!!.size
+        val len = samplePoints1.size
         while (i < len) {
-            val dx = rc.cameraPoint.x - samplePoints!!.get(i)
-            val dy = rc.cameraPoint.y - samplePoints!!.get(i + 1)
-            val dz = rc.cameraPoint.z - samplePoints!!.get(i + 2)
-            val pointDistance = dx * dx + dy * dy + dz * dz
-            if (pointDistance < distance) {
-                distance = pointDistance
+            val dx = rc.cameraPoint.x - samplePoints1[i]
+            val dy = rc.cameraPoint.y - samplePoints1[i + 1]
+            val dz = rc.cameraPoint.z - samplePoints1[i + 2]
+            val distanceSq = dx * dx + dy * dy + dz * dz
+            if (minDistanceSq > distanceSq) {
+                minDistanceSq = distanceSq
             }
             i += 3
         }
-        return Math.sqrt(distance)
+        return Math.sqrt(minDistanceSq)
     }
 }

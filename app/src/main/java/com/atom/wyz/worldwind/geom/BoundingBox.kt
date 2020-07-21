@@ -75,13 +75,12 @@ class BoundingBox() {
     private val endPoint2 = Vec3()
 
 
-    fun setToSector(sector: Sector, globe: Globe, minElevation: Double, maxElevation: Double): BoundingBox? {
+    fun setToSector(sector: Sector, globe: Globe, minElevation: Float, maxElevation: Float): BoundingBox {
         val numLat = 3
         val numLon = 3
         val count = numLat * numLon
-        val stride = 3
-        val elevations = DoubleArray(count)
-        Arrays.fill(elevations, maxElevation)
+        val height = FloatArray(count)
+        Arrays.fill(height, maxElevation)
         /**
          * 0 1 2
          * 3 4 5
@@ -90,21 +89,20 @@ class BoundingBox() {
          * 8 6 2 0 == minElevation
          * 1 3 5 7 4 == maxElevation
          */
-        elevations[8] = minElevation
-        elevations[6] = elevations[8]
-        elevations[2] = elevations[6]
-        elevations[0] = elevations[2]
+        height[8] = minElevation
+        height[6] = height[8]
+        height[2] = height[6]
+        height[0] = height[2]
 
-        val points = FloatArray(count * stride)
+        val points = FloatArray(count * 3)
         // points中是经过转换的点
-        globe.geographicToCartesianGrid(sector, numLat, numLon, elevations, null, points, stride , 0)
+        globe.geographicToCartesianGrid(sector, numLat, numLon, height,  1.0f,null, points, 0 , 0)
 
         val centroidLat: Double = sector.centroidLatitude()
         val centroidLon: Double = sector.centroidLongitude()
 
         //
-        val matrix: Matrix4 =
-            globe.geographicToCartesianTransform(centroidLat, centroidLon, 0.0, Matrix4()) ?: return null;
+        val matrix: Matrix4 = globe.geographicToCartesianTransform(centroidLat, centroidLon, 0.0, Matrix4())
         val m: DoubleArray = matrix.m
 
         this.r.set(m[0], m[4], m[8])
@@ -123,7 +121,7 @@ class BoundingBox() {
         while (idx < len) {
             u.set(points[idx].toDouble(), points[idx + 1].toDouble() ,points[idx + 2].toDouble())
             adjustExtremes(r, rExtremes, s, sExtremes, t, tExtremes, u)
-            idx += stride
+            idx += 3
         }
 
         // Sort the axes from most prominent to least prominent. The frustum intersection methods in WWBoundingBox assume

@@ -1,5 +1,6 @@
 package com.atom.wyz.worldwind.layer
 
+import com.atom.wyz.worldwind.RenderContext
 import com.atom.wyz.worldwind.util.Logger
 
 class LayerList() : Iterable<Layer> {
@@ -48,7 +49,7 @@ class LayerList() : Iterable<Layer> {
     fun indexOfLayerNamed(name: String?): Int {
         for (i in layers.indices) {
             val layerName: String = layers[i].displayName
-            if (layerName == name) {
+            if (layerName.equals(name)) {
                 return i
             }
         }
@@ -59,7 +60,7 @@ class LayerList() : Iterable<Layer> {
         for (i in layers.indices) {
             val layer: Layer = layers[i]
             if (layer.hasUserProperty(key)) {
-                val layerValue: Any? = layer.getUserProperty(key)
+                val layerValue = layer.getUserProperty(key)
                 if (if (layerValue == null) value == null else layerValue == value) {
                     return i
                 }
@@ -151,5 +152,28 @@ class LayerList() : Iterable<Layer> {
 
     override fun iterator(): Iterator<Layer> {
         return layers.iterator()
+    }
+
+    fun render(rc: RenderContext) {
+        var idx = 0
+        val len = layers.size
+        while (idx < len) {
+            rc.currentLayer = layers[idx]
+            try {
+                rc.currentLayer!!.render(rc)
+            } catch (e: Exception) {
+                Logger.logMessage(
+                    Logger.ERROR,
+                    "LayerList",
+                    "render",
+                    "Exception while rendering layer \'" + rc.currentLayer!!.displayName
+                        .toString() + "\'",
+                    e
+                )
+                // Keep going. Draw the remaining layers.
+            }
+            idx++
+        }
+        rc.currentLayer = null
     }
 }

@@ -2,8 +2,6 @@
  * Copyright (c) 2016 United States Government as represented by the Administrator of the
  * National Aeronautics and Space Administration. All Rights Reserved.
  */
-precision mediump int;
-precision mediump float;
 
 uniform bool enableTexture;
 uniform mat4 mvpMatrix;

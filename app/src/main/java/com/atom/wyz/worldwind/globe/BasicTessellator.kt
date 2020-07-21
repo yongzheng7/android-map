@@ -5,6 +5,7 @@ import com.atom.wyz.worldwind.RenderContext
 import com.atom.wyz.worldwind.draw.BasicDrawableTerrain
 import com.atom.wyz.worldwind.geom.Range
 import com.atom.wyz.worldwind.geom.Sector
+import com.atom.wyz.worldwind.geom.Vec3
 import com.atom.wyz.worldwind.render.BufferObject
 import com.atom.wyz.worldwind.util.Level
 import com.atom.wyz.worldwind.util.LevelSet
@@ -28,7 +29,8 @@ class BasicTessellator : Tessellator, TileFactory {
 
     var currentTerrain: BasicTerrain = BasicTerrain()
 
-    var tileCache: LruMemoryCache<String?, Array<Tile?>?> = LruMemoryCache(200) // cache for 300 tiles
+    var tileCache: LruMemoryCache<String?, Array<Tile?>?> =
+        LruMemoryCache(200) // cache for 300 tiles
 
     var levelSetVertexTexCoords: FloatArray? = null
 
@@ -54,20 +56,36 @@ class BasicTessellator : Tessellator, TileFactory {
     constructor(topLevelDelta: Double, numLevels: Int, tileWidth: Int, tileHeight: Int) {
         if (topLevelDelta <= 0) {
             throw IllegalArgumentException(
-                Logger.logMessage(Logger.ERROR, "BasicTessellator", "constructor", "invalidTileDelta")
+                Logger.logMessage(
+                    Logger.ERROR,
+                    "BasicTessellator",
+                    "constructor",
+                    "invalidTileDelta"
+                )
             )
         }
         if (numLevels < 1) {
             throw IllegalArgumentException(
-                Logger.logMessage(Logger.ERROR, "BasicTessellator", "constructor", "invalidNumLevels")
+                Logger.logMessage(
+                    Logger.ERROR,
+                    "BasicTessellator",
+                    "constructor",
+                    "invalidNumLevels"
+                )
             )
         }
         if (tileWidth < 1 || tileHeight < 1) {
             throw IllegalArgumentException(
-                Logger.logMessage(Logger.ERROR, "BasicTessellator", "constructor", "invalidWidthOrHeight")
+                Logger.logMessage(
+                    Logger.ERROR,
+                    "BasicTessellator",
+                    "constructor",
+                    "invalidWidthOrHeight"
+                )
             )
         }
-        levelSet = LevelSet(Sector().setFullSphere(), topLevelDelta, numLevels, tileWidth, tileHeight)
+        levelSet =
+            LevelSet(Sector().setFullSphere(), topLevelDelta, numLevels, tileWidth, tileHeight)
     }
 
     /**
@@ -107,8 +125,6 @@ class BasicTessellator : Tessellator, TileFactory {
     protected fun assembleTiles(rc: RenderContext) {
 
         this.assembleLevelSetBuffers(rc)
-        currentTerrain.globe = rc.globe
-        currentTerrain.verticalExaggeration = rc.verticalExaggeration
         currentTerrain.triStripElements = levelSetTriStripElements
 
         if (topLevelTiles.isEmpty()) {
@@ -140,22 +156,24 @@ class BasicTessellator : Tessellator, TileFactory {
             addTile(rc, tile)
             return  // 如果不需要细分，请使用图块
         }
-        for (child in tile.subdivideToCache(this, tileCache, 4)!!) { // each tile has a cached size of 1每个图块的缓存大小为1
+        for (child in tile.subdivideToCache(
+            this,
+            tileCache,
+            4
+        )!!) { // each tile has a cached size of 1每个图块的缓存大小为1
             addTileOrDescendants(rc, child as TerrainTile) // 递归处理磁贴的子代
         }
     }
 
     protected fun addTile(rc: RenderContext, tile: TerrainTile) {
-        if (mustAssembleTilePoints(rc, tile)) {
-            this.assembleTilePoints(rc, tile)
-        }
-
+        // Assemble the terrain tile's vertex points and add the terrain tile.
+        this.prepareTile(rc, tile)
         currentTerrain.addTile(tile) //只添加最后等级的图块 或者 无需再次细分的图块
 
         val pool: Pool<BasicDrawableTerrain> = rc.getDrawablePool(BasicDrawableTerrain::class.java)
         val drawable: BasicDrawableTerrain = BasicDrawableTerrain.obtain(pool)
         this.prepareDrawableTerrain(rc, tile, drawable)
-        rc.offerDrawableTerrain(drawable)
+        rc.offerDrawableTerrain(drawable , tile.distanceToCamera)
     }
 
     protected fun prepareDrawableTerrain(
@@ -164,24 +182,24 @@ class BasicTessellator : Tessellator, TileFactory {
         drawable: BasicDrawableTerrain
     ) {
         drawable.sector.set(tile.sector)
-        drawable.vertexOrigin.set(tile.vertexOrigin)
+        drawable.vertexOrigin.set(tile.origin)
         // Assemble the drawable's element buffer ranges.
         drawable.lineElementRange.set(levelSetLineElementRange)
         drawable.triStripElementRange.set(levelSetTriStripElementRange)
 
         // Assemble the drawable's OpenGL buffer objects.
-        drawable.vertexPoints = tile.getVertexPointBuffer(rc)
+        drawable.vertexPoints = tile.getPointBuffer(rc)
         drawable.vertexTexCoords = levelSetVertexTexCoordBuffer
         drawable.elements = levelSetElementBuffer
     }
 
     protected fun assembleLevelSetBuffers(rc: RenderContext) {
-        val numLat = levelSet.tileHeight
-        val numLon = levelSet.tileWidth
+        val numLat = levelSet.tileHeight + 2
+        val numLon = levelSet.tileWidth + 2
         // Assemble the level set's vertex tex coord buffer.
         if (levelSetVertexTexCoords == null) {
             levelSetVertexTexCoords = FloatArray(numLat * numLon * 2)
-            assembleVertexTexCoords(numLat, numLon, levelSetVertexTexCoords!!, 2, 0)
+            assembleVertexTexCoords(numLat, numLon, levelSetVertexTexCoords!!)
         }
 
         // Assemble the level set's line element buffer.
@@ -198,31 +216,38 @@ class BasicTessellator : Tessellator, TileFactory {
         if (levelSetVertexTexCoordBuffer == null) {
             levelSetVertexTexCoords?.let {
                 val size = it.size * 4
-                val buffer = ByteBuffer.allocateDirect(size).order(ByteOrder.nativeOrder()).asFloatBuffer()
+                val buffer =
+                    ByteBuffer.allocateDirect(size).order(ByteOrder.nativeOrder()).asFloatBuffer()
                 buffer.put(it).rewind()
                 levelSetVertexTexCoordBuffer =
-                    rc.putBufferObject(levelSetVertexTexCoordKey, BufferObject(GLES20.GL_ARRAY_BUFFER, size, buffer))
+                    rc.putBufferObject(
+                        levelSetVertexTexCoordKey,
+                        BufferObject(GLES20.GL_ARRAY_BUFFER, size, buffer)
+                    )
             }
         }
 
         levelSetElementBuffer = rc.getBufferObject(levelSetElementKey)
         if (levelSetElementBuffer == null) {
-            ifNotNull(levelSetLineElements, levelSetTriStripElements, { levelSetLineElements: ShortArray, levelSetTriStripElements: ShortArray ->
-                val size = (levelSetLineElements.size + levelSetTriStripElements.size) * 2
-                val buffer = ByteBuffer.allocateDirect(size).order(ByteOrder.nativeOrder()).asShortBuffer()
-                buffer.put(this.levelSetLineElements)
-                levelSetLineElementRange.upper = buffer.position()
-                levelSetTriStripElementRange.lower = buffer.position()
-                buffer.put(this.levelSetTriStripElements)
-                levelSetTriStripElementRange.upper = buffer.position()
-                buffer.rewind()
-                levelSetElementBuffer = rc.putBufferObject(levelSetElementKey, BufferObject(GLES20.GL_ELEMENT_ARRAY_BUFFER, size, buffer))
-            })
+            ifNotNull(
+                levelSetLineElements,
+                levelSetTriStripElements,
+                { levelSetLineElements: ShortArray, levelSetTriStripElements: ShortArray ->
+                    val size = (levelSetLineElements.size + levelSetTriStripElements.size) * 2
+                    val buffer = ByteBuffer.allocateDirect(size).order(ByteOrder.nativeOrder())
+                        .asShortBuffer()
+                    buffer.put(this.levelSetLineElements)
+                    levelSetLineElementRange.upper = buffer.position()
+                    levelSetTriStripElementRange.lower = buffer.position()
+                    buffer.put(this.levelSetTriStripElements)
+                    levelSetTriStripElementRange.upper = buffer.position()
+                    buffer.rewind()
+                    levelSetElementBuffer = rc.putBufferObject(
+                        levelSetElementKey,
+                        BufferObject(GLES20.GL_ELEMENT_ARRAY_BUFFER, size, buffer)
+                    )
+                })
         }
-    }
-
-    fun mustAssembleTilePoints(rc: RenderContext, tile: TerrainTile): Boolean {
-        return tile.vertexPoints == null
     }
 
     fun <T1, T2> ifNotNull(value1: T1?, value2: T2?, bothNotNull: (T1, T2) -> (Unit)) {
@@ -231,22 +256,60 @@ class BasicTessellator : Tessellator, TileFactory {
         }
     }
 
-    protected fun assembleTilePoints(rc: RenderContext, tile: TerrainTile) {
-        val globe = rc.globe ?: return
-
-        val numLat = tile.level.tileWidth
-        val numLon = tile.level.tileHeight
-        val origin = tile.vertexOrigin
-
-        var points = tile.vertexPoints
-        if (points == null) {
-            points = FloatArray(numLat * numLon * 3)
+    protected fun prepareTile(rc: RenderContext, tile: TerrainTile) {
+        val tileWidth = tile.level.tileWidth
+        val tileHeight = tile.level.tileHeight
+        val elevationTimestamp: Long = rc.globe.elevationModel.getTimestamp()
+        if (elevationTimestamp != tile.heightTimestamp) {
+            var heights = tile.heights
+            if (heights == null) {
+                heights = FloatArray(tileWidth * tileHeight)
+            }
+            Arrays.fill(heights, 0f)
+            rc.globe.elevationModel.getHeightGrid(tile.sector, tileWidth, tileHeight, heights)
+            tile.heights = (heights)
         }
+        val verticalExaggeration = rc.verticalExaggeration
+        if (verticalExaggeration != tile.verticalExaggeration || elevationTimestamp != tile.heightTimestamp) {
+            val origin: Vec3 = tile.origin
+            val heights = tile.heights
+            var points = tile.points
+            val borderHeight = (tile.minTerrainElevation * verticalExaggeration).toFloat()
 
-        globe.geographicToCartesian(tile.sector.centroidLatitude(), tile.sector.centroidLongitude(), 0.0, origin)
-        globe.geographicToCartesianGrid(tile.sector, numLat, numLon, null, origin, points, 3, 0)
-        tile.vertexOrigin.set(origin)
-        tile.vertexPoints = points
+            if (points == null) {
+                points = FloatArray((tileWidth + 2) * (tileHeight + 2) * 3)
+            }
+            val rowStride = (tileWidth + 2) * 3
+            rc.globe.geographicToCartesian(
+                tile.sector.centroidLatitude(),
+                tile.sector.centroidLongitude(),
+                0.0,
+                origin
+            )
+            rc.globe.geographicToCartesianGrid(
+                tile.sector,
+                tileWidth,
+                tileHeight,
+                heights,
+                verticalExaggeration.toFloat(),
+                origin,
+                points,
+                rowStride + 3,
+                rowStride
+            )
+            rc.globe.geographicToCartesianBorder(
+                tile.sector,
+                tileWidth + 2,
+                tileHeight + 2,
+                borderHeight,
+                origin,
+                points
+            )
+            tile.origin.set(origin)
+            tile.points = (points)
+        }
+        tile.heightTimestamp = (elevationTimestamp)
+        tile.verticalExaggeration = (verticalExaggeration)
     }
 
     /**
@@ -255,41 +318,40 @@ class BasicTessellator : Tessellator, TileFactory {
     protected fun assembleVertexTexCoords(
         numLat: Int,
         numLon: Int,
-        result: FloatArray,
-        stride: Int,
-        poss: Int
+        result: FloatArray
     ): FloatArray {
-        val ds = 1f / if (numLon > 1) numLon - 1 else 1
-        val dt = 1f / if (numLat > 1) numLat - 1 else 1
-        val st = FloatArray(2)
-        var sIndex: Int
-        var tIndex: Int
-        var pos = poss
+        val ds = 1f / if (numLon > 1) numLon - 3 else 1
+        val dt = 1f / if (numLat > 1) numLat - 3 else 1 // 16+ 2 - 3 = 15
+        var s = 0f
+        var t = 0f
+        var sidx: Int
+        var tidx: Int
+        var resultIdx = 0
         // Iterate over the number of latitude and longitude vertices, computing the parameterized S and T coordinates
         // corresponding to each vertex.
-        tIndex = 0
-        st[1] = 0f
-        while (tIndex < numLat) {
-            if (tIndex == numLat - 1) {
-                st[1] = 1f // explicitly set the last T coordinate to 1 to ensure alignment
+        tidx = 0
+        while (tidx < numLat) { 0 < 18
+            if (tidx < 2) {
+                t = 0f // explicitly set the first T coordinate to 0 to ensure alignment
+            } else if (tidx < numLat - 2) {
+                t += dt
+            } else {
+                t = 1f // explicitly set the last T coordinate to 1 to ensure alignment
             }
-
-            sIndex = 0
-            st[0] = 0f
-            while (sIndex < numLon) {
-                if (sIndex == numLon - 1) {
-                    st[0] = 1f // explicitly set the last S coordinate to 1 to ensure alignment
+            sidx = 0
+            while (sidx < numLon) {
+                if (sidx < 2) {
+                    s = 0f // explicitly set the first S coordinate to 0 to ensure alignment
+                } else if (sidx < numLon - 2) {
+                    s += ds
+                } else {
+                    s = 1f // explicitly set the last S coordinate to 1 to ensure alignment
                 }
-                result[pos] = st[0]
-                result[pos + 1] = st[1]
-                pos += stride
-
-                sIndex++
-                st[0] += ds
+                result[resultIdx++] = s
+                result[resultIdx++] = t
+                sidx++
             }
-
-            tIndex++
-            st[1] += dt
+            tidx++
         }
         return result
     }

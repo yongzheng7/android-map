@@ -131,7 +131,7 @@ class DrawableSurfaceShape : Drawable {
                         prim.texCoordAttrib.size,
                         GLES20.GL_FLOAT,
                         false,
-                        drawState.vertexStride,
+                        shape.drawState.vertexStride,
                         prim.texCoordAttrib.offset
                     )
 

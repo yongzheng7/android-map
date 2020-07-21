@@ -3,8 +3,10 @@ package com.atom.wyz.worldwind.shape
 import android.opengl.GLES20
 import com.atom.wyz.worldwind.RenderContext
 import com.atom.wyz.worldwind.WorldWind
+import com.atom.wyz.worldwind.draw.DrawShapeState
 import com.atom.wyz.worldwind.draw.Drawable
 import com.atom.wyz.worldwind.draw.DrawableShape
+import com.atom.wyz.worldwind.draw.DrawableSurfaceShape
 import com.atom.wyz.worldwind.geom.Location
 import com.atom.wyz.worldwind.geom.Matrix3
 import com.atom.wyz.worldwind.geom.Position
@@ -15,6 +17,7 @@ import com.atom.wyz.worldwind.render.GpuTexture
 import com.atom.wyz.worldwind.render.ImageOptions
 import com.atom.wyz.worldwind.util.SimpleFloatArray
 import com.atom.wyz.worldwind.util.SimpleShortArray
+import com.atom.wyz.worldwind.util.pool.Pool
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
 
@@ -22,8 +25,6 @@ class Path : AbstractShape {
     companion object {
         private fun nextCacheKey() = Any()
         protected const val VERTEX_STRIDE = 4
-        protected const val CLAMP_TO_GROUND_DEPTH_OFFSET = -0.01
-        protected const val FOLLOW_TERRAIN_SEGMENT_LENGTH = 1000.0
         protected val defaultOutlineImageOptions: ImageOptions = ImageOptions()
 
         init {
@@ -78,6 +79,8 @@ class Path : AbstractShape {
 
     private val intermediateLocation = Location()
 
+    protected var isSurfaceShape = false
+
     constructor()
 
     constructor(attributes: ShapeAttributes) : super(attributes)
@@ -108,40 +111,59 @@ class Path : AbstractShape {
             elementBufferKey = nextCacheKey()
         }
 
-        // Obtain a drawable form the render context pool.
+
         // Obtain a drawable form the render context pool, and compute distance to the render camera.
-        val pool = rc.getDrawablePool(DrawableShape::class.java)
-        val drawable: Drawable = DrawableShape.obtain(pool)
-        val drawState = (drawable as DrawableShape).drawState
-        val cameraDistance = cameraDistanceCartesian(
-            rc,
-            vertexArray.array(),
-            vertexArray.size(),
-            Path.VERTEX_STRIDE,
-            vertexOrigin
-        )
+        val drawable: Drawable
+        val drawState: DrawShapeState
+        val cameraDistance: Double
+        if (isSurfaceShape) {
+            val pool: Pool<DrawableSurfaceShape> =
+                rc.getDrawablePool(DrawableSurfaceShape::class.java)
+            drawable = DrawableSurfaceShape.obtain(pool)
+            drawState = (drawable as DrawableSurfaceShape).drawState
+            cameraDistance = cameraDistanceGeographic(rc, boundingSector)
+            (drawable as DrawableSurfaceShape).sector.set(boundingSector)
+        } else {
+            val pool: Pool<DrawableShape> = rc.getDrawablePool(DrawableShape::class.java)
+            drawable = DrawableShape.obtain(pool)
+            drawState = drawable.drawState
+            cameraDistance = cameraDistanceCartesian(
+                rc,
+                vertexArray.array(),
+                vertexArray.size(),
+                VERTEX_STRIDE,
+                vertexOrigin
+            )
+        }
 
         // Use the basic GLSL program to draw the shape.
         drawState.program = rc.getProgram(BasicProgram.KEY) as BasicProgram?
         if (drawState.program == null) {
-            drawState.program = rc.putProgram(BasicProgram.KEY, BasicProgram(rc.resources!!)) as BasicProgram
+            drawState.program =
+                rc.putProgram(BasicProgram.KEY, BasicProgram(rc.resources!!)) as BasicProgram
         }
 
         // Assemble the drawable's OpenGL vertex buffer object.
         drawState.vertexBuffer = rc.getBufferObject(vertexBufferKey)
         if (drawState.vertexBuffer == null) {
             val size = vertexArray.size() * 4
-            val buffer = ByteBuffer.allocateDirect(size).order(ByteOrder.nativeOrder()).asFloatBuffer()
+            val buffer =
+                ByteBuffer.allocateDirect(size).order(ByteOrder.nativeOrder()).asFloatBuffer()
             buffer.put(vertexArray.array(), 0, vertexArray.size())
             drawState.vertexBuffer =
-                rc.putBufferObject(vertexBufferKey, BufferObject(GLES20.GL_ARRAY_BUFFER, size, buffer.rewind()))
+                rc.putBufferObject(
+                    vertexBufferKey,
+                    BufferObject(GLES20.GL_ARRAY_BUFFER, size, buffer.rewind())
+                )
         }
 
         // Assemble the drawable's OpenGL element buffer object.
         drawState.elementBuffer = rc.getBufferObject(elementBufferKey)
         if (drawState.elementBuffer == null) {
-            val size = interiorElements.size() * 2 + outlineElements.size() * 2 + verticalElements.size() * 2
-            val buffer = ByteBuffer.allocateDirect(size).order(ByteOrder.nativeOrder()).asShortBuffer()
+            val size =
+                interiorElements.size() * 2 + outlineElements.size() * 2 + verticalElements.size() * 2
+            val buffer =
+                ByteBuffer.allocateDirect(size).order(ByteOrder.nativeOrder()).asShortBuffer()
             buffer.put(interiorElements.array(), 0, interiorElements.size())
             buffer.put(outlineElements.array(), 0, outlineElements.size())
             buffer.put(verticalElements.array(), 0, verticalElements.size())
@@ -156,7 +178,10 @@ class Path : AbstractShape {
         if (activeAttributes!!.drawOutline && activeAttributes!!.outlineImageSource != null) {
             var texture: GpuTexture? = rc.getTexture(activeAttributes!!.outlineImageSource!!)
             if (texture == null) {
-                texture = rc.retrieveTexture(activeAttributes!!.outlineImageSource!!, defaultOutlineImageOptions)
+                texture = rc.retrieveTexture(
+                    activeAttributes!!.outlineImageSource!!,
+                    defaultOutlineImageOptions
+                )
             }
             if (texture != null) {
                 val metersPerPixel = rc.pixelSizeAtDistance(cameraDistance)
@@ -171,7 +196,7 @@ class Path : AbstractShape {
         // Configure the drawable to display the path's outline.
         if (activeAttributes!!.drawOutline) {
             drawState.color(if (rc.pickMode) pickColor else activeAttributes!!.outlineColor)
-            drawState.lineWidth(activeAttributes!!.outlineWidth)
+            drawState.lineWidth(if (isSurfaceShape) activeAttributes!!.outlineWidth + 0.5f else activeAttributes!!.outlineWidth)
             drawState.drawElements(
                 GLES20.GL_LINE_STRIP, outlineElements.size(),
                 GLES20.GL_UNSIGNED_SHORT, interiorElements.size() * 2
@@ -205,10 +230,9 @@ class Path : AbstractShape {
         drawState.vertexStride = Path.VERTEX_STRIDE * 4
         drawState.enableCullFace = false
         drawState.enableDepthTest = activeAttributes!!.depthTest
-        drawState.depthOffset = if (altitudeMode == WorldWind.CLAMP_TO_GROUND) CLAMP_TO_GROUND_DEPTH_OFFSET else 0.0
 
         // Enqueue the drawable for processing on the OpenGL thread.
-        if (altitudeMode == WorldWind.CLAMP_TO_GROUND) {
+        if (isSurfaceShape) {
             rc.offerSurfaceDrawable(drawable, 0.0 /*zOrder*/)
         } else {
             rc.offerShapeDrawable(drawable, cameraDistance)
@@ -220,6 +244,9 @@ class Path : AbstractShape {
     }
 
     protected fun assembleGeometry(rc: RenderContext) {
+
+        // Determine whether the shape geometry must be assembled as Cartesian geometry or as geographic geometry.
+        isSurfaceShape = altitudeMode == WorldWind.CLAMP_TO_GROUND && followTerrain
         vertexArray.clear()
         interiorElements.clear()
         outlineElements.clear()
@@ -239,8 +266,29 @@ class Path : AbstractShape {
             idx++
         }
         // Compute the path's bounding box or bounding sector from its assembled coordinates.
-        boundingBox.setToPoints(vertexArray.array(), vertexArray.size(), Path.VERTEX_STRIDE)
-        boundingBox.translate(vertexOrigin.x, vertexOrigin.y, vertexOrigin.z)
+
+        // Compute the shape's bounding box or bounding sector from its assembled coordinates.
+        if (isSurfaceShape) {
+            boundingSector.setEmpty()
+            boundingSector.union(
+                vertexArray.array(),
+                vertexArray.size(),
+                VERTEX_STRIDE
+            )
+            boundingBox.setToUnitBox() // Surface/geographic shape bounding box is unused
+        } else {
+            boundingBox.setToPoints(
+                vertexArray.array(),
+                vertexArray.size(),
+                VERTEX_STRIDE
+            )
+            boundingBox.translate(
+                vertexOrigin.x,
+                vertexOrigin.y,
+                vertexOrigin.z
+            )
+            boundingSector.setEmpty() // Cartesian shape bounding sector is unused
+        }
     }
 
 
@@ -264,16 +312,7 @@ class Path : AbstractShape {
             return  // suppress the next point when the segment length less than a millimeter (on Earth)
         }
 
-        var numSubsegments = maximumIntermediatePoints + 1
-
-        if (followTerrain) {
-            val lengthMeters: Double = length * rc.globe!!.equatorialRadius
-            val followTerrainNumSubsegments =
-                (lengthMeters / Path.FOLLOW_TERRAIN_SEGMENT_LENGTH).toInt()
-            if (numSubsegments < followTerrainNumSubsegments) {
-                numSubsegments = followTerrainNumSubsegments
-            }
-        }
+        val numSubsegments = maximumIntermediatePoints + 1
 
         val deltaDist = length / numSubsegments
         val deltaAlt = (end.altitude - begin.altitude) / numSubsegments
@@ -301,13 +340,9 @@ class Path : AbstractShape {
         altitude: Double,
         intermediate: Boolean
     ) {
-        var altitude_temp = altitude
-        if (altitudeMode == WorldWind.CLAMP_TO_GROUND) {
-            altitude_temp = 0.0
-        }
-
         val vertex: Int = vertexArray.size() / Path.VERTEX_STRIDE
-        var point = rc.geographicToCartesian(latitude, longitude, altitude_temp, WorldWind.ABSOLUTE, point)
+        var point =
+            rc.geographicToCartesian(latitude, longitude, altitude, this.altitudeMode, point)
 
         if (vertexArray.size() == 0) {
             vertexOrigin.set(point)
@@ -318,28 +353,31 @@ class Path : AbstractShape {
             prevPoint.set(point)
         }
 
-        vertexArray.add((point.x - vertexOrigin.x).toFloat())
-        vertexArray.add((point.y - vertexOrigin.y).toFloat())
-        vertexArray.add((point.z - vertexOrigin.z).toFloat())
-
-        vertexArray.add(texCoord1d.toFloat())
-        outlineElements.add(vertex.toShort())
-
-        if (extrude) {
-            // TODO clamp to ground points must be continually updated to reflect change in terrain
-            // TODO use absolute altitude 0 as a temporary workaround while the globe has no terrain
-            point = rc.geographicToCartesian(latitude, longitude, 0.0, WorldWind.ABSOLUTE, this.point)
+        if (isSurfaceShape) {
+            vertexArray.add(longitude.toFloat())
+            vertexArray.add(latitude.toFloat())
+            vertexArray.add(altitude.toFloat())
+            vertexArray.add(texCoord1d.toFloat())
+            outlineElements.add(vertex.toShort())
+        } else {
             vertexArray.add((point.x - vertexOrigin.x).toFloat())
             vertexArray.add((point.y - vertexOrigin.y).toFloat())
             vertexArray.add((point.z - vertexOrigin.z).toFloat())
-            vertexArray.add(0f)
-            interiorElements.add(vertex.toShort())
-            interiorElements.add((vertex + 1).toShort())
-        }
-
-        if (extrude && !intermediate) {
-            verticalElements.add(vertex.toShort())
-            verticalElements.add((vertex + 1).toShort())
+            vertexArray.add(texCoord1d.toFloat())
+            outlineElements.add(vertex.toShort())
+            if (extrude) {
+                point = rc.geographicToCartesian(latitude, longitude, 0.0, altitudeMode, this.point)
+                vertexArray.add((point.x - vertexOrigin.x).toFloat())
+                vertexArray.add((point.y - vertexOrigin.y).toFloat())
+                vertexArray.add((point.z - vertexOrigin.z).toFloat())
+                vertexArray.add(0.toFloat() /*unused*/)
+                interiorElements.add(vertex.toShort())
+                interiorElements.add((vertex + 1).toShort())
+            }
+            if (extrude && !intermediate) {
+                verticalElements.add(vertex.toShort())
+                verticalElements.add((vertex + 1).toShort())
+            }
         }
     }
 }

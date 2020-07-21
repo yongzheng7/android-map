@@ -18,8 +18,10 @@ import com.atom.wyz.worldwind.frame.Frame
 import com.atom.wyz.worldwind.frame.FrameController
 import com.atom.wyz.worldwind.frame.FrameMetrics
 import com.atom.wyz.worldwind.geom.*
+import com.atom.wyz.worldwind.globe.BasicTessellator
 import com.atom.wyz.worldwind.globe.Globe
-import com.atom.wyz.worldwind.globe.GlobeWgs84
+import com.atom.wyz.worldwind.globe.ProjectionWgs84
+import com.atom.wyz.worldwind.globe.Tessellator
 import com.atom.wyz.worldwind.layer.LayerList
 import com.atom.wyz.worldwind.pick.PickedObjectList
 import com.atom.wyz.worldwind.util.Logger
@@ -47,9 +49,11 @@ class WorldWindow : GLSurfaceView, GLSurfaceView.Renderer, MessageListener, Fram
         const val MSG_ID_SET_DEPTH_BITS = 4
     }
 
-    var globe: Globe = GlobeWgs84()
+    var globe: Globe = Globe(WorldWind.WGS84_ELLIPSOID,  ProjectionWgs84())
 
     var layers: LayerList = LayerList()
+
+     var tessellator: Tessellator = BasicTessellator()
 
     var verticalExaggeration: Double = 1.0
 
@@ -115,11 +119,6 @@ class WorldWindow : GLSurfaceView, GLSurfaceView.Renderer, MessageListener, Fram
             }
             false
         })
-
-
-
-    private val scratchCamera = Camera()
-
     private val scratchModelview = Matrix4()
 
     private val scratchProjection = Matrix4()
@@ -154,6 +153,12 @@ class WorldWindow : GLSurfaceView, GLSurfaceView.Renderer, MessageListener, Fram
         val cacheCapacity = RenderResourceCache.recommendedCapacity(this.context)
         renderResourceCache = RenderResourceCache(cacheCapacity)
 
+        // Set up to render on demand to an OpenGL ES 2.x context
+        // TODO Investigate and use the EGL chooser submitted by jgiovino
+        //this.setEGLConfigChooser(configChooser);
+        if (configChooser == null) {
+           // this.setEGLConfigChooser(WWConfigChooser())
+        }
         this.setEGLConfigChooser(configChooser)
         this.setEGLContextClientVersion(2) // must be called before setRenderer
         this.setRenderer(this)
@@ -252,9 +257,16 @@ class WorldWindow : GLSurfaceView, GLSurfaceView.Renderer, MessageListener, Fram
         projection: Matrix4,
         modelview: Matrix4
     ) {
-        var near = navigator.altitude * 0.5
-        val far = globe.horizonDistance(navigator.altitude, 160000.0)
-        viewport.set(this.viewport)
+        // Compute the clip plane distances. The near distance is set to a large value that does not clip the globe's
+        // surface. The far distance is set to the smallest value that does not clip the atmosphere.
+        // TODO adjust the clip plane distances based on the navigator's orientation - shorter distances when the
+        // TODO horizon is not in view
+        // TODO parameterize the object altitude for horizon distance
+        val eyeAltitude: Double = navigator.altitude
+        val eyeHorizon = globe.horizonDistance(eyeAltitude)
+        val atmosphereHorizon = globe.horizonDistance(160000.0)
+        var near = eyeAltitude * 0.5
+        val far = eyeHorizon + atmosphereHorizon
 
         if (depthBits != 0) {
             val maxDepthValue = (1 shl depthBits) - 1.toDouble()
@@ -265,7 +277,6 @@ class WorldWindow : GLSurfaceView, GLSurfaceView.Renderer, MessageListener, Fram
                 near = nearDistance
             }
         }
-
         projection.setToPerspectiveProjection(
             this.viewport.width.toDouble(),
             this.viewport.height.toDouble(),
@@ -273,8 +284,7 @@ class WorldWindow : GLSurfaceView, GLSurfaceView.Renderer, MessageListener, Fram
             near,
             far
         )
-        navigator.getAsCamera(globe, scratchCamera)
-        globe.cameraToCartesianTransform(scratchCamera, modelview).invertOrthonormal()
+        navigator.getAsViewingMatrix(globe, modelview)
     }
 
     protected fun renderFrame(frame: Frame) {
@@ -282,9 +292,9 @@ class WorldWindow : GLSurfaceView, GLSurfaceView.Renderer, MessageListener, Fram
         if (!pickMode) {
             frameMetrics.beginRendering(this.rc)
         }
-
         rc.globe = globe
         rc.layers = layers
+        rc.terrainTessellator = tessellator
         rc.verticalExaggeration = verticalExaggeration
         rc.fieldOfView = fieldOfView
         rc.horizonDistance = globe.horizonDistance(this.navigator.altitude)
@@ -299,7 +309,6 @@ class WorldWindow : GLSurfaceView, GLSurfaceView.Renderer, MessageListener, Fram
         rc.renderResourceCache = this.renderResourceCache
         rc.renderResourceCache?.resources = (this.context.resources)
         rc.resources = this.context.resources
-
         computeViewingTransform(frame.projection, frame.modelview)
         frame.viewport.set(this.viewport)
         frame.infiniteProjection.setToInfiniteProjection(viewport.width.toDouble(), viewport.height.toDouble(), fieldOfView, 1.0)
@@ -443,8 +452,7 @@ class WorldWindow : GLSurfaceView, GLSurfaceView.Renderer, MessageListener, Fram
      */
     fun distanceToViewGlobeExtents(): Double {
         val sinfovy_2 = Math.sin(Math.toRadians(fieldOfView * 0.5))
-
-        val radius: Double = globe.equatorialRadius
+        val radius: Double = globe.getEquatorialRadius()
         return radius / sinfovy_2 - radius
     }
 
@@ -460,7 +468,7 @@ class WorldWindow : GLSurfaceView, GLSurfaceView.Renderer, MessageListener, Fram
     }
 
     fun removeNavigatorListener(listener: NavigatorListener) {
-        navigatorEvents.addNavigatorListener(listener)
+        navigatorEvents.removeNavigatorListener(listener)
     }
 
     fun getNavigatorStoppedDelay(): Long {
@@ -592,16 +600,8 @@ class WorldWindow : GLSurfaceView, GLSurfaceView.Renderer, MessageListener, Fram
         latitude: Double,
         longitude: Double,
         altitude: Double,
-        result: PointF?
+        result: PointF
     ): Boolean {
-        requireNotNull(result) {
-            Logger.logMessage(
-                Logger.ERROR,
-                "WorldWindow",
-                "geographicToScreenPoint",
-                "missingResult"
-            )
-        }
         globe.geographicToCartesian(latitude, longitude, altitude, scratchPoint)
         return cartesianToScreenPoint(scratchPoint.x, scratchPoint.y, scratchPoint.z, result)
     }
@@ -612,25 +612,14 @@ class WorldWindow : GLSurfaceView, GLSurfaceView.Renderer, MessageListener, Fram
     fun rayThroughScreenPoint(
         x: Float,
         y: Float,
-        result: Line?
+        result: Line
     ): Boolean {
-        requireNotNull(result) {
-            Logger.logMessage(
-                Logger.ERROR,
-                "WorldWindow",
-                "rayThroughScreenPoint",
-                "missingResult"
-            )
-        }
-
         // Convert from Android screen coordinates to OpenGL screen coordinates by inverting the Y axis.
         val sx = x.toDouble()
         val sy = this.height - y.toDouble()
-
         // Compute the inverse modelview-projection matrix corresponding to the World Window's current Navigator state.
         computeViewingTransform(scratchProjection, scratchModelview)
         scratchProjection.multiplyByMatrix(scratchModelview).invert()
-
         // Transform the screen point to Cartesian coordinates at the near and far clip planes, store the result in the
         // ray's origin and direction, respectively. Complete the ray direction by subtracting the near point from the
         // far point and normalizing.

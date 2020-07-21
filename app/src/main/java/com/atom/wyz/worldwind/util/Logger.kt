@@ -32,6 +32,8 @@ class Logger {
             "missingContext" to "The context is null",
             "missingName" to "The name is null",
             "missingUrl" to "The url is null",
+            "missingCoverage" to "The coverage is null",
+            "missingModel" to "The model is null",
             "invalidResolution" to "The resolution is invalid",
             "missingConfig" to "The configuration is null",
             "missingCoordinateSystem" to "The coordinate system is null",
@@ -76,6 +78,7 @@ class Logger {
             "invalidCapacity" to "The capacity is less than 1",
             "missingColor" to "The color is null",
             "missingTypeface" to "The typeface is null",
+            "missingTileMatrixSet" to  "The tile matrix set is null",
             "missingGlobe" to "The globe is null"
         )
 

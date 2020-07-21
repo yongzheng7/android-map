@@ -125,8 +125,6 @@ open class Placemark : AbstractRenderable, Highlightable, Movable {
     override fun doRender(rc: RenderContext) {
 
         val position = this.position ?: return
-        val globe = rc.globe ?: return
-
         // Compute the placemark's Cartesian model point.
         rc.geographicToCartesian(position.latitude, position.longitude, position.altitude, altitudeMode, placePoint)
 
@@ -242,7 +240,7 @@ open class Placemark : AbstractRenderable, Highlightable, Movable {
 
         drawable.lineWidth = activeAttributes.leaderAttributes!!.outlineWidth
         drawable.enableDepthTest = activeAttributes.leaderAttributes!!.depthTest
-        drawable.color.set(if (rc.pickMode) pickColor else activeAttributes.leaderAttributes!!.outlineColor!!)
+        drawable.color.set(if (rc.pickMode) pickColor else activeAttributes.leaderAttributes!!.outlineColor)
 
     }
 

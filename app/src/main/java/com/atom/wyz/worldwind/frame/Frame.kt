@@ -1,6 +1,5 @@
 package com.atom.wyz.worldwind.frame
 
-import com.atom.wyz.worldwind.draw.DrawableList
 import com.atom.wyz.worldwind.draw.DrawableQueue
 import com.atom.wyz.worldwind.geom.Line
 import com.atom.wyz.worldwind.geom.Matrix4
@@ -29,7 +28,7 @@ class Frame {
 
     val drawableQueue: DrawableQueue = DrawableQueue()
 
-    val drawableTerrain: DrawableList = DrawableList()
+    val drawableTerrain: DrawableQueue = DrawableQueue()
 
     var pickedObjects: PickedObjectList? = null
 

@@ -58,6 +58,9 @@ class DrawableQueue {
         entries[size]!!.set(drawable, groupId, order, size)
         size++
     }
+    fun getDrawable(index: Int): Drawable? {
+        return if (index < size) entries[index]!!.drawable else null
+    }
 
     fun peekDrawable(): Drawable? {
         return if (position < size) entries[position]!!.drawable else null

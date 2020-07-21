@@ -207,7 +207,7 @@ open class BasicWorldWindowController : WorldWindowController, GestureListener {
 
     protected open fun gestureDidBegin() {
         if (activeGestures++ == 0) {
-            this.worldWindow?.navigator?.getAsLookAt(this.worldWindow?.globe, beginLookAt)
+            this.worldWindow?.navigator?.getAsLookAt(this.worldWindow!!.globe, beginLookAt)
             lookAt.set(beginLookAt)
         }
     }

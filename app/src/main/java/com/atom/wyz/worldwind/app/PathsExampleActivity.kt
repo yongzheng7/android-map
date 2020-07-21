@@ -88,7 +88,7 @@ class PathsExampleActivity : BasicGlobeActivity()  , Handler.Callback  {
 
                 Log.e("PathsExampleActivity" , " handleMessage idx "+idx)
                 val nextPos = dept.pos.interpolateAlongPath( WorldWind.GREAT_CIRCLE, animationAmount,dest.pos, Position())
-                val dist: Double = dept.pos.greatCircleDistance(dest.pos) * this.wwd.globe.equatorialRadius
+                val dist: Double = dept.pos.greatCircleDistance(dest.pos) * this.wwd.globe.getEquatorialRadius()
                 val altCurve = (1 - animationAmount) * animationAmount * 4
                 nextPos!!.altitude = altCurve * dist * 0.1
                 val positions= path.positions

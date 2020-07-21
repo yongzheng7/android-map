@@ -261,7 +261,7 @@ class PlacemarksDraggerActivity : BasicWorldWindActivity() {
          * @param position the new position of the shape's reference position.
          */
         override fun moveTo(globe: Globe, position: Position?) {
-            val oldRef = getReferencePosition() ?: return
+            val oldRef = getReferencePosition()
 
             val sector: Sector = super.sector
             val swCorner = Location(sector.minLatitude, sector.minLongitude)

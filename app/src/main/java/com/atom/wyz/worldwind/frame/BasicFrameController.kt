@@ -8,25 +8,19 @@ import com.atom.wyz.worldwind.draw.DrawableSurfaceColor
 import com.atom.wyz.worldwind.geom.Color
 import com.atom.wyz.worldwind.geom.Position
 import com.atom.wyz.worldwind.geom.Vec3
-import com.atom.wyz.worldwind.layer.LayerList
 import com.atom.wyz.worldwind.pick.PickedObject
 import com.atom.wyz.worldwind.render.BasicProgram
 import com.atom.wyz.worldwind.util.Logger
 import com.atom.wyz.worldwind.util.pool.Pool
 
 
-class BasicFrameController : FrameController {
+open class BasicFrameController : FrameController {
 
     private var pickColor: Color = Color()
-
-    val pickPoint: Vec3 = Vec3()
-
-    var pickPos: Position = Position()
 
     override fun drawFrame(dc: DrawContext) {
         clearFrame(dc)
         drawDrawables(dc)
-
         if (dc.pickMode && dc.pickPoint != null) {
             resolvePick(dc)
         } else if (dc.pickMode) {
@@ -37,7 +31,6 @@ class BasicFrameController : FrameController {
     protected fun clearFrame(dc: DrawContext) {
         GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT or GLES20.GL_DEPTH_BUFFER_BIT)
     }
-
     protected fun drawDrawables(dc: DrawContext) {
         dc.rewindDrawables()
         var next: Drawable?
@@ -83,40 +76,12 @@ class BasicFrameController : FrameController {
     }
 
     override fun renderFrame(rc: RenderContext) {
-        tessellateTerrain(rc)
+        rc.terrainTessellator?.tessellate(rc)
         if (rc.pickMode) {
             this.renderTerrainPickedObject(rc)
         }
-        renderLayers(rc)
-        prepareDrawables(rc)
-    }
-
-    protected fun prepareDrawables(rc: RenderContext) {
+        rc.layers?.render(rc)
         rc.sortDrawables()
-    }
-
-
-    protected fun renderLayers(rc: RenderContext) {
-        val layers: LayerList = rc.layers ?: return
-        for (layer in layers) {
-            rc.currentLayer = layer
-            try {
-                rc.currentLayer?.render(rc)
-            } catch (e: java.lang.Exception) {
-                Logger.logMessage(
-                    Logger.ERROR,
-                    "BasicFrameController",
-                    "drawLayers",
-                    "Exception while rendering layer \'" + layer.displayName + "\'",
-                    e
-                )
-            }
-        }
-        rc.currentLayer = null
-    }
-
-    protected fun tessellateTerrain(rc: RenderContext) {
-        rc.globe?.tessellator?.tessellate(rc)
     }
 
     protected fun renderTerrainPickedObject(rc: RenderContext) {
@@ -132,11 +97,18 @@ class BasicFrameController : FrameController {
         drawable.color = PickedObject.identifierToUniqueColor(pickedObjectId, drawable.color)
         drawable.program = rc.getProgram(BasicProgram.KEY) as BasicProgram?
         if (drawable.program == null) {
-            drawable.program = rc.putProgram(BasicProgram.KEY, BasicProgram(rc.resources!!)) as BasicProgram
+            drawable.program =
+                rc.putProgram(BasicProgram.KEY, BasicProgram(rc.resources!!)) as BasicProgram
         }
         rc.offerSurfaceDrawable(drawable, Double.NEGATIVE_INFINITY)
-        if (resolveTerrainPickPosition(rc, this.pickPos)) {
-            rc.offerPickedObject(PickedObject.fromTerrain(pickedObjectId, this.pickPos))
+        // If the pick ray intersects the terrain, enqueue a picked object that associates the terrain drawable with its
+        // picked object ID and the intersection position.
+        val pickPoint = Vec3()
+        if (rc.pickRay != null && rc.terrain!!.intersect(rc.pickRay!!, pickPoint)) {
+            rc.globe.cartesianToGeographic(pickPoint.x, pickPoint.y, pickPoint.z, Position()).let {
+                it.altitude = 0.0
+                rc.offerPickedObject(PickedObject.fromTerrain(pickedObjectId, it))
+            }
         }
     }
 
@@ -145,8 +117,7 @@ class BasicFrameController : FrameController {
         if (pickedObjects.count() == 0) {
             return  // no eligible objects; avoid expensive calls to glReadPixels
         }
-        val pickColors =
-            dc.readPixelColors(
+        val pickColors = dc.readPixelColors(
                 dc.pickViewport!!.x,
                 dc.pickViewport!!.y,
                 dc.pickViewport!!.width,
@@ -160,18 +131,5 @@ class BasicFrameController : FrameController {
             }
         }
         pickedObjects.keepTopObjects()
-    }
-
-    protected fun resolveTerrainPickPosition(rc: RenderContext, result: Position): Boolean {
-        val terrain = rc.terrain ?: return false
-        val globe = rc.globe ?: return false
-        if (rc.pickRay != null && terrain.intersect(rc.pickRay!!, pickPoint)) {
-            globe.cartesianToGeographic(pickPoint.x, pickPoint.y, pickPoint.z, result).let {
-                result.set(it)
-                result.altitude = 0.0
-                return true
-            }
-        }
-        return false
     }
 }

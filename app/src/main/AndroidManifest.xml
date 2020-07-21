@@ -39,6 +39,9 @@
         <activity android:name=".app.DayNightCycleActivity"
                 android:theme="@style/AppTheme">
         </activity>
+        <activity android:name=".app.WcsElevationFragment"
+                android:theme="@style/AppTheme">
+        </activity>
         <activity android:name=".app.ShowTessellationActivity"
                 android:theme="@style/AppTheme">
         </activity>
@@ -109,6 +112,9 @@
                 android:theme="@style/AppTheme">
         </activity>
         <activity android:name=".app.ZipActivity"
+                android:theme="@style/AppTheme">
+        </activity>
+        <activity android:name=".app.WtmsLayerActivity"
                 android:theme="@style/AppTheme">
         </activity>
 

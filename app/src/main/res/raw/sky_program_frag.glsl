@@ -3,10 +3,13 @@
  * National Aeronautics and Space Administration. All Rights Reserved.
  */
 
+#ifdef GL_FRAGMENT_PRECISION_HIGH
+precision highp float;
+#else
 precision mediump float;
-precision mediump int;
+#endif
 
-uniform vec3 lightDirection;
+uniform mediump vec3 lightDirection;
 uniform float g;
 uniform float g2;
 

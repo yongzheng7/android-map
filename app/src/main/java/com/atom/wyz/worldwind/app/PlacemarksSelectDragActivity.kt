@@ -129,6 +129,7 @@ class PlacemarksSelectDragActivity : BasicWorldWindActivity() {
 
             }
             placemark.displayName = (name)
+            placemark.altitudeMode = (WorldWind.CLAMP_TO_GROUND)
             placemark.putUserProperty(AUTOMOTIVE_TYPE, automotiveType)
             placemark.putUserProperty(SELECTABLE, null)
             placemark.putUserProperty(EDITABLE, null)

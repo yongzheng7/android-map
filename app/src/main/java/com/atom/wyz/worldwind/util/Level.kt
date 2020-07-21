@@ -13,22 +13,31 @@ class Level {
     var tileHeight = 0
 
     /**
+     * 此级别集中的所有图块所表示的图像的像素宽度 比如等级为1  parent.tileWidth = 16 , tileDelta = 90 那么根据公式
+     * 该等级内是由16* 360/90 = 64个点组成 横纵 64*64个点
+     */
+    var levelWidth = 0
+
+    /**
+     * 此级别集中的所有图块所表示的图像的高度（以像素为单位），或者此级别集中的经度方向上的采样点数。
+     */
+    var levelHeight = 0
+
+    /**
      * 此级别内像素或高程单元的大小，每个单元的弧度为单位。
      */
     var texelHeight = 0.0
 
 
-    constructor(parent: LevelSet?, levelNumber: Int, tileDelta: Double) {
-        if (parent == null) {
-            throw IllegalArgumentException(
-                    Logger.logMessage(Logger.ERROR, "Level", "constructor", "The parent level set is null"))
-        }
+    constructor(parent: LevelSet, levelNumber: Int, tileDelta: Double) {
         if (tileDelta <= 0) {
             throw IllegalArgumentException(
                     Logger.logMessage(Logger.ERROR, "Level", "constructor", "The tile delta is zero"))
         }
         this.parent = parent
         this.levelNumber = levelNumber
+        this.levelWidth = Math.round(parent.tileWidth * 360 / tileDelta).toInt()
+        this.levelHeight = Math.round(parent.tileHeight * 180 / tileDelta).toInt()
         this.tileDelta = tileDelta
         tileWidth = parent.tileWidth
         tileHeight = parent.tileHeight

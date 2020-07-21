@@ -4,11 +4,11 @@ import java.util.*
 
 open class WmtsStyle : OwsDescription() {
 
-    protected var identifier: String? = null
+    open var identifier: String? = null
 
-    protected var isDefault = false
+    open var isDefault = false
 
-    protected var legendUrls: MutableList<WmtsElementLink> =
+    open var legendUrls: MutableList<WmtsElementLink> =
         ArrayList()
 
     override fun parseField(keyName: String, value: Any) {

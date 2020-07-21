@@ -3,11 +3,9 @@ package com.atom.wyz.worldwind
 import com.atom.wyz.worldwind.geom.Matrix4
 import com.atom.wyz.worldwind.geom.Position
 import com.atom.wyz.worldwind.geom.Vec3
-import com.atom.wyz.worldwind.globe.BasicGlobe
 import com.atom.wyz.worldwind.globe.Globe
 import com.atom.wyz.worldwind.globe.ProjectionWgs84
 import com.atom.wyz.worldwind.util.Logger
-import junit.framework.Assert.assertEquals
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith

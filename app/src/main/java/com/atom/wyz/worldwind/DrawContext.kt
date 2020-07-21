@@ -2,7 +2,6 @@ package com.atom.wyz.worldwind
 
 import android.opengl.GLES20
 import com.atom.wyz.worldwind.draw.Drawable
-import com.atom.wyz.worldwind.draw.DrawableList
 import com.atom.wyz.worldwind.draw.DrawableQueue
 import com.atom.wyz.worldwind.draw.DrawableTerrain
 import com.atom.wyz.worldwind.geom.*
@@ -33,7 +32,7 @@ class DrawContext {
 
     var drawableQueue: DrawableQueue? = null
 
-    var drawableTerrain: DrawableList? = null
+    var drawableTerrain: DrawableQueue? = null
 
     var pickedObjects: PickedObjectList? = null
 

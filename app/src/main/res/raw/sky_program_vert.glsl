@@ -3,9 +3,6 @@
  * National Aeronautics and Space Administration. All Rights Reserved.
  */
 
-precision mediump float;
-precision mediump int;
-
 const int SAMPLE_COUNT = 2;
 const float SAMPLES = 2.0;
 

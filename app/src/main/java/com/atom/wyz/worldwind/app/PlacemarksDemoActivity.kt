@@ -16,6 +16,7 @@ import androidx.annotation.DrawableRes
 import com.atom.wyz.worldwind.BasicWorldWindowController
 import com.atom.wyz.worldwind.R
 import com.atom.wyz.worldwind.RenderContext
+import com.atom.wyz.worldwind.WorldWind
 import com.atom.wyz.worldwind.geom.Position
 import com.atom.wyz.worldwind.layer.RenderableLayer
 import com.atom.wyz.worldwind.render.ImageSource
@@ -515,6 +516,7 @@ class PlacemarksDemoActivity : BasicWorldWindActivity() {
                 placemark.levelOfDetailSelector = (PlaceLevelOfDetailSelector(getResources(), place))
                 placemark.eyeDistanceScaling = (true)
                 placemark.eyeDistanceScalingThreshold = (PlaceLevelOfDetailSelector.LEVEL_1_DISTANCE.toDouble())
+                placemark.altitudeMode = (WorldWind.CLAMP_TO_GROUND)
                 placeLayer.addRenderable(placemark)
                 numPlacesCreated++
             }

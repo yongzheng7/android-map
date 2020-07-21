@@ -13,6 +13,12 @@
                     android:onClick="menuButton"
                     android:visibility="gone"/>
             <Button
+                    android:id="@+id/Wcs_Elevation_Fragment"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Wcs_Elevation_Fragment"
+                    android:onClick="menuButton"/>
+            <Button
                     android:id="@+id/ShapesDashAndFillFragment"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -159,10 +165,10 @@
                     android:onClick="menuButton"/>
 
             <Button
-                    android:id="@+id/wms2_activity"
+                    android:id="@+id/wtmsLayer_Activity"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="wms2_activity"
+                    android:text="wtms_Activity"
                     android:onClick="menuButton"/>
 
             <Button

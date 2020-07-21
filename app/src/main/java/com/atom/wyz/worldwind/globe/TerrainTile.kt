@@ -9,30 +9,52 @@ import com.atom.wyz.worldwind.util.Level
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
 
-class TerrainTile(sector: Sector?, level: Level?, row: Int, column: Int) : Tile(sector, level, row, column) {
+class TerrainTile(sector: Sector?, level: Level?, row: Int, column: Int) :
+    Tile(sector, level, row, column) {
 
-    var vertexOrigin = Vec3()
-
-    var vertexPoints: FloatArray? = null
-
-    var vertexPointKey: String
-
-    init {
-        vertexPointKey = this::javaClass.name + ".vertexPoint." + tileKey
+    companion object{
+        var pointBufferSequence: Long = 0
     }
 
-    fun getVertexPointBuffer(rc: RenderContext): BufferObject? {
-        vertexPoints?.let {
-            rc.getBufferObject(vertexPointKey)?.let {
-                return it
-            }
+    var minTerrainElevation = -Short.MAX_VALUE.toFloat()
 
-            val size = it.size * 4
-            val buffer = ByteBuffer.allocateDirect(size).order(ByteOrder.nativeOrder()).asFloatBuffer()
-            buffer.put(it).rewind()
-            return rc.putBufferObject(vertexPointKey, BufferObject(GLES20.GL_ARRAY_BUFFER, size, buffer))
+    var heights: FloatArray? = null
 
-        } ?: return null
+    var points: FloatArray? = null
+        set(value) {
+            field = value
+            pointBufferKey = "TerrainTile.points." + tileKey.toString() + "." + pointBufferSequence++
+        }
 
+    val origin = Vec3()
+
+    var heightTimestamp: Long = 0
+
+    var verticalExaggeration = 0.0
+
+    var pointBufferKey: String? = null
+
+
+
+    fun getPointBuffer(rc: RenderContext): BufferObject? {
+        if (points == null) {
+            return null
+        }
+        val bufferObject = pointBufferKey?.let { rc.getBufferObject(it) }
+        if (bufferObject != null) {
+            return bufferObject
+        }
+
+        // TODO consider a pool of terrain tiles
+        // TODO consider a pool of terrain tile vertex buffers
+        val size = points!!.size * 4
+        val buffer = ByteBuffer.allocateDirect(size).order(ByteOrder.nativeOrder()).asFloatBuffer()
+        buffer.put(points).rewind()
+        return pointBufferKey?.let {
+            rc.putBufferObject(
+                it,
+                BufferObject(GLES20.GL_ARRAY_BUFFER, size, buffer)
+            )
+        }
     }
 }

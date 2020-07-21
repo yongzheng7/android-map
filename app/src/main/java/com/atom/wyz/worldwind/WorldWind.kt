@@ -1,10 +1,9 @@
 package com.atom.wyz.worldwind
 
 import androidx.annotation.IntDef
+import com.atom.wyz.worldwind.geom.Ellipsoid
 import com.atom.wyz.worldwind.util.MessageService
 import com.atom.wyz.worldwind.util.TaskService
-import java.lang.annotation.Retention
-import java.lang.annotation.RetentionPolicy
 
 class WorldWind {
     /**
@@ -213,6 +212,14 @@ class WorldWind {
          * WGS 84 reference value for the Earth ellipsoid's inverse flattening (1/f): 298.257223563.
          */
         const val WGS84_INVERSE_FLATTENING = 298.257223563
+
+        /**
+         * WGS 84 reference ellipsoid for Earth. The ellipsoid's semi-major axis and inverse flattening factor are
+         * configured according to the WGS 84 reference system (aka WGS 1984, EPSG:4326). WGS 84 reference values taken from
+         * [](http://earth-info.nga.mil/GandG/publications/NGA_STND_0036_1_0_0_WGS84/NGA.STND.0036_1.0.0_WGS84.pdf).
+         */
+        val WGS84_ELLIPSOID: Ellipsoid = Ellipsoid(WGS84_SEMI_MAJOR_AXIS, WGS84_INVERSE_FLATTENING)
+
 
         ////////////////////////////////////////////////////////////////////////////////////////////
         /**
