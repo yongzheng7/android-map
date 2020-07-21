@@ -21,7 +21,6 @@ abstract class AbstractShape : AbstractRenderable, Attributable, Highlightable {
 
     protected var activeAttributes: ShapeAttributes? = null
 
-    var _highlighted = false
 
     @WorldWind.AltitudeMode
     var altitudeMode: Int = WorldWind.ABSOLUTE
@@ -47,6 +46,8 @@ abstract class AbstractShape : AbstractRenderable, Attributable, Highlightable {
     val boundingBox: BoundingBox = BoundingBox()
 
     private val scratchPoint: Vec3 = Vec3()
+
+    override var highlighted: Boolean = false
 
     constructor(attributes: ShapeAttributes = ShapeAttributes()) : super("AbstractShape") {
         this.attributes = attributes
@@ -86,7 +87,7 @@ abstract class AbstractShape : AbstractRenderable, Attributable, Highlightable {
     }
 
     protected fun determineActiveAttributes(rc: RenderContext) {
-        if (this._highlighted && highlightAttributes != null) {
+        if (this.highlighted && highlightAttributes != null) {
             activeAttributes = highlightAttributes
         } else {
             activeAttributes = attributes
@@ -95,14 +96,6 @@ abstract class AbstractShape : AbstractRenderable, Attributable, Highlightable {
 
     protected abstract fun makeDrawable(rc: RenderContext)
     protected abstract fun reset()
-
-    override fun isHighlighted(): Boolean {
-        return _highlighted;
-    }
-
-    override fun setHighlighted(highlighted: Boolean) {
-        _highlighted = highlighted
-    }
 
     protected open fun cameraDistanceGeographic(rc: RenderContext, boundingSector: Sector): Double {
         val lat: Double = WWMath.clamp(rc.camera.latitude, boundingSector.minLatitude, boundingSector.maxLatitude)

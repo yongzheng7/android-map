@@ -22,6 +22,8 @@ class GpuTexture : RenderResource {
 
     var textureFormat = 0
 
+    var textureType = 0
+
     var textureByteCount = 0
 
     var imageBitmap: Bitmap? = null
@@ -49,6 +51,7 @@ class GpuTexture : RenderResource {
         val format = GLUtils.getInternalFormat(bitmap)
         val type = GLUtils.getType(bitmap)
 
+        textureType = type
         textureWidth = width
         textureHeight = height
         textureFormat = format
@@ -58,7 +61,7 @@ class GpuTexture : RenderResource {
 
     }
 
-    constructor(width: Int, height: Int, format: Int) {
+    constructor(width: Int, height: Int, format: Int, type: Int) {
         require(!(width < 0 || height < 0)) {
             Logger.logMessage(
                 Logger.ERROR,
@@ -67,11 +70,11 @@ class GpuTexture : RenderResource {
                 "invalidWidthOrHeight"
             )
         }
-
+        textureType = type
         textureWidth = width
         textureHeight = height
         textureFormat = format
-        textureByteCount = estimateByteCount(width, height, format, GLES20.GL_UNSIGNED_BYTE)
+        textureByteCount = estimateByteCount(width, height, format, type)
         texCoordTransform.setToIdentity()
     }
 
@@ -139,7 +142,7 @@ class GpuTexture : RenderResource {
             0 /*level*/,
             textureFormat, textureWidth, textureHeight,
             0 /*border*/,
-            textureFormat, GLES20.GL_UNSIGNED_BYTE, null /*pixels*/
+            textureFormat, this.textureType, null /*pixels*/
         )
     }
 
@@ -165,7 +168,8 @@ class GpuTexture : RenderResource {
             GLUtils.texImage2D(GLES20.GL_TEXTURE_2D, 0 /*level*/, bitmap, 0 /*border*/)
             // If the bitmap has power-of-two dimensions, generate the texture object's image data for image levels 1
             // through level N, and configure the texture object's filtering modes to use those image levels.
-            this.imageHasMipMap = WWMath.isPowerOfTwo(bitmap.getWidth()) && WWMath.isPowerOfTwo(bitmap.getHeight())
+            this.imageHasMipMap =
+                WWMath.isPowerOfTwo(bitmap.getWidth()) && WWMath.isPowerOfTwo(bitmap.getHeight())
             if (imageHasMipMap) {
                 GLES20.glGenerateMipmap(GLES20.GL_TEXTURE_2D)
             }
@@ -181,7 +185,11 @@ class GpuTexture : RenderResource {
         var param: Int
         // Configure the OpenGL texture minification function. Always use a nearest filtering function in picking mode.
         if (dc.pickMode) {
-            GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MIN_FILTER, GLES20.GL_NEAREST)
+            GLES20.glTexParameteri(
+                GLES20.GL_TEXTURE_2D,
+                GLES20.GL_TEXTURE_MIN_FILTER,
+                GLES20.GL_NEAREST
+            )
         } else if (getTexParameter(GLES20.GL_TEXTURE_MIN_FILTER).also { param = it } != 0) {
             GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MIN_FILTER, param)
         } else {
@@ -192,25 +200,41 @@ class GpuTexture : RenderResource {
         }
         // Configure the OpenGL texture magnification function. Always use a nearest filtering function in picking mode.
         if (dc.pickMode) {
-            GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MAG_FILTER, GLES20.GL_NEAREST)
+            GLES20.glTexParameteri(
+                GLES20.GL_TEXTURE_2D,
+                GLES20.GL_TEXTURE_MAG_FILTER,
+                GLES20.GL_NEAREST
+            )
         } else if (getTexParameter(GLES20.GL_TEXTURE_MAG_FILTER).also { param = it } != 0) {
             GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MAG_FILTER, param)
         } else {
-            GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MAG_FILTER, GLES20.GL_LINEAR)
+            GLES20.glTexParameteri(
+                GLES20.GL_TEXTURE_2D,
+                GLES20.GL_TEXTURE_MAG_FILTER,
+                GLES20.GL_LINEAR
+            )
         }
         // Configure the OpenGL texture wrapping function for texture coordinate S. Default to the edge clamping
         // function to render image tiles without seams.
         if (getTexParameter(GLES20.GL_TEXTURE_WRAP_S).also { param = it } != 0) {
             GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_S, param)
         } else {
-            GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_S, GLES20.GL_CLAMP_TO_EDGE)
+            GLES20.glTexParameteri(
+                GLES20.GL_TEXTURE_2D,
+                GLES20.GL_TEXTURE_WRAP_S,
+                GLES20.GL_CLAMP_TO_EDGE
+            )
         }
         // Configure the OpenGL texture wrapping function for texture coordinate T. Default to the edge clamping
         // function to render image tiles without seams.
         if (getTexParameter(GLES20.GL_TEXTURE_WRAP_T).also { param = it } != 0) {
             GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_T, param)
         } else {
-            GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_T, GLES20.GL_CLAMP_TO_EDGE)
+            GLES20.glTexParameteri(
+                GLES20.GL_TEXTURE_2D,
+                GLES20.GL_TEXTURE_WRAP_T,
+                GLES20.GL_CLAMP_TO_EDGE
+            )
         }
     }
 
@@ -228,6 +252,8 @@ class GpuTexture : RenderResource {
                 GLES20.GL_LUMINANCE -> bytesPerRow = widthPow2 // 8 bits per pixel
                 GLES20.GL_LUMINANCE_ALPHA -> bytesPerRow = widthPow2 * 2 // 16 bits per pixel
             }
+            GLES20.GL_UNSIGNED_INT -> bytesPerRow = widthPow2 * 4
+            GLES20.GL_UNSIGNED_SHORT,
             GLES20.GL_UNSIGNED_SHORT_5_6_5,
             GLES20.GL_UNSIGNED_SHORT_4_4_4_4,
             GLES20.GL_UNSIGNED_SHORT_5_5_5_1 -> bytesPerRow = widthPow2 * 2 // 16 bits per pixel

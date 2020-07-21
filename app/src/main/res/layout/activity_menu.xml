@@ -3,8 +3,24 @@
               android:orientation="vertical" android:layout_width="match_parent"
               android:layout_height="match_parent">
     <ScrollView android:layout_width="match_parent" android:layout_height="match_parent">
-        <LinearLayout android:layout_width="match_parent" android:layout_height="match_parent"
+        <LinearLayout android:layout_width="match_parent"
+                android:layout_height="match_parent"
         android:orientation="vertical">
+
+            <Button
+                    android:id="@+id/omnidirectionalSensor_Activity"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="omnidirectionalSensor_Activity"
+                    android:onClick="menuButton"/>
+
+            <Button
+                    android:id="@+id/omnidirectionalSensor2_Activity"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="omnidirectionalSensor2_Activity"
+                    android:onClick="menuButton"/>
+
             <Button
                     android:id="@+id/Zip_Activity"
                     android:layout_width="wrap_content"

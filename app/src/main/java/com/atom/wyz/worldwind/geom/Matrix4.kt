@@ -539,7 +539,8 @@ class Matrix4 {
      * 0 0 x 0
      */
     fun setToPerspectiveProjection(
-        viewportWidth: Double, viewportHeight: Double, fovyDegrees: Double,
+        viewportWidth: Double, viewportHeight: Double,
+        fovyDegrees: Double,
         nearDistance: Double, farDistance: Double
     ): Matrix4 {
         if (viewportWidth <= 0) {

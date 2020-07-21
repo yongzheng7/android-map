@@ -81,13 +81,15 @@ class DrawableSurfaceShape : Drawable {
         // Keep track of the number of shapes drawn into the texture.
         var shapeCount = 0
         try {
-            val framebuffer = dc.surfaceFramebuffer()
+            val framebuffer = dc.scratchFramebuffer()
             if (!framebuffer.bindFramebuffer(dc)) {
                 return 0
             }
             val colorAttachment = framebuffer.getAttachedTexture(GLES20.GL_COLOR_ATTACHMENT0)
             GLES20.glViewport(0, 0, colorAttachment.textureWidth, colorAttachment.textureHeight)
             GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT)
+            GLES20.glDisable(GLES20.GL_DEPTH_TEST)
+
             drawState.program!!.enablePickMode(dc.pickMode)
 
             mvpMatrix.setToIdentity()
@@ -145,6 +147,7 @@ class DrawableSurfaceShape : Drawable {
         } finally { // Restore the default World Wind OpenGL state.
             dc.bindFramebuffer(0)
             GLES20.glViewport(dc.viewport.x, dc.viewport.y, dc.viewport.width, dc.viewport.height)
+            GLES20.glEnable(GLES20.GL_DEPTH_TEST)
             GLES20.glLineWidth(1f)
         }
         return shapeCount
@@ -157,7 +160,7 @@ class DrawableSurfaceShape : Drawable {
         if (!terrain.useVertexTexCoordAttrib(dc, 1 /*vertexTexCoord*/)) {
             return  // terrain vertex attribute failed to bind
         }
-        val colorAttachment = dc.surfaceFramebuffer().getAttachedTexture(GLES20.GL_COLOR_ATTACHMENT0)
+        val colorAttachment = dc.scratchFramebuffer().getAttachedTexture(GLES20.GL_COLOR_ATTACHMENT0)
         if (!colorAttachment.bindTexture(dc)) {
             return  // framebuffer texture failed to bind
         }

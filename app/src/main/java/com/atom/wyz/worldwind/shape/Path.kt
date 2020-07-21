@@ -81,6 +81,7 @@ class Path : AbstractShape {
 
     protected var isSurfaceShape = false
 
+
     constructor()
 
     constructor(attributes: ShapeAttributes) : super(attributes)
@@ -99,6 +100,7 @@ class Path : AbstractShape {
         outlineElements.clear()
         verticalElements.clear()
     }
+
 
     override fun makeDrawable(rc: RenderContext) {
         if (positions.isEmpty()) {

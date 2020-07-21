@@ -56,7 +56,6 @@ open class Placemark : AbstractRenderable, Highlightable, Movable {
     var levelOfDetailSelector: LevelOfDetailSelector? = null
 
     var attributes: PlacemarkAttributes
-    var _highlighted = false
     var highlightAttributes: PlacemarkAttributes? = null
     var activeAttributes: PlacemarkAttributes? = null
 
@@ -115,7 +114,7 @@ open class Placemark : AbstractRenderable, Highlightable, Movable {
     }
 
     protected open fun determineActiveAttributes(rc: RenderContext) {
-        if (_highlighted && highlightAttributes != null) {
+        if (highlighted && highlightAttributes != null) {
             activeAttributes = highlightAttributes
         } else {
             activeAttributes = attributes
@@ -307,13 +306,6 @@ open class Placemark : AbstractRenderable, Highlightable, Movable {
         }
     }
 
-    override fun isHighlighted(): Boolean {
-        return _highlighted
-    }
-
-    override fun setHighlighted(highlighted: Boolean) {
-        this._highlighted = highlighted
-    }
 
     override fun getReferencePosition(): Position? {
         return position
@@ -322,4 +314,6 @@ open class Placemark : AbstractRenderable, Highlightable, Movable {
     override fun moveTo(globe: Globe, position: Position?) {
         this.position = position
     }
+
+    override var highlighted: Boolean = false
 }

@@ -23,11 +23,6 @@ class Level {
      */
     var levelHeight = 0
 
-    /**
-     * 此级别内像素或高程单元的大小，每个单元的弧度为单位。
-     */
-    var texelHeight = 0.0
-
 
     constructor(parent: LevelSet, levelNumber: Int, tileDelta: Double) {
         if (tileDelta <= 0) {
@@ -41,11 +36,10 @@ class Level {
         this.tileDelta = tileDelta
         tileWidth = parent.tileWidth
         tileHeight = parent.tileHeight
-        texelHeight = Math.toRadians(tileDelta) / parent.tileHeight
     }
 
     override fun toString(): String {
-        return "Level( levelNumber=$levelNumber, tileDelta=$tileDelta, tileWidth=$tileWidth, tileHeight=$tileHeight, texelHeight=$texelHeight)"
+        return "Level( levelNumber=$levelNumber, tileDelta=$tileDelta, tileWidth=$tileWidth, tileHeight=$tileHeight)"
     }
 
     /**

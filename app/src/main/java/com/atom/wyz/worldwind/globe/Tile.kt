@@ -115,11 +115,13 @@ open class Tile {
 
     var heightLimitsTimestamp: Long = 0
 
-    var extentExaggeration : Double = 0.0
+    var extentExaggeration: Double = 0.0
 
     var distanceToCamera = 0.0
 
-    private var samplePoints: FloatArray? = null
+    var texelSizeFactor = 0.0
+
+    var samplePoints: FloatArray? = null
 
     constructor(sector: Sector?, level: Level?, row: Int, column: Int) {
         if (sector == null) {
@@ -149,6 +151,8 @@ open class Tile {
         this.row = row
         this.column = column
         this.tileKey = level.levelNumber.toString() + "." + row + "." + column
+        this.texelSizeFactor = Math.toRadians(level.tileDelta / level.tileWidth) * Math.cos(Math.toRadians(sector.centroidLatitude()))
+
     }
 
     /**
@@ -177,7 +181,7 @@ open class Tile {
      */
     open fun mustSubdivide(rc: RenderContext, detailFactor: Double): Boolean {
         this.distanceToCamera = this.distanceToCamera(rc); //获取此图块和眼睛的距离 笛卡尔
-        val texelSize: Double = level.texelHeight * rc.globe.getEquatorialRadius()
+        val texelSize: Double = texelSizeFactor * rc.globe.getEquatorialRadius()
         val pixelSize = rc.pixelSizeAtDistance(this.distanceToCamera)
 
         var densityFactor = 1.0
@@ -317,7 +321,7 @@ open class Tile {
         samplePoints = samplePoints ?: let {
             rc.globe.geographicToCartesianGrid(
                 sector, 3, 3,
-                null, 1.0f,null,
+                null, 1.0f, null,
                 FloatArray(27),
                 0, 0
             )

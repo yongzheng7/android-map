@@ -239,4 +239,36 @@ class Color {
         val a8 = Math.round(alpha * 0xFF)
         return android.graphics.Color.argb(a8, r8, g8, b8)
     }
+
+    fun premultiply(): Color {
+        red *= alpha
+        green *= alpha
+        blue *= alpha
+        return this
+    }
+
+    fun premultiplyColor(color: Color): Color {
+        red = color.red * color.alpha
+        green = color.green * color.alpha
+        blue = color.blue * color.alpha
+        alpha = color.alpha
+        return this
+    }
+
+    fun premultiplyToArray(result: FloatArray, offsetVal: Int): FloatArray {
+        var offset = offsetVal
+        require(!(result.size - offset < 4)) {
+            Logger.logMessage(
+                Logger.ERROR,
+                "Color",
+                "premultiplyToArray",
+                "missingResult"
+            )
+        }
+        result[offset++] = red * alpha
+        result[offset++] = green * alpha
+        result[offset++] = blue * alpha
+        result[offset] = alpha
+        return result
+    }
 }

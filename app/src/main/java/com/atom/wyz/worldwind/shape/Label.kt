@@ -36,7 +36,9 @@ class Label : AbstractRenderable, Highlightable, Movable {
 
     var activeAttributes: TextAttributes? = null
 
-    private var highlighted = false
+
+    override var highlighted: Boolean = false
+
 
     constructor(position: Position, text: String) : super(text) {
         this.position.set(position)
@@ -206,15 +208,7 @@ class Label : AbstractRenderable, Highlightable, Movable {
         }
     }
 
-    override fun isHighlighted(): Boolean {
-        return highlighted
-    }
-
-    override fun setHighlighted(highlighted: Boolean) {
-        this.highlighted = highlighted
-    }
-
-    override fun getReferencePosition(): Position {
+    override fun getReferencePosition(): Position? {
         return this.position
     }
 
@@ -233,4 +227,5 @@ class Label : AbstractRenderable, Highlightable, Movable {
         var pickColor: Color = Color()
         var cameraDistance = 0.0
     }
+
 }

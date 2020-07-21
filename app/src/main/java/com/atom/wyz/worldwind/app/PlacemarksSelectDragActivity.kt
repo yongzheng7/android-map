@@ -358,9 +358,9 @@ class PlacemarksSelectDragActivity : BasicWorldWindActivity() {
                     // selected or unselected state respectively.
                     if (pickedObject is Highlightable) { // Only one object can be selected at time, deselect any previously selected object
                         if (isNewSelection && selectedObject is Highlightable) {
-                            (selectedObject as Highlightable?)!!.setHighlighted(false)
+                            (selectedObject as Highlightable?)!!.highlighted = (false)
                         }
-                        (pickedObject as Highlightable).setHighlighted(isNewSelection)
+                        (pickedObject as Highlightable).highlighted = (isNewSelection)
                         getWorldWindow().requestRedraw()
                     }
                     // Track the selected object

@@ -62,7 +62,7 @@ class BlueMarbleLandsatLayer : RenderableLayer, TileFactory {
     }
 
     override fun createTile(sector: Sector?, level: Level?, row: Int, column: Int): Tile {
-        val radiansPerPixel: Double = level!!.texelHeight
+        val radiansPerPixel: Double = Math.toRadians(level!!.tileDelta) / level.tileHeight
         val metersPerPixel = radiansPerPixel * WorldWind.WGS84_SEMI_MAJOR_AXIS
         return if (metersPerPixel < 2.0e3) { // switch to Landsat at 2km resolution
             this.landsatUrlFactory.createTile(sector, level, row, column)

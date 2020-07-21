@@ -178,7 +178,7 @@ class PlacemarksDemoActivity : BasicWorldWindActivity() {
         }
 
         override fun selectLevelOfDetail(rc: RenderContext, placemark: Placemark?, cameraDistance: Double) {
-            val highlighted = placemark!!.isHighlighted()
+            val highlighted = placemark!!.highlighted
             val highlightChanged = lastHighlightState != highlighted
 
             // Determine the attributes based on the distance from the camera to the placemark
@@ -414,7 +414,7 @@ class PlacemarksDemoActivity : BasicWorldWindActivity() {
                 val isNewSelection = pickedObject !== selectedObject
                 // Only one object can be selected at time; deselect any previously selected object
                 if (isNewSelection && selectedObject is Highlightable) {
-                    (selectedObject as Highlightable?)?.setHighlighted(false)
+                    (selectedObject as Highlightable?)?.highlighted = (false)
                 }
                 // Show the selection by showing its highlight attributes and enunciating the name
                 if (isNewSelection && pickedObject is Renderable) {
@@ -424,7 +424,7 @@ class PlacemarksDemoActivity : BasicWorldWindActivity() {
                         Toast.LENGTH_SHORT
                     ).show()
                 }
-                (pickedObject as Highlightable).setHighlighted(isNewSelection)
+                (pickedObject as Highlightable).highlighted = (isNewSelection)
                 getWorldWindow().requestRedraw()
                 // Track the selected object
                 selectedObject = if (isNewSelection) pickedObject else null

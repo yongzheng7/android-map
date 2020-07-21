@@ -27,6 +27,12 @@
         <activity android:name=".app.BasicWorldWindActivity"
                 android:theme="@style/AppTheme">
         </activity>
+        <activity android:name=".app.OmnidirectionalSensorActivity"
+                android:theme="@style/AppTheme">
+        </activity>
+        <activity android:name=".app.OmnidirectionalSensor2Activity"
+                android:theme="@style/AppTheme">
+        </activity>
         <activity android:name=".app.CameraControlActivity"
                 android:theme="@style/AppTheme">
         </activity>

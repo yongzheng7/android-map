@@ -240,11 +240,11 @@ class Vec3(var x: Double, var y: Double, var z: Double) {
     override fun hashCode(): Int {
         var result: Int
         var temp: Long
-        temp = java.lang.Double.doubleToLongBits(x)
+        temp = x.toBits()
         result = (temp xor (temp ushr 32)).toInt()
-        temp = java.lang.Double.doubleToLongBits(y)
+        temp = y.toBits()
         result = 31 * result + (temp xor (temp ushr 32)).toInt()
-        temp = java.lang.Double.doubleToLongBits(z)
+        temp = z.toBits()
         result = 31 * result + (temp xor (temp ushr 32)).toInt()
         return result
     }

@@ -5,7 +5,6 @@ package com.atom.wyz.worldwind.shape
  */
 interface Highlightable {
 
-    fun isHighlighted(): Boolean
+    var highlighted : Boolean
 
-    fun setHighlighted(highlighted: Boolean)
 }

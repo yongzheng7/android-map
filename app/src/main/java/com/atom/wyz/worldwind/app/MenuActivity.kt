@@ -15,6 +15,12 @@ class MenuActivity : AppCompatActivity() {
 
     fun menuButton(view: View) {
         when (view.id) {
+            R.id.omnidirectionalSensor2_Activity -> {
+                startActivity(Intent(this, OmnidirectionalSensor2Activity::class.java))
+            }
+            R.id.omnidirectionalSensor_Activity -> {
+                startActivity(Intent(this, OmnidirectionalSensorActivity::class.java))
+            }
             R.id.Zip_Activity -> {
                 startActivity(Intent(this, ZipActivity::class.java))
             }

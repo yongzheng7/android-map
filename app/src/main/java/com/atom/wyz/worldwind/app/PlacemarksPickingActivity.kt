@@ -125,9 +125,9 @@ class PlacemarksPickingActivity : BasicWorldWindActivity() {
             if (pickedObject is Highlightable) {
                 val isNewSelection = pickedObject !== selectedObject
                 if (isNewSelection && selectedObject is Highlightable) {
-                    (selectedObject as Highlightable?)?.setHighlighted(false)
+                    (selectedObject as Highlightable?)?.highlighted = (false)
                 }
-                (pickedObject as Highlightable).setHighlighted(isNewSelection)
+                (pickedObject as Highlightable).highlighted = (isNewSelection)
                 getWorldWindow().requestRedraw()
                 selectedObject = if (isNewSelection) pickedObject else null
             }

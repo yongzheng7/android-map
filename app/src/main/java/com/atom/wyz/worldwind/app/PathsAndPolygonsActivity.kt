@@ -302,9 +302,9 @@ class PathsAndPolygonsActivity : BasicWorldWindActivity() {
             for (pickedObject in pickedObjects) {
                 if (pickedObject is Highlightable) {
                     val highlightable: Highlightable = pickedObject as Highlightable
-                    highlightable.setHighlighted(!highlightable.isHighlighted())
-                    if (highlightable.isHighlighted()) {
-                        if (!message.isEmpty()) {
+                    highlightable.highlighted = (!highlightable.highlighted)
+                    if (highlightable.highlighted) {
+                        if (message.isNotEmpty()) {
                             message += ", "
                         }
                         message += (highlightable as Renderable).displayName

@@ -54,7 +54,7 @@ class DrawContext {
 
     protected var elementArrayBufferId = 0
 
-    protected var surfaceFramebuffer: Framebuffer? = null
+    protected var scratchFramebuffer: Framebuffer? = null
 
     protected var unitSquareBuffer: BufferObject? = null
 
@@ -92,7 +92,7 @@ class DrawContext {
         arrayBufferId = 0
         elementArrayBufferId = 0
         unitSquareBuffer = null
-        surfaceFramebuffer = null
+        scratchFramebuffer = null
         Arrays.fill(textureId, 0)
     }
 
@@ -127,12 +127,17 @@ class DrawContext {
         }
     }
 
-    fun surfaceFramebuffer(): Framebuffer {
-        surfaceFramebuffer?.let { return it }
+    fun scratchFramebuffer(): Framebuffer {
+        scratchFramebuffer?.let { return it }
         val framebuffer = Framebuffer()
-        val colorAttachment = GpuTexture(1024, 1024, GLES20.GL_RGBA)
+        val colorAttachment = GpuTexture(1024, 1024, GLES20.GL_RGBA, GLES20.GL_UNSIGNED_BYTE)
+        val depthAttachment = GpuTexture(1024, 1024, GLES20.GL_DEPTH_COMPONENT, GLES20.GL_UNSIGNED_SHORT)
+        // TODO consider modifying Texture's tex parameter behavior in order to make this unnecessary
+        depthAttachment.setTexParameter(GLES20.GL_TEXTURE_MIN_FILTER, GLES20.GL_NEAREST)
+        depthAttachment.setTexParameter(GLES20.GL_TEXTURE_MAG_FILTER, GLES20.GL_NEAREST)
         framebuffer.attachTexture(this, colorAttachment, GLES20.GL_COLOR_ATTACHMENT0)
-        return framebuffer.also { surfaceFramebuffer = it }
+        framebuffer.attachTexture(this, depthAttachment, GLES20.GL_DEPTH_ATTACHMENT)
+        return framebuffer.also { scratchFramebuffer = it }
     }
 
     fun currentProgram(): Int {
