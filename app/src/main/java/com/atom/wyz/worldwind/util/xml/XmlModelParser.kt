@@ -38,6 +38,11 @@ open class XmlModelParser() {
         txtModelRegistry.add(QName(namespace, name))
     }
 
+    open fun registerAllModels(registry: XmlModelParser) {
+        xmlModelRegistry.putAll(registry.xmlModelRegistry)
+        txtModelRegistry.addAll(registry.txtModelRegistry)
+    }
+
     protected open fun createXmlModel(name: QName): XmlModel?
     {
         val clazz = xmlModelRegistry[name] ?: this.getUnrecognizedModel()

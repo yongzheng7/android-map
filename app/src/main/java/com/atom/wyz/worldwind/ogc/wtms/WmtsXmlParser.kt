@@ -1,5 +1,6 @@
 package com.atom.wyz.worldwind.ogc.wtms
 
+import com.atom.wyz.worldwind.ogc.ows.*
 import com.atom.wyz.worldwind.util.xml.XmlModelParser
 
 open class WmtsXmlParser : XmlModelParser() {

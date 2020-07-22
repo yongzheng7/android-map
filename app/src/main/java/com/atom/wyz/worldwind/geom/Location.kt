@@ -192,20 +192,11 @@ open class Location(var latitude: Double, var longitude: Double) {
      * 沿路径在两个指定位置之间的指定距离处计算位置。计算中心点位置经纬度
      */
     open fun interpolateAlongPath(
-        @WorldWind.PathType pathType: Int, amount: Double,
-        endLocation: Location?,
-        result: Location?
+        @WorldWind.PathType pathType: Int,
+        amount: Double,
+        endLocation: Location,
+        result: Location
     ): Location {
-        if (endLocation == null) {
-            throw IllegalArgumentException(
-                Logger.logMessage(Logger.ERROR, "Location", "interpolateAlongPath", "missingLocation")
-            )
-        }
-        if (result == null) {
-            throw IllegalArgumentException(
-                Logger.logMessage(Logger.ERROR, "Location", "interpolateAlongPath", "missingResult")
-            )
-        }
         if (this == endLocation) {
             result.set(this)
             return this

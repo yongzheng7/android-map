@@ -1,5 +1,6 @@
 package com.atom.wyz.worldwind.ogc.wtms
 
+import com.atom.wyz.worldwind.ogc.ows.OwsDescription
 import java.util.*
 
 open class WmtsTheme: OwsDescription() {

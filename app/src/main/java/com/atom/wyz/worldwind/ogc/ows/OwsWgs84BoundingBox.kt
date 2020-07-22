@@ -1,4 +1,4 @@
-package com.atom.wyz.worldwind.ogc.wtms
+package com.atom.wyz.worldwind.ogc.ows
 
 import com.atom.wyz.worldwind.geom.Sector
 import com.atom.wyz.worldwind.util.Logger

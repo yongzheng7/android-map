@@ -1,5 +1,7 @@
 package com.atom.wyz.worldwind.ogc.wtms
 
+import com.atom.wyz.worldwind.ogc.ows.OwsDescription
+
 open class WmtsTileMatrix : OwsDescription() {
     open var identifier: String? = null
 

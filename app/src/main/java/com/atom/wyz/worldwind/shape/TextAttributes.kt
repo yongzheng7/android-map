@@ -19,8 +19,11 @@ class TextAttributes {
 
     var outlineWidth = 0f
 
+    var outlineColor: Color
+
     constructor() {
         textColor = Color(1f, 1f, 1f, 1f)
+        outlineColor = Color(0f, 0f, 0f, 1f)
         textOffset = Offset.bottomCenter()
         textSize = 24f
         typeface = null
@@ -31,6 +34,7 @@ class TextAttributes {
 
     constructor(attributes: TextAttributes) {
         textColor = Color(attributes.textColor)
+        outlineColor = Color(attributes.outlineColor)
         textOffset = Offset(attributes.textOffset)
         textSize = attributes.textSize
         typeface = attributes.typeface
@@ -41,6 +45,7 @@ class TextAttributes {
 
     fun set(attributes: TextAttributes): TextAttributes {
         textColor.set(attributes.textColor)
+        outlineColor.set(attributes.textColor)
         textOffset.set(attributes.textOffset)
         textSize = attributes.textSize
         typeface = attributes.typeface
@@ -59,10 +64,14 @@ class TextAttributes {
         }
 
         val that = other as TextAttributes
-        return (textColor.equals(that.textColor)
-                && textOffset.equals(that.textOffset)
-                && textSize == that.textSize && (if (typeface == null) that.typeface == null else typeface == that.typeface)
-                && enableOutline == that.enableOutline && enableDepthTest == that.enableDepthTest && outlineWidth == that.outlineWidth)
+        return (textColor == that.textColor
+                && textOffset == that.textOffset
+                && textSize == that.textSize
+                && (if (typeface == null) that.typeface == null else typeface == that.typeface)
+                && enableOutline == that.enableOutline
+                && this.outlineColor == that.outlineColor
+                && enableDepthTest == that.enableDepthTest
+                && outlineWidth == that.outlineWidth)
     }
 
     override fun hashCode(): Int {
@@ -71,6 +80,7 @@ class TextAttributes {
         result = 31 * result + if (textSize != +0.0f) java.lang.Float.floatToIntBits(textSize) else 0
         result = 31 * result + if (typeface != null) typeface.hashCode() else 0
         result = 31 * result + if (enableOutline) 1 else 0
+        result = 31 * result + outlineColor.hashCode()
         result = 31 * result + if (enableDepthTest) 1 else 0
         result = 31 * result + if (outlineWidth != +0.0f) java.lang.Float.floatToIntBits(outlineWidth) else 0
         return result

@@ -66,15 +66,7 @@ class Position(latitude: Double, longitude: Double) : Location(latitude, longitu
         return this
     }
 
-    fun interpolateAlongPath(@WorldWind.PathType pathType : Int, amount: Double, endPosition: Position?, result: Position?): Position? {
-        if (endPosition == null) {
-            throw IllegalArgumentException(
-                    Logger.logMessage(Logger.ERROR, "Position", "interpolateAlongPath", "missingPosition"))
-        }
-        if (result == null) {
-            throw IllegalArgumentException(
-                    Logger.logMessage(Logger.ERROR, "Position", "interpolateAlongPath", "missingResult"))
-        }
+    fun interpolateAlongPath(@WorldWind.PathType pathType : Int, amount: Double, endPosition: Position, result: Position): Position {
         // Interpolate latitude and longitude.
         super.interpolateAlongPath(pathType, amount, endPosition, result)
         // Interpolate altitude.

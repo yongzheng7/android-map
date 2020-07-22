@@ -1,6 +1,9 @@
 package com.atom.wyz.worldwind.ogc.wtms
 
 import android.util.Xml
+import com.atom.wyz.worldwind.ogc.ows.OwsOperationsMetadata
+import com.atom.wyz.worldwind.ogc.ows.OwsServiceIdentification
+import com.atom.wyz.worldwind.ogc.ows.OwsServiceProvider
 import com.atom.wyz.worldwind.util.Logger
 import com.atom.wyz.worldwind.util.xml.XmlModel
 import com.atom.wyz.worldwind.util.xml.XmlModelParser

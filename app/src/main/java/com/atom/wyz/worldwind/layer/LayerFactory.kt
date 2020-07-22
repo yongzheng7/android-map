@@ -13,6 +13,7 @@ import com.atom.wyz.worldwind.ogc.gpkg.GeoPackage
 import com.atom.wyz.worldwind.ogc.gpkg.GpkgTileFactory
 import com.atom.wyz.worldwind.ogc.gpkg.GpkgTileMatrixSet
 import com.atom.wyz.worldwind.ogc.gpkg.GpkgTileUserMetrics
+import com.atom.wyz.worldwind.ogc.ows.*
 import com.atom.wyz.worldwind.ogc.wms.WmsCapabilities
 import com.atom.wyz.worldwind.ogc.wms.WmsLayer
 import com.atom.wyz.worldwind.ogc.wtms.*

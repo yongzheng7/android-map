@@ -126,7 +126,11 @@ class Sector() {
             sector.maxLongitude
         )
     }
-
+    fun intersectsOrNextTo(sector: Sector): Boolean {
+        // Assumes normalized angles: [-90, +90], [-180, +180]
+        // Note: comparisons with NaN are always false
+        return minLatitude <= sector.maxLatitude && maxLatitude >= sector.minLatitude && minLongitude <= sector.maxLongitude && maxLongitude >= sector.minLongitude
+    }
     /**
      * 判断相交后 合并
      */
@@ -284,6 +288,7 @@ class Sector() {
         }
         return this
     }
+
 
     /**
      * 判断多个是否存在

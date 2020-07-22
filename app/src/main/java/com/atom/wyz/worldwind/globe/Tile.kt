@@ -2,12 +2,15 @@ package com.atom.wyz.worldwind.globe
 
 import android.util.DisplayMetrics
 import com.atom.wyz.worldwind.RenderContext
+import com.atom.wyz.worldwind.WorldWind
 import com.atom.wyz.worldwind.geom.BoundingBox
 import com.atom.wyz.worldwind.geom.Frustum
 import com.atom.wyz.worldwind.geom.Sector
+import com.atom.wyz.worldwind.geom.Vec3
 import com.atom.wyz.worldwind.util.Level
 import com.atom.wyz.worldwind.util.Logger
 import com.atom.wyz.worldwind.util.LruMemoryCache
+import com.atom.wyz.worldwind.util.WWMath
 import java.util.*
 
 open class Tile {
@@ -121,7 +124,7 @@ open class Tile {
 
     var texelSizeFactor = 0.0
 
-    var samplePoints: FloatArray? = null
+    var nearestPoint: Vec3 = Vec3()
 
     constructor(sector: Sector?, level: Level?, row: Int, column: Int) {
         if (sector == null) {
@@ -295,8 +298,14 @@ open class Tile {
     open fun getExtent(rc: RenderContext): BoundingBox {
         val elevationTimestamp: Long = rc.globe.elevationModel.getTimestamp()
         if (elevationTimestamp != heightLimitsTimestamp) {
-            Arrays.fill(heightLimits, 0f)
+            // initialize the heights for elevation model scan
+            heightLimits[0] = Float.MAX_VALUE
+            heightLimits[1] = -Float.MAX_VALUE
             rc.globe.elevationModel.getHeightLimits(sector, heightLimits)
+            // check for valid height limits
+            if (heightLimits[0] > heightLimits[1]) {
+                Arrays.fill(heightLimits, 0f)
+            }
         }
 
         val verticalExaggeration = rc.verticalExaggeration
@@ -315,31 +324,28 @@ open class Tile {
     }
 
     protected open fun distanceToCamera(rc: RenderContext): Double {
-        if (sector.contains(rc.camera.latitude, rc.camera.longitude)) {
-            return rc.camera.altitude
+        // determine the nearest latitude
+        val nearestLat: Double = WWMath.clamp(rc.camera.latitude, sector.minLatitude, sector.maxLatitude)
+        // determine the nearest longitude and account for the antimeridian discontinuity
+        val nearestLon: Double
+        val lonDifference = rc.camera.longitude - sector.centroidLongitude()
+        if (lonDifference < -180.0) {
+            nearestLon = sector.maxLongitude
+        } else if (lonDifference > 180.0) {
+            nearestLon = sector.minLongitude
+        } else {
+            nearestLon = WWMath.clamp(rc.camera.longitude, sector.minLongitude, sector.maxLongitude)
         }
-        samplePoints = samplePoints ?: let {
-            rc.globe.geographicToCartesianGrid(
-                sector, 3, 3,
-                null, 1.0f, null,
-                FloatArray(27),
-                0, 0
-            )
-        }
-        val samplePoints1 = samplePoints!!
-        var minDistanceSq = Double.MAX_VALUE
-        var i = 0
-        val len = samplePoints1.size
-        while (i < len) {
-            val dx = rc.cameraPoint.x - samplePoints1[i]
-            val dy = rc.cameraPoint.y - samplePoints1[i + 1]
-            val dz = rc.cameraPoint.z - samplePoints1[i + 2]
-            val distanceSq = dx * dx + dy * dy + dz * dz
-            if (minDistanceSq > distanceSq) {
-                minDistanceSq = distanceSq
-            }
-            i += 3
-        }
-        return Math.sqrt(minDistanceSq)
+
+        val minHeight = (heightLimits[0] * rc.verticalExaggeration)
+        rc.geographicToCartesian(
+            nearestLat,
+            nearestLon,
+            minHeight,
+            WorldWind.ABSOLUTE,
+            nearestPoint
+        )
+
+        return rc.cameraPoint.distanceTo(nearestPoint)
     }
 }

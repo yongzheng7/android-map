@@ -1,5 +1,6 @@
-package com.atom.wyz.worldwind.ogc.wtms
+package com.atom.wyz.worldwind.ogc.ows
 
+import com.atom.wyz.worldwind.ogc.ows.OwsContactInfo
 import com.atom.wyz.worldwind.util.xml.XmlModel
 
 open class OwsServiceContact : XmlModel() {

@@ -61,6 +61,7 @@ open abstract class TiledElevationCoverage : AbstractElevationCoverage,
     open fun invalidateTiles() {
         coverageSource.clear()
         coverageCache.clear()
+        updateTimestamp()
     }
 
 

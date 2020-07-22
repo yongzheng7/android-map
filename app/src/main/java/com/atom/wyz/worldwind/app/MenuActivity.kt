@@ -114,6 +114,9 @@ class MenuActivity : AppCompatActivity() {
             R.id.ShapesDashAndFillFragment -> {
                 startActivity(Intent(this, ShapesDashAndFillFragment::class.java))
             }
+            R.id.ellipse_Fragment -> {
+                startActivity(Intent(this, EllipseFragment::class.java))
+            }
         }
     }
 

@@ -1,28 +1,31 @@
 package com.atom.wyz.worldwind.render
 
 import android.graphics.*
+import com.atom.wyz.worldwind.geom.Color as WorldWindColor
+
 
 class TextRenderer {
-
+    var textColor: WorldWindColor = WorldWindColor.WHITE
+    var outlineColor: WorldWindColor = WorldWindColor.BLACK
     var textSize = 0f
-    set(value) {
-        field = value
-        paint.textSize = value
-    }
+        set(value) {
+            field = value
+            paint.textSize = value
+        }
 
-    var typeface: Typeface ? = null
-    set(value) {
-        field = value
-        paint.typeface = value
-    }
+    var typeface: Typeface? = null
+        set(value) {
+            field = value
+            paint.typeface = value
+        }
 
     var enableOutline = false
 
     var outlineWidth = 0f
-    set(value) {
-        field = value
-        paint.strokeWidth = value
-    }
+        set(value) {
+            field = value
+            paint.strokeWidth = value
+        }
 
     var paint: Paint
 
@@ -67,11 +70,11 @@ class TextRenderer {
         canvas.setBitmap(bitmap)
         if (enableOutline) {
             paint.style = Paint.Style.FILL_AND_STROKE
-            paint.color = Color.BLACK
+            paint.color = this.outlineColor.toColorInt()
             canvas.drawText(text, 0, text.length, x.toFloat(), y.toFloat(), paint)
         }
         paint.style = Paint.Style.FILL
-        paint.color = Color.WHITE
+        paint.color = this.textColor.toColorInt()
         canvas.drawText(text, 0, text.length, x.toFloat(), y.toFloat(), paint)
         canvas.setBitmap(null)
         return bitmap

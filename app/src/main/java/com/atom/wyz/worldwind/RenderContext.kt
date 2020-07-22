@@ -363,9 +363,11 @@ open class RenderContext {
 
     open fun renderText(text: String, attributes: TextAttributes): GpuTexture? {
         val key = TextCacheKey().set(text, attributes)
+        textRenderer.textColor = (attributes.textColor)
         textRenderer.textSize = (attributes.textSize)
         attributes.typeface?.also { textRenderer.typeface = it }
         textRenderer.enableOutline = (attributes.enableOutline)
+        textRenderer.outlineColor = (attributes.outlineColor)
         textRenderer.outlineWidth = (attributes.outlineWidth)
         val texture: GpuTexture? = textRenderer.renderText(text)
         renderResourceCache?.put(key, texture!!, texture.textureByteCount)
@@ -422,6 +424,10 @@ open class RenderContext {
 
         var textSize: Float = 0f
 
+        var textColor: Color? = null
+
+        var outlineColor: Color? = null
+
         var typeface: Typeface? = null
 
         var enableOutline: Boolean = false
@@ -429,7 +435,9 @@ open class RenderContext {
         var outlineWidth: Float = 0f
 
         fun set(text: String, attributes: TextAttributes): TextCacheKey {
-            this.text = text;
+            this.text = text
+            this.textColor = attributes.textColor
+            this.outlineColor = attributes.outlineColor
             this.textSize = attributes.textSize
             this.typeface = attributes.typeface
             this.enableOutline = attributes.enableOutline
@@ -437,25 +445,29 @@ open class RenderContext {
             return this;
         }
 
-        override fun equals(other: Any?): Boolean {
-            if (this === other) {
+        override fun equals(o: Any?): Boolean {
+            if (this === o) {
                 return true
             }
-            if (other == null || this.javaClass != other.javaClass) {
+            if (o == null || this.javaClass != o.javaClass) {
                 return false
             }
-            val that = other as TextCacheKey
+
+            val that = o as TextCacheKey
             return ((if (text == null) that.text == null else text == that.text)
-                    && textSize == that.textSize && (if (typeface == null) that.typeface == null else typeface == that.typeface)
-                    && enableOutline == that.enableOutline && outlineWidth == that.outlineWidth)
+                    && textColor === that.textColor && textSize == that.textSize && (if (typeface == null) that.typeface == null else typeface == that.typeface)
+                    && enableOutline == that.enableOutline && outlineColor === that.outlineColor && outlineWidth == that.outlineWidth)
         }
 
         override fun hashCode(): Int {
             var result = if (text != null) text.hashCode() else 0
+            result = 31 * result + if (textColor != null) textColor.hashCode() else 0
             result =
                 31 * result + if (textSize != +0.0f) java.lang.Float.floatToIntBits(textSize) else 0
             result = 31 * result + if (typeface != null) typeface.hashCode() else 0
             result = 31 * result + if (enableOutline) 1 else 0
+            result =
+                31 * result + if (outlineColor != null) outlineColor.hashCode() else 0
             result =
                 31 * result + if (outlineWidth != +0.0f) java.lang.Float.floatToIntBits(outlineWidth) else 0
             return result

@@ -102,7 +102,7 @@ class DrawableSurfaceShape : Drawable {
             while (idx < len) {
                 // Get the shape.
                 val shape = scratchList[idx] as DrawableSurfaceShape?
-                if (!shape!!.sector.intersects(terrainSector)) {
+                if (!shape!!.sector.intersectsOrNextTo(terrainSector)) {
                     idx++
                     continue
                 }

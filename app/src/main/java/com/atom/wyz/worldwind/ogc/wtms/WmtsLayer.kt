@@ -1,5 +1,7 @@
 package com.atom.wyz.worldwind.ogc.wtms
 
+import com.atom.wyz.worldwind.ogc.ows.OwsBoundingBox
+import com.atom.wyz.worldwind.ogc.ows.OwsWgs84BoundingBox
 import com.atom.wyz.worldwind.util.xml.XmlModel
 import java.util.*
 
