@@ -184,9 +184,7 @@ class Path : AbstractShape {
             }
             if (texture != null) {
                 val metersPerPixel = rc.pixelSizeAtDistance(cameraDistance)
-                val texCoordMatrix = texCoordMatrix.setToIdentity()
-                texCoordMatrix.setScale(1.0 / (texture.textureWidth * metersPerPixel), 1.0)
-                texCoordMatrix.multiplyByMatrix(texture.texCoordTransform)
+                computeRepeatingTexCoordTransform(texture, metersPerPixel, texCoordMatrix)
                 drawState.texture = (texture)
                 drawState.texCoordMatrix = (texCoordMatrix)
             }
@@ -274,6 +272,10 @@ class Path : AbstractShape {
                 vertexArray.size(),
                 VERTEX_STRIDE
             )
+            boundingSector.translate(
+                vertexOrigin.y /*latitude*/,
+                vertexOrigin.x /*longitude*/
+            )
             boundingBox.setToUnitBox() // Surface/geographic shape bounding box is unused
         } else {
             boundingBox.setToPoints(
@@ -340,22 +342,25 @@ class Path : AbstractShape {
         intermediate: Boolean
     ) {
         val vertex: Int = vertexArray.size() / Path.VERTEX_STRIDE
-        var point =
-            rc.geographicToCartesian(latitude, longitude, altitude, this.altitudeMode, point)
+        var point = rc.geographicToCartesian(latitude, longitude, altitude, this.altitudeMode, point)
 
-        if (vertexArray.size() == 0) {
-            vertexOrigin.set(point)
-            prevPoint.set(point)
+        if (vertex == 0) {
+            if (isSurfaceShape) {
+                vertexOrigin.set(longitude, latitude, altitude)
+            } else {
+                vertexOrigin.set(point)
+            }
             texCoord1d = 0.0
+            prevPoint.set(point)
         } else {
             texCoord1d += point.distanceTo(prevPoint)
             prevPoint.set(point)
         }
 
         if (isSurfaceShape) {
-            vertexArray.add(longitude.toFloat())
-            vertexArray.add(latitude.toFloat())
-            vertexArray.add(altitude.toFloat())
+            vertexArray.add((longitude - vertexOrigin.x).toFloat())
+            vertexArray.add((latitude - vertexOrigin.y).toFloat())
+            vertexArray.add((altitude - vertexOrigin.z).toFloat())
             vertexArray.add(texCoord1d.toFloat())
             outlineElements.add(vertex.toShort())
         } else {

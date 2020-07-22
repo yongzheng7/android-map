@@ -2,12 +2,10 @@ package com.atom.wyz.worldwind.shape
 
 import com.atom.wyz.worldwind.RenderContext
 import com.atom.wyz.worldwind.WorldWind
-import com.atom.wyz.worldwind.geom.BoundingBox
-import com.atom.wyz.worldwind.geom.Color
-import com.atom.wyz.worldwind.geom.Sector
-import com.atom.wyz.worldwind.geom.Vec3
+import com.atom.wyz.worldwind.geom.*
 import com.atom.wyz.worldwind.pick.PickedObject
 import com.atom.wyz.worldwind.render.AbstractRenderable
+import com.atom.wyz.worldwind.render.GpuTexture
 import com.atom.wyz.worldwind.util.WWMath
 
 abstract class AbstractShape : AbstractRenderable, Attributable, Highlightable {
@@ -102,6 +100,17 @@ abstract class AbstractShape : AbstractRenderable, Attributable, Highlightable {
         val lon: Double = WWMath.clamp(rc.camera.longitude, boundingSector.minLongitude, boundingSector.maxLongitude)
         val point = rc.geographicToCartesian(lat, lon, 0.0, WorldWind.CLAMP_TO_GROUND, scratchPoint)
         return point.distanceTo(rc.cameraPoint)
+    }
+
+    protected open fun computeRepeatingTexCoordTransform(
+        texture: GpuTexture,
+        metersPerPixel: Double,
+        result: Matrix3
+    ): Matrix3 {
+        val texCoordMatrix: Matrix3 = result.setToIdentity()
+        texCoordMatrix.setScale(1.0 / (texture.textureWidth* metersPerPixel), 1.0 / (texture.textureHeight * metersPerPixel))
+        texCoordMatrix.multiplyByMatrix(texture.texCoordTransform)
+        return texCoordMatrix
     }
 
     protected open fun cameraDistanceCartesian(

@@ -21,6 +21,8 @@ class DrawableSurfaceShape : Drawable {
 
     val mvpMatrix: Matrix4 = Matrix4()
 
+     val textureMvpMatrix = Matrix4()
+
     val identityMatrix3: Matrix3 = Matrix3()
 
     val color: Color = Color()
@@ -92,11 +94,10 @@ class DrawableSurfaceShape : Drawable {
 
             drawState.program!!.enablePickMode(dc.pickMode)
 
-            mvpMatrix.setToIdentity()
-            mvpMatrix.multiplyByTranslation((-1).toDouble(), (-1).toDouble(), 0.0)
-            mvpMatrix.multiplyByScale(2 / terrainSector.deltaLongitude(), 2 / terrainSector.deltaLatitude(), 0.0)
-            mvpMatrix.multiplyByTranslation(-terrainSector.minLongitude, -terrainSector.minLatitude, 0.0)
-            drawState.program!!.loadModelviewProjection(mvpMatrix)
+            textureMvpMatrix.setToIdentity()
+            textureMvpMatrix.multiplyByTranslation((-1).toDouble(), (-1).toDouble(), 0.0)
+            textureMvpMatrix.multiplyByScale(2 / terrainSector.deltaLongitude(), 2 / terrainSector.deltaLatitude(), 0.0)
+            textureMvpMatrix.multiplyByTranslation(-terrainSector.minLongitude, -terrainSector.minLatitude, 0.0)
             var idx = 0
             val len = scratchList.size
             while (idx < len) {
@@ -114,6 +115,16 @@ class DrawableSurfaceShape : Drawable {
                     idx++
                     continue  // element buffer unspecified or failed to bind
                 }
+
+                // Transform local shape coordinates to texture fragments appropriate for the terrain sector.
+                mvpMatrix.set(textureMvpMatrix)
+                mvpMatrix.multiplyByTranslation(
+                    shape.drawState.vertexOrigin.x,
+                    shape.drawState.vertexOrigin.y,
+                    shape.drawState.vertexOrigin.z
+                )
+                drawState.program!!.loadModelviewProjection(mvpMatrix)
+
                 // Use the shape's vertex point attribute.
                 GLES20.glVertexAttribPointer(0 /*vertexPoint*/, 3, GLES20.GL_FLOAT, false, shape.drawState.vertexStride, 0)
                 // Draw the specified primitives to the framebuffer texture.

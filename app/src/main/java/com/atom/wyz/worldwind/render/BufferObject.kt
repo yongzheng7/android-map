@@ -1,11 +1,11 @@
 package com.atom.wyz.worldwind.render
 
 import android.opengl.GLES20
+import android.util.SparseArray
 import com.atom.wyz.worldwind.DrawContext
+import com.atom.wyz.worldwind.geom.Range
 import com.atom.wyz.worldwind.util.Logger
 import java.nio.Buffer
-import java.nio.FloatBuffer
-import java.nio.ShortBuffer
 
 class BufferObject : RenderResource {
 
@@ -18,6 +18,8 @@ class BufferObject : RenderResource {
     var bufferByteCount = 0
 
     var buffer: Buffer? = null
+
+    var ranges: SparseArray<Range> = SparseArray<Range>()
 
     constructor(target: Int, size: Int, buffer: Buffer?) {
         bufferTarget = target

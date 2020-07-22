@@ -406,17 +406,19 @@ class Sector() {
     /**
      * 获取该区域中心点经纬度
      */
-    fun centroid(result: Location?): Location {
-        if (result == null) {
-            throw IllegalArgumentException(
-                Logger.logMessage(Logger.ERROR, "Sector", "centroid", "missingResult")
-            )
-        }
+    fun centroid(result: Location): Location {
         result.latitude = centroidLatitude()
         result.longitude = centroidLongitude()
         return result
     }
 
+    fun translate(deltaLatitude: Double, deltaLongitude: Double): Sector {
+        minLatitude += deltaLatitude
+        maxLatitude += deltaLatitude
+        minLongitude += deltaLongitude
+        maxLongitude += deltaLongitude
+        return this
+    }
     override fun toString(): String {
         return "minLatitude=$minLatitude, maxLatitude=$maxLatitude, minLongitude=$minLongitude, maxLongitude=$maxLongitude"
     }

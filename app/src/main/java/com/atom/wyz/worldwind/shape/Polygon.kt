@@ -84,7 +84,7 @@ class Polygon : AbstractShape {
 
     protected var cameraDistance = 0.0
 
-    protected var texCoordId = 0.0
+    protected var texCoord1d = 0.0
 
     protected var tessCallback: GLUtessellatorCallbackAdapter = object : GLUtessellatorCallbackAdapter() {
 
@@ -120,7 +120,7 @@ class Polygon : AbstractShape {
 
     val texCoordMatrix = Matrix3()
 
-    var modelToLocal = Matrix4()
+    var modelToTexCoord = Matrix4()
 
     val intermediateLocation: Location = Location()
 
@@ -354,12 +354,7 @@ class Polygon : AbstractShape {
             }
             if (texture != null) {
                 val metersPerPixel = rc.pixelSizeAtDistance(cameraDistance)
-                val texCoordMatrix = this.texCoordMatrix.setToIdentity();
-                texCoordMatrix.setScale(
-                    1.0 / (texture.textureWidth * metersPerPixel),
-                    1.0 / (texture.textureHeight * metersPerPixel)
-                )
-                texCoordMatrix.multiplyByMatrix(texture.texCoordTransform)
+                computeRepeatingTexCoordTransform(texture, metersPerPixel, texCoordMatrix)
                 drawState.texture = texture
                 drawState.texCoordMatrix = texCoordMatrix
             }
@@ -450,7 +445,7 @@ class Polygon : AbstractShape {
         outlineElements.clear()
         verticalElements.clear()
 
-        this.determineShapeOrigin(rc)
+        this.determineModelToTexCoord(rc)
 
 
         val tess: GLUtessellator = rc.getTessellator()
@@ -471,14 +466,6 @@ class Polygon : AbstractShape {
             GLU.gluTessBeginContour(tess)
             // Assemble the vertices for each edge between boundary positions.
             var begin: Position = positions[0]
-            rc.geographicToCartesian(
-                begin.latitude,
-                begin.longitude,
-                begin.altitude,
-                altitudeMode,
-                prevPoint
-            )
-            texCoordId = 0.0
             addVertex(
                 rc,
                 begin.latitude,
@@ -519,6 +506,7 @@ class Polygon : AbstractShape {
         if (isSurfaceShape) {
             boundingSector.setEmpty()
             boundingSector.union(vertexArray.array(), vertexArray.size(), VERTEX_STRIDE)
+            boundingSector.translate(vertexOrigin.y /*lat*/, vertexOrigin.x /*lon*/)
             boundingBox.setToUnitBox() // Surface/geographic shape bounding box is unused
         } else {
             boundingBox.setToPoints(vertexArray.array(), vertexArray.size(), VERTEX_STRIDE)
@@ -587,7 +575,7 @@ class Polygon : AbstractShape {
     ): Int {
         val vertex: Int = vertexArray.size() / VERTEX_STRIDE
         var point = rc.geographicToCartesian(latitude, longitude, altitude, altitudeMode, point)
-        val texCoord2d = texCoord2d.set(point).multiplyByMatrix(modelToLocal)
+        val texCoord2d = texCoord2d.set(point).multiplyByMatrix(modelToTexCoord)
 
         if (type != VERTEX_COMBINED) {
             tessCoords[0] = longitude
@@ -596,24 +584,34 @@ class Polygon : AbstractShape {
             GLU.gluTessVertex(rc.getTessellator(), tessCoords, 0 /*coords_offset*/, vertex)
         }
 
-        texCoordId += point.distanceTo(prevPoint)
-        prevPoint.set(point)
+        if (vertex == 0) {
+            if (isSurfaceShape) {
+                vertexOrigin.set(longitude, latitude, altitude)
+            } else {
+                vertexOrigin.set(point)
+            }
+            this.texCoord1d = 0.0
+            prevPoint.set(point)
+        } else {
+            this.texCoord1d += point.distanceTo(prevPoint)
+            prevPoint.set(point)
+        }
+
 
         if (isSurfaceShape) {
-            vertexArray.add(longitude.toFloat())
-            vertexArray.add(latitude.toFloat())
-            vertexArray.add(altitude.toFloat())
+            vertexArray.add((longitude - vertexOrigin.x).toFloat())
+            vertexArray.add((latitude - vertexOrigin.y).toFloat())
+            vertexArray.add((altitude - vertexOrigin.z).toFloat())
             vertexArray.add((longitude - texCoord2d.x).toFloat())
             vertexArray.add((latitude - texCoord2d.y).toFloat())
-            vertexArray.add(texCoordId.toFloat())
+            vertexArray.add(texCoord1d.toFloat())
         } else {
-            point = rc.geographicToCartesian(latitude, longitude, altitude, altitudeMode, this.point)
             vertexArray.add((point.x - vertexOrigin.x).toFloat())
             vertexArray.add((point.y - vertexOrigin.y).toFloat())
             vertexArray.add((point.z - vertexOrigin.z).toFloat())
             vertexArray.add((longitude - texCoord2d.x).toFloat())
             vertexArray.add((latitude - texCoord2d.y).toFloat())
-            vertexArray.add(texCoordId.toFloat())
+            vertexArray.add(texCoord1d.toFloat())
             if (extrude) {
                 point = rc.geographicToCartesian(latitude, longitude, 0.0, WorldWind.CLAMP_TO_GROUND, this.point)
                 vertexArray.add((point.x - vertexOrigin.x).toFloat())
@@ -622,17 +620,17 @@ class Polygon : AbstractShape {
                 vertexArray.add(0.toFloat() /*unused*/)
                 vertexArray.add(0.toFloat() /*unused*/)
                 vertexArray.add(0.toFloat() /*unused*/)
-                if (type == VERTEX_ORIGINAL) {
-                    verticalElements.add(vertex.toShort())
-                    verticalElements.add((vertex + 1).toShort())
-                }
+            }
+            if (type == VERTEX_ORIGINAL) {
+                verticalElements.add(vertex.toShort())
+                verticalElements.add((vertex + 1).toShort())
             }
         }
 
         return vertex
     }
 
-    protected fun determineShapeOrigin(rc: RenderContext) {
+    protected fun determineModelToTexCoord(rc: RenderContext) {
         var mx = 0.0
         var my = 0.0
         var mz = 0.0
@@ -670,8 +668,8 @@ class Polygon : AbstractShape {
         my /= numPoints
         mz /= numPoints
 
-        vertexOrigin.set(mx, my, mz)
-        modelToLocal = rc.globe.cartesianToLocalTransform(mx, my, mz, modelToLocal).invertOrthonormal()
+        modelToTexCoord = rc.globe.cartesianToLocalTransform(mx, my, mz, modelToTexCoord)
+        modelToTexCoord.invertOrthonormal()
     }
 
     protected fun tessCombine(

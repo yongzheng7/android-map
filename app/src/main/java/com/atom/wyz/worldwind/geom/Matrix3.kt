@@ -383,11 +383,7 @@ class Matrix3 {
         return this
     }
 
-    fun multiplyByMatrix(matrix: Matrix3?): Matrix3 {
-        if (matrix == null) {
-            throw java.lang.IllegalArgumentException(
-                    Logger.logMessage(Logger.ERROR, "Matrix3", "multiplyByMatrix", "missingMatrix"))
-        }
+    fun multiplyByMatrix(matrix: Matrix3): Matrix3 {
         val ma = m
         val mb: DoubleArray = matrix.m
         /**
