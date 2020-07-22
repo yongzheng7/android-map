@@ -12,7 +12,7 @@ class Logger {
 
         const val DEBUG = Log.DEBUG
 
-        protected var TAG = "wyz.worldwind"
+        protected var TAG = "com.atom.wyz.worldwind"
 
         fun isLoggable(priority: Int): Boolean {
             return Log.isLoggable(TAG, priority)

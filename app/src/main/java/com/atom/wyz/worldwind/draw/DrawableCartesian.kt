@@ -3,8 +3,8 @@ package com.atom.wyz.worldwind.draw
 import android.opengl.GLES20
 import com.atom.wyz.worldwind.DrawContext
 import com.atom.wyz.worldwind.geom.Color
-import com.atom.wyz.worldwind.render.BasicProgram
 import com.atom.wyz.worldwind.render.BufferObject
+import com.atom.wyz.worldwind.render.CartesianProgram
 import com.atom.wyz.worldwind.util.pool.Pool
 
 class DrawableCartesian : Drawable {
@@ -16,7 +16,7 @@ class DrawableCartesian : Drawable {
     }
     protected var pool: Pool<DrawableCartesian>? = null
 
-    protected var program: BasicProgram? = null
+    protected var program: CartesianProgram? = null
 
     protected var color = Color()
 
@@ -28,7 +28,7 @@ class DrawableCartesian : Drawable {
         this.pool = pool
         return this
     }
-    operator fun set(program: BasicProgram, color: Color?): DrawableCartesian {
+    operator fun set(program: CartesianProgram, color: Color?): DrawableCartesian {
         this.program = program
         if (color != null) {
             this.color.set(color)
@@ -50,8 +50,7 @@ class DrawableCartesian : Drawable {
         if(triStripElements == null || !triStripElements!!.bindBuffer(dc)){
             return
         }
-        program.enableTexture(false)
-        program.loadColor(color)
+        GLES20.glLineWidth(5f)
         program.loadModelviewProjection(dc.modelviewProjection)
         GLES20.glVertexAttribPointer(0 /*vertexPoint*/, 4, GLES20.GL_FLOAT, false, 0, 0)
         //GLES20.glDepthMask(false)
@@ -59,6 +58,7 @@ class DrawableCartesian : Drawable {
         GLES20.glDrawElements(GLES20.GL_LINE_STRIP, triStripElements!!.bufferLength, GLES20.GL_UNSIGNED_SHORT, 0)
         GLES20.glEnable(GLES20.GL_DEPTH_TEST)
         //GLES20.glDepthMask(false)
+        GLES20.glLineWidth(1f)
     }
 
     override fun recycle() {

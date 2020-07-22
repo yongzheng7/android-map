@@ -2,7 +2,7 @@ package com.atom.wyz.worldwind.shape
 
 import com.atom.wyz.worldwind.RenderContext
 import com.atom.wyz.worldwind.WorldWind
-import com.atom.wyz.worldwind.draw.DrawableSensor
+import com.atom.wyz.worldwind.draw.DrawableSightline
 import com.atom.wyz.worldwind.geom.BoundingSphere
 import com.atom.wyz.worldwind.geom.Color
 import com.atom.wyz.worldwind.geom.Position
@@ -38,8 +38,6 @@ class OmnidirectionalSightline : AbstractRenderable, Attributable, Highlightable
 
     val scratchPoint: Vec3 = Vec3()
 
-    val scratchVector: Vec3 = Vec3()
-
     var pickedObjectId = 0
 
     val pickColor = Color()
@@ -47,17 +45,7 @@ class OmnidirectionalSightline : AbstractRenderable, Attributable, Highlightable
     val boundingSphere: BoundingSphere = BoundingSphere()
 
 
-    constructor(position: Position?, range: Float) {
-        if (range < 0) {
-            throw IllegalArgumentException(
-                Logger.logMessage(
-                    Logger.ERROR,
-                    "OmnidirectionalSensor",
-                    "constructor",
-                    "invalidRange"
-                )
-            )
-        }
+    constructor(position: Position, range: Float) {
         this.position.set(position)
         this.range = range
         attributes = ShapeAttributes()
@@ -65,19 +53,7 @@ class OmnidirectionalSightline : AbstractRenderable, Attributable, Highlightable
         occludeAttributes.interiorColor = (Color(1f, 0f, 0f, 1f)) // red
     }
 
-    constructor(
-        position: Position,
-        range: Float,
-        attributes: ShapeAttributes
-    ) {
-        require(range >= 0) {
-            Logger.logMessage(
-                Logger.ERROR,
-                "OmnidirectionalSensor",
-                "constructor",
-                "invalidRange"
-            )
-        }
+    constructor(position: Position, range: Float, attributes: ShapeAttributes) {
         this.position.set(position)
         this.range = range
         this.attributes = attributes
@@ -86,15 +62,18 @@ class OmnidirectionalSightline : AbstractRenderable, Attributable, Highlightable
     }
 
     override fun doRender(rc: RenderContext) {
-        // Compute this sensor's center point in Cartesian coordinates.
+        Logger.log(Logger.ERROR , Logger.makeMessage("DrawableSightline" , "doRender_65" ," 1"))
+
         if (!this.determineCenterPoint(rc)) {
             return
         }
+        Logger.log(Logger.ERROR , Logger.makeMessage("DrawableSightline" , "doRender_70" ," 2 "))
 
         // Don't render anything if the sensor's coverage area is not visible.
         if (!this.isVisible(rc)) {
             return
         }
+        Logger.log(Logger.ERROR , Logger.makeMessage("DrawableSightline" , "doRender_76" ," 3"))
 
         // Select the currently active attributes.
         this.determineActiveAttributes(rc)
@@ -123,28 +102,14 @@ class OmnidirectionalSightline : AbstractRenderable, Attributable, Highlightable
         val lon = position.longitude
         val alt = position.altitude
         when (altitudeMode) {
-            WorldWind.ABSOLUTE -> rc.globe.geographicToCartesian(
-                lat,
-                lon,
-                alt * rc.verticalExaggeration,
-                centerPoint
-            )
-            WorldWind.CLAMP_TO_GROUND -> if (rc.terrain != null && rc.terrain!!.surfacePoint(
-                    lat,
-                    lon,
-                    scratchPoint
-                )
-            ) {
+            WorldWind.ABSOLUTE -> rc.globe.geographicToCartesian(lat, lon, alt * rc.verticalExaggeration, centerPoint)
+            WorldWind.CLAMP_TO_GROUND -> if (rc.terrain != null && rc.terrain!!.surfacePoint(lat, lon, scratchPoint)) {
                 centerPoint.set(scratchPoint) // found a point on the terrain
             }
-            WorldWind.RELATIVE_TO_GROUND -> if (rc.terrain != null && rc.terrain!!.surfacePoint(
-                    lat,
-                    lon,
-                    scratchPoint
-                )
-            ) {
+            WorldWind.RELATIVE_TO_GROUND -> if (rc.terrain != null && rc.terrain!!.surfacePoint(lat, lon, scratchPoint)) {
                 centerPoint.set(scratchPoint) // found a point on the terrain
                 if (alt != 0.0) { // Offset along the normal vector at the terrain surface point.
+                    val scratchVector = Vec3()
                     rc.globe.geographicToCartesianNormal(lat, lon, scratchVector)
                     centerPoint.x += scratchVector.x * alt
                     centerPoint.y += scratchVector.y * alt
@@ -174,38 +139,29 @@ class OmnidirectionalSightline : AbstractRenderable, Attributable, Highlightable
     }
 
     protected fun makeDrawable(rc: RenderContext) {
-        // Obtain a pooled drawable and configure it to draw the sensor's coverage.
-        val pool: Pool<DrawableSensor> = rc.getDrawablePool(DrawableSensor::class.java)
-        val drawable: DrawableSensor = DrawableSensor.obtain(pool)
+        val shapeAttributes = activeAttributes ?: return
+        val pool: Pool<DrawableSightline> = rc.getDrawablePool(DrawableSightline::class.java)
+        val drawable: DrawableSightline = DrawableSightline.obtain(pool)
 
         // Compute the transform from sensor local coordinates to world coordinates.
-        drawable.centerTransform = rc.globe.cartesianToLocalTransform(
+       rc.globe.cartesianToLocalTransform(
             centerPoint.x,
             centerPoint.y,
             centerPoint.z,
             drawable.centerTransform
         )
-        drawable.range =
-            WWMath.clamp(range.toDouble(), 0.0, Double.MAX_VALUE).toFloat()
-
+        drawable.range = WWMath.clamp(range.toDouble(), 0.0, Double.MAX_VALUE).toFloat()
 
         // Configure the drawable colors according to the current attributes. When picking use a unique color associated
         // with the picked object ID. Null attributes indicate that nothing is drawn.
-        if (activeAttributes != null) {
-            drawable.visibleColor.set(if (rc.pickMode) pickColor else activeAttributes!!.interiorColor)
-        }
-
+        drawable.visibleColor.set(if (rc.pickMode) pickColor else shapeAttributes.interiorColor)
         drawable.occludedColor.set(if (rc.pickMode) pickColor else occludeAttributes.interiorColor)
-
         // Use the sensor GLSL program to draw the sensor's coverage.
         drawable.program = rc.getProgram(SensorProgram.KEY) as SensorProgram?
         if (drawable.program == null) {
-            drawable.program = rc.putProgram(
-                SensorProgram.KEY,
-                SensorProgram(rc.resources!!)
-            ) as SensorProgram?
+            Logger.log(Logger.ERROR , Logger.makeMessage("DrawableSightline" , "makeDrawable_158" ," drawable.program == null"))
+            drawable.program = rc.putProgram(SensorProgram.KEY, SensorProgram(rc.resources!!)) as SensorProgram
         }
-
         // Enqueue a drawable for processing on the OpenGL thread.
         rc.offerSurfaceDrawable(drawable, 0.0 /*z-order*/)
     }

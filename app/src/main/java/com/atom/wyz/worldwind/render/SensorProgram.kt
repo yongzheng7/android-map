@@ -11,9 +11,8 @@ import com.atom.wyz.worldwind.util.WWUtil
 
 class SensorProgram : GpuProgram {
     companion object {
-        val KEY: Any = SensorProgram::class.java
+        val KEY: Any = SensorProgram::class
     }
-
     protected var mvpMatrixId = 0
 
     protected var svpMatrixId = 0
@@ -28,10 +27,8 @@ class SensorProgram : GpuProgram {
 
     constructor(resources: Resources) {
         try {
-            val vs: String =
-                WWUtil.readResourceAsText(resources, R.raw.sensorprogram_vert)
-            val fs: String =
-                WWUtil.readResourceAsText(resources, R.raw.sensorprogram_frag)
+            val vs: String = WWUtil.readResourceAsText(resources, R.raw.sensor_program_vert)
+            val fs: String = WWUtil.readResourceAsText(resources, R.raw.sensor_program_frag)
             this.programSources = arrayOf(vs, fs)
             this.attribBindings = arrayOf("vertexPoint")
         } catch (logged: Exception) {
@@ -48,7 +45,7 @@ class SensorProgram : GpuProgram {
     override fun initProgram(dc: DrawContext) {
         mvpMatrixId = GLES20.glGetUniformLocation(programId, "mvpMatrix")
         GLES20.glUniformMatrix4fv(mvpMatrixId, 1, false, array, 0)
-        svpMatrixId = GLES20.glGetUniformLocation(programId, "svpMatrix")
+        svpMatrixId = GLES20.glGetUniformLocation(programId, "slpMatrix")
         GLES20.glUniformMatrix4fv(svpMatrixId, 2, false, array, 0)
         rangeId = GLES20.glGetUniformLocation(programId, "range")
         GLES20.glUniform1f(rangeId, 0f)

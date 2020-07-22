@@ -1,6 +1,5 @@
 package com.atom.wyz.worldwind.app
 
-import android.util.Log
 import com.atom.wyz.worldwind.R
 import com.atom.wyz.worldwind.WorldWind
 import com.atom.wyz.worldwind.WorldWindow
@@ -8,6 +7,7 @@ import com.atom.wyz.worldwind.geom.Color
 import com.atom.wyz.worldwind.geom.LookAt
 import com.atom.wyz.worldwind.geom.Position
 import com.atom.wyz.worldwind.geom.Sector
+import com.atom.wyz.worldwind.layer.CartesianLayer
 import com.atom.wyz.worldwind.layer.RenderableLayer
 import com.atom.wyz.worldwind.layer.ShowTessellationLayer
 import com.atom.wyz.worldwind.ogc.Wcs100ElevationCoverage
@@ -15,6 +15,7 @@ import com.atom.wyz.worldwind.render.ImageSource
 import com.atom.wyz.worldwind.render.Placemark
 import com.atom.wyz.worldwind.shape.OmnidirectionalSightline
 import com.atom.wyz.worldwind.shape.ShapeAttributes
+import com.atom.wyz.worldwind.util.Logger
 
 class OmnidirectionalSensorActivity : BasicGlobeActivity() {
 
@@ -22,6 +23,8 @@ class OmnidirectionalSensorActivity : BasicGlobeActivity() {
         // Let the super class (BasicGlobeFragment) do the creation
         val wwd: WorldWindow = super.createWorldWindow()
         wwd.layers.addLayer(ShowTessellationLayer())
+        wwd.layers.addLayer(CartesianLayer())
+        Logger.log(Logger.ERROR , Logger.makeMessage("OmnidirectionalSensorActivity" , "createWorldWindow" ,"OmnidirectionalSensorActivity"))
         // Specify the bounding sector - provided by the WCS
         val coverageSector = Sector.fromDegrees(-83.0, -180.0, 173.0, 360.0)
         coverageSector.setFullSphere()
@@ -38,21 +41,14 @@ class OmnidirectionalSensorActivity : BasicGlobeActivity() {
         )
         // Add the coverage to the Globes elevation model
         val addCoverage = wwd.globe.elevationModel.addCoverage(aster)
-        Log.e("WcsElevationFragment","addCoverage > $addCoverage")
 
-        // Specify the sensors position
         val position = Position(46.230, -122.190, 2500.0)
-        // Specify the range of the sensor (meters)
-        val range = 10000f
-        // Create attributes for the visible terrain
         val visibleAttributes = ShapeAttributes()
-        visibleAttributes.interiorColor = (Color(0f, 1f, 0f, 1f))
-        // Create attributes for the occluded terrain
+        visibleAttributes.interiorColor = (Color(0f, 1f, 0f, 0.5f))
         val occludedAttributes = ShapeAttributes()
-        occludedAttributes.interiorColor = (Color(0.1f, 0.1f, 0.1f, 1f))
-
+        occludedAttributes.interiorColor = (Color(0.1f, 0.1f, 0.1f, 0.8f))
         // Create the sensor
-        val sensor = OmnidirectionalSightline(position, range)
+        val sensor = OmnidirectionalSightline(position, 10000f)
         // Add the attributes
         sensor.attributes = (visibleAttributes)
         sensor.occludeAttributes = (occludedAttributes)
@@ -70,8 +66,7 @@ class OmnidirectionalSensorActivity : BasicGlobeActivity() {
 
     protected fun createPlacemark(position: Position, layer: RenderableLayer) {
         val placemark = Placemark(position)
-        placemark.attributes
-            .imageSource = (ImageSource.fromResource(R.drawable.aircraft_fixwing))
+        placemark.attributes.imageSource = (ImageSource.fromResource(R.drawable.aircraft_fixwing))
         placemark.attributes.imageScale = (2.0)
         placemark.attributes.drawLeader = (true)
         layer.addRenderable(placemark)

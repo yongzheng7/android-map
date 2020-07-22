@@ -102,7 +102,6 @@ open class RenderContext {
     val scratchVector = Vec3()
 
     open fun reset() {
-        pickMode = false
         terrainTessellator = null
         terrain = null
         layers = null

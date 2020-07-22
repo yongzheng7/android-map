@@ -9,6 +9,7 @@ import android.view.MotionEvent
 import com.atom.wyz.worldwind.BasicWorldWindowController
 import com.atom.wyz.worldwind.R
 import com.atom.wyz.worldwind.WorldWind
+import com.atom.wyz.worldwind.WorldWindow
 import com.atom.wyz.worldwind.geom.*
 import com.atom.wyz.worldwind.globe.Globe
 import com.atom.wyz.worldwind.layer.RenderableLayer
@@ -71,8 +72,7 @@ class OmnidirectionalSensor2Activity : BasicWorldWindActivity()  {
         sensor.altitudeMode = (WorldWind.RELATIVE_TO_GROUND)
         sensorPlacemark = Placemark(pos)
         sensorPlacemark.altitudeMode = (WorldWind.RELATIVE_TO_GROUND)
-        sensorPlacemark.attributes
-            .imageSource = (ImageSource.fromResource(R.drawable.aircraft_fixwing))
+        sensorPlacemark.attributes.imageSource = (ImageSource.fromResource(R.drawable.aircraft_fixwing))
         sensorPlacemark.attributes.imageScale = (2.0)
         sensorPlacemark.attributes.drawLeader = (true)
 
@@ -86,19 +86,21 @@ class OmnidirectionalSensor2Activity : BasicWorldWindActivity()  {
         controller = SimpleSelectDragNavigateController()
         wwd.worldWindowController = (controller)
         // And finally, for this demo, position the viewer to look at the sensor position
+        positionView(wwd)
+    }
+    protected fun positionView(wwd: WorldWindow) {
         val lookAt: LookAt = LookAt().set(
-            pos.latitude,
-            pos.longitude,
-            pos.altitude,
+            46.230,
+            -122.190,
+            500.0,
             WorldWind.ABSOLUTE,
-            2e4 /*range*/,
-            0.0 /*heading*/,
-            45.0 /*tilt*/,
+            1.5e4 /*range*/,
+            45.0 /*heading*/,
+            70.0 /*tilt*/,
             0.0 /*roll*/
         )
-        getWorldWindow().navigator.setAsLookAt(getWorldWindow().globe, lookAt)
+        wwd.navigator.setAsLookAt(this.wwd.globe, lookAt)
     }
-
    inner class SimpleSelectDragNavigateController : BasicWorldWindowController() {
         protected var isDragging = false
         protected var isDraggingArmed = false

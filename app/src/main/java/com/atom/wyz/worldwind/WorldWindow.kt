@@ -555,8 +555,7 @@ class WorldWindow : GLSurfaceView, GLSurfaceView.Renderer, MessageListener, Fram
         // Obtain a frame from the pool and render the frame, accumulating Drawables to process in the OpenGL thread.
         val frame = Frame.obtain(framePool)
         frame.pickedObjects = pickedObjects
-        frame.pickViewport = Viewport(px - 1, py - 1, 3, 3)
-        frame.pickViewport!!.intersect(viewport)
+        frame.pickViewport = Viewport(px - 1, py - 1, 3, 3).apply { this.intersect(viewport) }
         frame.pickPoint = Vec2(px.toDouble(), py.toDouble())
         frame.pickRay = pickRay
         frame.pickMode = true

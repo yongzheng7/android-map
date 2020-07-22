@@ -119,8 +119,7 @@ class Path : AbstractShape {
         val drawState: DrawShapeState
         val cameraDistance: Double
         if (isSurfaceShape) {
-            val pool: Pool<DrawableSurfaceShape> =
-                rc.getDrawablePool(DrawableSurfaceShape::class.java)
+            val pool: Pool<DrawableSurfaceShape> = rc.getDrawablePool(DrawableSurfaceShape::class.java)
             drawable = DrawableSurfaceShape.obtain(pool)
             drawState = (drawable as DrawableSurfaceShape).drawState
             cameraDistance = cameraDistanceGeographic(rc, boundingSector)
@@ -141,16 +140,14 @@ class Path : AbstractShape {
         // Use the basic GLSL program to draw the shape.
         drawState.program = rc.getProgram(BasicProgram.KEY) as BasicProgram?
         if (drawState.program == null) {
-            drawState.program =
-                rc.putProgram(BasicProgram.KEY, BasicProgram(rc.resources!!)) as BasicProgram
+            drawState.program = rc.putProgram(BasicProgram.KEY, BasicProgram(rc.resources!!)) as BasicProgram
         }
 
         // Assemble the drawable's OpenGL vertex buffer object.
         drawState.vertexBuffer = rc.getBufferObject(vertexBufferKey)
         if (drawState.vertexBuffer == null) {
             val size = vertexArray.size() * 4
-            val buffer =
-                ByteBuffer.allocateDirect(size).order(ByteOrder.nativeOrder()).asFloatBuffer()
+            val buffer = ByteBuffer.allocateDirect(size).order(ByteOrder.nativeOrder()).asFloatBuffer()
             buffer.put(vertexArray.array(), 0, vertexArray.size())
             drawState.vertexBuffer =
                 rc.putBufferObject(

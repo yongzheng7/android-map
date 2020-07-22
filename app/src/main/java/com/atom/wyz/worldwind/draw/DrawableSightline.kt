@@ -5,14 +5,14 @@ import com.atom.wyz.worldwind.DrawContext
 import com.atom.wyz.worldwind.geom.Color
 import com.atom.wyz.worldwind.geom.Matrix4
 import com.atom.wyz.worldwind.render.SensorProgram
+import com.atom.wyz.worldwind.util.Logger
 import com.atom.wyz.worldwind.util.pool.Pool
 
-class DrawableSensor : Drawable {
+class DrawableSightline : Drawable {
 
     companion object {
-        fun obtain(pool: Pool<DrawableSensor>): DrawableSensor {
-            val instance = pool.acquire() // get an instance from the pool
-            return instance?.setPool(pool) ?: DrawableSensor().setPool(pool)
+        fun obtain(pool: Pool<DrawableSightline>): DrawableSightline {
+            return pool.acquire()?.setPool(pool) ?: DrawableSightline().setPool(pool)
         }
     }
 
@@ -26,13 +26,13 @@ class DrawableSensor : Drawable {
 
     var program: SensorProgram? = null
 
-    private val sensorView: Matrix4 = Matrix4()
+    val sensorView: Matrix4 = Matrix4()
 
-    private val matrix: Matrix4 = Matrix4()
+    val matrix: Matrix4 = Matrix4()
 
-    private val cubeMapProjection: Matrix4 = Matrix4()
+    val cubeMapProjection: Matrix4 = Matrix4()
 
-    private val cubeMapFace: Array<Matrix4> = arrayOf<Matrix4>(
+    val cubeMapFace: Array<Matrix4> = arrayOf(
         Matrix4().setToRotation(0.0, 0.0, 1.0, -90.0)
             .multiplyByRotation(1.0, 0.0, 0.0, 90.0),  // positive X
 
@@ -47,21 +47,21 @@ class DrawableSensor : Drawable {
         Matrix4() // negative Z
     )
 
-    private var pool: Pool<DrawableSensor>? = null
+    private var pool: Pool<DrawableSightline>? = null
 
     constructor() {}
 
-    private fun setPool(pool: Pool<DrawableSensor>): DrawableSensor {
+    private fun setPool(pool: Pool<DrawableSightline>): DrawableSightline {
         this.pool = pool
         return this
     }
 
     override fun draw(dc: DrawContext) {
         val sensorProgram = this.program ?: return
+        Logger.log(Logger.ERROR , Logger.makeMessage("DrawableSightline" , "draw_61" ," 开始渲染"))
         if (!sensorProgram.useProgram(dc)) {
             return  // program unspecified or failed to build
         }
-
         // Use the drawable's color.
         sensorProgram.loadRange(range)
         sensorProgram.loadColor(visibleColor, occludedColor)
@@ -69,10 +69,9 @@ class DrawableSensor : Drawable {
         // Configure the cube map projection matrix to capture one face of the cube map as far as the sensor's range.
         cubeMapProjection.setToPerspectiveProjection(1.0, 1.0, 90.0, 1.0, range.toDouble())
 
-        // TODO accumulate only the visible terrain, which can be used in both passes
-        // TODO give terrain a bounding box, test with a frustum set using depthviewProjection
         var idx = 0
         val len = cubeMapFace.size
+        Logger.log(Logger.ERROR , Logger.makeMessage("DrawableSightline" , "draw" ," start -------------"))
         while (idx < len) {
             sensorView.set(centerTransform)
             sensorView.multiplyByMatrix(cubeMapFace[idx])
@@ -80,15 +79,10 @@ class DrawableSensor : Drawable {
             if (this.drawSceneDepth(dc)) {
                 this.drawSceneOcclusion(dc)
             }
+            Logger.log(Logger.ERROR , Logger.makeMessage("DrawableSightline" , "draw" ," draw ------$idx----"))
+
             idx++
         }
-    }
-
-    override fun recycle() {
-        visibleColor.set(0f, 0f, 0f, 0f)
-        occludedColor.set(0f, 0f, 0f, 0f)
-        program = null
-        pool?.release(this)
     }
 
     protected fun drawSceneDepth(dc: DrawContext): Boolean {
@@ -119,7 +113,6 @@ class DrawableSensor : Drawable {
                 matrix.setToMultiply(cubeMapProjection, sensorView)
                 matrix.multiplyByTranslation(terrainOrigin.x, terrainOrigin.y, terrainOrigin.z)
                 program!!.loadModelviewProjection(matrix)
-
                 // Draw the terrain as triangles.
                 terrain.drawTriangles(dc)
             }
@@ -164,4 +157,13 @@ class DrawableSensor : Drawable {
             terrain.drawTriangles(dc)
         }
     }
+
+    override fun recycle() {
+        visibleColor.set(0f, 0f, 0f, 0f)
+        occludedColor.set(0f, 0f, 0f, 0f)
+        program = null
+        pool?.release(this)
+        pool = null
+    }
+
 }

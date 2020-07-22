@@ -75,7 +75,7 @@ open class GpuProgram() : RenderResource {
         if (status[0] != GLES20.GL_TRUE) {
             val msg = GLES20.glGetShaderInfoLog(vs)
             GLES20.glDeleteShader(vs)
-            Logger.logMessage(Logger.ERROR, this.javaClass.simpleName, "buildProgram",
+            Logger.logMessage(Logger.ERROR, "GpuProgram  ${this.javaClass.simpleName}", "buildProgram",
                     "Error compiling GL vertex shader \n$msg")
             return
         }
@@ -87,7 +87,7 @@ open class GpuProgram() : RenderResource {
             val msg = GLES20.glGetShaderInfoLog(fs)
             GLES20.glDeleteShader(vs)
             GLES20.glDeleteShader(fs)
-            Logger.logMessage(Logger.ERROR, this.javaClass.simpleName, "buildProgram",
+            Logger.logMessage(Logger.ERROR, "GpuProgram  ${this.javaClass.simpleName}", "buildProgram",
                     "Error compiling GL fragment shader \n$msg")
             return
         }
@@ -106,7 +106,7 @@ open class GpuProgram() : RenderResource {
             GLES20.glDeleteProgram(program)
             GLES20.glDeleteShader(vs)
             GLES20.glDeleteShader(fs)
-            Logger.logMessage(Logger.ERROR, this.javaClass.simpleName, "buildProgram",
+            Logger.logMessage(Logger.ERROR, "GpuProgram  ${this.javaClass.simpleName}", "buildProgram",
                     "Error linking GL program \n$msg")
             return
         }

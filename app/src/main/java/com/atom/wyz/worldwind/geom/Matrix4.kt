@@ -504,12 +504,7 @@ class Matrix4 {
     /**
      * 矩阵的乘法 一行x一列
      */
-    fun setToMultiply(a: Matrix4?, b: Matrix4?): Matrix4 {
-        if (a == null || b == null) {
-            throw IllegalArgumentException(
-                Logger.logMessage(Logger.ERROR, "Matrix4", "setToMultiply", "missingMatrix")
-            )
-        }
+    fun setToMultiply(a: Matrix4, b: Matrix4): Matrix4 {
         val ma: DoubleArray = a.m
         val mb: DoubleArray = b.m
         m[0] = ma[0] * mb[0] + ma[1] * mb[4] + ma[2] * mb[8] + ma[3] * mb[12]
@@ -1127,12 +1122,7 @@ class Matrix4 {
         return true
     }
 
-    fun set(matrix: Matrix4?): Matrix4 {
-        if (matrix == null) {
-            throw java.lang.IllegalArgumentException(
-                Logger.logMessage(Logger.ERROR, "Matrix4", "set", "missingMatrix")
-            )
-        }
+    fun set(matrix: Matrix4): Matrix4 {
         System.arraycopy(matrix.m, 0, this.m, 0, 16)
         return this
     }

@@ -6,8 +6,8 @@ import com.atom.wyz.worldwind.WorldWind
 import com.atom.wyz.worldwind.draw.DrawableCartesian
 import com.atom.wyz.worldwind.geom.Color
 import com.atom.wyz.worldwind.geom.Vec3
-import com.atom.wyz.worldwind.render.BasicProgram
 import com.atom.wyz.worldwind.render.BufferObject
+import com.atom.wyz.worldwind.render.CartesianProgram
 import com.atom.wyz.worldwind.util.pool.Pool
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
@@ -30,10 +30,10 @@ class CartesianLayer : AbstractLayer("CartesianLayer") {
         if (terrain.sector.isEmpty()) {
             return
         }
-        var program: BasicProgram? = rc.getProgram(BasicProgram.KEY) as BasicProgram?
+        var program: CartesianProgram? = rc.getProgram(CartesianProgram.KEY) as CartesianProgram?
         if (program == null) {
             val resources = rc.resources ?: return
-            program = rc.putProgram(BasicProgram.KEY, BasicProgram(resources)) as BasicProgram
+            program = rc.putProgram(CartesianProgram.KEY, CartesianProgram(resources)) as CartesianProgram
         }
 
         val pool: Pool<DrawableCartesian> = rc.getDrawablePool(DrawableCartesian::class.java)
