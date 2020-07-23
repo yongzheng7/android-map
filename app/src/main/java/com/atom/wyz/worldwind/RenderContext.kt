@@ -33,6 +33,8 @@ open class RenderContext {
 
     lateinit var globe: Globe
 
+    lateinit var resources: Resources
+
     var terrainTessellator: Tessellator? = null
 
     var terrain: Terrain? = null
@@ -40,8 +42,6 @@ open class RenderContext {
     var layers: LayerList? = null
 
     var currentLayer: Layer? = null
-
-    var resources: Resources? = null
 
     var verticalExaggeration = 1.0
 
@@ -127,7 +127,7 @@ open class RenderContext {
         frustum.setToUnitFrustum()
 
         renderResourceCache = null
-        resources = null
+        //resources = null
 
         drawableQueue = null
         drawableTerrain = null

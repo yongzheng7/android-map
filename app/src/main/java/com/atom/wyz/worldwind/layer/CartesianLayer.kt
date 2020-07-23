@@ -32,8 +32,7 @@ class CartesianLayer : AbstractLayer("CartesianLayer") {
         }
         var program: CartesianProgram? = rc.getProgram(CartesianProgram.KEY) as CartesianProgram?
         if (program == null) {
-            val resources = rc.resources ?: return
-            program = rc.putProgram(CartesianProgram.KEY, CartesianProgram(resources)) as CartesianProgram
+            program = rc.putProgram(CartesianProgram.KEY, CartesianProgram(rc.resources)) as CartesianProgram
         }
 
         val pool: Pool<DrawableCartesian> = rc.getDrawablePool(DrawableCartesian::class.java)

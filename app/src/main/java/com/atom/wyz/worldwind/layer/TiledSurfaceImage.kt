@@ -85,7 +85,7 @@ open class TiledSurfaceImage : AbstractRenderable {
             this.activeProgram =
                 rc.putProgram(
                     SurfaceTextureProgram.KEY,
-                    SurfaceTextureProgram(rc.resources!!)
+                    SurfaceTextureProgram(rc.resources)
                 ) as SurfaceTextureProgram
         }
     }

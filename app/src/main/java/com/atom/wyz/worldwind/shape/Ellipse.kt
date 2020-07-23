@@ -278,7 +278,7 @@ class Ellipse : AbstractShape {
         if (drawState.program == null) {
             drawState.program = rc.putProgram(
                 BasicProgram.KEY,
-                BasicProgram(rc.resources!!)
+                BasicProgram(rc.resources)
             ) as BasicProgram?
         }
 

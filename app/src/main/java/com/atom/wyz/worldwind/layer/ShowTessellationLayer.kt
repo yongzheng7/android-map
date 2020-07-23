@@ -20,8 +20,7 @@ class ShowTessellationLayer : AbstractLayer("Terrain Tessellation") {
         }
         var program: BasicProgram? = rc.getProgram(BasicProgram.KEY) as BasicProgram?
         if (program == null) {
-            val resources = rc.resources ?: return
-            program = rc.putProgram(BasicProgram.KEY, BasicProgram(resources)) as BasicProgram
+            program = rc.putProgram(BasicProgram.KEY, BasicProgram( rc.resources)) as BasicProgram
         }
         val pool: Pool<DrawableTessellation> = rc.getDrawablePool(DrawableTessellation::class.java)
         val drawable = DrawableTessellation.obtain(pool).set(program , color)

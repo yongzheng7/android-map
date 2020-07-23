@@ -97,8 +97,7 @@ open class BasicFrameController : FrameController {
         drawable.color = PickedObject.identifierToUniqueColor(pickedObjectId, drawable.color)
         drawable.program = rc.getProgram(BasicProgram.KEY) as BasicProgram?
         if (drawable.program == null) {
-            drawable.program =
-                rc.putProgram(BasicProgram.KEY, BasicProgram(rc.resources!!)) as BasicProgram
+            drawable.program = rc.putProgram(BasicProgram.KEY, BasicProgram(rc.resources)) as BasicProgram
         }
         rc.offerSurfaceDrawable(drawable, Double.NEGATIVE_INFINITY)
         // If the pick ray intersects the terrain, enqueue a picked object that associates the terrain drawable with its

@@ -71,7 +71,7 @@ class AtmosphereLayer : AbstractLayer {
 
         drawable.program = rc.getProgram(GroundProgram.KEY) as GroundProgram?
         if (drawable.program == null) {
-            drawable.program = rc.putProgram(GroundProgram.KEY, GroundProgram(rc.resources!!)) as GroundProgram
+            drawable.program = rc.putProgram(GroundProgram.KEY, GroundProgram(rc.resources)) as GroundProgram
         }
         drawable.lightDirection.set(activeLightDirection)
         drawable.globeRadius = rc.globe.getEquatorialRadius()
@@ -93,7 +93,7 @@ class AtmosphereLayer : AbstractLayer {
         val size = 128
         drawable.program = rc.getProgram(SkyProgram.KEY) as SkyProgram?
         if (drawable.program == null) {
-            drawable.program = rc.putProgram(SkyProgram.KEY, SkyProgram(rc.resources!!)) as SkyProgram
+            drawable.program = rc.putProgram(SkyProgram.KEY, SkyProgram(rc.resources)) as SkyProgram
         }
         drawable.lightDirection.set(activeLightDirection)
         drawable.globeRadius = rc.globe.getEquatorialRadius()

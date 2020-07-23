@@ -272,7 +272,7 @@ class Polygon : AbstractShape {
         drawState.program = rc.getProgram(BasicProgram.KEY) as BasicProgram?
         if (drawState.program == null) {
             drawState.program =
-                rc.putProgram(BasicProgram.KEY, BasicProgram(rc.resources!!)) as BasicProgram
+                rc.putProgram(BasicProgram.KEY, BasicProgram(rc.resources)) as BasicProgram
         }
 
         // Assemble the drawable's OpenGL vertex buffer object.

@@ -190,7 +190,7 @@ open class Tile {
         var densityFactor = 1.0
         // Adjust the subdivision factory when the display density is low. Values of detailFactor have been calibrated
         // against high density devices. Low density devices need roughly half the detailFactor.
-        if (rc.resources!!.displayMetrics.densityDpi <= DisplayMetrics.DENSITY_MEDIUM) {
+        if (rc.resources.displayMetrics.densityDpi <= DisplayMetrics.DENSITY_MEDIUM) {
             densityFactor = 0.5
         }
 

@@ -55,7 +55,7 @@ open class SurfaceImage : AbstractRenderable, Movable {
         if (program == null) {
             program = dc.putProgram(
                 SurfaceTextureProgram.KEY,
-                SurfaceTextureProgram(dc.resources!!)
+                SurfaceTextureProgram(dc.resources)
             ) as SurfaceTextureProgram?
         }
         return program

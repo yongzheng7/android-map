@@ -160,7 +160,7 @@ class OmnidirectionalSightline : AbstractRenderable, Attributable, Highlightable
         drawable.program = rc.getProgram(SensorProgram.KEY) as SensorProgram?
         if (drawable.program == null) {
             Logger.log(Logger.ERROR , Logger.makeMessage("DrawableSightline" , "makeDrawable_158" ," drawable.program == null"))
-            drawable.program = rc.putProgram(SensorProgram.KEY, SensorProgram(rc.resources!!)) as SensorProgram
+            drawable.program = rc.putProgram(SensorProgram.KEY, SensorProgram(rc.resources)) as SensorProgram
         }
         // Enqueue a drawable for processing on the OpenGL thread.
         rc.offerSurfaceDrawable(drawable, 0.0 /*z-order*/)

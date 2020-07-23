@@ -49,11 +49,11 @@ class WorldWindow : GLSurfaceView, GLSurfaceView.Renderer, MessageListener, Fram
         const val MSG_ID_SET_DEPTH_BITS = 4
     }
 
-    var globe: Globe = Globe(WorldWind.WGS84_ELLIPSOID,  ProjectionWgs84())
+    var globe: Globe = Globe(WorldWind.WGS84_ELLIPSOID, ProjectionWgs84())
 
     var layers: LayerList = LayerList()
 
-     var tessellator: Tessellator = BasicTessellator()
+    var tessellator: Tessellator = BasicTessellator()
 
     var verticalExaggeration: Double = 1.0
 
@@ -143,9 +143,9 @@ class WorldWindow : GLSurfaceView, GLSurfaceView.Renderer, MessageListener, Fram
         val initLocation: Location = Location.fromTimeZone(TimeZone.getDefault())
         val initAltitude: Double = this.distanceToViewGlobeExtents() * 1.1
 
-        navigator.latitude  = 39.916527
+        navigator.latitude = 39.916527
         navigator.longitude = 116.397128
-        navigator.altitude  = initAltitude
+        navigator.altitude = initAltitude
 
         this.worldWindowController.worldWindow = this
 
@@ -157,7 +157,7 @@ class WorldWindow : GLSurfaceView, GLSurfaceView.Renderer, MessageListener, Fram
         // TODO Investigate and use the EGL chooser submitted by jgiovino
         //this.setEGLConfigChooser(configChooser);
         if (configChooser == null) {
-           // this.setEGLConfigChooser(WWConfigChooser())
+            // this.setEGLConfigChooser(WWConfigChooser())
         }
         this.setEGLConfigChooser(configChooser)
         this.setEGLContextClientVersion(2) // must be called before setRenderer
@@ -174,6 +174,7 @@ class WorldWindow : GLSurfaceView, GLSurfaceView.Renderer, MessageListener, Fram
         this.mainLoopHandler.removeMessages(MSG_ID_REQUEST_REDRAW)
         isWaitingForRedraw = false
     }
+
     override fun surfaceCreated(holder: SurfaceHolder?) {
         super.surfaceCreated(holder)
         WorldWind.messageService.addListener(this)
@@ -311,15 +312,25 @@ class WorldWindow : GLSurfaceView, GLSurfaceView.Renderer, MessageListener, Fram
         rc.resources = this.context.resources
         computeViewingTransform(frame.projection, frame.modelview)
         frame.viewport.set(this.viewport)
-        frame.infiniteProjection.setToInfiniteProjection(viewport.width.toDouble(), viewport.height.toDouble(), fieldOfView, 1.0)
+        frame.infiniteProjection.setToInfiniteProjection(
+            viewport.width.toDouble(),
+            viewport.height.toDouble(),
+            fieldOfView,
+            1.0
+        )
         frame.infiniteProjection.multiplyByMatrix(frame.modelview)
         rc.viewport.set(frame.viewport)
         rc.projection.set(frame.projection)
         rc.modelview.set(frame.modelview)
         rc.modelviewProjection.setToMultiply(frame.projection, frame.modelview)
         if (pickMode) {
-            frame.pickViewport ?.let {
-                rc.frustum.setToModelviewProjection(frame.projection, frame.modelview, frame.viewport, it)
+            frame.pickViewport?.let {
+                rc.frustum.setToModelviewProjection(
+                    frame.projection,
+                    frame.modelview,
+                    frame.viewport,
+                    it
+                )
             }
         } else {
             rc.frustum.setToModelviewProjection(frame.projection, frame.modelview, frame.viewport)
@@ -372,23 +383,17 @@ class WorldWindow : GLSurfaceView, GLSurfaceView.Renderer, MessageListener, Fram
             frame.viewport.width.toDouble(),
             frame.viewport.height.toDouble()
         )
-
         dc.drawableQueue = frame.drawableQueue
         dc.drawableTerrain = frame.drawableTerrain
-
         dc.pickViewport = frame.pickViewport
         dc.pickedObjects = frame.pickedObjects
         dc.pickPoint = frame.pickPoint
         dc.pickMode = frame.pickMode
-
         frameController.drawFrame(dc)
-
         renderResourceCache?.releaseEvictedResources(dc)
-
         if (!pickMode) {
             frameMetrics.endDrawing(this.dc)
         }
-
         dc.reset()
     }
 
@@ -398,7 +403,11 @@ class WorldWindow : GLSurfaceView, GLSurfaceView.Renderer, MessageListener, Fram
         // Set the World Window's new viewport dimensions.
         val newViewport = Viewport(0, 0, width, height)
         this.mainLoopHandler.sendMessage(
-            Message.obtain(this.mainLoopHandler, MSG_ID_SET_VIEWPORT /*msg.what*/, newViewport /*msg.obj*/)
+            Message.obtain(
+                this.mainLoopHandler,
+                MSG_ID_SET_VIEWPORT /*msg.what*/,
+                newViewport /*msg.obj*/
+            )
         )
         // Redraw this World Window with the new viewport.
         this.mainLoopHandler.sendEmptyMessage(MSG_ID_REQUEST_REDRAW /*msg.what*/)
@@ -511,7 +520,6 @@ class WorldWindow : GLSurfaceView, GLSurfaceView.Renderer, MessageListener, Fram
     }
 
 
-
     protected fun clearFrameQueue() {
 
         var pickFrame: Frame?
@@ -622,13 +630,21 @@ class WorldWindow : GLSurfaceView, GLSurfaceView.Renderer, MessageListener, Fram
         // Transform the screen point to Cartesian coordinates at the near and far clip planes, store the result in the
         // ray's origin and direction, respectively. Complete the ray direction by subtracting the near point from the
         // far point and normalizing.
-        if (scratchProjection.unProject(sx, sy, viewport, result.origin /*near*/, result.direction /*far*/)) {
+        if (scratchProjection.unProject(
+                sx,
+                sy,
+                viewport,
+                result.origin /*near*/,
+                result.direction /*far*/
+            )
+        ) {
             result.direction.subtract(result.origin).normalize()
             return true
         }
 
         return false
     }
+
     /**
      * Converts a screen point to the geographic coordinates on the globe.
      *

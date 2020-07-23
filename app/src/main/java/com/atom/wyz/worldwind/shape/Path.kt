@@ -140,7 +140,7 @@ class Path : AbstractShape {
         // Use the basic GLSL program to draw the shape.
         drawState.program = rc.getProgram(BasicProgram.KEY) as BasicProgram?
         if (drawState.program == null) {
-            drawState.program = rc.putProgram(BasicProgram.KEY, BasicProgram(rc.resources!!)) as BasicProgram
+            drawState.program = rc.putProgram(BasicProgram.KEY, BasicProgram(rc.resources)) as BasicProgram
         }
 
         // Assemble the drawable's OpenGL vertex buffer object.

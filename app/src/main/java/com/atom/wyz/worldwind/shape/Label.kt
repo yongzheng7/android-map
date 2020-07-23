@@ -188,7 +188,7 @@ class Label : AbstractRenderable, Highlightable, Movable {
             drawable.program = rc.getProgram(BasicProgram.KEY) as BasicProgram?
             if (drawable.program == null) {
                 drawable.program =
-                    rc.putProgram(BasicProgram.KEY, BasicProgram(rc.resources!!)) as BasicProgram
+                    rc.putProgram(BasicProgram.KEY, BasicProgram(rc.resources)) as BasicProgram
             }
             drawable.unitSquareTransform.set(renderData.unitSquareTransform)
 

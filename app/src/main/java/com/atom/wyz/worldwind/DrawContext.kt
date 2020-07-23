@@ -42,28 +42,27 @@ class DrawContext {
 
     var pickViewport: Viewport? = null
 
-    private var framebufferId = 0
+    var framebufferId = 0
 
-    protected var programId = 0
+    var programId = 0
 
-    protected var textureUnit = GLES20.GL_TEXTURE0
+    var textureUnit = GLES20.GL_TEXTURE0
 
-    protected var textureId = IntArray(32)
+    var textureId = IntArray(32)
 
-    protected var arrayBufferId = 0
+    var arrayBufferId = 0
 
-    protected var elementArrayBufferId = 0
+    var elementArrayBufferId = 0
 
-    protected var scratchFramebuffer: Framebuffer? = null
+    var scratchFramebuffer: Framebuffer? = null
 
-    protected var unitSquareBuffer: BufferObject? = null
+    var unitSquareBuffer: BufferObject? = null
 
-    protected var scratchList = ArrayList<Any?>()
+    var scratchList = ArrayList<Any?>()
 
-    private var scratchBuffer = ByteBuffer.allocateDirect(4).order(ByteOrder.nativeOrder())
+    var scratchBuffer = ByteBuffer.allocateDirect(4).order(ByteOrder.nativeOrder())
 
-    private var pixelArray = ByteArray(4)
-
+    var pixelArray = ByteArray(4)
 
     fun reset() {
         eyePoint.set(0.0, 0.0, 0.0)
@@ -131,7 +130,8 @@ class DrawContext {
         scratchFramebuffer?.let { return it }
         val framebuffer = Framebuffer()
         val colorAttachment = GpuTexture(1024, 1024, GLES20.GL_RGBA, GLES20.GL_UNSIGNED_BYTE)
-        val depthAttachment = GpuTexture(1024, 1024, GLES20.GL_DEPTH_COMPONENT, GLES20.GL_UNSIGNED_SHORT)
+        val depthAttachment =
+            GpuTexture(1024, 1024, GLES20.GL_DEPTH_COMPONENT, GLES20.GL_UNSIGNED_SHORT)
         // TODO consider modifying Texture's tex parameter behavior in order to make this unnecessary
         depthAttachment.setTexParameter(GLES20.GL_TEXTURE_MIN_FILTER, GLES20.GL_NEAREST)
         depthAttachment.setTexParameter(GLES20.GL_TEXTURE_MAG_FILTER, GLES20.GL_NEAREST)
@@ -241,7 +241,15 @@ class DrawContext {
         // Read the fragment pixels as a tightly packed array of RGBA 8888 colors.
         val pixelCount = width * height
         val pixelBuffer = scratchBuffer(pixelCount * 4).clear() as ByteBuffer
-        GLES20.glReadPixels(x, y, width, height, GLES20.GL_RGBA, GLES20.GL_UNSIGNED_BYTE, pixelBuffer)
+        GLES20.glReadPixels(
+            x,
+            y,
+            width,
+            height,
+            GLES20.GL_RGBA,
+            GLES20.GL_UNSIGNED_BYTE,
+            pixelBuffer
+        )
 
         val resultSet = HashSet<Color>()
         var result = Color()

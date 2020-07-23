@@ -197,7 +197,7 @@ open class Placemark : AbstractRenderable, Highlightable, Movable {
 
         drawable.program = rc.getProgram(BasicProgram.KEY) as BasicProgram?
         if (drawable.program == null) {
-            drawable.program = rc.putProgram(BasicProgram.KEY, BasicProgram(rc.resources!!)) as BasicProgram
+            drawable.program = rc.putProgram(BasicProgram.KEY, BasicProgram(rc.resources)) as BasicProgram
         }
 
         drawable.unitSquareTransform.set(unitSquareTransform)
@@ -223,7 +223,7 @@ open class Placemark : AbstractRenderable, Highlightable, Movable {
         // Use the basic GLSL program to draw the placemark's leader line.
         drawable.program = rc.getProgram(BasicProgram.KEY) as BasicProgram?
         if (drawable.program == null) {
-            drawable.program = rc.putProgram(BasicProgram.KEY, BasicProgram(rc.resources!!)) as BasicProgram
+            drawable.program = rc.putProgram(BasicProgram.KEY, BasicProgram(rc.resources)) as BasicProgram
         }
 
         drawable.vertexPoints[0] = 0f // groundPoint.x - groundPoint.x
