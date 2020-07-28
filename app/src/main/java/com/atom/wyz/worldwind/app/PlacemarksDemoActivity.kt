@@ -13,9 +13,9 @@ import android.widget.FrameLayout
 import android.widget.TextView
 import android.widget.Toast
 import androidx.annotation.DrawableRes
-import com.atom.wyz.worldwind.BasicWorldWindowController
+import com.atom.wyz.worldwind.controller.BasicWorldWindowController
 import com.atom.wyz.worldwind.R
-import com.atom.wyz.worldwind.RenderContext
+import com.atom.wyz.worldwind.context.RenderContext
 import com.atom.wyz.worldwind.WorldWind
 import com.atom.wyz.worldwind.geom.Position
 import com.atom.wyz.worldwind.layer.RenderableLayer

@@ -16,6 +16,9 @@ import com.atom.wyz.worldwind.*
 import com.atom.wyz.worldwind.geom.Camera
 import com.atom.wyz.worldwind.geom.Location
 import com.atom.wyz.worldwind.geom.LookAt
+import com.atom.wyz.worldwind.navigator.Navigator
+import com.atom.wyz.worldwind.navigator.NavigatorEvent
+import com.atom.wyz.worldwind.navigator.NavigatorListener
 
 @SuppressLint("Registered")
 class NavigatorEventActivity : BasicWorldWindActivity() , FrameCallback {
@@ -79,7 +82,8 @@ class NavigatorEventActivity : BasicWorldWindActivity() , FrameCallback {
         animatorSet = AnimatorSet()
         animatorSet?.play(fadeOut)
 
-        val listener: NavigatorListener = object : NavigatorListener {
+        val listener: NavigatorListener = object :
+            NavigatorListener {
             override fun onNavigatorEvent(wwd: WorldWindow, event: NavigatorEvent) {
                 val currentTime = System.currentTimeMillis()
                 val elapsedTime = currentTime - lastEventTime

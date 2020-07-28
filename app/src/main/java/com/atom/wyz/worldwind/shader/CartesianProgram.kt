@@ -2,7 +2,7 @@ package com.atom.wyz.worldwind.shader
 
 import android.content.res.Resources
 import android.opengl.GLES20
-import com.atom.wyz.worldwind.DrawContext
+import com.atom.wyz.worldwind.context.DrawContext
 import com.atom.wyz.worldwind.R
 import com.atom.wyz.worldwind.geom.Matrix4
 import com.atom.wyz.worldwind.util.Logger

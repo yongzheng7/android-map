@@ -1,10 +1,13 @@
-package com.atom.wyz.worldwind
+package com.atom.wyz.worldwind.navigator
 
 import android.annotation.SuppressLint
 import android.os.Handler
 import android.os.Looper
 import android.view.InputEvent
 import android.view.MotionEvent
+import com.atom.wyz.worldwind.WorldWind
+import com.atom.wyz.worldwind.WorldWindow
+import com.atom.wyz.worldwind.context.RenderContext
 import com.atom.wyz.worldwind.geom.Matrix4
 import com.atom.wyz.worldwind.util.Logger
 import java.util.*

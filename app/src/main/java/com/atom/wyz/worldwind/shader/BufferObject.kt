@@ -2,9 +2,8 @@ package com.atom.wyz.worldwind.shader
 
 import android.opengl.GLES20
 import android.util.SparseArray
-import com.atom.wyz.worldwind.DrawContext
+import com.atom.wyz.worldwind.context.DrawContext
 import com.atom.wyz.worldwind.geom.Range
-import com.atom.wyz.worldwind.shader.RenderResource
 import com.atom.wyz.worldwind.util.Logger
 import java.nio.Buffer
 

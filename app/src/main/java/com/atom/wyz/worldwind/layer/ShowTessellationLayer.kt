@@ -1,6 +1,6 @@
 package com.atom.wyz.worldwind.layer
 
-import com.atom.wyz.worldwind.RenderContext
+import com.atom.wyz.worldwind.context.RenderContext
 import com.atom.wyz.worldwind.draw.DrawableTessellation
 import com.atom.wyz.worldwind.geom.Color
 import com.atom.wyz.worldwind.shader.BasicProgram

@@ -13,6 +13,10 @@ import android.view.Choreographer
 import android.view.Choreographer.FrameCallback
 import android.view.MotionEvent
 import android.view.SurfaceHolder
+import com.atom.wyz.worldwind.context.DrawContext
+import com.atom.wyz.worldwind.context.RenderContext
+import com.atom.wyz.worldwind.controller.BasicWorldWindowController
+import com.atom.wyz.worldwind.controller.WorldWindowController
 import com.atom.wyz.worldwind.frame.BasicFrameController
 import com.atom.wyz.worldwind.frame.Frame
 import com.atom.wyz.worldwind.frame.FrameController
@@ -23,6 +27,9 @@ import com.atom.wyz.worldwind.globe.Globe
 import com.atom.wyz.worldwind.globe.ProjectionWgs84
 import com.atom.wyz.worldwind.globe.Tessellator
 import com.atom.wyz.worldwind.layer.LayerList
+import com.atom.wyz.worldwind.navigator.Navigator
+import com.atom.wyz.worldwind.navigator.NavigatorEventSupport
+import com.atom.wyz.worldwind.navigator.NavigatorListener
 import com.atom.wyz.worldwind.pick.PickedObjectList
 import com.atom.wyz.worldwind.util.Logger
 import com.atom.wyz.worldwind.util.MessageListener
@@ -72,13 +79,15 @@ class WorldWindow : GLSurfaceView, GLSurfaceView.Renderer, MessageListener, Fram
             field = value
         }
 
-    var navigatorEvents = NavigatorEventSupport(this)
+    var navigatorEvents =
+        NavigatorEventSupport(this)
 
     var frameController: FrameController = BasicFrameController()
 
     var frameMetrics = FrameMetrics()
 
-    var worldWindowController: WorldWindowController = BasicWorldWindowController()
+    var worldWindowController: WorldWindowController =
+        BasicWorldWindowController()
         set(value) {
             field.worldWindow = (null)
             field = value

@@ -3,7 +3,7 @@ package com.atom.wyz.worldwind.app
 import android.os.Bundle
 import android.view.Choreographer
 import android.view.Choreographer.FrameCallback
-import com.atom.wyz.worldwind.Navigator
+import com.atom.wyz.worldwind.navigator.Navigator
 import com.atom.wyz.worldwind.geom.Location
 import com.atom.wyz.worldwind.layer.AtmosphereLayer
 import com.atom.wyz.worldwind.layer.LayerList

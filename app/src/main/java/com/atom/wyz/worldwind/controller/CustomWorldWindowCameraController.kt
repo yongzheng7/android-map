@@ -1,5 +1,6 @@
-package com.atom.wyz.worldwind
+package com.atom.wyz.worldwind.controller
 
+import com.atom.wyz.worldwind.WorldWind
 import com.atom.wyz.worldwind.geom.Camera
 import com.atom.wyz.worldwind.geom.Location
 import com.atom.wyz.worldwind.gesture.GestureRecognizer

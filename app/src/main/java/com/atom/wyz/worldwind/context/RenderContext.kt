@@ -1,7 +1,8 @@
-package com.atom.wyz.worldwind
+package com.atom.wyz.worldwind.context
 
 import android.content.res.Resources
 import android.graphics.Typeface
+import com.atom.wyz.worldwind.WorldWind
 import com.atom.wyz.worldwind.draw.Drawable
 import com.atom.wyz.worldwind.draw.DrawableQueue
 import com.atom.wyz.worldwind.draw.DrawableTerrain
@@ -98,7 +99,8 @@ open class RenderContext {
 
     val textRenderer = TextRenderer()
 
-    val scratchTextCacheKey = TextCacheKey()
+    val scratchTextCacheKey =
+        TextCacheKey()
 
     private var tessellator: GLUtessellator? = null
 
@@ -294,7 +296,8 @@ open class RenderContext {
     }
 
     open fun offerSurfaceDrawable(drawable: Drawable, zOrder: Double) {
-        drawableQueue?.offerDrawable(drawable, WorldWind.SURFACE_DRAWABLE, zOrder)
+        drawableQueue?.offerDrawable(drawable,
+            WorldWind.SURFACE_DRAWABLE, zOrder)
     }
 
     open fun offerShapeDrawable(drawable: Drawable, cameraDistance: Double) {
@@ -319,7 +322,8 @@ open class RenderContext {
     }
 
     open fun offerDrawableTerrain(drawable: DrawableTerrain, cameraDistance: Double) {
-        drawableTerrain?.offerDrawable(drawable, WorldWind.SURFACE_DRAWABLE, cameraDistance)
+        drawableTerrain?.offerDrawable(drawable,
+            WorldWind.SURFACE_DRAWABLE, cameraDistance)
     }
 
 
@@ -365,7 +369,8 @@ open class RenderContext {
     }
 
     open fun renderText(text: String, attributes: TextAttributes): GpuTexture? {
-        val key = TextCacheKey().set(text, attributes)
+        val key = TextCacheKey()
+            .set(text, attributes)
         textRenderer.textColor = (attributes.textColor)
         textRenderer.textSize = (attributes.textSize)
         attributes.typeface?.also { textRenderer.typeface = it }

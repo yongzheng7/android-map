@@ -3,7 +3,7 @@ package com.atom.wyz.worldwind.app
 import android.os.Bundle
 import android.view.GestureDetector
 import android.view.MotionEvent
-import com.atom.wyz.worldwind.BasicWorldWindowController
+import com.atom.wyz.worldwind.controller.BasicWorldWindowController
 import com.atom.wyz.worldwind.R
 import com.atom.wyz.worldwind.WorldWind
 import com.atom.wyz.worldwind.WorldWindow

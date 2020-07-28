@@ -1,7 +1,7 @@
 package com.atom.wyz.worldwind.tile
 
 import android.util.DisplayMetrics
-import com.atom.wyz.worldwind.RenderContext
+import com.atom.wyz.worldwind.context.RenderContext
 import com.atom.wyz.worldwind.WorldWind
 import com.atom.wyz.worldwind.geom.BoundingBox
 import com.atom.wyz.worldwind.geom.Frustum

@@ -1,5 +1,6 @@
-package com.atom.wyz.worldwind
+package com.atom.wyz.worldwind.navigator
 
+import com.atom.wyz.worldwind.WorldWind
 import com.atom.wyz.worldwind.geom.*
 import com.atom.wyz.worldwind.globe.Globe
 

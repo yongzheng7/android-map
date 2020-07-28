@@ -1,7 +1,7 @@
 package com.atom.wyz.worldwind.tile
 
 import android.opengl.GLES20
-import com.atom.wyz.worldwind.RenderContext
+import com.atom.wyz.worldwind.context.RenderContext
 import com.atom.wyz.worldwind.geom.Sector
 import com.atom.wyz.worldwind.geom.Vec3
 import com.atom.wyz.worldwind.shader.BufferObject

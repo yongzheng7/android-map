@@ -1,7 +1,7 @@
 package com.atom.wyz.worldwind.draw
 
 import android.opengl.GLES20
-import com.atom.wyz.worldwind.DrawContext
+import com.atom.wyz.worldwind.context.DrawContext
 import com.atom.wyz.worldwind.geom.Matrix4
 import com.atom.wyz.worldwind.util.pool.Pool
 

@@ -4,7 +4,7 @@ import android.graphics.Bitmap
 import android.opengl.GLES20
 import android.opengl.GLUtils
 import android.util.SparseIntArray
-import com.atom.wyz.worldwind.DrawContext
+import com.atom.wyz.worldwind.context.DrawContext
 import com.atom.wyz.worldwind.geom.Matrix3
 import com.atom.wyz.worldwind.util.Logger
 import com.atom.wyz.worldwind.util.WWMath

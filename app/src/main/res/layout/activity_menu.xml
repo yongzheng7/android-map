@@ -230,7 +230,6 @@
                     android:onClick="menuButton"/>
 
             <Button
-                    android:id="@+id/placemark_drag_activity"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="placemark_drag_activity"

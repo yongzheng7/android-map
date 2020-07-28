@@ -1,4 +1,4 @@
-package com.atom.wyz.worldwind
+package com.atom.wyz.worldwind.context
 
 import android.opengl.GLES20
 import com.atom.wyz.worldwind.draw.Drawable

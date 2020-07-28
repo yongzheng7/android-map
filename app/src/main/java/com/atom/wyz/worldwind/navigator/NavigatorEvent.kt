@@ -1,6 +1,7 @@
-package com.atom.wyz.worldwind
+package com.atom.wyz.worldwind.navigator
 
 import android.view.InputEvent
+import com.atom.wyz.worldwind.WorldWind
 import com.atom.wyz.worldwind.util.pool.BasicPool
 import com.atom.wyz.worldwind.util.pool.Pool
 
@@ -14,7 +15,8 @@ class NavigatorEvent {
         }
 
         fun obtain(navigator: Navigator?, @WorldWind.NavigatorAction type: Int, lastInputEvent: InputEvent ): NavigatorEvent {
-            val instance = obtain()
+            val instance =
+                obtain()
             instance.navigator = navigator
             instance.action = type
             instance.lastInputEvent = lastInputEvent

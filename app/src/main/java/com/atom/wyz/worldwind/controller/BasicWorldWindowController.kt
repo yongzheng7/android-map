@@ -1,6 +1,8 @@
-package com.atom.wyz.worldwind
+package com.atom.wyz.worldwind.controller
 
 import android.view.MotionEvent
+import com.atom.wyz.worldwind.WorldWind
+import com.atom.wyz.worldwind.WorldWindow
 import com.atom.wyz.worldwind.geom.Location
 import com.atom.wyz.worldwind.geom.LookAt
 import com.atom.wyz.worldwind.gesture.*

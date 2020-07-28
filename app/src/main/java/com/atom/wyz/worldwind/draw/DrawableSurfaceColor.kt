@@ -1,6 +1,6 @@
 package com.atom.wyz.worldwind.draw
 
-import com.atom.wyz.worldwind.DrawContext
+import com.atom.wyz.worldwind.context.DrawContext
 import com.atom.wyz.worldwind.geom.Color
 import com.atom.wyz.worldwind.geom.Matrix4
 import com.atom.wyz.worldwind.geom.Vec3

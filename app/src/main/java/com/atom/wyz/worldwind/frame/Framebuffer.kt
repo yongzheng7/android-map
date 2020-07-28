@@ -2,7 +2,7 @@ package com.atom.wyz.worldwind.frame
 
 import android.opengl.GLES20
 import android.util.SparseArray
-import com.atom.wyz.worldwind.DrawContext
+import com.atom.wyz.worldwind.context.DrawContext
 import com.atom.wyz.worldwind.shader.GpuTexture
 import com.atom.wyz.worldwind.shader.RenderResource
 

@@ -1,7 +1,7 @@
 package com.atom.wyz.worldwind.globe
 
 import android.opengl.GLES20
-import com.atom.wyz.worldwind.RenderContext
+import com.atom.wyz.worldwind.context.RenderContext
 import com.atom.wyz.worldwind.draw.BasicDrawableTerrain
 import com.atom.wyz.worldwind.geom.Range
 import com.atom.wyz.worldwind.geom.Sector

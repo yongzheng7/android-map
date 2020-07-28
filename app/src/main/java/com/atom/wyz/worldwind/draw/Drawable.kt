@@ -1,6 +1,6 @@
 package com.atom.wyz.worldwind.draw
 
-import com.atom.wyz.worldwind.DrawContext
+import com.atom.wyz.worldwind.context.DrawContext
 
 interface Drawable {
 

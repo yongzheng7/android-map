@@ -9,7 +9,7 @@ import androidx.core.util.Pools
 import com.atom.wyz.worldwind.R
 import com.atom.wyz.worldwind.WorldWind
 import com.atom.wyz.worldwind.WorldWindow
-import com.atom.wyz.worldwind.WorldWindowController
+import com.atom.wyz.worldwind.controller.WorldWindowController
 import com.atom.wyz.worldwind.geom.Camera
 import com.atom.wyz.worldwind.geom.Location
 import com.atom.wyz.worldwind.geom.Position
@@ -135,7 +135,8 @@ class BasicPerformanceBenchmarkActivity : BasicWorldWindActivity() {
         }
     }
 
-    class NoOpWorldWindowController : WorldWindowController {
+    class NoOpWorldWindowController :
+        WorldWindowController {
         override var worldWindow: WorldWindow?
             get() = null
             set(wwd) {}

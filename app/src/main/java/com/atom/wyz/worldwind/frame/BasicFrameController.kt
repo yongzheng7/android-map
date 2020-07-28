@@ -1,8 +1,8 @@
 package com.atom.wyz.worldwind.frame
 
 import android.opengl.GLES20
-import com.atom.wyz.worldwind.DrawContext
-import com.atom.wyz.worldwind.RenderContext
+import com.atom.wyz.worldwind.context.DrawContext
+import com.atom.wyz.worldwind.context.RenderContext
 import com.atom.wyz.worldwind.draw.Drawable
 import com.atom.wyz.worldwind.draw.DrawableSurfaceColor
 import com.atom.wyz.worldwind.geom.Color

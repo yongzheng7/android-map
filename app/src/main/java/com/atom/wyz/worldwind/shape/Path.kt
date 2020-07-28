@@ -1,7 +1,7 @@
 package com.atom.wyz.worldwind.shape
 
 import android.opengl.GLES20
-import com.atom.wyz.worldwind.RenderContext
+import com.atom.wyz.worldwind.context.RenderContext
 import com.atom.wyz.worldwind.WorldWind
 import com.atom.wyz.worldwind.attribute.ShapeAttributes
 import com.atom.wyz.worldwind.draw.DrawShapeState

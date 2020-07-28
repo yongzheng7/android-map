@@ -1,6 +1,6 @@
 package com.atom.wyz.worldwind.render
 
-import com.atom.wyz.worldwind.RenderContext
+import com.atom.wyz.worldwind.context.RenderContext
 
 interface Renderable {
 

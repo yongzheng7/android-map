@@ -4,7 +4,7 @@ import android.annotation.SuppressLint
 import android.os.Bundle
 import android.view.Choreographer
 import android.view.Choreographer.FrameCallback
-import com.atom.wyz.worldwind.Navigator
+import com.atom.wyz.worldwind.navigator.Navigator
 import com.atom.wyz.worldwind.R
 import com.atom.wyz.worldwind.geom.Offset
 import com.atom.wyz.worldwind.geom.Position
