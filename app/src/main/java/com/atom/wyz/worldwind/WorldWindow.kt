@@ -208,7 +208,6 @@ class WorldWindow : GLSurfaceView, GLSurfaceView.Renderer, MessageListener, Fram
     }
 
     override fun onDrawFrame(gl: GL10?) {
-
         val pickFrame = pickQueue.poll()
         if (pickFrame != null) {
             try {
@@ -258,11 +257,6 @@ class WorldWindow : GLSurfaceView, GLSurfaceView.Renderer, MessageListener, Fram
         projection: Matrix4,
         modelview: Matrix4
     ) {
-        // Compute the clip plane distances. The near distance is set to a large value that does not clip the globe's
-        // surface. The far distance is set to the smallest value that does not clip the atmosphere.
-        // TODO adjust the clip plane distances based on the navigator's orientation - shorter distances when the
-        // TODO horizon is not in view
-        // TODO parameterize the object altitude for horizon distance
         val eyeAltitude: Double = navigator.altitude
         val eyeHorizon = globe.horizonDistance(eyeAltitude)
         val atmosphereHorizon = globe.horizonDistance(160000.0)

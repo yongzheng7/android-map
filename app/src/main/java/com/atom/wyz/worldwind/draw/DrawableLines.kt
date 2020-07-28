@@ -4,16 +4,15 @@ import android.opengl.GLES20
 import com.atom.wyz.worldwind.DrawContext
 import com.atom.wyz.worldwind.geom.Color
 import com.atom.wyz.worldwind.geom.Matrix4
-import com.atom.wyz.worldwind.render.BasicProgram
+import com.atom.wyz.worldwind.shader.BasicProgram
 import com.atom.wyz.worldwind.util.pool.Pool
 
 class DrawableLines : Drawable {
 
     companion object {
 
-        fun obtain(pool: Pool<DrawableLines>): DrawableLines {
-            return pool.acquire()?.setPool(pool) ?: DrawableLines().setPool(pool)
-        }
+        fun obtain(pool: Pool<DrawableLines>): DrawableLines =
+            pool.acquire()?.setPool(pool) ?: DrawableLines().setPool(pool)
     }
 
     var program: BasicProgram? = null
@@ -28,7 +27,7 @@ class DrawableLines : Drawable {
 
     var enableDepthTest = true
 
-    private var pool: Pool<DrawableLines>? = null
+    var pool: Pool<DrawableLines>? = null
 
     private fun setPool(pool: Pool<DrawableLines>): DrawableLines {
         this.pool = pool
@@ -36,7 +35,7 @@ class DrawableLines : Drawable {
     }
 
     override fun draw(dc: DrawContext) {
-        val program = this.program ?:return
+        val program = this.program ?: return
         if (!program.useProgram(dc)) {
             return  // program failed to build
         }

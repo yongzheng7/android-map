@@ -2,17 +2,19 @@ package com.atom.wyz.worldwind.layer
 
 import com.atom.wyz.worldwind.WorldWind
 import com.atom.wyz.worldwind.geom.Sector
-import com.atom.wyz.worldwind.globe.Tile
-import com.atom.wyz.worldwind.globe.TileFactory
+import com.atom.wyz.worldwind.tile.Tile
+import com.atom.wyz.worldwind.tile.TileFactory
 import com.atom.wyz.worldwind.ogc.WmsLayerConfig
 import com.atom.wyz.worldwind.ogc.WmsTileFactory
 import com.atom.wyz.worldwind.render.ImageOptions
+import com.atom.wyz.worldwind.render.TiledSurfaceImage
 import com.atom.wyz.worldwind.util.Level
 import com.atom.wyz.worldwind.util.LevelSet
 import com.atom.wyz.worldwind.util.LevelSetConfig
 import com.atom.wyz.worldwind.util.Logger
 
-class BlueMarbleLandsatLayer : RenderableLayer, TileFactory {
+class BlueMarbleLandsatLayer : RenderableLayer,
+    TileFactory {
     lateinit var surfaceImage: TiledSurfaceImage
 
     lateinit var blueMarbleUrlFactory: TileFactory
@@ -61,7 +63,7 @@ class BlueMarbleLandsatLayer : RenderableLayer, TileFactory {
 
     }
 
-    override fun createTile(sector: Sector?, level: Level?, row: Int, column: Int): Tile {
+    override fun createTile(sector: Sector, level: Level, row: Int, column: Int): Tile {
         val radiansPerPixel: Double = Math.toRadians(level!!.tileDelta) / level.tileHeight
         val metersPerPixel = radiansPerPixel * WorldWind.WGS84_SEMI_MAJOR_AXIS
         return if (metersPerPixel < 2.0e3) { // switch to Landsat at 2km resolution

@@ -6,7 +6,10 @@ import com.atom.wyz.worldwind.draw.BasicDrawableTerrain
 import com.atom.wyz.worldwind.geom.Range
 import com.atom.wyz.worldwind.geom.Sector
 import com.atom.wyz.worldwind.geom.Vec3
-import com.atom.wyz.worldwind.render.BufferObject
+import com.atom.wyz.worldwind.shader.BufferObject
+import com.atom.wyz.worldwind.tile.TerrainTile
+import com.atom.wyz.worldwind.tile.Tile
+import com.atom.wyz.worldwind.tile.TileFactory
 import com.atom.wyz.worldwind.util.Level
 import com.atom.wyz.worldwind.util.LevelSet
 import com.atom.wyz.worldwind.util.Logger
@@ -100,8 +103,13 @@ class BasicTessellator : Tessellator, TileFactory {
     /**
      * 创建瓦片
      */
-    override fun createTile(sector: Sector?, level: Level?, row: Int, column: Int): Tile {
-        return TerrainTile(sector, level, row, column)
+    override fun createTile(sector: Sector, level: Level, row: Int, column: Int): Tile {
+        return TerrainTile(
+            sector,
+            level,
+            row,
+            column
+        )
     }
 
     /**
@@ -222,7 +230,11 @@ class BasicTessellator : Tessellator, TileFactory {
                 levelSetVertexTexCoordBuffer =
                     rc.putBufferObject(
                         levelSetVertexTexCoordKey,
-                        BufferObject(GLES20.GL_ARRAY_BUFFER, size, buffer)
+                        BufferObject(
+                            GLES20.GL_ARRAY_BUFFER,
+                            size,
+                            buffer
+                        )
                     )
             }
         }
@@ -244,7 +256,11 @@ class BasicTessellator : Tessellator, TileFactory {
                     buffer.rewind()
                     levelSetElementBuffer = rc.putBufferObject(
                         levelSetElementKey,
-                        BufferObject(GLES20.GL_ELEMENT_ARRAY_BUFFER, size, buffer)
+                        BufferObject(
+                            GLES20.GL_ELEMENT_ARRAY_BUFFER,
+                            size,
+                            buffer
+                        )
                     )
                 })
         }

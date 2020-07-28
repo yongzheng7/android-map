@@ -4,14 +4,15 @@ import android.opengl.GLES20
 import android.util.SparseArray
 import com.atom.wyz.worldwind.RenderContext
 import com.atom.wyz.worldwind.WorldWind
+import com.atom.wyz.worldwind.attribute.ShapeAttributes
 import com.atom.wyz.worldwind.draw.DrawShapeState
 import com.atom.wyz.worldwind.draw.Drawable
 import com.atom.wyz.worldwind.draw.DrawableShape
 import com.atom.wyz.worldwind.draw.DrawableSurfaceShape
 import com.atom.wyz.worldwind.geom.*
-import com.atom.wyz.worldwind.render.BasicProgram
-import com.atom.wyz.worldwind.render.BufferObject
-import com.atom.wyz.worldwind.render.GpuTexture
+import com.atom.wyz.worldwind.shader.BasicProgram
+import com.atom.wyz.worldwind.shader.BufferObject
+import com.atom.wyz.worldwind.shader.GpuTexture
 import com.atom.wyz.worldwind.render.ImageOptions
 import com.atom.wyz.worldwind.util.SimpleShortArray
 import com.atom.wyz.worldwind.util.pool.Pool
@@ -121,7 +122,11 @@ class Ellipse : AbstractShape {
                 ByteBuffer.allocateDirect(size).order(ByteOrder.nativeOrder())
                     .asShortBuffer()
             buffer.put(elements.array(), 0, elements.size())
-            val elementBuffer = BufferObject(GLES20.GL_ELEMENT_ARRAY_BUFFER, size, buffer.rewind())
+            val elementBuffer = BufferObject(
+                GLES20.GL_ELEMENT_ARRAY_BUFFER,
+                size,
+                buffer.rewind()
+            )
             elementBuffer.ranges.put(TOP_RANGE, topRange)
             elementBuffer.ranges.put(OUTLINE_RANGE, outlineRange)
             elementBuffer.ranges.put(SIDE_RANGE, sideRange)
@@ -236,7 +241,8 @@ class Ellipse : AbstractShape {
         center: Position,
         majorRadius: Double,
         minorRadius: Double,
-        attributes: ShapeAttributes) : super(attributes) {
+        attributes: ShapeAttributes
+    ) : super(attributes) {
         this.center = Position(center)
         this.majorRadius = majorRadius
         this.minorRadius = minorRadius
@@ -258,44 +264,38 @@ class Ellipse : AbstractShape {
         val drawable: Drawable
         val drawState: DrawShapeState
         if (isSurfaceShape) {
-            val pool: Pool<DrawableSurfaceShape> =
-                rc.getDrawablePool(DrawableSurfaceShape::class.java)
+            val pool: Pool<DrawableSurfaceShape> = rc.getDrawablePool(DrawableSurfaceShape::class.java)
             drawable = DrawableSurfaceShape.obtain(pool)
-            drawState = (drawable as DrawableSurfaceShape).drawState
-            (drawable as DrawableSurfaceShape).sector.set(boundingSector)
+            drawState = drawable.drawState
+            drawable.sector.set(boundingSector)
             cameraDistance = cameraDistanceGeographic(rc, boundingSector)
         } else {
             val pool: Pool<DrawableShape> = rc.getDrawablePool(DrawableShape::class.java)
             drawable = DrawableShape.obtain(pool)
-            drawState = (drawable as DrawableShape).drawState
+            drawState = drawable.drawState
             cameraDistance = boundingBox.distanceTo(rc.cameraPoint)
         }
-
-        // Use the basic GLSL program to draw the shape.
-
         // Use the basic GLSL program to draw the shape.
         drawState.program = rc.getProgram(BasicProgram.KEY) as BasicProgram?
         if (drawState.program == null) {
             drawState.program = rc.putProgram(
                 BasicProgram.KEY,
                 BasicProgram(rc.resources)
-            ) as BasicProgram?
+            ) as BasicProgram
         }
-
-        // Assemble the drawable's OpenGL vertex buffer object.
-
         // Assemble the drawable's OpenGL vertex buffer object.
         drawState.vertexBuffer = rc.getBufferObject(vertexBufferKey)
         if (drawState.vertexBuffer == null) {
             val size = vertexArray!!.size * 4
             val buffer = ByteBuffer.allocateDirect(size).order(ByteOrder.nativeOrder()).asFloatBuffer()
             buffer.put(vertexArray, 0, vertexArray!!.size)
-            drawState.vertexBuffer = BufferObject(GLES20.GL_ARRAY_BUFFER, size, buffer.rewind())
+            drawState.vertexBuffer = BufferObject(
+                GLES20.GL_ARRAY_BUFFER,
+                size,
+                buffer.rewind()
+            )
             rc.putBufferObject(vertexBufferKey, drawState.vertexBuffer!!)
         }
-
-        // Get the attributes of the element buffer
-
         // Get the attributes of the element buffer
         var elementBufferKey = elementBufferKeys[activeIntervals]
         if (elementBufferKey == null) {
@@ -305,7 +305,7 @@ class Ellipse : AbstractShape {
 
         drawState.elementBuffer = rc.getBufferObject(elementBufferKey)
         if (drawState.elementBuffer == null) {
-            drawState.elementBuffer = Ellipse.assembleElements(activeIntervals)
+            drawState.elementBuffer = assembleElements(activeIntervals)
             rc.putBufferObject(elementBufferKey, drawState.elementBuffer!!)
         }
 
@@ -316,18 +316,12 @@ class Ellipse : AbstractShape {
             this.drawOutline(rc, drawState)
             this.drawInterior(rc, drawState)
         }
-
-        // Configure the drawable according to the shape's attributes.
-
         // Configure the drawable according to the shape's attributes.
         drawState.vertexOrigin.set(vertexOrigin)
         drawState.vertexStride = VERTEX_STRIDE * 4 // stride in bytes
 
         drawState.enableCullFace = extrude
         drawState.enableDepthTest = activeAttributes!!.depthTest
-
-        // Enqueue the drawable for processing on the OpenGL thread.
-
         // Enqueue the drawable for processing on the OpenGL thread.
         if (isSurfaceShape) {
             rc.offerSurfaceDrawable(drawable, 0.0 /*zOrder*/)
@@ -339,7 +333,6 @@ class Ellipse : AbstractShape {
         if (!activeAttributes!!.drawInterior) {
             return
         }
-
         // Configure the drawable to use the interior texture when drawing the interior.
         if (activeAttributes!!.interiorImageSource != null) {
             var texture: GpuTexture? = rc.getTexture(activeAttributes!!.interiorImageSource!!)
@@ -436,8 +429,7 @@ class Ellipse : AbstractShape {
 
     protected fun assembleGeometry(rc: RenderContext) {
         // Determine whether the shape geometry must be assembled as Cartesian geometry or as goegraphic geometry.
-        isSurfaceShape =
-            altitudeMode === WorldWind.CLAMP_TO_GROUND && followTerrain
+        isSurfaceShape = altitudeMode == WorldWind.CLAMP_TO_GROUND && followTerrain
 
         // Compute a matrix that transforms from Cartesian coordinates to shape texture coordinates.
         determineModelToTexCoord(rc)
@@ -461,8 +453,7 @@ class Ellipse : AbstractShape {
         }
 
         // Determine the number of spine points
-        val spineCount: Int =
-            Ellipse.computeNumberSpinePoints(activeIntervals) // activeIntervals must be even
+        val spineCount: Int = computeNumberSpinePoints(activeIntervals) // activeIntervals must be even
 
         // Clear the shape's vertex array. The array will accumulate values as the shapes's geometry is assembled.
         vertexIndex = 0
@@ -494,8 +485,7 @@ class Ellipse : AbstractShape {
         }
 
         // Determine the offset from the top and extruded vertices
-        val arrayOffset: Int =
-            Ellipse.computeIndexOffset(activeIntervals) * VERTEX_STRIDE
+        val arrayOffset: Int = computeIndexOffset(activeIntervals) * VERTEX_STRIDE
         // Setup spine radius values
         var spineIdx = 0
         val spineRadius = DoubleArray(spineCount)
@@ -626,12 +616,12 @@ class Ellipse : AbstractShape {
                     WorldWind.CLAMP_TO_GROUND,
                     scratchPoint
                 )
-                vertexArray!![vertexIndex++] = (point.x - vertexOrigin.x).toFloat()
-                vertexArray!![vertexIndex++] = (point.y - vertexOrigin.y).toFloat()
-                vertexArray!![vertexIndex++] = (point.z - vertexOrigin.z).toFloat()
-                vertexArray!![vertexIndex++] = 0f //unused
-                vertexArray!![vertexIndex++] = 0f //unused
-                vertexArray!![vertexIndex++] = 0f //unused
+                vertexArray!![offsetVertexIndex++] = (point.x - vertexOrigin.x).toFloat()
+                vertexArray!![offsetVertexIndex++] = (point.y - vertexOrigin.y).toFloat()
+                vertexArray!![offsetVertexIndex++] = (point.z - vertexOrigin.z).toFloat()
+                vertexArray!![offsetVertexIndex++] = 0f //unused
+                vertexArray!![offsetVertexIndex++] = 0f //unused
+                vertexArray!![offsetVertexIndex++] = 0f //unused
             }
         }
     }
@@ -675,13 +665,10 @@ class Ellipse : AbstractShape {
         }
         val metersPerPixel = rc.pixelSizeAtDistance(cameraDistance)
         val circumferencePixels = computeCircumference() / metersPerPixel
-        val circumferenceIntervals =
-            circumferencePixels / maximumPixelsPerInterval
-        val subdivisions =
-            Math.log(circumferenceIntervals / intervals) / Math.log(2.0)
+        val circumferenceIntervals = circumferencePixels / maximumPixelsPerInterval
+        val subdivisions = Math.log(circumferenceIntervals / intervals) / Math.log(2.0)
         val subdivisionCount = Math.max(0, Math.ceil(subdivisions).toInt())
-        intervals =
-            intervals shl subdivisionCount // subdivide the base intervals to achieve the desired number of intervals
+        intervals = intervals shl subdivisionCount // subdivide the base intervals to achieve the desired number of intervals
         return Math.min(
             intervals,
             maximumIntervals

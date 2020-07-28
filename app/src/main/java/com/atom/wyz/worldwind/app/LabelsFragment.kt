@@ -9,8 +9,8 @@ import com.atom.wyz.worldwind.geom.Offset
 import com.atom.wyz.worldwind.geom.Position
 import com.atom.wyz.worldwind.layer.RenderableLayer
 import com.atom.wyz.worldwind.render.Placemark
-import com.atom.wyz.worldwind.shape.Label
-import com.atom.wyz.worldwind.shape.TextAttributes
+import com.atom.wyz.worldwind.render.Label
+import com.atom.wyz.worldwind.attribute.TextAttributes
 
 class LabelsFragment : BasicGlobeActivity() {
 
@@ -20,10 +20,14 @@ class LabelsFragment : BasicGlobeActivity() {
         val layer = RenderableLayer("Renderables")
         wwd.layers.addLayer(layer)
 
-        val sanNicolas = Label(Position(33.262, -119.538, 0.0), "San Nicolas")
+        val sanNicolas = Label(
+            Position(33.262, -119.538, 0.0),
+            "San Nicolas"
+        )
         layer.addRenderable(sanNicolas)
 
-        val parkAttributes: TextAttributes = TextAttributes().apply {
+        val parkAttributes: TextAttributes = TextAttributes()
+            .apply {
             this.typeface = (Typeface.create("serif", Typeface.BOLD_ITALIC))
             this.textColor = Color(1f, 1f, 0f, 0.5f) // yellow, opaque
             this.textSize = (50f) // default size is 24
@@ -53,11 +57,26 @@ class LabelsFragment : BasicGlobeActivity() {
             WorldWind.OFFSET_INSET_PIXELS, -40.0
         ) // move top-edge down
 
-        val label1 = Label(pos, "NW: $northWest _", TextAttributes().apply { this.textOffset = northWest })
-        val label2 = Label(pos, "SW: $southWest ¯", TextAttributes().apply { this.textOffset = southWest })
-        val label3 = Label(pos, "_ NE: $northEast", TextAttributes().apply { this.textOffset = northEast })
-        val label4 = Label(pos, "¯ SE: $southEast", TextAttributes().apply { this.textOffset = southEast })
-        val label5 = Label(pos, "default") // anchor point is bottomCenter of label
+        val label1 = Label(pos,
+            "NW: $northWest _",
+            TextAttributes()
+                .apply { this.textOffset = northWest })
+        val label2 = Label(pos,
+            "SW: $southWest ¯",
+            TextAttributes()
+                .apply { this.textOffset = southWest })
+        val label3 = Label(pos,
+            "_ NE: $northEast",
+            TextAttributes()
+                .apply { this.textOffset = northEast })
+        val label4 = Label(pos,
+            "¯ SE: $southEast",
+            TextAttributes()
+                .apply { this.textOffset = southEast })
+        val label5 = Label(
+            pos,
+            "default"
+        ) // anchor point is bottomCenter of label
         label5.rotationMode = (WorldWind.RELATIVE_TO_GLOBE)
         layer.addRenderable(label1)
         layer.addRenderable(label2)

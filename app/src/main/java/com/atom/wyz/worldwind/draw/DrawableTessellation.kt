@@ -5,32 +5,32 @@ import com.atom.wyz.worldwind.DrawContext
 import com.atom.wyz.worldwind.geom.Color
 import com.atom.wyz.worldwind.geom.Matrix4
 import com.atom.wyz.worldwind.geom.Vec3
-import com.atom.wyz.worldwind.render.BasicProgram
+import com.atom.wyz.worldwind.shader.BasicProgram
 import com.atom.wyz.worldwind.util.pool.Pool
 
 class DrawableTessellation : Drawable {
 
     companion object {
 
-        fun obtain(pool: Pool<DrawableTessellation>): DrawableTessellation {
-            return pool.acquire()?.setPool(pool) ?: DrawableTessellation().setPool(pool)
-        }
+        fun obtain(pool: Pool<DrawableTessellation>): DrawableTessellation =
+            pool.acquire()?.setPool(pool) ?: DrawableTessellation().setPool(pool)
     }
 
-    protected var pool: Pool<DrawableTessellation>? = null
+    var pool: Pool<DrawableTessellation>? = null
 
-    protected var offsetMvpMatrix: Matrix4 = Matrix4()
+    var offsetMvpMatrix: Matrix4 = Matrix4()
 
-    protected var mvpMatrix: Matrix4 = Matrix4()
+    var mvpMatrix: Matrix4 = Matrix4()
 
-    protected var program: BasicProgram? = null
+    var program: BasicProgram? = null
 
-    protected var color = Color()
+    var color = Color()
 
     private fun setPool(pool: Pool<DrawableTessellation>): DrawableTessellation {
         this.pool = pool
         return this
     }
+
     operator fun set(program: BasicProgram, color: Color?): DrawableTessellation {
         this.program = program
         if (color != null) {

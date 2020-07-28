@@ -10,10 +10,13 @@ import android.widget.Toast
 import com.atom.wyz.worldwind.BasicWorldWindowController
 import com.atom.wyz.worldwind.R
 import com.atom.wyz.worldwind.WorldWind
+import com.atom.wyz.worldwind.attribute.ShapeAttributes
+import com.atom.wyz.worldwind.attribute.TextAttributes
 import com.atom.wyz.worldwind.geom.Color
 import com.atom.wyz.worldwind.geom.Offset
 import com.atom.wyz.worldwind.geom.Position
 import com.atom.wyz.worldwind.layer.RenderableLayer
+import com.atom.wyz.worldwind.render.Label
 import com.atom.wyz.worldwind.render.Renderable
 import com.atom.wyz.worldwind.shape.*
 import com.atom.wyz.worldwind.util.Logger
@@ -73,14 +76,16 @@ class PathsAndPolygonsActivity : BasicWorldWindActivity() {
         }
 
         private fun loadPlaceNames() { // Define the text attributes used for places
-            val placeAttrs: TextAttributes = TextAttributes().apply {
+            val placeAttrs: TextAttributes = TextAttributes()
+                .apply {
                 this.typeface= (Typeface.DEFAULT_BOLD) // Override the normal Typeface
                 this.textSize = (28f) // default size is 24
                 this.textOffset = (Offset.bottomRight()) // anchor the label's bottom-right corner at its position
             }
 
             // Define the text attribute used for lakes
-            val lakeAttrs: TextAttributes = TextAttributes().apply {
+            val lakeAttrs: TextAttributes = TextAttributes()
+                .apply {
                 this.typeface = (Typeface.create("serif", Typeface.BOLD_ITALIC))
                 this.textSize = (32f) // default size is 24
                 this.textColor = (Color(0f, 1f, 1f, 0.70f)) // cyan, with 7% opacity
@@ -125,7 +130,8 @@ class PathsAndPolygonsActivity : BasicWorldWindActivity() {
             val attrs = ShapeAttributes()
             attrs.outlineColor.set(1.0f, 1.0f, 0.0f, 1.0f)
             attrs.outlineWidth= (3f)
-            val highlightAttrs = ShapeAttributes()
+            val highlightAttrs =
+                ShapeAttributes()
             highlightAttrs.outlineColor.set(1.0f, 0.0f, 0.0f, 1.0f)
             highlightAttrs.outlineWidth = (7f)
             var reader: BufferedReader? = null
@@ -180,7 +186,8 @@ class PathsAndPolygonsActivity : BasicWorldWindActivity() {
             commonAttrs.interiorColor.set(1.0f, 1.0f, 0.0f, 0.5f)
             commonAttrs.outlineColor.set(0.0f, 0.0f, 0.0f, 1.0f)
             commonAttrs.outlineWidth = (3f)
-            val highlightAttrs = ShapeAttributes()
+            val highlightAttrs =
+                ShapeAttributes()
             highlightAttrs.interiorColor.set(1.0f, 1.0f, 1.0f, 0.5f)
             highlightAttrs.outlineColor.set(1.0f, 1.0f, 1.0f, 1.0f)
             highlightAttrs.outlineWidth = (5f)
@@ -212,7 +219,9 @@ class PathsAndPolygonsActivity : BasicWorldWindActivity() {
                     polygon.followTerrain =
                         (true) // essential for preventing long segments from intercepting ellipsoid.
                     polygon.displayName = (fields[1])
-                    polygon.attributes = (ShapeAttributes(commonAttrs))
+                    polygon.attributes = (ShapeAttributes(
+                        commonAttrs
+                    ))
                     polygon.attributes!!.interiorColor =
                         Color(random.nextFloat(), random.nextFloat(), random.nextFloat(), 0.3f)
                     polygon.highlightAttributes = (highlightAttrs)

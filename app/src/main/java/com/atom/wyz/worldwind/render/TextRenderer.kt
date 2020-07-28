@@ -1,12 +1,16 @@
 package com.atom.wyz.worldwind.render
 
 import android.graphics.*
+import com.atom.wyz.worldwind.shader.GpuTexture
 import com.atom.wyz.worldwind.geom.Color as WorldWindColor
 
 
 class TextRenderer {
+
     var textColor: WorldWindColor = WorldWindColor.WHITE
+
     var outlineColor: WorldWindColor = WorldWindColor.BLACK
+
     var textSize = 0f
         set(value) {
             field = value

@@ -9,11 +9,10 @@ import com.atom.wyz.worldwind.geom.Color
 import com.atom.wyz.worldwind.geom.LookAt
 import com.atom.wyz.worldwind.geom.Offset
 import com.atom.wyz.worldwind.geom.Position
-import com.atom.wyz.worldwind.layer.LayerList
 import com.atom.wyz.worldwind.layer.RenderableLayer
 import com.atom.wyz.worldwind.render.ImageSource
 import com.atom.wyz.worldwind.render.Placemark
-import com.atom.wyz.worldwind.shape.PlacemarkAttributes
+import com.atom.wyz.worldwind.attribute.PlacemarkAttributes
 
 class Placemarks2Activity : BasicWorldWindActivity() {
 

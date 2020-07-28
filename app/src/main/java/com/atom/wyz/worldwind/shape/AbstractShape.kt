@@ -2,22 +2,26 @@ package com.atom.wyz.worldwind.shape
 
 import com.atom.wyz.worldwind.RenderContext
 import com.atom.wyz.worldwind.WorldWind
+import com.atom.wyz.worldwind.attribute.ShapeAttributes
 import com.atom.wyz.worldwind.geom.*
 import com.atom.wyz.worldwind.pick.PickedObject
 import com.atom.wyz.worldwind.render.AbstractRenderable
-import com.atom.wyz.worldwind.render.GpuTexture
+import com.atom.wyz.worldwind.shader.GpuTexture
 import com.atom.wyz.worldwind.util.WWMath
 
-abstract class AbstractShape : AbstractRenderable, Attributable, Highlightable {
+abstract class AbstractShape(attributes: ShapeAttributes = ShapeAttributes()) : AbstractRenderable("AbstractShape"), Attributable, Highlightable {
+
     companion object {
         const val NEAR_ZERO_THRESHOLD = 1.0e-10
     }
 
-    override var attributes: ShapeAttributes? = null
+    override var attributes: ShapeAttributes? = attributes
 
     override var highlightAttributes: ShapeAttributes? = null
 
     protected var activeAttributes: ShapeAttributes? = null
+
+    override var highlighted: Boolean = false
 
 
     @WorldWind.AltitudeMode
@@ -33,6 +37,7 @@ abstract class AbstractShape : AbstractRenderable, Attributable, Highlightable {
             field = value
             this.reset()
         }
+
     var maximumIntermediatePoints = 10
 
     var pickedObjectId = 0
@@ -43,37 +48,25 @@ abstract class AbstractShape : AbstractRenderable, Attributable, Highlightable {
 
     val boundingBox: BoundingBox = BoundingBox()
 
-    private val scratchPoint: Vec3 = Vec3()
-
-    override var highlighted: Boolean = false
-
-    constructor(attributes: ShapeAttributes = ShapeAttributes()) : super("AbstractShape") {
-        this.attributes = attributes
-    }
+    val scratchPoint: Vec3 = Vec3()
 
     override fun doRender(rc: RenderContext) {
-        // Don't render anything if the shape is not visible.
         if (!this.intersectsFrustum(rc)) {
             return
         }
-
-        // Select the currently active attributes. Don't render anything if the attributes are unspecified.
         this.determineActiveAttributes(rc)
         if (activeAttributes == null) {
             return
         }
 
-        // Keep track of the drawable count to determine whether or not this shape has enqueued drawables.
         val drawableCount = rc.drawableCount()
         if (rc.pickMode) {
             pickedObjectId = rc.nextPickedObjectId()
             pickColor = PickedObject.identifierToUniqueColor(pickedObjectId, pickColor)
         }
 
-        // Enqueue drawables for processing on the OpenGL thread.
         this.makeDrawable(rc)
 
-        // Enqueue a picked object that associates the shape's drawables with its picked object ID.
         if (rc.pickMode && rc.drawableCount() != drawableCount) {
             rc.offerPickedObject(PickedObject.fromRenderable(pickedObjectId, this, rc.currentLayer!!))
         }
@@ -108,17 +101,14 @@ abstract class AbstractShape : AbstractRenderable, Attributable, Highlightable {
         result: Matrix3
     ): Matrix3 {
         val texCoordMatrix: Matrix3 = result.setToIdentity()
-        texCoordMatrix.setScale(1.0 / (texture.textureWidth* metersPerPixel), 1.0 / (texture.textureHeight * metersPerPixel))
+        texCoordMatrix.setScale(
+            1.0 / (texture.textureWidth* metersPerPixel),
+            1.0 / (texture.textureHeight * metersPerPixel))
         texCoordMatrix.multiplyByMatrix(texture.texCoordTransform)
         return texCoordMatrix
     }
 
-    protected open fun cameraDistanceCartesian(
-        rc: RenderContext,
-        array: FloatArray,
-        count: Int,
-        stride: Int,
-        offset: Vec3
+    protected open fun cameraDistanceCartesian(rc: RenderContext, array: FloatArray, count: Int, stride: Int, offset: Vec3
     ): Double {
         val cx = rc.cameraPoint.x - offset.x
         val cy = rc.cameraPoint.y - offset.y

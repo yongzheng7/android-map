@@ -3,17 +3,14 @@ package com.atom.wyz.worldwind.draw
 import android.opengl.GLES20
 import com.atom.wyz.worldwind.DrawContext
 import com.atom.wyz.worldwind.geom.Vec3
-import com.atom.wyz.worldwind.render.AtmosphereProgram
-import com.atom.wyz.worldwind.render.BufferObject
-import com.atom.wyz.worldwind.render.SkyProgram
+import com.atom.wyz.worldwind.shader.BufferObject
+import com.atom.wyz.worldwind.shader.SkyProgram
 import com.atom.wyz.worldwind.util.pool.Pool
 
 class DrawableSkyAtmosphere : Drawable {
     companion object {
-        fun obtain(pool: Pool<DrawableSkyAtmosphere>): DrawableSkyAtmosphere {
-            return pool.acquire()?.setPool(pool)
-                ?: DrawableSkyAtmosphere().setPool(pool) // get an instance from the pool
-        }
+        fun obtain(pool: Pool<DrawableSkyAtmosphere>): DrawableSkyAtmosphere =
+            pool.acquire()?.setPool(pool) ?: DrawableSkyAtmosphere().setPool(pool)
     }
 
     var program: SkyProgram? = null

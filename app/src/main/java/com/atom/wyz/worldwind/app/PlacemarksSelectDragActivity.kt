@@ -19,7 +19,7 @@ import com.atom.wyz.worldwind.render.ImageSource
 import com.atom.wyz.worldwind.render.Placemark
 import com.atom.wyz.worldwind.render.Renderable
 import com.atom.wyz.worldwind.shape.Highlightable
-import com.atom.wyz.worldwind.shape.PlacemarkAttributes
+import com.atom.wyz.worldwind.attribute.PlacemarkAttributes
 import java.util.*
 
 /**
@@ -96,7 +96,10 @@ class PlacemarksSelectDragActivity : BasicWorldWindActivity() {
                 this.leaderAttributes?.outlineWidth = 4f
             }
             placemark.highlightAttributes = (
-                    PlacemarkAttributes(placemark.attributes).apply {
+                    PlacemarkAttributes(
+                        placemark.attributes
+                    )
+                        .apply {
                         this.imageScale = HIGHLIGHTED_IMAGE_SCALE
                         this.imageColor = Color(android.graphics.Color.YELLOW)
                     }
@@ -123,7 +126,9 @@ class PlacemarksSelectDragActivity : BasicWorldWindActivity() {
                 this.imageOffset = (Offset.bottomCenter())
                 this.imageScale = NORMAL_IMAGE_SCALE
             }
-            placemark.highlightAttributes = PlacemarkAttributes(placemark.attributes).apply {
+            placemark.highlightAttributes = PlacemarkAttributes(
+                placemark.attributes
+            ).apply {
                 this.imageScale = HIGHLIGHTED_IMAGE_SCALE
                 this.imageColor = Color(android.graphics.Color.YELLOW)
 

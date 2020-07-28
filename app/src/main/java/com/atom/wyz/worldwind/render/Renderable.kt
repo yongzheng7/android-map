@@ -5,7 +5,9 @@ import com.atom.wyz.worldwind.RenderContext
 interface Renderable {
 
     var displayName: String
+
     var enabled: Boolean
+
     var pickDelegate: Any?
 
     fun getUserProperty(key: Any): Any?

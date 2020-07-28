@@ -6,9 +6,9 @@ import com.atom.wyz.worldwind.draw.DrawableQueue
 import com.atom.wyz.worldwind.draw.DrawableTerrain
 import com.atom.wyz.worldwind.geom.*
 import com.atom.wyz.worldwind.pick.PickedObjectList
-import com.atom.wyz.worldwind.render.BufferObject
-import com.atom.wyz.worldwind.render.Framebuffer
-import com.atom.wyz.worldwind.render.GpuTexture
+import com.atom.wyz.worldwind.shader.BufferObject
+import com.atom.wyz.worldwind.frame.Framebuffer
+import com.atom.wyz.worldwind.shader.GpuTexture
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
 import java.util.*
@@ -129,9 +129,19 @@ class DrawContext {
     fun scratchFramebuffer(): Framebuffer {
         scratchFramebuffer?.let { return it }
         val framebuffer = Framebuffer()
-        val colorAttachment = GpuTexture(1024, 1024, GLES20.GL_RGBA, GLES20.GL_UNSIGNED_BYTE)
+        val colorAttachment = GpuTexture(
+            1024,
+            1024,
+            GLES20.GL_RGBA,
+            GLES20.GL_UNSIGNED_BYTE
+        )
         val depthAttachment =
-            GpuTexture(1024, 1024, GLES20.GL_DEPTH_COMPONENT, GLES20.GL_UNSIGNED_SHORT)
+            GpuTexture(
+                1024,
+                1024,
+                GLES20.GL_DEPTH_COMPONENT,
+                GLES20.GL_UNSIGNED_SHORT
+            )
         // TODO consider modifying Texture's tex parameter behavior in order to make this unnecessary
         depthAttachment.setTexParameter(GLES20.GL_TEXTURE_MIN_FILTER, GLES20.GL_NEAREST)
         depthAttachment.setTexParameter(GLES20.GL_TEXTURE_MAG_FILTER, GLES20.GL_NEAREST)
@@ -211,7 +221,11 @@ class DrawContext {
         val size = points.size * 4
         val buffer = ByteBuffer.allocateDirect(size).order(ByteOrder.nativeOrder()).asFloatBuffer()
         buffer.put(points).rewind()
-        val bufferObject = BufferObject(GLES20.GL_ARRAY_BUFFER, size, buffer)
+        val bufferObject = BufferObject(
+            GLES20.GL_ARRAY_BUFFER,
+            size,
+            buffer
+        )
         return bufferObject.also { unitSquareBuffer = it }
     }
 

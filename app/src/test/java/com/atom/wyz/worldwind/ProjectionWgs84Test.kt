@@ -31,7 +31,7 @@ class ProjectionWgs84Test {
         PowerMockito.mockStatic(Logger::class.java)
 
         // Create a globe with a WGS84 definition.
-        globe = BasicGlobe(WorldWind.WGS84_SEMI_MAJOR_AXIS, WorldWind.WGS84_INVERSE_FLATTENING, ProjectionWgs84())
+        globe = Globe(WorldWind.WGS84_ELLIPSOID, ProjectionWgs84())
     }
     companion object{
         fun fromEcef(xEcef: Double, yEcef: Double, zEcef: Double): Vec3 {
@@ -85,25 +85,18 @@ class ProjectionWgs84Test {
     @Throws(java.lang.Exception::class)
     fun testGeographicToCartesian() {
         val wgs84 = ProjectionWgs84()
-        val stations: Map<String, Array<Any>> = getStations()
-        for ((key, value) in stations) {
-            val p: Position = value[0] as Position
-            val v: Vec3 = value[1] as Vec3
-            val a = Vec3(1.0 ,1.0 ,1.0)
-            val result = Vec3()
-            val result1 = Matrix4()
-            wgs84.geographicToCartesian(globe!!, p.latitude, p.longitude, p.altitude , null , result)
-            wgs84.geographicToCartesianTransform(globe!!, p.latitude, p.longitude, p.altitude , null , result1)
-            println("$key---$result")
-            println("$key---$result1")
-            a.multiplyByMatrix(result1)
-            println("123---$a")
-
-            println("------------------")
-//            assertEquals(key, v.x, result.x, 1e-3)
-//            assertEquals(key, v.y, result.y, 1e-3)
-//            assertEquals(key, v.z, result.z, 1e-3)
-        }
+        val p: Position = Position.fromDegrees(90.0, 0.0, 0.0)
+        var a = Vec3(0.0 ,0.0 ,0.0)
+        var b = Vec3(0.0 ,0.0 ,0.0)
+        val result1 = Matrix4()
+        wgs84.geographicToCartesianTransform(globe!!, p.latitude, p.longitude, p.altitude ,  result1)
+        println("1 ---$result1")
+        a.multiplyByMatrix(result1)
+        println("1 ---$a")
+        result1.invertOrthonormal()
+        b.multiplyByMatrix(result1)
+        println("2 ---$result1")
+        println("2 ---$b")
 
 
     }

@@ -3,6 +3,7 @@ package com.atom.wyz.worldwind.globe
 import com.atom.wyz.worldwind.geom.Line
 import com.atom.wyz.worldwind.geom.Sector
 import com.atom.wyz.worldwind.geom.Vec3
+import com.atom.wyz.worldwind.tile.TerrainTile
 import com.atom.wyz.worldwind.util.WWMath
 import java.util.*
 

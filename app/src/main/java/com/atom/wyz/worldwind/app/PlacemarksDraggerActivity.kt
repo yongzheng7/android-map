@@ -239,15 +239,7 @@ class PlacemarksDraggerActivity : BasicWorldWindActivity() {
 
     class MovableSurfaceImage(sector: Sector, imageSource: ImageSource) :
         SurfaceImage(sector, imageSource), Movable {
-        /**
-         * A position associated with the object that indicates its aggregate geographic position. The chosen position
-         * varies among implementers of this interface. For objects defined by a list of positions, the reference
-         * position is typically the first position in the list. For symmetric objects the reference position is often
-         * the center of the object. In many cases the object's reference position may be explicitly specified by the
-         * application.
-         *
-         * @return the object's reference position, or null if no reference position is available.
-         */
+
         override fun getReferencePosition(): Position {
             val sector: Sector = super.sector
             return Position(sector.minLatitude, sector.minLongitude, 0.0)

@@ -18,8 +18,8 @@ import com.atom.wyz.worldwind.ogc.Wcs100ElevationCoverage
 import com.atom.wyz.worldwind.pick.PickedObjectList
 import com.atom.wyz.worldwind.render.ImageSource
 import com.atom.wyz.worldwind.render.Placemark
-import com.atom.wyz.worldwind.shape.OmnidirectionalSightline
-import com.atom.wyz.worldwind.shape.ShapeAttributes
+import com.atom.wyz.worldwind.render.OmnidirectionalSightline
+import com.atom.wyz.worldwind.attribute.ShapeAttributes
 
 class OmnidirectionalSensor2Activity : BasicWorldWindActivity()  {
     /**
@@ -66,7 +66,8 @@ class OmnidirectionalSensor2Activity : BasicWorldWindActivity()  {
 
         // Initialize the OmnidirectionalSensor and Corresponding Placemark
         val pos = Position(46.202, -122.190, 500.0)
-        sensor = OmnidirectionalSightline(pos, 10000f)
+        sensor =
+            OmnidirectionalSightline(pos, 10000f)
         sensor.attributes = (viewableRegions)
         sensor.occludeAttributes = (blockedRegions)
         sensor.altitudeMode = (WorldWind.RELATIVE_TO_GROUND)

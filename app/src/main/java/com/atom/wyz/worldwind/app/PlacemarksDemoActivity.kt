@@ -23,7 +23,7 @@ import com.atom.wyz.worldwind.render.ImageSource
 import com.atom.wyz.worldwind.render.Placemark
 import com.atom.wyz.worldwind.render.Renderable
 import com.atom.wyz.worldwind.shape.Highlightable
-import com.atom.wyz.worldwind.shape.PlacemarkAttributes
+import com.atom.wyz.worldwind.attribute.PlacemarkAttributes
 import com.atom.wyz.worldwind.util.Logger
 import com.atom.wyz.worldwind.util.WWUtil
 import java.io.BufferedReader
@@ -238,7 +238,9 @@ class PlacemarksDemoActivity : BasicWorldWindActivity() {
             if (highlightChanged) { // Use a distinct set attributes when highlighted, otherwise used the shared attributes
                 if (highlighted) { // Create a copy of the shared attributes bundle and increase the scale
                     attributes ?.let{
-                        attributes = PlacemarkAttributes(it).apply { this.imageScale = (it.imageScale * 2.0) }
+                        attributes = PlacemarkAttributes(
+                            it
+                        ).apply { this.imageScale = (it.imageScale * 2.0) }
                     }
                 }
             }

@@ -4,16 +4,15 @@ import android.opengl.GLES20
 import com.atom.wyz.worldwind.DrawContext
 import com.atom.wyz.worldwind.geom.Color
 import com.atom.wyz.worldwind.geom.Matrix4
-import com.atom.wyz.worldwind.render.SensorProgram
+import com.atom.wyz.worldwind.shader.SensorProgram
 import com.atom.wyz.worldwind.util.Logger
 import com.atom.wyz.worldwind.util.pool.Pool
 
 class DrawableSightline : Drawable {
 
     companion object {
-        fun obtain(pool: Pool<DrawableSightline>): DrawableSightline {
-            return pool.acquire()?.setPool(pool) ?: DrawableSightline().setPool(pool)
-        }
+        fun obtain(pool: Pool<DrawableSightline>): DrawableSightline =
+            pool.acquire()?.setPool(pool) ?: DrawableSightline().setPool(pool)
     }
 
     var centerTransform: Matrix4 = Matrix4()

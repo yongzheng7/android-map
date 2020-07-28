@@ -6,7 +6,7 @@ import com.atom.wyz.worldwind.geom.Color
 import com.atom.wyz.worldwind.geom.Position
 import com.atom.wyz.worldwind.layer.RenderableLayer
 import com.atom.wyz.worldwind.shape.Path
-import com.atom.wyz.worldwind.shape.ShapeAttributes
+import com.atom.wyz.worldwind.attribute.ShapeAttributes
 import java.util.*
 
 class PathsActivity : BasicWorldWindActivity() {

@@ -4,7 +4,7 @@ import com.atom.wyz.worldwind.WorldWind
 import com.atom.wyz.worldwind.geom.Sector
 import com.atom.wyz.worldwind.globe.Globe
 import com.atom.wyz.worldwind.layer.RenderableLayer
-import com.atom.wyz.worldwind.layer.TiledSurfaceImage
+import com.atom.wyz.worldwind.render.TiledSurfaceImage
 import com.atom.wyz.worldwind.util.LevelSet
 import com.atom.wyz.worldwind.util.LevelSetConfig
 import com.atom.wyz.worldwind.util.Logger

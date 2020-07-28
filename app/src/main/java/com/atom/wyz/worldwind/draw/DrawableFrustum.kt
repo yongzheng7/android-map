@@ -3,23 +3,22 @@ package com.atom.wyz.worldwind.draw
 import android.opengl.GLES20
 import com.atom.wyz.worldwind.DrawContext
 import com.atom.wyz.worldwind.geom.Color
-import com.atom.wyz.worldwind.render.BasicProgram
-import com.atom.wyz.worldwind.render.BufferObject
+import com.atom.wyz.worldwind.shader.BasicProgram
+import com.atom.wyz.worldwind.shader.BufferObject
 import com.atom.wyz.worldwind.util.pool.Pool
 
 class DrawableFrustum : Drawable {
 
     companion object {
-        fun obtain(pool: Pool<DrawableFrustum>): DrawableFrustum {
-            return pool.acquire()?.setPool(pool) ?: DrawableFrustum().setPool(pool)
-        }
+        fun obtain(pool: Pool<DrawableFrustum>): DrawableFrustum =
+            pool.acquire()?.setPool(pool) ?: DrawableFrustum().setPool(pool)
     }
 
-    protected var pool: Pool<DrawableFrustum>? = null
+    var pool: Pool<DrawableFrustum>? = null
 
-    protected var program: BasicProgram? = null
+    var program: BasicProgram? = null
 
-    protected var color = Color()
+    var color = Color()
 
     var vertexPoints: BufferObject? = null
 
@@ -29,6 +28,7 @@ class DrawableFrustum : Drawable {
         this.pool = pool
         return this
     }
+
     operator fun set(program: BasicProgram, color: Color?): DrawableFrustum {
         this.program = program
         if (color != null) {
@@ -45,10 +45,10 @@ class DrawableFrustum : Drawable {
         if (!program.useProgram(dc)) {
             return
         }
-        if(vertexPoints == null || !vertexPoints!!.bindBuffer(dc)){
+        if (vertexPoints == null || !vertexPoints!!.bindBuffer(dc)) {
             return
         }
-        if(triStripElements == null || !triStripElements!!.bindBuffer(dc)){
+        if (triStripElements == null || !triStripElements!!.bindBuffer(dc)) {
             return
         }
         program.enableTexture(false)
@@ -60,7 +60,12 @@ class DrawableFrustum : Drawable {
 
         GLES20.glDepthMask(false)
 
-        GLES20.glDrawElements(GLES20.GL_TRIANGLE_STRIP, triStripElements!!.bufferLength, GLES20.GL_UNSIGNED_SHORT, 0)
+        GLES20.glDrawElements(
+            GLES20.GL_TRIANGLE_STRIP,
+            triStripElements!!.bufferLength,
+            GLES20.GL_UNSIGNED_SHORT,
+            0
+        )
 
         GLES20.glDepthMask(true)
     }

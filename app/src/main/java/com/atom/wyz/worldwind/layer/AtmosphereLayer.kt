@@ -10,6 +10,9 @@ import com.atom.wyz.worldwind.geom.Location
 import com.atom.wyz.worldwind.geom.Sector
 import com.atom.wyz.worldwind.geom.Vec3
 import com.atom.wyz.worldwind.render.*
+import com.atom.wyz.worldwind.shader.BufferObject
+import com.atom.wyz.worldwind.shader.GroundProgram
+import com.atom.wyz.worldwind.shader.SkyProgram
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
 import java.util.*
@@ -71,7 +74,10 @@ class AtmosphereLayer : AbstractLayer {
 
         drawable.program = rc.getProgram(GroundProgram.KEY) as GroundProgram?
         if (drawable.program == null) {
-            drawable.program = rc.putProgram(GroundProgram.KEY, GroundProgram(rc.resources)) as GroundProgram
+            drawable.program = rc.putProgram(
+                GroundProgram.KEY,
+                GroundProgram(rc.resources)
+            ) as GroundProgram
         }
         drawable.lightDirection.set(activeLightDirection)
         drawable.globeRadius = rc.globe.getEquatorialRadius()
@@ -93,7 +99,10 @@ class AtmosphereLayer : AbstractLayer {
         val size = 128
         drawable.program = rc.getProgram(SkyProgram.KEY) as SkyProgram?
         if (drawable.program == null) {
-            drawable.program = rc.putProgram(SkyProgram.KEY, SkyProgram(rc.resources)) as SkyProgram
+            drawable.program = rc.putProgram(
+                SkyProgram.KEY,
+                SkyProgram(rc.resources)
+            ) as SkyProgram
         }
         drawable.lightDirection.set(activeLightDirection)
         drawable.globeRadius = rc.globe.getEquatorialRadius()
@@ -135,7 +144,11 @@ class AtmosphereLayer : AbstractLayer {
         val buffer = ByteBuffer.allocateDirect(size).order(ByteOrder.nativeOrder()).asFloatBuffer()
         buffer.put(points).rewind()
 
-        return BufferObject(GLES20.GL_ARRAY_BUFFER, size, buffer)
+        return BufferObject(
+            GLES20.GL_ARRAY_BUFFER,
+            size,
+            buffer
+        )
     }
 
     protected fun assembleTriStripElements(
@@ -168,6 +181,10 @@ class AtmosphereLayer : AbstractLayer {
             ByteBuffer.allocateDirect(size).order(ByteOrder.nativeOrder()).asShortBuffer()
         buffer.put(elements).rewind()
 
-        return BufferObject(GLES20.GL_ELEMENT_ARRAY_BUFFER, size, buffer)
+        return BufferObject(
+            GLES20.GL_ELEMENT_ARRAY_BUFFER,
+            size,
+            buffer
+        )
     }
 }

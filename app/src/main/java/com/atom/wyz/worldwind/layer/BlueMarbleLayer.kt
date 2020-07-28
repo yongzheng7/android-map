@@ -5,6 +5,7 @@ import com.atom.wyz.worldwind.geom.Sector
 import com.atom.wyz.worldwind.ogc.WmsLayer
 import com.atom.wyz.worldwind.ogc.WmsLayerConfig
 import com.atom.wyz.worldwind.render.ImageOptions
+import com.atom.wyz.worldwind.render.TiledSurfaceImage
 
 class BlueMarbleLayer : WmsLayer {
 

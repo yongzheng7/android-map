@@ -3,14 +3,15 @@ package com.atom.wyz.worldwind.shape
 import android.opengl.GLES20
 import com.atom.wyz.worldwind.RenderContext
 import com.atom.wyz.worldwind.WorldWind
+import com.atom.wyz.worldwind.attribute.ShapeAttributes
 import com.atom.wyz.worldwind.draw.DrawShapeState
 import com.atom.wyz.worldwind.draw.Drawable
 import com.atom.wyz.worldwind.draw.DrawableShape
 import com.atom.wyz.worldwind.draw.DrawableSurfaceShape
 import com.atom.wyz.worldwind.geom.*
-import com.atom.wyz.worldwind.render.BasicProgram
-import com.atom.wyz.worldwind.render.BufferObject
-import com.atom.wyz.worldwind.render.GpuTexture
+import com.atom.wyz.worldwind.shader.BasicProgram
+import com.atom.wyz.worldwind.shader.BufferObject
+import com.atom.wyz.worldwind.shader.GpuTexture
 import com.atom.wyz.worldwind.render.ImageOptions
 import com.atom.wyz.worldwind.util.Logger
 import com.atom.wyz.worldwind.util.SimpleFloatArray
@@ -272,7 +273,10 @@ class Polygon : AbstractShape {
         drawState.program = rc.getProgram(BasicProgram.KEY) as BasicProgram?
         if (drawState.program == null) {
             drawState.program =
-                rc.putProgram(BasicProgram.KEY, BasicProgram(rc.resources)) as BasicProgram
+                rc.putProgram(
+                    BasicProgram.KEY,
+                    BasicProgram(rc.resources)
+                ) as BasicProgram
         }
 
         // Assemble the drawable's OpenGL vertex buffer object.
@@ -282,7 +286,11 @@ class Polygon : AbstractShape {
             val buffer =
                 ByteBuffer.allocateDirect(size).order(ByteOrder.nativeOrder()).asFloatBuffer()
             buffer.put(vertexArray.array(), 0, vertexArray.size())
-            drawState.vertexBuffer = BufferObject(GLES20.GL_ARRAY_BUFFER, size, buffer.rewind())
+            drawState.vertexBuffer = BufferObject(
+                GLES20.GL_ARRAY_BUFFER,
+                size,
+                buffer.rewind()
+            )
             rc.putBufferObject(vertexBufferKey, drawState.vertexBuffer!!)
         }
 
@@ -297,7 +305,11 @@ class Polygon : AbstractShape {
             buffer.put(sideElements.array(), 0, sideElements.size())
             buffer.put(outlineElements.array(), 0, outlineElements.size())
             buffer.put(verticalElements.array(), 0, verticalElements.size())
-            drawState.elementBuffer = BufferObject(GLES20.GL_ELEMENT_ARRAY_BUFFER, size, buffer.rewind())
+            drawState.elementBuffer = BufferObject(
+                GLES20.GL_ELEMENT_ARRAY_BUFFER,
+                size,
+                buffer.rewind()
+            )
             rc.putBufferObject(elementBufferKey, drawState.elementBuffer!!)
         }
 
@@ -430,7 +442,7 @@ class Polygon : AbstractShape {
         }
     }
 
-    protected fun mustAssembleGeometry(rc: RenderContext?): Boolean {
+    protected fun mustAssembleGeometry(rc: RenderContext): Boolean {
         return vertexArray.size() == 0
     }
 
@@ -446,7 +458,6 @@ class Polygon : AbstractShape {
         verticalElements.clear()
 
         this.determineModelToTexCoord(rc)
-
 
         val tess: GLUtessellator = rc.getTessellator()
         GLU.gluTessNormal(tess, 0.0, 0.0, 1.0)

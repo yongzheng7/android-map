@@ -5,16 +5,14 @@ import com.atom.wyz.worldwind.DrawContext
 import com.atom.wyz.worldwind.geom.Range
 import com.atom.wyz.worldwind.geom.Sector
 import com.atom.wyz.worldwind.geom.Vec3
-import com.atom.wyz.worldwind.render.BufferObject
+import com.atom.wyz.worldwind.shader.BufferObject
 import com.atom.wyz.worldwind.util.pool.Pool
 
 class BasicDrawableTerrain : DrawableTerrain {
 
     companion object {
-        fun obtain(pool: Pool<BasicDrawableTerrain>): BasicDrawableTerrain {
-            val instance = pool.acquire() // get an instance from the pool
-            return instance?.setPool(pool) ?: BasicDrawableTerrain().setPool(pool)
-        }
+        fun obtain(pool: Pool<BasicDrawableTerrain>): BasicDrawableTerrain =
+            pool.acquire() ?.setPool(pool) ?: BasicDrawableTerrain().setPool(pool)
     }
 
     override var sector = Sector()
@@ -36,7 +34,6 @@ class BasicDrawableTerrain : DrawableTerrain {
         this.pool = pool
         return this
     }
-
 
     override fun useVertexPointAttrib(dc: DrawContext, attribLocation: Int)  : Boolean{
         var bufferBound :Boolean

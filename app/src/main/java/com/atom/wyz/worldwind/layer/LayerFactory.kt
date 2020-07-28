@@ -5,7 +5,7 @@ import android.os.Handler
 import android.os.Looper
 import com.atom.wyz.worldwind.WorldWind
 import com.atom.wyz.worldwind.geom.Sector
-import com.atom.wyz.worldwind.globe.TileFactory
+import com.atom.wyz.worldwind.tile.TileFactory
 import com.atom.wyz.worldwind.ogc.WmsLayerConfig
 import com.atom.wyz.worldwind.ogc.WmsTileFactory
 import com.atom.wyz.worldwind.ogc.WmtsTileFactory
@@ -17,6 +17,7 @@ import com.atom.wyz.worldwind.ogc.ows.*
 import com.atom.wyz.worldwind.ogc.wms.WmsCapabilities
 import com.atom.wyz.worldwind.ogc.wms.WmsLayer
 import com.atom.wyz.worldwind.ogc.wtms.*
+import com.atom.wyz.worldwind.render.TiledSurfaceImage
 import com.atom.wyz.worldwind.util.LevelSet
 import com.atom.wyz.worldwind.util.LevelSetConfig
 import com.atom.wyz.worldwind.util.Logger

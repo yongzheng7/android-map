@@ -6,16 +6,16 @@ import com.atom.wyz.worldwind.geom.Matrix3
 import com.atom.wyz.worldwind.geom.Matrix4
 import com.atom.wyz.worldwind.geom.Sector
 import com.atom.wyz.worldwind.geom.Vec3
-import com.atom.wyz.worldwind.render.AtmosphereProgram
-import com.atom.wyz.worldwind.render.GpuTexture
-import com.atom.wyz.worldwind.render.GroundProgram
+import com.atom.wyz.worldwind.shader.AtmosphereProgram
+import com.atom.wyz.worldwind.shader.GpuTexture
+import com.atom.wyz.worldwind.shader.GroundProgram
 import com.atom.wyz.worldwind.util.pool.Pool
 
 class DrawableGroundAtmosphere : Drawable {
+
     companion object {
-        fun obtain(pool: Pool<DrawableGroundAtmosphere>): DrawableGroundAtmosphere {
-            return pool.acquire()?.setPool(pool) ?: DrawableGroundAtmosphere().setPool(pool) // get an instance from the pool
-        }
+        fun obtain(pool: Pool<DrawableGroundAtmosphere>): DrawableGroundAtmosphere =
+            pool.acquire()?.setPool(pool) ?: DrawableGroundAtmosphere().setPool(pool)
     }
 
     var program: GroundProgram? = null
@@ -26,13 +26,13 @@ class DrawableGroundAtmosphere : Drawable {
 
     var nightTexture: GpuTexture? = null
 
-    protected var mvpMatrix: Matrix4 = Matrix4()
+    var mvpMatrix: Matrix4 = Matrix4()
 
-    protected var texCoordMatrix: Matrix3 = Matrix3()
+    var texCoordMatrix: Matrix3 = Matrix3()
 
-    protected var fullSphereSector: Sector = Sector().setFullSphere()
+    var fullSphereSector: Sector = Sector().setFullSphere()
 
-    private var pool: Pool<DrawableGroundAtmosphere>? = null
+    var pool: Pool<DrawableGroundAtmosphere>? = null
 
     override fun draw(dc: DrawContext) {
         val program = this.program ?: return
@@ -54,15 +54,14 @@ class DrawableGroundAtmosphere : Drawable {
 
 
         for (idx in 0 until dc.getDrawableTerrainCount()) {
-            // Use the vertex origin for the terrain tile.
 
             // Get the drawable terrain associated with the draw context.
             val terrain = dc.getDrawableTerrain(idx) ?: continue
 
             // Use the terrain's vertex point attribute and vertex tex coord attribute.
-            // Use the terrain's vertex point attribute and vertex tex coord attribute.
             if (!terrain.useVertexPointAttrib(dc, 0 /*vertexPoint*/) ||
-                !terrain.useVertexTexCoordAttrib(dc, 1 /*vertexTexCoord*/)) {
+                !terrain.useVertexTexCoordAttrib(dc, 1 /*vertexTexCoord*/)
+            ) {
                 continue  // vertex buffer failed to bind
             }
 

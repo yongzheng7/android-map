@@ -2,12 +2,11 @@ package com.atom.wyz.worldwind.draw
 
 import android.opengl.GLES20
 import com.atom.wyz.worldwind.DrawContext
-import com.atom.wyz.worldwind.RenderContext
 import com.atom.wyz.worldwind.geom.Color
 import com.atom.wyz.worldwind.geom.Matrix3
 import com.atom.wyz.worldwind.geom.Matrix4
-import com.atom.wyz.worldwind.render.BasicProgram
-import com.atom.wyz.worldwind.render.GpuTexture
+import com.atom.wyz.worldwind.shader.BasicProgram
+import com.atom.wyz.worldwind.shader.GpuTexture
 import com.atom.wyz.worldwind.util.pool.Pool
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
@@ -27,10 +26,8 @@ class DrawablePlacemark : Drawable {
             return leaderBuffer
         }
 
-        fun obtain(pool: Pool<DrawablePlacemark>): DrawablePlacemark {
-            val instance = pool.acquire() // get an instance from the pool
-            return if (instance != null) instance.setPool(pool) else DrawablePlacemark().setPool(pool)
-        }
+        fun obtain(pool: Pool<DrawablePlacemark>): DrawablePlacemark =
+            pool.acquire()?.setPool(pool) ?: DrawablePlacemark().setPool(pool)
     }
 
     var iconColor: Color = Color(Color.WHITE)

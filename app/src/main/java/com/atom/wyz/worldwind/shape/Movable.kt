@@ -8,4 +8,5 @@ interface Movable {
     fun getReferencePosition(): Position?
 
     fun moveTo(globe: Globe, position: Position?)
+
 }

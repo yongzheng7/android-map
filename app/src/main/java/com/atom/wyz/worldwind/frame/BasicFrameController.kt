@@ -9,7 +9,7 @@ import com.atom.wyz.worldwind.geom.Color
 import com.atom.wyz.worldwind.geom.Position
 import com.atom.wyz.worldwind.geom.Vec3
 import com.atom.wyz.worldwind.pick.PickedObject
-import com.atom.wyz.worldwind.render.BasicProgram
+import com.atom.wyz.worldwind.shader.BasicProgram
 import com.atom.wyz.worldwind.util.Logger
 import com.atom.wyz.worldwind.util.pool.Pool
 
@@ -97,7 +97,10 @@ open class BasicFrameController : FrameController {
         drawable.color = PickedObject.identifierToUniqueColor(pickedObjectId, drawable.color)
         drawable.program = rc.getProgram(BasicProgram.KEY) as BasicProgram?
         if (drawable.program == null) {
-            drawable.program = rc.putProgram(BasicProgram.KEY, BasicProgram(rc.resources)) as BasicProgram
+            drawable.program = rc.putProgram(
+                BasicProgram.KEY,
+                BasicProgram(rc.resources)
+            ) as BasicProgram
         }
         rc.offerSurfaceDrawable(drawable, Double.NEGATIVE_INFINITY)
         // If the pick ray intersects the terrain, enqueue a picked object that associates the terrain drawable with its

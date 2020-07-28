@@ -13,8 +13,8 @@ import com.atom.wyz.worldwind.layer.ShowTessellationLayer
 import com.atom.wyz.worldwind.ogc.Wcs100ElevationCoverage
 import com.atom.wyz.worldwind.render.ImageSource
 import com.atom.wyz.worldwind.render.Placemark
-import com.atom.wyz.worldwind.shape.OmnidirectionalSightline
-import com.atom.wyz.worldwind.shape.ShapeAttributes
+import com.atom.wyz.worldwind.render.OmnidirectionalSightline
+import com.atom.wyz.worldwind.attribute.ShapeAttributes
 import com.atom.wyz.worldwind.util.Logger
 
 class OmnidirectionalSensorActivity : BasicGlobeActivity() {
@@ -43,12 +43,17 @@ class OmnidirectionalSensorActivity : BasicGlobeActivity() {
         val addCoverage = wwd.globe.elevationModel.addCoverage(aster)
 
         val position = Position(46.230, -122.190, 2500.0)
-        val visibleAttributes = ShapeAttributes()
+        val visibleAttributes =
+            ShapeAttributes()
         visibleAttributes.interiorColor = (Color(0f, 1f, 0f, 0.5f))
-        val occludedAttributes = ShapeAttributes()
+        val occludedAttributes =
+            ShapeAttributes()
         occludedAttributes.interiorColor = (Color(0.1f, 0.1f, 0.1f, 0.8f))
         // Create the sensor
-        val sensor = OmnidirectionalSightline(position, 10000f)
+        val sensor = OmnidirectionalSightline(
+            position,
+            10000f
+        )
         // Add the attributes
         sensor.attributes = (visibleAttributes)
         sensor.occludeAttributes = (occludedAttributes)

@@ -4,16 +4,15 @@ import android.opengl.GLES20
 import com.atom.wyz.worldwind.DrawContext
 import com.atom.wyz.worldwind.geom.Color
 import com.atom.wyz.worldwind.geom.Matrix4
-import com.atom.wyz.worldwind.render.BasicProgram
-import com.atom.wyz.worldwind.render.GpuTexture
+import com.atom.wyz.worldwind.shader.BasicProgram
+import com.atom.wyz.worldwind.shader.GpuTexture
 import com.atom.wyz.worldwind.util.pool.Pool
 
 class DrawableScreenTexture : Drawable {
 
     companion object {
-        fun obtain(pool: Pool<DrawableScreenTexture>): DrawableScreenTexture {
-            return pool.acquire()?.setPool(pool) ?: DrawableScreenTexture().setPool(pool) // get an instance from the pool
-        }
+        fun obtain(pool: Pool<DrawableScreenTexture>): DrawableScreenTexture =
+            pool.acquire()?.setPool(pool) ?: DrawableScreenTexture().setPool(pool)
     }
 
     var program: BasicProgram? = null
@@ -28,7 +27,7 @@ class DrawableScreenTexture : Drawable {
 
     var unitSquareTransform = Matrix4()
 
-    private var pool: Pool<DrawableScreenTexture>? = null
+    var pool: Pool<DrawableScreenTexture>? = null
 
     private fun setPool(pool: Pool<DrawableScreenTexture>): DrawableScreenTexture {
         this.pool = pool
@@ -55,7 +54,7 @@ class DrawableScreenTexture : Drawable {
         this.doDraw(dc, this)
 
         var next: Drawable?
-        while (dc.peekDrawable() .also {
+        while (dc.peekDrawable().also {
                 next = it
             } != null && canBatchWith(next!!)) {
             val drawable = dc.pollDrawable() as DrawableScreenTexture // take it off the queue
@@ -66,7 +65,7 @@ class DrawableScreenTexture : Drawable {
         GLES20.glDisableVertexAttribArray(1)
     }
 
-    protected fun doDraw(dc: DrawContext, drawable: DrawableScreenTexture){
+    protected fun doDraw(dc: DrawContext, drawable: DrawableScreenTexture) {
         // Use the drawable's color.
         drawable.program!!.loadColor(drawable.color)
 

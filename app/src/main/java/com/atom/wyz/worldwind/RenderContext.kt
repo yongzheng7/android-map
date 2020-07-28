@@ -14,7 +14,10 @@ import com.atom.wyz.worldwind.layer.LayerList
 import com.atom.wyz.worldwind.pick.PickedObject
 import com.atom.wyz.worldwind.pick.PickedObjectList
 import com.atom.wyz.worldwind.render.*
-import com.atom.wyz.worldwind.shape.TextAttributes
+import com.atom.wyz.worldwind.attribute.TextAttributes
+import com.atom.wyz.worldwind.shader.BufferObject
+import com.atom.wyz.worldwind.shader.GpuProgram
+import com.atom.wyz.worldwind.shader.GpuTexture
 import com.atom.wyz.worldwind.util.RenderResourceCache
 import com.atom.wyz.worldwind.util.glu.GLU
 import com.atom.wyz.worldwind.util.glu.GLUtessellator

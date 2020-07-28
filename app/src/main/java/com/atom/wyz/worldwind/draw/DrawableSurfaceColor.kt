@@ -4,17 +4,14 @@ import com.atom.wyz.worldwind.DrawContext
 import com.atom.wyz.worldwind.geom.Color
 import com.atom.wyz.worldwind.geom.Matrix4
 import com.atom.wyz.worldwind.geom.Vec3
-import com.atom.wyz.worldwind.render.BasicProgram
+import com.atom.wyz.worldwind.shader.BasicProgram
 import com.atom.wyz.worldwind.util.pool.Pool
 
 class DrawableSurfaceColor : Drawable {
 
     companion object {
-        fun obtain(pool: Pool<DrawableSurfaceColor>): DrawableSurfaceColor {
-            return pool.acquire()?.setPool(pool)
-                ?: DrawableSurfaceColor().setPool(pool)  // get an instance from the pool
-
-        }
+        fun obtain(pool: Pool<DrawableSurfaceColor>): DrawableSurfaceColor =
+            pool.acquire()?.setPool(pool) ?: DrawableSurfaceColor().setPool(pool)
     }
 
     var program: BasicProgram? = null

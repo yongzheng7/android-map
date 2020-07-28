@@ -2,7 +2,6 @@ package com.atom.wyz.worldwind.app
 
 import android.annotation.SuppressLint
 import android.os.Bundle
-import android.os.Handler
 import android.view.Choreographer
 import android.view.Choreographer.FrameCallback
 import com.atom.wyz.worldwind.Navigator
@@ -14,7 +13,7 @@ import com.atom.wyz.worldwind.layer.RenderableLayer
 import com.atom.wyz.worldwind.layer.ShowTessellationLayer
 import com.atom.wyz.worldwind.render.ImageSource
 import com.atom.wyz.worldwind.render.Placemark
-import com.atom.wyz.worldwind.shape.PlacemarkAttributes
+import com.atom.wyz.worldwind.attribute.PlacemarkAttributes
 import java.util.*
 
 @SuppressLint("Registered")
@@ -86,7 +85,9 @@ class PlacemarksStressTestActivity : BasicWorldWindActivity() , FrameCallback {
             val lat = Math.toDegrees(Math.asin(random.nextDouble())) * if (random.nextBoolean()) 1 else -1
             val lon = 180.0 - random.nextDouble() * 360
             val pos: Position = Position.fromDegrees(lat, lon, 5000.0)
-            val placemark: Placemark = Placemark(pos, PlacemarkAttributes(attributes))
+            val placemark: Placemark = Placemark(pos,
+                PlacemarkAttributes(attributes)
+            )
             placemark.eyeDistanceScaling = true
             placemark.displayName = placemark.position.toString()
             placemarksLayer.addRenderable(placemark)

@@ -9,7 +9,7 @@ import com.atom.wyz.worldwind.WorldWind
 import com.atom.wyz.worldwind.geom.Position
 import com.atom.wyz.worldwind.layer.RenderableLayer
 import com.atom.wyz.worldwind.shape.Path
-import com.atom.wyz.worldwind.shape.ShapeAttributes
+import com.atom.wyz.worldwind.attribute.ShapeAttributes
 import com.atom.wyz.worldwind.util.Logger
 import com.atom.wyz.worldwind.util.WWUtil
 import kotlinx.coroutines.GlobalScope

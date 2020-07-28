@@ -3,11 +3,12 @@ package com.atom.wyz.worldwind.shape
 import android.opengl.GLES20
 import com.atom.wyz.worldwind.RenderContext
 import com.atom.wyz.worldwind.WorldWind
+import com.atom.wyz.worldwind.attribute.ShapeAttributes
 import com.atom.wyz.worldwind.draw.DrawShapeState
 import com.atom.wyz.worldwind.draw.DrawableSurfaceShape
 import com.atom.wyz.worldwind.geom.Location
-import com.atom.wyz.worldwind.render.BasicProgram
-import com.atom.wyz.worldwind.render.BufferObject
+import com.atom.wyz.worldwind.shader.BasicProgram
+import com.atom.wyz.worldwind.shader.BufferObject
 import com.atom.wyz.worldwind.util.Logger
 import com.atom.wyz.worldwind.util.SimpleFloatArray
 import com.atom.wyz.worldwind.util.SimpleShortArray
@@ -155,7 +156,11 @@ class Rectangle : AbstractShape {
             val size = vertexArray.size() * 4
             val buffer = ByteBuffer.allocateDirect(size).order(ByteOrder.nativeOrder()).asFloatBuffer()
             buffer.put(vertexArray.array(), 0, vertexArray.size())
-            drawState.vertexBuffer = BufferObject(GLES20.GL_ARRAY_BUFFER, size, buffer.rewind())
+            drawState.vertexBuffer = BufferObject(
+                GLES20.GL_ARRAY_BUFFER,
+                size,
+                buffer.rewind()
+            )
             rc.putBufferObject(vertexBufferKey, drawState.vertexBuffer!!)
         }
         // Assemble the drawable's OpenGL element buffer object.
@@ -167,7 +172,11 @@ class Rectangle : AbstractShape {
                     .asShortBuffer()
             buffer.put(interiorElements.array(), 0, interiorElements.size())
             buffer.put(outlineElements.array(), 0, outlineElements.size())
-            drawState.elementBuffer = BufferObject(GLES20.GL_ELEMENT_ARRAY_BUFFER, size, buffer.rewind())
+            drawState.elementBuffer = BufferObject(
+                GLES20.GL_ELEMENT_ARRAY_BUFFER,
+                size,
+                buffer.rewind()
+            )
             rc.putBufferObject(elementBufferKey, drawState.elementBuffer!!)
         }
 

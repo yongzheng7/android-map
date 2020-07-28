@@ -2,14 +2,14 @@ package com.atom.wyz.worldwind.draw
 
 import java.util.*
 
-class DrawableQueue {
-    protected var entries = arrayOfNulls<Entry>(32)
+open class DrawableQueue {
+    private var entries = arrayOfNulls<Entry>(32)
 
     protected var size = 0
 
     protected var position = 0
 
-    protected var sortComparator = object : Comparator<Entry?> {
+    private var sortComparator = object : Comparator<Entry?> {
         override fun compare(lhs: Entry?, rhs: Entry?): Int {
             if (lhs != null && rhs != null) {
                 when {
@@ -58,6 +58,7 @@ class DrawableQueue {
         entries[size]!!.set(drawable, groupId, order, size)
         size++
     }
+
     fun getDrawable(index: Int): Drawable? {
         return if (index < size) entries[index]!!.drawable else null
     }

@@ -14,7 +14,7 @@ import com.atom.wyz.worldwind.layer.RenderableLayer
 import com.atom.wyz.worldwind.render.ImageSource
 import com.atom.wyz.worldwind.render.Placemark
 import com.atom.wyz.worldwind.shape.Highlightable
-import com.atom.wyz.worldwind.shape.PlacemarkAttributes
+import com.atom.wyz.worldwind.attribute.PlacemarkAttributes
 
 class PlacemarksPickingActivity : BasicWorldWindActivity() {
 
@@ -28,7 +28,9 @@ class PlacemarksPickingActivity : BasicWorldWindActivity() {
                 this.attributes.imageOffset = Offset.bottomCenter()
                 this.attributes.imageScale = NORMAL_IMAGE_SCALE
                 this.attributes.drawLeader = true
-                this.highlightAttributes = PlacemarkAttributes(this.attributes).apply {
+                this.highlightAttributes = PlacemarkAttributes(
+                    this.attributes
+                ).apply {
                     this.imageScale = HIGHLIGHTED_IMAGE_SCALE
                 }
             }
@@ -39,7 +41,9 @@ class PlacemarksPickingActivity : BasicWorldWindActivity() {
                 .apply {
                     this.attributes.imageOffset = Offset.bottomCenter()
                     this.attributes.imageScale = NORMAL_IMAGE_SCALE
-                    this.highlightAttributes = PlacemarkAttributes(this.attributes).apply {
+                    this.highlightAttributes = PlacemarkAttributes(
+                        this.attributes
+                    ).apply {
                         this.imageScale = HIGHLIGHTED_IMAGE_SCALE
                     }
                     this.displayName = airportName

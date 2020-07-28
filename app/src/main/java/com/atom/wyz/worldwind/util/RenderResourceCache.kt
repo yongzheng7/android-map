@@ -10,6 +10,8 @@ import android.os.Message
 import com.atom.wyz.worldwind.DrawContext
 import com.atom.wyz.worldwind.WorldWind
 import com.atom.wyz.worldwind.render.*
+import com.atom.wyz.worldwind.shader.GpuTexture
+import com.atom.wyz.worldwind.shader.RenderResource
 import java.net.SocketTimeoutException
 import java.util.*
 import java.util.concurrent.ConcurrentLinkedQueue

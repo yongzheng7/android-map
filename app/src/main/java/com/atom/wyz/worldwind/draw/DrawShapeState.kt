@@ -3,9 +3,9 @@ package com.atom.wyz.worldwind.draw
 import com.atom.wyz.worldwind.geom.Color
 import com.atom.wyz.worldwind.geom.Matrix3
 import com.atom.wyz.worldwind.geom.Vec3
-import com.atom.wyz.worldwind.render.BasicProgram
-import com.atom.wyz.worldwind.render.BufferObject
-import com.atom.wyz.worldwind.render.GpuTexture
+import com.atom.wyz.worldwind.shader.BasicProgram
+import com.atom.wyz.worldwind.shader.BufferObject
+import com.atom.wyz.worldwind.shader.GpuTexture
 
 class DrawShapeState {
     companion object {

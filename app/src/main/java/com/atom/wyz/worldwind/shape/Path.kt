@@ -3,6 +3,7 @@ package com.atom.wyz.worldwind.shape
 import android.opengl.GLES20
 import com.atom.wyz.worldwind.RenderContext
 import com.atom.wyz.worldwind.WorldWind
+import com.atom.wyz.worldwind.attribute.ShapeAttributes
 import com.atom.wyz.worldwind.draw.DrawShapeState
 import com.atom.wyz.worldwind.draw.Drawable
 import com.atom.wyz.worldwind.draw.DrawableShape
@@ -11,9 +12,9 @@ import com.atom.wyz.worldwind.geom.Location
 import com.atom.wyz.worldwind.geom.Matrix3
 import com.atom.wyz.worldwind.geom.Position
 import com.atom.wyz.worldwind.geom.Vec3
-import com.atom.wyz.worldwind.render.BasicProgram
-import com.atom.wyz.worldwind.render.BufferObject
-import com.atom.wyz.worldwind.render.GpuTexture
+import com.atom.wyz.worldwind.shader.BasicProgram
+import com.atom.wyz.worldwind.shader.BufferObject
+import com.atom.wyz.worldwind.shader.GpuTexture
 import com.atom.wyz.worldwind.render.ImageOptions
 import com.atom.wyz.worldwind.util.SimpleFloatArray
 import com.atom.wyz.worldwind.util.SimpleShortArray
@@ -32,7 +33,6 @@ class Path : AbstractShape {
             defaultOutlineImageOptions.wrapMode = WorldWind.REPEAT;
         }
     }
-
 
     var positions: MutableList<Position> = mutableListOf()
         get() = field
@@ -121,9 +121,9 @@ class Path : AbstractShape {
         if (isSurfaceShape) {
             val pool: Pool<DrawableSurfaceShape> = rc.getDrawablePool(DrawableSurfaceShape::class.java)
             drawable = DrawableSurfaceShape.obtain(pool)
-            drawState = (drawable as DrawableSurfaceShape).drawState
+            drawState = drawable.drawState
             cameraDistance = cameraDistanceGeographic(rc, boundingSector)
-            (drawable as DrawableSurfaceShape).sector.set(boundingSector)
+            drawable.sector.set(boundingSector)
         } else {
             val pool: Pool<DrawableShape> = rc.getDrawablePool(DrawableShape::class.java)
             drawable = DrawableShape.obtain(pool)
@@ -137,13 +137,14 @@ class Path : AbstractShape {
             )
         }
 
-        // Use the basic GLSL program to draw the shape.
         drawState.program = rc.getProgram(BasicProgram.KEY) as BasicProgram?
         if (drawState.program == null) {
-            drawState.program = rc.putProgram(BasicProgram.KEY, BasicProgram(rc.resources)) as BasicProgram
+            drawState.program = rc.putProgram(
+                BasicProgram.KEY,
+                BasicProgram(rc.resources)
+            ) as BasicProgram
         }
 
-        // Assemble the drawable's OpenGL vertex buffer object.
         drawState.vertexBuffer = rc.getBufferObject(vertexBufferKey)
         if (drawState.vertexBuffer == null) {
             val size = vertexArray.size() * 4
@@ -152,11 +153,14 @@ class Path : AbstractShape {
             drawState.vertexBuffer =
                 rc.putBufferObject(
                     vertexBufferKey,
-                    BufferObject(GLES20.GL_ARRAY_BUFFER, size, buffer.rewind())
+                    BufferObject(
+                        GLES20.GL_ARRAY_BUFFER,
+                        size,
+                        buffer.rewind()
+                    )
                 )
         }
 
-        // Assemble the drawable's OpenGL element buffer object.
         drawState.elementBuffer = rc.getBufferObject(elementBufferKey)
         if (drawState.elementBuffer == null) {
             val size =
@@ -166,11 +170,14 @@ class Path : AbstractShape {
             buffer.put(interiorElements.array(), 0, interiorElements.size())
             buffer.put(outlineElements.array(), 0, outlineElements.size())
             buffer.put(verticalElements.array(), 0, verticalElements.size())
-            val bufferObject = BufferObject(GLES20.GL_ELEMENT_ARRAY_BUFFER, size, buffer.rewind())
+            val bufferObject = BufferObject(
+                GLES20.GL_ELEMENT_ARRAY_BUFFER,
+                size,
+                buffer.rewind()
+            )
             drawState.elementBuffer = rc.putBufferObject(elementBufferKey, bufferObject)
         }
 
-        // Configure the drawable's vertex texture coordinate attribute.
         drawState.texCoordAttrib.size = 1 /*size*/
         drawState.texCoordAttrib.offset = 12 /*offset*/
         // Configure the drawable to use the outline texture when drawing the outline.
@@ -190,7 +197,6 @@ class Path : AbstractShape {
             }
         }
 
-        // Configure the drawable to display the path's outline.
         if (activeAttributes!!.drawOutline) {
             drawState.color(if (rc.pickMode) pickColor else activeAttributes!!.outlineColor)
             drawState.lineWidth(if (isSurfaceShape) activeAttributes!!.outlineWidth + 0.5f else activeAttributes!!.outlineWidth)
@@ -200,10 +206,8 @@ class Path : AbstractShape {
             )
         }
 
-        // Disable texturing for the remaining drawable primitives.
         drawState.texture = (null)
 
-        // Configure the drawable to display the path's extruded verticals.
         if (activeAttributes!!.drawOutline && activeAttributes!!.drawVerticals && extrude) {
             drawState.color(if (rc.pickMode) pickColor else activeAttributes!!.outlineColor)
             drawState.lineWidth(activeAttributes!!.outlineWidth)
@@ -213,7 +217,6 @@ class Path : AbstractShape {
             )
         }
 
-        // Configure the drawable to display the path's extruded interior.
         if (activeAttributes!!.drawInterior && extrude) {
             drawState.color(if (rc.pickMode) pickColor else activeAttributes!!.interiorColor)
             drawState.drawElements(
@@ -222,13 +225,11 @@ class Path : AbstractShape {
             )
         }
 
-        // Configure the drawable according to the shape's attributes.
         drawState.vertexOrigin.set(vertexOrigin)
         drawState.vertexStride = Path.VERTEX_STRIDE * 4
         drawState.enableCullFace = false
         drawState.enableDepthTest = activeAttributes!!.depthTest
 
-        // Enqueue the drawable for processing on the OpenGL thread.
         if (isSurfaceShape) {
             rc.offerSurfaceDrawable(drawable, 0.0 /*zOrder*/)
         } else {

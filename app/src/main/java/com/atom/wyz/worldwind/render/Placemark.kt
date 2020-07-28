@@ -2,14 +2,16 @@ package com.atom.wyz.worldwind.render
 
 import com.atom.wyz.worldwind.RenderContext
 import com.atom.wyz.worldwind.WorldWind
+import com.atom.wyz.worldwind.attribute.PlacemarkAttributes
 import com.atom.wyz.worldwind.draw.DrawableLines
 import com.atom.wyz.worldwind.draw.DrawableScreenTexture
 import com.atom.wyz.worldwind.geom.*
 import com.atom.wyz.worldwind.globe.Globe
 import com.atom.wyz.worldwind.pick.PickedObject
+import com.atom.wyz.worldwind.shader.BasicProgram
+import com.atom.wyz.worldwind.shader.GpuTexture
 import com.atom.wyz.worldwind.shape.Highlightable
 import com.atom.wyz.worldwind.shape.Movable
-import com.atom.wyz.worldwind.shape.PlacemarkAttributes
 import com.atom.wyz.worldwind.util.Logger
 import com.atom.wyz.worldwind.util.WWMath
 import com.atom.wyz.worldwind.util.pool.Pool
@@ -197,7 +199,10 @@ open class Placemark : AbstractRenderable, Highlightable, Movable {
 
         drawable.program = rc.getProgram(BasicProgram.KEY) as BasicProgram?
         if (drawable.program == null) {
-            drawable.program = rc.putProgram(BasicProgram.KEY, BasicProgram(rc.resources)) as BasicProgram
+            drawable.program = rc.putProgram(
+                BasicProgram.KEY,
+                BasicProgram(rc.resources)
+            ) as BasicProgram
         }
 
         drawable.unitSquareTransform.set(unitSquareTransform)
@@ -223,7 +228,10 @@ open class Placemark : AbstractRenderable, Highlightable, Movable {
         // Use the basic GLSL program to draw the placemark's leader line.
         drawable.program = rc.getProgram(BasicProgram.KEY) as BasicProgram?
         if (drawable.program == null) {
-            drawable.program = rc.putProgram(BasicProgram.KEY, BasicProgram(rc.resources)) as BasicProgram
+            drawable.program = rc.putProgram(
+                BasicProgram.KEY,
+                BasicProgram(rc.resources)
+            ) as BasicProgram
         }
 
         drawable.vertexPoints[0] = 0f // groundPoint.x - groundPoint.x

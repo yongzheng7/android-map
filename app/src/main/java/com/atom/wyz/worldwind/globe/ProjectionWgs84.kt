@@ -84,9 +84,10 @@ class ProjectionWgs84() : GeographicProjection {
         val sinLon = Math.sin(radLon)
 
         val ec2: Double = globe.getEccentricitySquared()
+        val pol2: Double = globe.getPolarRadius() * globe.getPolarRadius()
+
         val rpm: Double = globe.getEquatorialRadius() / Math.sqrt(1.0 - ec2 * sinLat * sinLat)
         val eqr2: Double = globe.getEquatorialRadius() * globe.getEquatorialRadius()
-        val pol2: Double = globe.getPolarRadius() * globe.getPolarRadius()
 
         val px = (rpm + altitude) * cosLat * sinLon
         val py = (rpm * (1.0 - ec2) + altitude) * sinLat
@@ -374,15 +375,15 @@ class ProjectionWgs84() : GeographicProjection {
         val eqr2: Double = globe.getEquatorialRadius() * globe.getEquatorialRadius()
         val pol2: Double = globe.getPolarRadius() * globe.getPolarRadius()
 
-
         var ux = cosLat * sinLon / eqr2
         var uy: Double = (1 - globe.getEccentricitySquared()) * sinLat / pol2
         var uz = cosLat * cosLon / eqr2
+
         var len = Math.sqrt(ux * ux + uy * uy + uz * uz)
+
         ux /= len
         uy /= len
         uz /= len
-
 
         var nx = -sinLat * sinLon
         var ny = cosLat

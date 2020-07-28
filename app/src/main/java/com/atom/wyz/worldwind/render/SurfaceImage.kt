@@ -7,6 +7,8 @@ import com.atom.wyz.worldwind.geom.Position
 import com.atom.wyz.worldwind.geom.Sector
 import com.atom.wyz.worldwind.globe.Globe
 import com.atom.wyz.worldwind.pick.PickedObject
+import com.atom.wyz.worldwind.shader.GpuTexture
+import com.atom.wyz.worldwind.shader.SurfaceTextureProgram
 import com.atom.wyz.worldwind.shape.Movable
 import java.util.*
 
@@ -51,7 +53,8 @@ open class SurfaceImage : AbstractRenderable, Movable {
     }
 
     protected fun getShaderProgram(dc: RenderContext): SurfaceTextureProgram? {
-        var program: SurfaceTextureProgram? = dc.getProgram(SurfaceTextureProgram.KEY) as SurfaceTextureProgram?
+        var program: SurfaceTextureProgram? = dc.getProgram(
+            SurfaceTextureProgram.KEY) as SurfaceTextureProgram?
         if (program == null) {
             program = dc.putProgram(
                 SurfaceTextureProgram.KEY,

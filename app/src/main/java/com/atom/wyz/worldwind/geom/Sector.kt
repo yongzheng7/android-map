@@ -306,10 +306,10 @@ class Sector() {
         require(count >= 0) { Logger.logMessage(Logger.ERROR, "Sector", "union", "invalidCount") }
         require(stride >= 2) { Logger.logMessage(Logger.ERROR, "Sector", "union", "invalidStride") }
 
-        var minLat = if (java.lang.Double.isNaN(minLatitude)) Double.MAX_VALUE else minLatitude
-        var maxLat = if (java.lang.Double.isNaN(maxLatitude)) -Double.MAX_VALUE else maxLatitude
-        var minLon = if (java.lang.Double.isNaN(minLongitude)) Double.MAX_VALUE else minLongitude
-        var maxLon = if (java.lang.Double.isNaN(maxLongitude)) -Double.MAX_VALUE else maxLongitude
+        var minLat = if (minLatitude.isNaN()) Double.MAX_VALUE else minLatitude
+        var maxLat = if (maxLatitude.isNaN()) -Double.MAX_VALUE else maxLatitude
+        var minLon = if (minLongitude.isNaN()) Double.MAX_VALUE else minLongitude
+        var maxLon = if (maxLongitude.isNaN()) -Double.MAX_VALUE else maxLongitude
 
         var idx = 0
         while (idx < count) {
@@ -342,7 +342,7 @@ class Sector() {
         if (maxLon > -Double.MAX_VALUE) {
             maxLongitude = maxLon
         }
-        return this // TODO
+        return this
     }
 
     override fun equals(other: Any?): Boolean {

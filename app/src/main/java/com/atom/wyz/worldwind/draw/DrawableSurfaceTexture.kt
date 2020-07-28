@@ -5,21 +5,20 @@ import com.atom.wyz.worldwind.DrawContext
 import com.atom.wyz.worldwind.geom.Color
 import com.atom.wyz.worldwind.geom.Matrix3
 import com.atom.wyz.worldwind.geom.Sector
-import com.atom.wyz.worldwind.render.GpuTexture
+import com.atom.wyz.worldwind.shader.GpuTexture
 import com.atom.wyz.worldwind.render.SurfaceTexture
-import com.atom.wyz.worldwind.render.SurfaceTextureProgram
+import com.atom.wyz.worldwind.shader.SurfaceTextureProgram
 import com.atom.wyz.worldwind.util.pool.Pool
 
 class DrawableSurfaceTexture : Drawable, SurfaceTexture {
     companion object {
-        fun obtain(pool: Pool<DrawableSurfaceTexture>): DrawableSurfaceTexture {
-            return pool.acquire()?.setPool(pool) ?: DrawableSurfaceTexture().setPool(pool)
-        }
+        fun obtain(pool: Pool<DrawableSurfaceTexture>): DrawableSurfaceTexture =
+            pool.acquire()?.setPool(pool) ?: DrawableSurfaceTexture().setPool(pool)
     }
 
-    protected var program: SurfaceTextureProgram? = null
+    private var program: SurfaceTextureProgram? = null
 
-    protected var texture: GpuTexture? = null
+    private var texture: GpuTexture? = null
 
     var color: Color = Color()
 

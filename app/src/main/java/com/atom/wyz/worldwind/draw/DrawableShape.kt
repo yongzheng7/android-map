@@ -10,32 +10,27 @@ class DrawableShape() : Drawable {
         fun obtain(pool: Pool<DrawableShape>): DrawableShape =
             pool.acquire()?.setPool(pool) ?: DrawableShape().setPool(pool)
     }
+
     var drawState = DrawShapeState()
 
-    private val mvpMatrix = Matrix4()
+    val mvpMatrix = Matrix4()
 
-    private var pool: Pool<DrawableShape>? = null
+    var pool: Pool<DrawableShape>? = null
 
     private fun setPool(pool: Pool<DrawableShape>): DrawableShape {
         this.pool = pool
         return this
     }
 
-
     override fun draw(dc: DrawContext) {
         val program = drawState.program ?: return
+        if (!program.useProgram(dc)) return
 
-        if (!program.useProgram(dc)) {
-            return  // program unspecified or failed to build
-        }
         val vertexBuffer = drawState.vertexBuffer ?: return
-        if ( !vertexBuffer.bindBuffer(dc)) {
-            return  // vertex buffer unspecified or failed to bind
-        }
+        if (!vertexBuffer.bindBuffer(dc)) return
+
         val elementBuffer = drawState.elementBuffer ?: return
-        if (!elementBuffer.bindBuffer(dc)) {
-            return  // element buffer unspecified or failed to bind
-        }
+        if (!elementBuffer.bindBuffer(dc)) return
 
         // Use the draw context's pick mode.
         program.enablePickMode(dc.pickMode)
@@ -47,6 +42,7 @@ class DrawableShape() : Drawable {
         } else {
             mvpMatrix.set(dc.modelviewProjection)
         }
+
         mvpMatrix.multiplyByTranslation(
             drawState.vertexOrigin.x,
             drawState.vertexOrigin.y,
@@ -54,11 +50,10 @@ class DrawableShape() : Drawable {
         )
         program.loadModelviewProjection(mvpMatrix)
 
-        // Disable triangle backface culling if requested.
         if (!drawState.enableCullFace) {
             GLES20.glDisable(GLES20.GL_CULL_FACE)
         }
-        // Disable depth testing if requested.
+
         if (!drawState.enableDepthTest) {
             GLES20.glDisable(GLES20.GL_DEPTH_TEST)
         }
@@ -66,17 +61,17 @@ class DrawableShape() : Drawable {
         // Make multi-texture unit 0 active.
         dc.activeTextureUnit(GLES20.GL_TEXTURE0)
         GLES20.glEnableVertexAttribArray(1 /*vertexTexCoord*/)
-        GLES20.glVertexAttribPointer(0 /*vertexPoint*/, 3, GLES20.GL_FLOAT, false, this.drawState.vertexStride, 0)
+        GLES20.glVertexAttribPointer(0, 3, GLES20.GL_FLOAT, false, this.drawState.vertexStride, 0)
 
         // Draw the specified primitives.
         for (idx in 0 until drawState.primCount) {
-            val prim= drawState.prims[idx]
+            val prim = drawState.prims[idx]
             program.loadColor(prim.color)
             if (prim.texture != null && prim.texture!!.bindTexture(dc)) {
-                drawState.program!!.loadTexCoordMatrix(prim.texCoordMatrix)
-                drawState.program!!.enableTexture(true)
+                program.loadTexCoordMatrix(prim.texCoordMatrix)
+                program.enableTexture(true)
             } else {
-                drawState.program!!.enableTexture(false)
+                program.enableTexture(false)
             }
 
             GLES20.glVertexAttribPointer(
@@ -87,13 +82,10 @@ class DrawableShape() : Drawable {
                 drawState.vertexStride,
                 prim.texCoordAttrib.offset
             )
-
-
             GLES20.glLineWidth(prim.lineWidth)
             GLES20.glDrawElements(prim.mode, prim.count, prim.type, prim.offset)
         }
 
-        // Restore the default World Wind OpenGL state.
         // Restore the default World Wind OpenGL state.
         if (!drawState.enableCullFace) {
             GLES20.glEnable(GLES20.GL_CULL_FACE)
