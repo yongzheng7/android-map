@@ -1,10 +1,11 @@
 package com.atom.wyz.worldwind.draw
 
+import android.graphics.Color
 import android.opengl.GLES20
 import com.atom.wyz.worldwind.context.DrawContext
-import com.atom.wyz.worldwind.geom.Color
 import com.atom.wyz.worldwind.geom.Matrix3
 import com.atom.wyz.worldwind.geom.Matrix4
+import com.atom.wyz.worldwind.geom.SimpleColor
 import com.atom.wyz.worldwind.shader.BasicProgram
 import com.atom.wyz.worldwind.shader.GpuTexture
 import com.atom.wyz.worldwind.util.pool.Pool
@@ -30,14 +31,15 @@ class DrawablePlacemark : Drawable {
             pool.acquire()?.setPool(pool) ?: DrawablePlacemark().setPool(pool)
     }
 
-    var iconColor: Color = Color(Color.WHITE)
+    var iconColor: SimpleColor =
+        SimpleColor(Color.WHITE)
     var enableIconDepthTest = true
     var iconTexture: GpuTexture? = null
     var iconMvpMatrix: Matrix4 = Matrix4()
     var iconTexCoordMatrix: Matrix3 = Matrix3()
 
     var drawLeader = false
-    var leaderColor = Color()
+    var leaderColor = SimpleColor()
     var enableLeaderDepthTest = true
     var leaderWidth = 1f
     var enableLeaderPicking = false

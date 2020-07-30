@@ -1,6 +1,6 @@
 package com.atom.wyz.worldwind.draw
 
-import com.atom.wyz.worldwind.geom.Color
+import com.atom.wyz.worldwind.geom.SimpleColor
 import com.atom.wyz.worldwind.geom.Matrix3
 import com.atom.wyz.worldwind.geom.Vec3
 import com.atom.wyz.worldwind.shader.BasicProgram
@@ -27,7 +27,8 @@ class DrawShapeState {
 
     var enableDepthTest = true
 
-    var color: Color = Color()
+    var color: SimpleColor =
+        SimpleColor()
 
     var lineWidth = 1f
 
@@ -68,7 +69,7 @@ class DrawShapeState {
         }
     }
 
-    fun color(color: Color) {
+    fun color(color: SimpleColor) {
         this.color.set(color)
     }
 
@@ -95,16 +96,22 @@ class DrawShapeState {
         var count = 0
         var type = 0
         var offset = 0
-        var color = Color()
+        var color = SimpleColor()
         var lineWidth = 0f
         var texture: GpuTexture? = null
         var texCoordMatrix = Matrix3()
         var texCoordAttrib = VertexAttrib()
+        override fun toString(): String {
+            return "DrawElements(mode=$mode, count=$count, type=$type, offset=$offset, color=$color, lineWidth=$lineWidth, texture=$texture, texCoordMatrix=$texCoordMatrix, texCoordAttrib=$texCoordAttrib)"
+        }
     }
 
 
     class VertexAttrib {
         var size = 0
         var offset = 0
+        override fun toString(): String {
+            return "VertexAttrib(size=$size, offset=$offset)"
+        }
     }
 }

@@ -1,0 +1,37 @@
+-- Merging decision tree log ---
+manifest
+ADDED from D:\androidApp\WorldWind_temp\im\src\main\AndroidManifest.xml:1:1-5:12
+INJECTED from D:\androidApp\WorldWind_temp\im\src\main\AndroidManifest.xml:1:1-5:12
+INJECTED from D:\androidApp\WorldWind_temp\im\src\main\AndroidManifest.xml:1:1-5:12
+INJECTED from D:\androidApp\WorldWind_temp\im\src\main\AndroidManifest.xml:1:1-5:12
+INJECTED from D:\androidApp\WorldWind_temp\im\src\main\AndroidManifest.xml:1:1-5:12
+INJECTED from D:\androidApp\WorldWind_temp\im\src\main\AndroidManifest.xml:1:1-5:12
+INJECTED from D:\androidApp\WorldWind_temp\im\src\main\AndroidManifest.xml:1:1-5:12
+	package
+		ADDED from D:\androidApp\WorldWind_temp\im\src\main\AndroidManifest.xml:2:9-29
+		INJECTED from D:\androidApp\WorldWind_temp\im\src\main\AndroidManifest.xml
+		INJECTED from D:\androidApp\WorldWind_temp\im\src\main\AndroidManifest.xml
+	android:versionName
+		INJECTED from D:\androidApp\WorldWind_temp\im\src\main\AndroidManifest.xml
+		ADDED from D:\androidApp\WorldWind_temp\im\src\main\AndroidManifest.xml:1:1-5:12
+		INJECTED from D:\androidApp\WorldWind_temp\im\src\main\AndroidManifest.xml
+	android:versionCode
+		INJECTED from D:\androidApp\WorldWind_temp\im\src\main\AndroidManifest.xml
+		ADDED from D:\androidApp\WorldWind_temp\im\src\main\AndroidManifest.xml:1:1-5:12
+		INJECTED from D:\androidApp\WorldWind_temp\im\src\main\AndroidManifest.xml
+	xmlns:android
+		ADDED from D:\androidApp\WorldWind_temp\im\src\main\AndroidManifest.xml:1:11-69
+uses-sdk
+INJECTED from D:\androidApp\WorldWind_temp\im\src\main\AndroidManifest.xml reason: use-sdk injection requested
+INJECTED from D:\androidApp\WorldWind_temp\im\src\main\AndroidManifest.xml
+INJECTED from D:\androidApp\WorldWind_temp\im\src\main\AndroidManifest.xml
+INJECTED from D:\androidApp\WorldWind_temp\im\src\main\AndroidManifest.xml
+INJECTED from D:\androidApp\WorldWind_temp\im\src\main\AndroidManifest.xml
+	android:targetSdkVersion
+		INJECTED from D:\androidApp\WorldWind_temp\im\src\main\AndroidManifest.xml
+		ADDED from D:\androidApp\WorldWind_temp\im\src\main\AndroidManifest.xml
+		INJECTED from D:\androidApp\WorldWind_temp\im\src\main\AndroidManifest.xml
+	android:minSdkVersion
+		INJECTED from D:\androidApp\WorldWind_temp\im\src\main\AndroidManifest.xml
+		ADDED from D:\androidApp\WorldWind_temp\im\src\main\AndroidManifest.xml
+		INJECTED from D:\androidApp\WorldWind_temp\im\src\main\AndroidManifest.xml

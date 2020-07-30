@@ -2,7 +2,7 @@ package com.atom.wyz.worldwind.draw
 
 import android.opengl.GLES20
 import com.atom.wyz.worldwind.context.DrawContext
-import com.atom.wyz.worldwind.geom.Color
+import com.atom.wyz.worldwind.geom.SimpleColor
 import com.atom.wyz.worldwind.geom.Matrix4
 import com.atom.wyz.worldwind.geom.Vec3
 import com.atom.wyz.worldwind.shader.BasicProgram
@@ -24,14 +24,14 @@ class DrawableTessellation : Drawable {
 
     var program: BasicProgram? = null
 
-    var color = Color()
+    var color = SimpleColor()
 
     private fun setPool(pool: Pool<DrawableTessellation>): DrawableTessellation {
         this.pool = pool
         return this
     }
 
-    operator fun set(program: BasicProgram, color: Color?): DrawableTessellation {
+    operator fun set(program: BasicProgram, color: SimpleColor?): DrawableTessellation {
         this.program = program
         if (color != null) {
             this.color.set(color)

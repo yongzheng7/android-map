@@ -3,7 +3,7 @@ package com.atom.wyz.worldwind.draw
 import android.opengl.GLES20
 import android.util.Log
 import com.atom.wyz.worldwind.context.DrawContext
-import com.atom.wyz.worldwind.geom.Color
+import com.atom.wyz.worldwind.geom.SimpleColor
 import com.atom.wyz.worldwind.geom.Matrix3
 import com.atom.wyz.worldwind.geom.Matrix4
 import com.atom.wyz.worldwind.geom.Sector
@@ -28,7 +28,7 @@ class DrawableSurfaceShape : Drawable {
 
     private val identityMatrix3 = Matrix3()
 
-    val color = Color()
+    val color = SimpleColor()
 
     var drawState = DrawShapeState()
 
@@ -52,13 +52,11 @@ class DrawableSurfaceShape : Drawable {
 
         try {
             scratchList.add(this)
-            var next: Drawable?
-            while (dc.peekDrawable().also {
-                    next = it
-                } != null && next!!::class == this::class) {
+            var next: Drawable? = dc.peekDrawable()
+            while (next != null && next::class == this::class) {
                 scratchList.add(dc.pollDrawable()!!) // take it off the queue
+                next = dc.peekDrawable()
             }
-
             for (idx in 0 until dc.getDrawableTerrainCount()) {
                 val terrain = dc.getDrawableTerrain(idx) ?: continue
                 if (this.drawShapesToTexture(dc, terrain) > 0) {
@@ -82,7 +80,7 @@ class DrawableSurfaceShape : Drawable {
         try {
             val framebuffer = dc.scratchFramebuffer()
             if (!framebuffer.bindFramebuffer(dc)) { // 绘制帧缓存上
-                return shapeCount
+                return 0
             }
             val colorAttachment = framebuffer.getAttachedTexture(GLES20.GL_COLOR_ATTACHMENT0)
             GLES20.glViewport(0, 0, colorAttachment.textureWidth, colorAttachment.textureHeight)
@@ -92,7 +90,7 @@ class DrawableSurfaceShape : Drawable {
             basicProgram.enablePickMode(dc.pickMode)
 
             textureMvpMatrix.setToIdentity()
-            textureMvpMatrix.multiplyByTranslation(-0.0, -0.0, 0.0)
+            textureMvpMatrix.multiplyByTranslation(-1.0, -1.0, 0.0)
             textureMvpMatrix.multiplyByScale(
                 2 / terrainSector.deltaLongitude(),
                 2 / terrainSector.deltaLatitude(),
@@ -116,17 +114,11 @@ class DrawableSurfaceShape : Drawable {
                     continue  // element buffer unspecified or failed to bind
                 }
                 mvpMatrix.set(textureMvpMatrix)
-                mvpMatrix.multiplyByTranslation(
-                    shape.drawState.vertexOrigin.x,
-                    shape.drawState.vertexOrigin.y,
-                    shape.drawState.vertexOrigin.z
-                )
+                mvpMatrix.multiplyByTranslation(shape.drawState.vertexOrigin.x, shape.drawState.vertexOrigin.y, shape.drawState.vertexOrigin.z)
                 basicProgram.loadModelviewProjection(mvpMatrix)
-
                 GLES20.glVertexAttribPointer(
                     0 /*vertexPoint*/, 3, GLES20.GL_FLOAT,
                     false, shape.drawState.vertexStride, 0)
-
                 for (primIdx in 0 until shape.drawState.primCount) {
                     val prim = shape.drawState.prims[primIdx]
                     basicProgram.loadColor(prim.color)
@@ -140,7 +132,7 @@ class DrawableSurfaceShape : Drawable {
                         1, prim.texCoordAttrib.size, GLES20.GL_FLOAT,
                         false, shape.drawState.vertexStride, prim.texCoordAttrib.offset
                     )
-                    GLES20.glLineWidth(prim.lineWidth)
+                    GLES20.glLineWidth(10f)
                     GLES20.glDrawElements(prim.mode, prim.count, prim.type, prim.offset)
                 }
                 shapeCount++
@@ -155,38 +147,31 @@ class DrawableSurfaceShape : Drawable {
     }
 
     protected fun drawTextureToTerrain(dc: DrawContext, terrain: DrawableTerrain) {
-        Logger.logMessage(Log.ERROR, "DrawableSurfaceShape", "drawTextureToTerrain", "1")
         val basicProgram = drawState.program ?: return
 
         if (!terrain.useVertexPointAttrib(dc, 0 /*vertexPoint*/)) {
             return  // terrain vertex attribute failed to bind
         }
-        Logger.logMessage(Log.ERROR, "DrawableSurfaceShape", "drawTextureToTerrain", "2")
 
         if (!terrain.useVertexTexCoordAttrib(dc, 1 /*vertexTexCoord*/)) {
             return  // terrain vertex attribute failed to bind
         }
-        Logger.logMessage(Log.ERROR, "DrawableSurfaceShape", "drawTextureToTerrain", "3")
 
         val colorAttachment = dc.scratchFramebuffer().getAttachedTexture(GLES20.GL_COLOR_ATTACHMENT0)
         if (!colorAttachment.bindTexture(dc)) {
             return  // framebuffer texture failed to bind
         }
-        Logger.logMessage(Log.ERROR, "DrawableSurfaceShape", "drawTextureToTerrain", "4")
-
+        Logger.logMessage(Log.ERROR , "DrawableSurfaceShape" , "drawTextureToTerrain" , "colorAttachment > ${colorAttachment.getTextureName(dc)}  identityMatrix3 > $identityMatrix3")
         basicProgram.enablePickMode(false)
         basicProgram.enableTexture(true)
         basicProgram.loadTexCoordMatrix(identityMatrix3)
-        basicProgram.loadColor(this.color)
+        basicProgram.loadColor(color)
 
-        // Use the draw context's modelview projection matrix, transformed to terrain local coordinates.
         val terrainOrigin = terrain.vertexOrigin
         mvpMatrix.set(dc.modelviewProjection)
         mvpMatrix.multiplyByTranslation(terrainOrigin.x, terrainOrigin.y, terrainOrigin.z)
         basicProgram.loadModelviewProjection(mvpMatrix)
-        // Draw the terrain as triangles.
         terrain.drawTriangles(dc)
-        Logger.logMessage(Log.ERROR, "DrawableSurfaceShape", "drawTextureToTerrain", "5")
     }
 
     override fun recycle() {

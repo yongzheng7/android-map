@@ -233,7 +233,8 @@ class Label : AbstractRenderable, Highlightable,
         var unitSquareTransform: Matrix4 = Matrix4()
         var screenBounds: Viewport = Viewport()
         var pickedObjectId = 0
-        var pickColor: Color = Color()
+        var pickColor: SimpleColor =
+            SimpleColor()
         var cameraDistance = 0.0
     }
 

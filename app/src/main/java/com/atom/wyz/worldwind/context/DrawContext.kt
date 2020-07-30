@@ -127,7 +127,10 @@ class DrawContext {
     }
 
     fun scratchFramebuffer(): Framebuffer {
-        scratchFramebuffer?.let { return it }
+        if (scratchFramebuffer != null) {
+            return scratchFramebuffer!!
+        }
+
         val framebuffer = Framebuffer()
         val colorAttachment = GpuTexture(
             1024,
@@ -135,17 +138,24 @@ class DrawContext {
             GLES20.GL_RGBA,
             GLES20.GL_UNSIGNED_BYTE
         )
-        val depthAttachment =
-            GpuTexture(
-                1024,
-                1024,
-                GLES20.GL_DEPTH_COMPONENT,
-                GLES20.GL_UNSIGNED_SHORT
-            )
-        depthAttachment.setTexParameter(GLES20.GL_TEXTURE_MIN_FILTER, GLES20.GL_NEAREST)
-        depthAttachment.setTexParameter(GLES20.GL_TEXTURE_MAG_FILTER, GLES20.GL_NEAREST)
+        val depthAttachment = GpuTexture(
+            1024,
+            1024,
+            GLES20.GL_DEPTH_COMPONENT,
+            GLES20.GL_UNSIGNED_SHORT
+        )
+
+        depthAttachment.setTexParameter(
+            GLES20.GL_TEXTURE_MIN_FILTER,
+            GLES20.GL_NEAREST
+        )
+        depthAttachment.setTexParameter(
+            GLES20.GL_TEXTURE_MAG_FILTER,
+            GLES20.GL_NEAREST
+        )
         framebuffer.attachTexture(this, colorAttachment, GLES20.GL_COLOR_ATTACHMENT0)
         framebuffer.attachTexture(this, depthAttachment, GLES20.GL_DEPTH_ATTACHMENT)
+
         return framebuffer.also { scratchFramebuffer = it }
     }
 
@@ -235,8 +245,8 @@ class DrawContext {
     /**
      * 在当前活动的OpenGL帧缓冲区中的屏幕点读取片段颜色。 X和Y组件指示OpenGL屏幕坐标，该坐标起源于帧缓冲区的左下角。
      */
-    fun readPixelColor(x: Int, y: Int, result_temp: Color?): Color {
-        val result = result_temp ?: Color()
+    fun readPixelColor(x: Int, y: Int, result_temp: SimpleColor?): SimpleColor {
+        val result = result_temp ?: SimpleColor()
 
         // Read the fragment pixel as an RGBA 8888 color.
         val pixelBuffer = this.scratchBuffer(4).clear() as ByteBuffer
@@ -250,7 +260,7 @@ class DrawContext {
         return result
     }
 
-    fun readPixelColors(x: Int, y: Int, width: Int, height: Int): Set<Color> {
+    fun readPixelColors(x: Int, y: Int, width: Int, height: Int): Set<SimpleColor> {
         // Read the fragment pixels as a tightly packed array of RGBA 8888 colors.
         val pixelCount = width * height
         val pixelBuffer = scratchBuffer(pixelCount * 4).clear() as ByteBuffer
@@ -264,8 +274,8 @@ class DrawContext {
             pixelBuffer
         )
 
-        val resultSet = HashSet<Color>()
-        var result = Color()
+        val resultSet = HashSet<SimpleColor>()
+        var result = SimpleColor()
 
         var idx = 0
         while (idx < pixelCount) {
@@ -280,7 +290,7 @@ class DrawContext {
 
             // Accumulate the unique colors in a set.
             if (resultSet.add(result)) {
-                result = Color()
+                result = SimpleColor()
             }
             idx++
         }

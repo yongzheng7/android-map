@@ -1,16 +1,17 @@
 package com.atom.wyz.worldwind.app
 
+import android.graphics.Color
 import android.graphics.Typeface
 import com.atom.wyz.worldwind.WorldWind
 import com.atom.wyz.worldwind.WorldWindow
-import com.atom.wyz.worldwind.geom.Color
+import com.atom.wyz.worldwind.attribute.TextAttributes
 import com.atom.wyz.worldwind.geom.LookAt
 import com.atom.wyz.worldwind.geom.Offset
 import com.atom.wyz.worldwind.geom.Position
+import com.atom.wyz.worldwind.geom.SimpleColor
 import com.atom.wyz.worldwind.layer.RenderableLayer
-import com.atom.wyz.worldwind.render.Placemark
 import com.atom.wyz.worldwind.render.Label
-import com.atom.wyz.worldwind.attribute.TextAttributes
+import com.atom.wyz.worldwind.render.Placemark
 
 class LabelsFragment : BasicGlobeActivity() {
 
@@ -29,7 +30,12 @@ class LabelsFragment : BasicGlobeActivity() {
         val parkAttributes: TextAttributes = TextAttributes()
             .apply {
             this.typeface = (Typeface.create("serif", Typeface.BOLD_ITALIC))
-            this.textColor = Color(1f, 1f, 0f, 0.5f) // yellow, opaque
+            this.textColor = SimpleColor(
+                1f,
+                1f,
+                0f,
+                0.5f
+            ) // yellow, opaque
             this.textSize = (50f) // default size is 24
         }
         val island = Label(
@@ -83,7 +89,8 @@ class LabelsFragment : BasicGlobeActivity() {
         layer.addRenderable(label3)
         layer.addRenderable(label4)
         layer.addRenderable(label5)
-        layer.addRenderable(Placemark.createSimple(pos, Color(Color.YELLOW), 10))
+        layer.addRenderable(Placemark.createSimple(pos,
+            SimpleColor(Color.YELLOW), 10))
 
 
         val lookAt: LookAt = LookAt().set(

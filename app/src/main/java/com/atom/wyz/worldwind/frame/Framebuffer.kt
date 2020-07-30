@@ -69,17 +69,13 @@ class Framebuffer : RenderResource {
         framebufferName[0] = 0
     }
 
-    protected fun framebufferTexture(dc: DrawContext, texture: GpuTexture?, attachment:Int) {
+    protected fun framebufferTexture(dc: DrawContext, texture: GpuTexture, attachment:Int) {
         val currentFramebuffer = dc.currentFramebuffer()
-        try { // Make the OpenGL framebuffer object the currently active framebuffer.
+        try {
+
             dc.bindFramebuffer(framebufferName[0])
-            // Configure the texture as the framebuffer object's color attachment, or remove any color attachment if
-            // the texture is null.
-            val textureName = if (texture != null) texture.getTextureName(dc) else 0
-            GLES20.glFramebufferTexture2D(
-                GLES20.GL_FRAMEBUFFER, attachment , GLES20.GL_TEXTURE_2D,
-                textureName, 0 /*level*/
-            )
+            val textureName = texture.getTextureName(dc)
+            GLES20.glFramebufferTexture2D(GLES20.GL_FRAMEBUFFER, attachment , GLES20.GL_TEXTURE_2D, textureName, 0 /*level*/)
         } finally { // Restore the current OpenGL framebuffer object binding.
             dc.bindFramebuffer(currentFramebuffer)
         }

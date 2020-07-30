@@ -1,12 +1,12 @@
 package com.atom.wyz.worldwind.render
 
-import com.atom.wyz.worldwind.context.RenderContext
 import com.atom.wyz.worldwind.WorldWind
 import com.atom.wyz.worldwind.attribute.ShapeAttributes
+import com.atom.wyz.worldwind.context.RenderContext
 import com.atom.wyz.worldwind.draw.DrawableSightline
 import com.atom.wyz.worldwind.geom.BoundingSphere
-import com.atom.wyz.worldwind.geom.Color
 import com.atom.wyz.worldwind.geom.Position
+import com.atom.wyz.worldwind.geom.SimpleColor
 import com.atom.wyz.worldwind.geom.Vec3
 import com.atom.wyz.worldwind.globe.Globe
 import com.atom.wyz.worldwind.pick.PickedObject
@@ -46,7 +46,7 @@ class OmnidirectionalSightline : AbstractRenderable,
 
     var pickedObjectId = 0
 
-    val pickColor = Color()
+    val pickColor = SimpleColor()
 
     val boundingSphere: BoundingSphere = BoundingSphere()
 
@@ -56,7 +56,7 @@ class OmnidirectionalSightline : AbstractRenderable,
         this.range = range
         attributes = ShapeAttributes()
         occludeAttributes = ShapeAttributes()
-        occludeAttributes.interiorColor = (Color(1f, 0f, 0f, 1f)) // red
+        occludeAttributes.interiorColor = (SimpleColor(1f, 0f, 0f, 1f)) // red
     }
 
     constructor(position: Position, range: Float, attributes: ShapeAttributes) {
@@ -64,7 +64,7 @@ class OmnidirectionalSightline : AbstractRenderable,
         this.range = range
         this.attributes = attributes
         occludeAttributes = ShapeAttributes()
-        occludeAttributes.interiorColor = (Color(1f, 0f, 0f, 1f)) // red
+        occludeAttributes.interiorColor = (SimpleColor(1f, 0f, 0f, 1f)) // red
     }
 
     override fun doRender(rc: RenderContext) {
@@ -157,7 +157,6 @@ class OmnidirectionalSightline : AbstractRenderable,
             drawable.centerTransform
         )
         drawable.range = WWMath.clamp(range.toDouble(), 0.0, Double.MAX_VALUE).toFloat()
-
         // Configure the drawable colors according to the current attributes. When picking use a unique color associated
         // with the picked object ID. Null attributes indicate that nothing is drawn.
         drawable.visibleColor.set(if (rc.pickMode) pickColor else shapeAttributes.interiorColor)

@@ -432,9 +432,9 @@ open class RenderContext {
 
         var textSize: Float = 0f
 
-        var textColor: Color? = null
+        var textColor: SimpleColor? = null
 
-        var outlineColor: Color? = null
+        var outlineColor: SimpleColor? = null
 
         var typeface: Typeface? = null
 

@@ -1,11 +1,11 @@
 package com.atom.wyz.worldwind.attribute
 
 import android.graphics.Typeface
-import com.atom.wyz.worldwind.geom.Color
+import com.atom.wyz.worldwind.geom.SimpleColor
 import com.atom.wyz.worldwind.geom.Offset
 
 class TextAttributes {
-    var textColor: Color
+    var textColor: SimpleColor
 
     var textOffset: Offset
 
@@ -19,11 +19,11 @@ class TextAttributes {
 
     var outlineWidth = 0f
 
-    var outlineColor: Color
+    var outlineColor: SimpleColor
 
     constructor() {
-        textColor = Color(1f, 1f, 1f, 1f)
-        outlineColor = Color(0f, 0f, 0f, 1f)
+        textColor = SimpleColor(1f, 1f, 1f, 1f)
+        outlineColor = SimpleColor(0f, 0f, 0f, 1f)
         textOffset = Offset.bottomCenter()
         textSize = 24f
         typeface = null
@@ -33,8 +33,9 @@ class TextAttributes {
     }
 
     constructor(attributes: TextAttributes) {
-        textColor = Color(attributes.textColor)
-        outlineColor = Color(attributes.outlineColor)
+        textColor = SimpleColor(attributes.textColor)
+        outlineColor =
+            SimpleColor(attributes.outlineColor)
         textOffset = Offset(attributes.textOffset)
         textSize = attributes.textSize
         typeface = attributes.typeface

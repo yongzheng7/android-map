@@ -42,7 +42,8 @@ abstract class AbstractShape(attributes: ShapeAttributes = ShapeAttributes()) : 
 
     var pickedObjectId = 0
 
-    var pickColor: Color = Color()
+    var pickColor: SimpleColor =
+        SimpleColor()
 
     var boundingSector: Sector = Sector()
 

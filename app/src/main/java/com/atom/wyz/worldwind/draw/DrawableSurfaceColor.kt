@@ -1,7 +1,7 @@
 package com.atom.wyz.worldwind.draw
 
 import com.atom.wyz.worldwind.context.DrawContext
-import com.atom.wyz.worldwind.geom.Color
+import com.atom.wyz.worldwind.geom.SimpleColor
 import com.atom.wyz.worldwind.geom.Matrix4
 import com.atom.wyz.worldwind.geom.Vec3
 import com.atom.wyz.worldwind.shader.BasicProgram
@@ -16,7 +16,8 @@ class DrawableSurfaceColor : Drawable {
 
     var program: BasicProgram? = null
 
-    var color: Color = Color()
+    var color: SimpleColor =
+        SimpleColor()
 
     val mvpMatrix: Matrix4 = Matrix4()
 

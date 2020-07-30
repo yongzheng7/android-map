@@ -12,7 +12,7 @@ import com.atom.wyz.worldwind.WorldWind
 import com.atom.wyz.worldwind.attribute.ShapeAttributes
 import com.atom.wyz.worldwind.attribute.TextAttributes
 import com.atom.wyz.worldwind.controller.BasicWorldWindowController
-import com.atom.wyz.worldwind.geom.Color
+import com.atom.wyz.worldwind.geom.SimpleColor
 import com.atom.wyz.worldwind.geom.Offset
 import com.atom.wyz.worldwind.geom.Position
 import com.atom.wyz.worldwind.layer.RenderableLayer
@@ -90,7 +90,12 @@ class PathsAndPolygonsActivity : BasicWorldWindActivity() {
                 .apply {
                 this.typeface = (Typeface.create("serif", Typeface.BOLD_ITALIC))
                 this.textSize = (32f) // default size is 24
-                this.textColor = (Color(0f, 1f, 1f, 0.70f)) // cyan, with 7% opacity
+                this.textColor = (SimpleColor(
+                    0f,
+                    1f,
+                    1f,
+                    0.70f
+                )) // cyan, with 7% opacity
                 this.textOffset = (Offset.center()) // center the label over its position
             }
             // Load the place names
@@ -224,7 +229,12 @@ class PathsAndPolygonsActivity : BasicWorldWindActivity() {
                         commonAttrs
                     ))
                     polygon.attributes!!.interiorColor =
-                        Color(random.nextFloat(), random.nextFloat(), random.nextFloat(), 0.3f)
+                        SimpleColor(
+                            random.nextFloat(),
+                            random.nextFloat(),
+                            random.nextFloat(),
+                            0.3f
+                        )
                     polygon.highlightAttributes = (highlightAttrs)
                     // Process all the polygons within this feature by creating "boundaries" for each.
                     // Individual polygons are bounded by "(" and ")"

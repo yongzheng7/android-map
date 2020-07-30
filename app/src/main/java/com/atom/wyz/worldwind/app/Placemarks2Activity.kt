@@ -1,18 +1,19 @@
 package com.atom.wyz.worldwind.app
 
 import android.graphics.BitmapFactory
+import android.graphics.Color
 import android.os.Bundle
 import android.os.Handler
 import com.atom.wyz.worldwind.R
 import com.atom.wyz.worldwind.WorldWind
-import com.atom.wyz.worldwind.geom.Color
+import com.atom.wyz.worldwind.attribute.PlacemarkAttributes
 import com.atom.wyz.worldwind.geom.LookAt
 import com.atom.wyz.worldwind.geom.Offset
 import com.atom.wyz.worldwind.geom.Position
+import com.atom.wyz.worldwind.geom.SimpleColor
 import com.atom.wyz.worldwind.layer.RenderableLayer
 import com.atom.wyz.worldwind.render.ImageSource
 import com.atom.wyz.worldwind.render.Placemark
-import com.atom.wyz.worldwind.attribute.PlacemarkAttributes
 
 class Placemarks2Activity : BasicWorldWindActivity() {
 
@@ -29,7 +30,7 @@ class Placemarks2Activity : BasicWorldWindActivity() {
         getWorldWindow().layers.addLayer(placemarksLayer)
 
 
-        val ventura = Placemark.createSimple(Position.fromDegrees(34.281, -119.293, 0.0), Color.CYAN, 20)
+        val ventura = Placemark.createSimple(Position.fromDegrees(34.281, -119.293, 0.0), SimpleColor(Color.CYAN), 20)
 
 
         val airplane = Placemark(Position.fromDegrees(34.260, -119.2, 5000.0), PlacemarkAttributes.withImageAndLeaderLine(ImageSource.fromResource(R.drawable.air_fixwing)).apply {

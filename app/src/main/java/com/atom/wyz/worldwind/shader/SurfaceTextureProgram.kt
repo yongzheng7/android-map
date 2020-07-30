@@ -2,11 +2,11 @@ package com.atom.wyz.worldwind.shader
 
 import android.content.res.Resources
 import android.opengl.GLES20
-import com.atom.wyz.worldwind.context.DrawContext
 import com.atom.wyz.worldwind.R
-import com.atom.wyz.worldwind.geom.Color
+import com.atom.wyz.worldwind.context.DrawContext
 import com.atom.wyz.worldwind.geom.Matrix3
 import com.atom.wyz.worldwind.geom.Matrix4
+import com.atom.wyz.worldwind.geom.SimpleColor
 import com.atom.wyz.worldwind.util.Logger
 import com.atom.wyz.worldwind.util.WWUtil
 
@@ -28,7 +28,7 @@ class SurfaceTextureProgram(resources: Resources) : GpuProgram() {
 
     protected var colorId = 0
 
-    private val color: Color = Color()
+    private val color: SimpleColor = SimpleColor()
 
     // vert
     var mvpMatrix: Matrix4 = Matrix4()
@@ -93,7 +93,7 @@ class SurfaceTextureProgram(resources: Resources) : GpuProgram() {
         texCoordMatrix[1].transposeToArray(texCoordMatrixArray, 9)
         GLES20.glUniformMatrix3fv(texCoordMatrixId, 2, false, texCoordMatrixArray, 0)
     }
-    fun loadColor(color: Color) {
+    fun loadColor(color: SimpleColor) {
         if (!this.color.equals(color)) {
             // suppress unnecessary writes to GLSL uniform variables
             this.color.set(color)

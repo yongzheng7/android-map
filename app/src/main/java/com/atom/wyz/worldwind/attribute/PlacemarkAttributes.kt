@@ -1,6 +1,6 @@
 package com.atom.wyz.worldwind.attribute
 
-import com.atom.wyz.worldwind.geom.Color
+import com.atom.wyz.worldwind.geom.SimpleColor
 import com.atom.wyz.worldwind.geom.Offset
 import com.atom.wyz.worldwind.render.ImageSource
 import com.atom.wyz.worldwind.util.Logger
@@ -51,7 +51,7 @@ class PlacemarkAttributes {
         }
     }
 
-    var imageColor: Color? = null
+    var imageColor: SimpleColor? = null
     var imageOffset: Offset? = null
     var imageScale = 0.0
     var imageSource: ImageSource? = null
@@ -66,7 +66,7 @@ class PlacemarkAttributes {
     var depthTest = false
 
     constructor() {
-        imageColor = Color(1f, 1f, 1f, 1f)
+        imageColor = SimpleColor(1f, 1f, 1f, 1f)
         imageOffset = Offset(Offset.center())
         imageScale = 1.0
         imageSource = null
@@ -77,7 +77,8 @@ class PlacemarkAttributes {
     }
 
     constructor(attributes: PlacemarkAttributes) {
-        imageColor = Color(attributes.imageColor!!)
+        imageColor =
+            SimpleColor(attributes.imageColor!!)
         imageOffset = Offset(attributes.imageOffset!!)
         imageScale = attributes.imageScale
         imageSource = attributes.imageSource

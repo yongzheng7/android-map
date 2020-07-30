@@ -1,10 +1,11 @@
 package com.atom.wyz.worldwind.layer
 
+import android.graphics.Color
 import android.opengl.GLES20
-import com.atom.wyz.worldwind.context.RenderContext
 import com.atom.wyz.worldwind.WorldWind
+import com.atom.wyz.worldwind.context.RenderContext
 import com.atom.wyz.worldwind.draw.DrawableCartesian
-import com.atom.wyz.worldwind.geom.Color
+import com.atom.wyz.worldwind.geom.SimpleColor
 import com.atom.wyz.worldwind.geom.Vec3
 import com.atom.wyz.worldwind.shader.BufferObject
 import com.atom.wyz.worldwind.shader.CartesianProgram
@@ -19,14 +20,15 @@ class CartesianLayer : AbstractLayer("CartesianLayer") {
         private val TRI_STRIP_ELEMENTS_KEY = CartesianLayer::class.java.name + ".triStripElements"
 
         private val VERTEX_POINTS_F_KEY = CartesianLayer::class.java.name + ".vertexPoints.f"
-        private val TRI_STRIP_ELEMENTS_F_KEY = CartesianLayer::class.java.name + ".triStripElements.f"
+        private val TRI_STRIP_ELEMENTS_F_KEY =
+            CartesianLayer::class.java.name + ".triStripElements.f"
     }
 
     init {
         this.pickEnabled = false
     }
 
-    protected var color: Color = Color.RED
+    protected var color: SimpleColor = SimpleColor(Color.RED)
 
     override fun doRender(rc: RenderContext) {
         val terrain = rc.terrain ?: return
@@ -34,7 +36,8 @@ class CartesianLayer : AbstractLayer("CartesianLayer") {
             return
         }
         var program: CartesianProgram? = rc.getProgram(
-            CartesianProgram.KEY) as CartesianProgram?
+            CartesianProgram.KEY
+        ) as CartesianProgram?
         if (program == null) {
             program = rc.putProgram(
                 CartesianProgram.KEY,

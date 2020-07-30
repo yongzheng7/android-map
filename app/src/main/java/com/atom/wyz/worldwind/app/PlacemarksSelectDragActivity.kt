@@ -3,6 +3,7 @@ package com.atom.wyz.worldwind.app
 import android.app.AlertDialog
 import android.app.Dialog
 import android.content.DialogInterface
+import android.graphics.Color
 import android.graphics.PointF
 import android.os.Bundle
 import android.view.GestureDetector
@@ -101,7 +102,8 @@ class PlacemarksSelectDragActivity : BasicWorldWindActivity() {
                     )
                         .apply {
                         this.imageScale = HIGHLIGHTED_IMAGE_SCALE
-                        this.imageColor = Color(android.graphics.Color.YELLOW)
+                        this.imageColor =
+                            SimpleColor(Color.YELLOW)
                     }
                     )
             placemark.displayName = (aircraftName)
@@ -130,7 +132,8 @@ class PlacemarksSelectDragActivity : BasicWorldWindActivity() {
                 placemark.attributes
             ).apply {
                 this.imageScale = HIGHLIGHTED_IMAGE_SCALE
-                this.imageColor = Color(android.graphics.Color.YELLOW)
+                this.imageColor =
+                    SimpleColor(Color.YELLOW)
 
             }
             placemark.displayName = (name)

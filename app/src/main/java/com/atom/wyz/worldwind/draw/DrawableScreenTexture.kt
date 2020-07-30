@@ -2,7 +2,7 @@ package com.atom.wyz.worldwind.draw
 
 import android.opengl.GLES20
 import com.atom.wyz.worldwind.context.DrawContext
-import com.atom.wyz.worldwind.geom.Color
+import com.atom.wyz.worldwind.geom.SimpleColor
 import com.atom.wyz.worldwind.geom.Matrix4
 import com.atom.wyz.worldwind.shader.BasicProgram
 import com.atom.wyz.worldwind.shader.GpuTexture
@@ -19,7 +19,8 @@ class DrawableScreenTexture : Drawable {
 
     var mvpMatrix: Matrix4 = Matrix4()
 
-    var color: Color = Color()
+    var color: SimpleColor =
+        SimpleColor()
 
     var texture: GpuTexture? = null
 

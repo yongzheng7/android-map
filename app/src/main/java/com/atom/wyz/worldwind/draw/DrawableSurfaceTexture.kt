@@ -2,7 +2,7 @@ package com.atom.wyz.worldwind.draw
 
 import android.opengl.GLES20
 import com.atom.wyz.worldwind.context.DrawContext
-import com.atom.wyz.worldwind.geom.Color
+import com.atom.wyz.worldwind.geom.SimpleColor
 import com.atom.wyz.worldwind.geom.Matrix3
 import com.atom.wyz.worldwind.geom.Sector
 import com.atom.wyz.worldwind.render.SurfaceTexture
@@ -20,7 +20,8 @@ class DrawableSurfaceTexture : Drawable, SurfaceTexture {
 
     private var texture: GpuTexture? = null
 
-    var color: Color = Color()
+    var color: SimpleColor =
+        SimpleColor()
 
     override var sector: Sector = Sector()
         get() = field

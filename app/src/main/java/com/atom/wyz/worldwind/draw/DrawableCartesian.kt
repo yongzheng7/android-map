@@ -2,7 +2,7 @@ package com.atom.wyz.worldwind.draw
 
 import android.opengl.GLES20
 import com.atom.wyz.worldwind.context.DrawContext
-import com.atom.wyz.worldwind.geom.Color
+import com.atom.wyz.worldwind.geom.SimpleColor
 import com.atom.wyz.worldwind.shader.BufferObject
 import com.atom.wyz.worldwind.shader.CartesianProgram
 import com.atom.wyz.worldwind.util.pool.Pool
@@ -18,7 +18,7 @@ class DrawableCartesian : Drawable {
 
     var program: CartesianProgram? = null
 
-    var color = Color()
+    var color = SimpleColor()
 
     var vertexPoints: BufferObject? = null
 
@@ -29,7 +29,7 @@ class DrawableCartesian : Drawable {
         return this
     }
 
-    operator fun set(program: CartesianProgram, color: Color?): DrawableCartesian {
+    operator fun set(program: CartesianProgram, color: SimpleColor?): DrawableCartesian {
         this.program = program
         if (color != null) {
             this.color.set(color)

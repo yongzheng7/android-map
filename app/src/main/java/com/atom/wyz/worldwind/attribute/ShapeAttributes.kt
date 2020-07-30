@@ -1,6 +1,6 @@
 package com.atom.wyz.worldwind.attribute
 
-import com.atom.wyz.worldwind.geom.Color
+import com.atom.wyz.worldwind.geom.SimpleColor
 import com.atom.wyz.worldwind.render.ImageSource
 
 class ShapeAttributes {
@@ -11,9 +11,9 @@ class ShapeAttributes {
 
     var enableLighting = false
 
-    var interiorColor: Color
+    var interiorColor: SimpleColor
 
-    var outlineColor: Color
+    var outlineColor: SimpleColor
 
     var outlineWidth = 0f
 
@@ -32,8 +32,8 @@ class ShapeAttributes {
         drawInterior = true
         drawOutline = true
         enableLighting = false
-        interiorColor = Color(Color.WHITE)
-        outlineColor = Color(Color.RED)
+        interiorColor = SimpleColor(-0x1)
+        outlineColor = SimpleColor(-0x10000)
         outlineWidth = 1.0f
         interiorImageSource = null
         outlineImageSource = null
@@ -45,8 +45,16 @@ class ShapeAttributes {
         drawInterior = attributes.drawInterior
         drawOutline = attributes.drawOutline
         enableLighting = attributes.enableLighting
-        interiorColor = attributes.interiorColor.let { Color(it) }
-        outlineColor = attributes.outlineColor.let { Color(it) }
+        interiorColor = attributes.interiorColor.let {
+            SimpleColor(
+                it
+            )
+        }
+        outlineColor = attributes.outlineColor.let {
+            SimpleColor(
+                it
+            )
+        }
         outlineWidth = attributes.outlineWidth
         interiorImageSource = attributes.interiorImageSource
         outlineImageSource = attributes.outlineImageSource

@@ -3,7 +3,8 @@ package com.atom.wyz.worldwind.app
 import com.atom.wyz.worldwind.R
 import com.atom.wyz.worldwind.WorldWind
 import com.atom.wyz.worldwind.WorldWindow
-import com.atom.wyz.worldwind.geom.Color
+import com.atom.wyz.worldwind.attribute.ShapeAttributes
+import com.atom.wyz.worldwind.geom.SimpleColor
 import com.atom.wyz.worldwind.geom.LookAt
 import com.atom.wyz.worldwind.geom.Position
 import com.atom.wyz.worldwind.geom.Sector
@@ -12,9 +13,8 @@ import com.atom.wyz.worldwind.layer.RenderableLayer
 import com.atom.wyz.worldwind.layer.ShowTessellationLayer
 import com.atom.wyz.worldwind.ogc.Wcs100ElevationCoverage
 import com.atom.wyz.worldwind.render.ImageSource
-import com.atom.wyz.worldwind.render.Placemark
 import com.atom.wyz.worldwind.render.OmnidirectionalSightline
-import com.atom.wyz.worldwind.attribute.ShapeAttributes
+import com.atom.wyz.worldwind.render.Placemark
 import com.atom.wyz.worldwind.util.Logger
 
 class OmnidirectionalSensorActivity : BasicGlobeActivity() {
@@ -45,10 +45,20 @@ class OmnidirectionalSensorActivity : BasicGlobeActivity() {
         val position = Position(46.230, -122.190, 2500.0)
         val visibleAttributes =
             ShapeAttributes()
-        visibleAttributes.interiorColor = (Color(0f, 1f, 0f, 0.5f))
+        visibleAttributes.interiorColor = (SimpleColor(
+            0f,
+            1f,
+            0f,
+            0.5f
+        ))
         val occludedAttributes =
             ShapeAttributes()
-        occludedAttributes.interiorColor = (Color(0.1f, 0.1f, 0.1f, 0.8f))
+        occludedAttributes.interiorColor = (SimpleColor(
+            0.1f,
+            0.1f,
+            0.1f,
+            0.8f
+        ))
         // Create the sensor
         val sensor = OmnidirectionalSightline(
             position,

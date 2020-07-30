@@ -2,11 +2,11 @@ package com.atom.wyz.worldwind.shader
 
 import android.content.res.Resources
 import android.opengl.GLES20
-import com.atom.wyz.worldwind.context.DrawContext
 import com.atom.wyz.worldwind.R
-import com.atom.wyz.worldwind.geom.Color
+import com.atom.wyz.worldwind.context.DrawContext
 import com.atom.wyz.worldwind.geom.Matrix3
 import com.atom.wyz.worldwind.geom.Matrix4
+import com.atom.wyz.worldwind.geom.SimpleColor
 import com.atom.wyz.worldwind.util.Logger
 import com.atom.wyz.worldwind.util.WWUtil
 
@@ -23,7 +23,7 @@ class BasicProgram(resources: Resources) : GpuProgram() {
 
     var texCoordMatrix = Matrix3()
 
-    var color = Color()
+    var color = SimpleColor()
 
     var enablePickModeId = 0
 
@@ -101,7 +101,7 @@ class BasicProgram(resources: Resources) : GpuProgram() {
     }
 
 
-    fun loadColor(color: Color) {
+    fun loadColor(color: SimpleColor) {
         if (!this.color.equals(color)) {
             this.color.set(color)
             val alpha = color.alpha

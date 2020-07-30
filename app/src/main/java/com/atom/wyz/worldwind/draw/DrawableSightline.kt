@@ -2,7 +2,7 @@ package com.atom.wyz.worldwind.draw
 
 import android.opengl.GLES20
 import com.atom.wyz.worldwind.context.DrawContext
-import com.atom.wyz.worldwind.geom.Color
+import com.atom.wyz.worldwind.geom.SimpleColor
 import com.atom.wyz.worldwind.geom.Matrix4
 import com.atom.wyz.worldwind.shader.SensorProgram
 import com.atom.wyz.worldwind.util.Logger
@@ -19,9 +19,11 @@ class DrawableSightline : Drawable {
 
     var range = 0f
 
-    var visibleColor: Color = Color(0f, 0f, 0f, 0f)
+    var visibleColor: SimpleColor =
+        SimpleColor(0f, 0f, 0f, 0f)
 
-    var occludedColor: Color = Color(0f, 0f, 0f, 0f)
+    var occludedColor: SimpleColor =
+        SimpleColor(0f, 0f, 0f, 0f)
 
     var program: SensorProgram? = null
 

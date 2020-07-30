@@ -60,9 +60,19 @@ class OmnidirectionalSensor2Activity : BasicWorldWindActivity()  {
 
         // Initialize attributes for the OmnidirectionalSensor
         val viewableRegions = ShapeAttributes()
-        viewableRegions.interiorColor= (Color(0f, 1f, 0f, 1f))
+        viewableRegions.interiorColor= (SimpleColor(
+            0f,
+            1f,
+            0f,
+            1f
+        ))
         val blockedRegions = ShapeAttributes()
-        blockedRegions.interiorColor = (Color(0.1f, 0.1f, 0.1f, 1f))
+        blockedRegions.interiorColor = (SimpleColor(
+            0.1f,
+            0.1f,
+            0.1f,
+            1f
+        ))
 
         // Initialize the OmnidirectionalSensor and Corresponding Placemark
         val pos = Position(46.202, -122.190, 500.0)

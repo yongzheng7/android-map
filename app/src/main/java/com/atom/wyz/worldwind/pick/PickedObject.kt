@@ -1,10 +1,9 @@
 package com.atom.wyz.worldwind.pick
 
-import com.atom.wyz.worldwind.geom.Color
 import com.atom.wyz.worldwind.geom.Position
+import com.atom.wyz.worldwind.geom.SimpleColor
 import com.atom.wyz.worldwind.layer.Layer
 import com.atom.wyz.worldwind.render.Renderable
-import com.atom.wyz.worldwind.util.Logger
 
 class PickedObject() {
 
@@ -25,7 +24,7 @@ class PickedObject() {
             return po
         }
 
-        fun identifierToUniqueColor(identifier: Int, result: Color): Color {
+        fun identifierToUniqueColor(identifier: Int, result: SimpleColor): SimpleColor {
             val r8 = identifier shr 16 and 0xFF
             val g8 = identifier shr 8 and 0xFF
             val b8 = identifier and 0xFF
@@ -36,7 +35,7 @@ class PickedObject() {
             return result
         }
 
-        fun uniqueColorToIdentifier(color: Color): Int {
+        fun uniqueColorToIdentifier(color: SimpleColor): Int {
             val r8 = Math.round(color.red * 0xFF)
             val g8 = Math.round(color.green * 0xFF)
             val b8 = Math.round(color.blue * 0xFF)

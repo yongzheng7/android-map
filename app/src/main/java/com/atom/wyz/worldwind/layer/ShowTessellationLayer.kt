@@ -1,8 +1,9 @@
 package com.atom.wyz.worldwind.layer
 
+import android.graphics.Color
 import com.atom.wyz.worldwind.context.RenderContext
 import com.atom.wyz.worldwind.draw.DrawableTessellation
-import com.atom.wyz.worldwind.geom.Color
+import com.atom.wyz.worldwind.geom.SimpleColor
 import com.atom.wyz.worldwind.shader.BasicProgram
 import com.atom.wyz.worldwind.util.pool.Pool
 
@@ -11,7 +12,7 @@ class ShowTessellationLayer : AbstractLayer("Terrain Tessellation") {
     init {
         this.pickEnabled = false
     }
-    protected var color: Color = Color.WHITE
+    protected var color: SimpleColor = SimpleColor(Color.WHITE)
 
     override fun doRender(rc: RenderContext) {
         val terrain = rc.terrain ?: return

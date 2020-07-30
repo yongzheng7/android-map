@@ -2,10 +2,10 @@ package com.atom.wyz.worldwind.shader
 
 import android.content.res.Resources
 import android.opengl.GLES20
-import com.atom.wyz.worldwind.context.DrawContext
 import com.atom.wyz.worldwind.R
-import com.atom.wyz.worldwind.geom.Color
+import com.atom.wyz.worldwind.context.DrawContext
 import com.atom.wyz.worldwind.geom.Matrix4
+import com.atom.wyz.worldwind.geom.SimpleColor
 import com.atom.wyz.worldwind.util.Logger
 import com.atom.wyz.worldwind.util.WWUtil
 
@@ -70,7 +70,7 @@ class SensorProgram : GpuProgram {
         GLES20.glUniform1f(rangeId, range)
     }
 
-    fun loadColor(visibleColor: Color, occludedColor: Color) {
+    fun loadColor(visibleColor: SimpleColor, occludedColor: SimpleColor) {
         visibleColor.premultiplyToArray(array, 0)
         occludedColor.premultiplyToArray(array, 4)
         GLES20.glUniform4fv(colorId, 2, array, 0)

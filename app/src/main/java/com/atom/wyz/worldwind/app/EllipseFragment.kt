@@ -2,11 +2,11 @@ package com.atom.wyz.worldwind.app
 
 import com.atom.wyz.worldwind.WorldWind
 import com.atom.wyz.worldwind.WorldWindow
-import com.atom.wyz.worldwind.geom.Color
+import com.atom.wyz.worldwind.attribute.ShapeAttributes
+import com.atom.wyz.worldwind.geom.SimpleColor
 import com.atom.wyz.worldwind.geom.Position
 import com.atom.wyz.worldwind.layer.RenderableLayer
 import com.atom.wyz.worldwind.shape.Ellipse
-import com.atom.wyz.worldwind.attribute.ShapeAttributes
 
 class EllipseFragment : BasicGlobeActivity() {
 
@@ -29,7 +29,12 @@ class EllipseFragment : BasicGlobeActivity() {
         // Create a surface ellipse with with custom attributes that make the interior 50% transparent and increase the
         // outline width.
         val attrs = ShapeAttributes()
-        attrs.interiorColor = (Color(1f, 1f, 1f, 0.5f)) // 50% transparent white
+        attrs.interiorColor = (SimpleColor(
+            1f,
+            1f,
+            1f,
+            0.5f
+        )) // 50% transparent white
         attrs.outlineWidth = (3f)
         ellipse = Ellipse(Position(45.0, -100.0, 0.0), 500000.0, 300000.0, attrs)
         ellipse.altitudeMode = (WorldWind.CLAMP_TO_GROUND) // clamp the ellipse's center position to the terrain surface

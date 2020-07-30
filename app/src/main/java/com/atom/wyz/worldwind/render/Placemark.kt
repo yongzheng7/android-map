@@ -28,7 +28,7 @@ open class Placemark : AbstractRenderable, Highlightable, Movable {
 
         var DEFAULT_DEPTH_OFFSET = -0.003
 
-        fun createSimple(position: Position, color: Color?, pixelSize: Int): Placemark {
+        fun createSimple(position: Position, color: SimpleColor?, pixelSize: Int): Placemark {
             val defaults = PlacemarkAttributes.defaults()
             defaults.imageColor = color
             defaults.imageScale = pixelSize.toDouble()
@@ -87,7 +87,7 @@ open class Placemark : AbstractRenderable, Highlightable, Movable {
      */
     protected var pickedObjectId = 0
 
-    protected var pickColor = Color()
+    protected var pickColor = SimpleColor()
 
 
     constructor(position: Position) : this(position, PlacemarkAttributes.defaults())
