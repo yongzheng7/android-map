@@ -12,228 +12,256 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="ellipse_Fragment"
-                    android:onClick="menuButton"/>
+                    android:onClick="menuButton"
+                    android:textAllCaps="false"/>
 
             <Button
                     android:id="@+id/omnidirectionalSensor_Activity"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="omnidirectionalSensor_Activity"
-                    android:onClick="menuButton"/>
+                    android:onClick="menuButton"
+                    android:textAllCaps="false"/>
 
             <Button
                     android:id="@+id/omnidirectionalSensor2_Activity"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="omnidirectionalSensor2_Activity"
-                    android:onClick="menuButton"/>
-
-            <Button
-                    android:id="@+id/Zip_Activity"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Zip_Activity"
                     android:onClick="menuButton"
-                    android:visibility="gone"/>
+                    android:textAllCaps="false"/>
+
             <Button
                     android:id="@+id/Wcs_Elevation_Fragment"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="Wcs_Elevation_Fragment"
-                    android:onClick="menuButton"/>
+                    android:onClick="menuButton"
+                    android:textAllCaps="false"/>
             <Button
                     android:id="@+id/ShapesDashAndFillFragment"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="ShapesDashAndFillFragment"
-                    android:onClick="menuButton"/>
+                    android:text="Shapes_Dash_And_Fill_Fragment"
+                    android:onClick="menuButton"
+                    android:textAllCaps="false"/>
             <Button
                     android:id="@+id/LabelsFragment"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="LabelsFragment"
-                    android:onClick="menuButton"/>
+                    android:text="Labels_Fragment"
+                    android:onClick="menuButton"
+                    android:textAllCaps="false"/>
             <Button
                     android:id="@+id/multiGlobeActivity"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="multiGlobeActivity"
-                    android:onClick="menuButton"/>
+                    android:text="multiGlobe_Activity"
+                    android:onClick="menuButton"
+                    android:textAllCaps="false"/>
             <Button
                     android:id="@+id/pathsAndPolygonsActivity"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="pathsAndPolygonsActivity"
-                    android:onClick="menuButton"/>
+                    android:text="paths_And_PolygonsActivity"
+                    android:onClick="menuButton"
+                    android:textAllCaps="false"/>
             <Button
                     android:id="@+id/polygons_Activity"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="polygons_Activity"
-                    android:onClick="menuButton"/>
+                    android:onClick="menuButton"
+                    android:textAllCaps="false"/>
             <Button
                     android:id="@+id/paths_Activity"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="paths_Activity"
-                    android:onClick="menuButton"/>
+                    android:onClick="menuButton"
+                    android:textAllCaps="false"/>
+            <Button
+                    android:id="@+id/paths_2_Activity"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="paths_2_Activity"
+                    android:onClick="menuButton"
+                    android:textAllCaps="false"/>
             <Button
                     android:id="@+id/paths_Example_Activity"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="paths_Example_Activity"
-                    android:onClick="menuButton"/>
+                    android:onClick="menuButton"
+                    android:textAllCaps="false"/>
             <Button
                     android:id="@+id/turse_BasicGlobeActivity"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="turse_BasicGlobeActivity"
-                    android:onClick="menuButton"/>
+                    android:text="turse_BasicGlobe_Activity"
+                    android:onClick="menuButton"
+                    android:textAllCaps="false"/>
             <Button
                     android:id="@+id/placemark_demo_activity"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="placemark_demo_activity"
-                    android:onClick="menuButton"/>
+                    android:onClick="menuButton"
+                    android:textAllCaps="false"/>
             <Button
                     android:id="@+id/texture_stress_activity"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="texture_stress_activity"
-                    android:onClick="menuButton"/>
+                    android:onClick="menuButton"
+                    android:textAllCaps="false"/>
             <Button
                     android:id="@+id/placemark_Dragger_2_activity"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="placemark_Dragger_2_activity"
-                    android:onClick="menuButton"/>
+                    android:onClick="menuButton"
+                    android:textAllCaps="false"/>
             <Button
                     android:id="@+id/placemark_Dragger_activity"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="placemark_Dragger_activity"
-                    android:onClick="menuButton"/>
+                    android:onClick="menuButton"
+                    android:textAllCaps="false"/>
             <Button
                     android:id="@+id/basic_stress_test_activity"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="basic_stress_test_activity"
-                    android:onClick="menuButton"/>
+                    android:onClick="menuButton"
+                    android:textAllCaps="false"/>
             <Button
                     android:id="@+id/placemark_pick_activity"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="placemark_pick_activity"
-                    android:onClick="menuButton"/>
+                    android:onClick="menuButton"
+                    android:textAllCaps="false"/>
             <Button
                     android:id="@+id/placemark_select_drag_activity"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="placemark_select_drag_activity"
-                    android:onClick="menuButton"/>
+                    android:onClick="menuButton"
+                    android:textAllCaps="false"/>
             <Button
                     android:id="@+id/base_activity"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="base_activity"
-                    android:onClick="menuButton"/>
+                    android:onClick="menuButton"
+                    android:textAllCaps="false"/>
 
             <Button
                     android:id="@+id/camera_activity"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="camera_activity"
-                    android:onClick="menuButton"/>
+                    android:onClick="menuButton"
+                    android:textAllCaps="false"/>
 
             <Button
                     android:id="@+id/camera_view_activity"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="camera_view_activity"
-                    android:onClick="menuButton"/>
+                    android:onClick="menuButton"
+                    android:textAllCaps="false"/>
 
             <Button
                     android:id="@+id/lookat_view_activity"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="lookat_view_activity"
-                    android:onClick="menuButton"/>
+                    android:onClick="menuButton"
+                    android:textAllCaps="false"/>
 
             <Button
                     android:id="@+id/day_light_activity"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="day_light_activity"
-                    android:onClick="menuButton"/>
+                    android:onClick="menuButton"
+                    android:textAllCaps="false"/>
 
             <Button
                     android:id="@+id/show_tessellation_activity"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="show_tessellation_activity"
-                    android:onClick="menuButton"/>
+                    android:onClick="menuButton"
+                    android:textAllCaps="false"/>
 
             <Button
                     android:id="@+id/surface_image_activity"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="surface_image_activity"
-                    android:onClick="menuButton"/>
+                    android:onClick="menuButton"
+                    android:textAllCaps="false"/>
 
             <Button
                     android:id="@+id/wms_activity"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="wms_activity"
-                    android:onClick="menuButton"/>
+                    android:onClick="menuButton"
+                    android:textAllCaps="false"/>
 
             <Button
                     android:id="@+id/wtmsLayer_Activity"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="wtms_Activity"
-                    android:onClick="menuButton"/>
+                    android:text="wtms_Layer_Activity"
+                    android:onClick="menuButton"
+                    android:textAllCaps="false"/>
 
             <Button
                     android:id="@+id/placemark_activity"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="placemark_activity"
-                    android:onClick="menuButton"/>
+                    android:onClick="menuButton"
+                    android:textAllCaps="false"/>
 
             <Button
                     android:id="@+id/placemark2_activity"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="placemark_2_activity"
-                    android:onClick="menuButton"/>
+                    android:onClick="menuButton"
+                    android:textAllCaps="false"/>
 
             <Button
                     android:id="@+id/placemark_stress_activity"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="placemark_stress_activity"
-                    android:onClick="menuButton"/>
+                    android:onClick="menuButton"
+                    android:textAllCaps="false"/>
 
             <Button
                     android:id="@+id/basic_performance_avtivity"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="basic_performance_avtivity"
-                    android:onClick="menuButton"/>
+                    android:onClick="menuButton"
+                    android:textAllCaps="false"/>
 
             <Button
                     android:id="@+id/navigator_event_activity"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="navigator_event_activity"
-                    android:onClick="menuButton"/>
+                    android:onClick="menuButton"
+                    android:textAllCaps="false"/>
 
-            <Button
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="placemark_drag_activity"
-                    android:onClick="menuButton"/>
         </LinearLayout>
     </ScrollView>
 

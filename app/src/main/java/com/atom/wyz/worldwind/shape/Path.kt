@@ -1,9 +1,9 @@
 package com.atom.wyz.worldwind.shape
 
 import android.opengl.GLES20
-import com.atom.wyz.worldwind.context.RenderContext
 import com.atom.wyz.worldwind.WorldWind
 import com.atom.wyz.worldwind.attribute.ShapeAttributes
+import com.atom.wyz.worldwind.context.RenderContext
 import com.atom.wyz.worldwind.draw.DrawShapeState
 import com.atom.wyz.worldwind.draw.Drawable
 import com.atom.wyz.worldwind.draw.DrawableShape
@@ -12,10 +12,10 @@ import com.atom.wyz.worldwind.geom.Location
 import com.atom.wyz.worldwind.geom.Matrix3
 import com.atom.wyz.worldwind.geom.Position
 import com.atom.wyz.worldwind.geom.Vec3
+import com.atom.wyz.worldwind.render.ImageOptions
 import com.atom.wyz.worldwind.shader.BasicProgram
 import com.atom.wyz.worldwind.shader.BufferObject
 import com.atom.wyz.worldwind.shader.GpuTexture
-import com.atom.wyz.worldwind.render.ImageOptions
 import com.atom.wyz.worldwind.util.SimpleFloatArray
 import com.atom.wyz.worldwind.util.SimpleShortArray
 import com.atom.wyz.worldwind.util.pool.Pool
@@ -41,6 +41,9 @@ class Path : AbstractShape {
             reset()
         }
 
+    /**
+     * 允许拉伸
+     */
     var extrude = false
         get() = field
         set(value) {
@@ -48,6 +51,9 @@ class Path : AbstractShape {
             reset()
         }
 
+    /**
+     * 经纬度在图块上
+     */
     var followTerrain = false
         get() = field
         set(value) {
@@ -57,10 +63,19 @@ class Path : AbstractShape {
 
     protected var vertexArray: SimpleFloatArray = SimpleFloatArray()
 
-    protected var interiorElements: SimpleShortArray = SimpleShortArray()
-
+    /**
+     * 顶点绘制索引
+     */
     protected var outlineElements: SimpleShortArray = SimpleShortArray()
 
+    /**
+     * 向下拉伸的面
+     */
+    protected var interiorElements: SimpleShortArray = SimpleShortArray()
+
+    /**
+     * 向下拉伸的线
+     */
     protected var verticalElements: SimpleShortArray = SimpleShortArray()
 
     protected var vertexBufferKey: Any = nextCacheKey()
@@ -81,7 +96,6 @@ class Path : AbstractShape {
 
     protected var isSurfaceShape = false
 
-
     constructor()
 
     constructor(attributes: ShapeAttributes) : super(attributes)
@@ -94,6 +108,9 @@ class Path : AbstractShape {
         this.positions = positions
     }
 
+    /**
+     * 顶点,顶点索引清除
+     */
     override fun reset() {
         vertexArray.clear()
         interiorElements.clear()
@@ -101,8 +118,11 @@ class Path : AbstractShape {
         verticalElements.clear()
     }
 
-
+    /**
+     * 制作线的 drawable
+     */
     override fun makeDrawable(rc: RenderContext) {
+        val shapeAttributes = activeAttributes ?: return
         if (positions.isEmpty()) {
             return  // nothing to draw
         }
@@ -112,82 +132,55 @@ class Path : AbstractShape {
             vertexBufferKey = nextCacheKey()
             elementBufferKey = nextCacheKey()
         }
-
-
         // Obtain a drawable form the render context pool, and compute distance to the render camera.
         val drawable: Drawable
         val drawState: DrawShapeState
         val cameraDistance: Double
-        if (isSurfaceShape) {
+
+        if (isSurfaceShape) { // 经纬度绘制
             val pool: Pool<DrawableSurfaceShape> = rc.getDrawablePool(DrawableSurfaceShape::class.java)
             drawable = DrawableSurfaceShape.obtain(pool)
             drawState = drawable.drawState
             cameraDistance = cameraDistanceGeographic(rc, boundingSector)
             drawable.sector.set(boundingSector)
-        } else {
+        } else { // 笛卡尔绘制
             val pool: Pool<DrawableShape> = rc.getDrawablePool(DrawableShape::class.java)
             drawable = DrawableShape.obtain(pool)
             drawState = drawable.drawState
-            cameraDistance = cameraDistanceCartesian(
-                rc,
-                vertexArray.array(),
-                vertexArray.size(),
-                VERTEX_STRIDE,
-                vertexOrigin
-            )
+            cameraDistance = cameraDistanceCartesian(rc, vertexArray.array(), vertexArray.size(), VERTEX_STRIDE, vertexOrigin)
         }
 
         drawState.program = rc.getProgram(BasicProgram.KEY) as BasicProgram?
         if (drawState.program == null) {
-            drawState.program = rc.putProgram(
-                BasicProgram.KEY,
-                BasicProgram(rc.resources)
-            ) as BasicProgram
+            drawState.program = rc.putProgram(BasicProgram.KEY, BasicProgram(rc.resources)) as BasicProgram
         }
-
+        // 初始化顶点缓冲
         drawState.vertexBuffer = rc.getBufferObject(vertexBufferKey)
         if (drawState.vertexBuffer == null) {
             val size = vertexArray.size() * 4
             val buffer = ByteBuffer.allocateDirect(size).order(ByteOrder.nativeOrder()).asFloatBuffer()
             buffer.put(vertexArray.array(), 0, vertexArray.size())
-            drawState.vertexBuffer =
-                rc.putBufferObject(
-                    vertexBufferKey,
-                    BufferObject(
-                        GLES20.GL_ARRAY_BUFFER,
-                        size,
-                        buffer.rewind()
-                    )
-                )
+            drawState.vertexBuffer = rc.putBufferObject(vertexBufferKey, BufferObject(GLES20.GL_ARRAY_BUFFER, size, buffer.rewind()))
         }
-
+        // 初始化顶点索引缓冲全部
         drawState.elementBuffer = rc.getBufferObject(elementBufferKey)
         if (drawState.elementBuffer == null) {
-            val size =
-                interiorElements.size() * 2 + outlineElements.size() * 2 + verticalElements.size() * 2
-            val buffer =
-                ByteBuffer.allocateDirect(size).order(ByteOrder.nativeOrder()).asShortBuffer()
+            val size = interiorElements.size() * 2 + outlineElements.size() * 2 + verticalElements.size() * 2
+            val buffer = ByteBuffer.allocateDirect(size).order(ByteOrder.nativeOrder()).asShortBuffer()
             buffer.put(interiorElements.array(), 0, interiorElements.size())
             buffer.put(outlineElements.array(), 0, outlineElements.size())
             buffer.put(verticalElements.array(), 0, verticalElements.size())
-            val bufferObject = BufferObject(
-                GLES20.GL_ELEMENT_ARRAY_BUFFER,
-                size,
-                buffer.rewind()
-            )
+            val bufferObject = BufferObject(GLES20.GL_ELEMENT_ARRAY_BUFFER, size, buffer.rewind())
             drawState.elementBuffer = rc.putBufferObject(elementBufferKey, bufferObject)
         }
 
         drawState.texCoordAttrib.size = 1 /*size*/
         drawState.texCoordAttrib.offset = 12 /*offset*/
-        // Configure the drawable to use the outline texture when drawing the outline.
-        if (activeAttributes!!.drawOutline && activeAttributes!!.outlineImageSource != null) {
-            var texture: GpuTexture? = rc.getTexture(activeAttributes!!.outlineImageSource!!)
+        // 配置可绘制对象以在绘制轮廓时使用轮廓纹理。
+        if (shapeAttributes.drawOutline && shapeAttributes.outlineImageSource != null) {
+            var texture: GpuTexture? = rc.getTexture(shapeAttributes.outlineImageSource!!)
             if (texture == null) {
-                texture = rc.retrieveTexture(
-                    activeAttributes!!.outlineImageSource!!,
-                    defaultOutlineImageOptions
-                )
+                texture = rc.retrieveTexture(shapeAttributes.outlineImageSource!!, defaultOutlineImageOptions)
             }
             if (texture != null) {
                 val metersPerPixel = rc.pixelSizeAtDistance(cameraDistance)
@@ -196,39 +189,32 @@ class Path : AbstractShape {
                 drawState.texCoordMatrix = (texCoordMatrix)
             }
         }
-
-        if (activeAttributes!!.drawOutline) {
-            drawState.color(if (rc.pickMode) pickColor else activeAttributes!!.outlineColor)
-            drawState.lineWidth(if (isSurfaceShape) activeAttributes!!.outlineWidth + 0.5f else activeAttributes!!.outlineWidth)
-            drawState.drawElements(
-                GLES20.GL_LINE_STRIP, outlineElements.size(),
-                GLES20.GL_UNSIGNED_SHORT, interiorElements.size() * 2
-            )
+        //绘制线
+        if (shapeAttributes.drawOutline) {
+            drawState.color(if (rc.pickMode) pickColor else shapeAttributes.outlineColor)
+            drawState.lineWidth(if (isSurfaceShape) shapeAttributes.outlineWidth + 0.5f else shapeAttributes.outlineWidth)
+            drawState.drawElements(GLES20.GL_LINE_STRIP, outlineElements.size(), GLES20.GL_UNSIGNED_SHORT, interiorElements.size() * 2)
         }
 
-        drawState.texture = (null)
+        // Disable texturing for the remaining drawable primitives.
+        drawState.texture = null
 
-        if (activeAttributes!!.drawOutline && activeAttributes!!.drawVerticals && extrude) {
-            drawState.color(if (rc.pickMode) pickColor else activeAttributes!!.outlineColor)
-            drawState.lineWidth(activeAttributes!!.outlineWidth)
-            drawState.drawElements(
-                GLES20.GL_LINES, verticalElements.size(),
-                GLES20.GL_UNSIGNED_SHORT, interiorElements.size() * 2 + outlineElements.size() * 2
-            )
+        //绘制拉伸线
+        if (shapeAttributes.drawOutline && shapeAttributes.drawVerticals && extrude) {
+            drawState.color(if (rc.pickMode) pickColor else shapeAttributes.outlineColor)
+            drawState.lineWidth(shapeAttributes.outlineWidth)
+            drawState.drawElements(GLES20.GL_LINES, verticalElements.size(), GLES20.GL_UNSIGNED_SHORT, interiorElements.size() * 2 + outlineElements.size() * 2)
         }
-
-        if (activeAttributes!!.drawInterior && extrude) {
-            drawState.color(if (rc.pickMode) pickColor else activeAttributes!!.interiorColor)
-            drawState.drawElements(
-                GLES20.GL_TRIANGLE_STRIP, interiorElements.size(),
-                GLES20.GL_UNSIGNED_SHORT, 0
-            )
+        //绘制拉伸面
+        if (shapeAttributes.drawInterior && extrude) {
+            drawState.color(if (rc.pickMode) pickColor else shapeAttributes.interiorColor)
+            drawState.drawElements(GLES20.GL_TRIANGLE_STRIP, interiorElements.size(), GLES20.GL_UNSIGNED_SHORT, 0)
         }
 
         drawState.vertexOrigin.set(vertexOrigin)
-        drawState.vertexStride = Path.VERTEX_STRIDE * 4
-        drawState.enableCullFace = false
-        drawState.enableDepthTest = activeAttributes!!.depthTest
+        drawState.vertexStride = VERTEX_STRIDE * 4
+        drawState.enableCullFace = false // 不允许背部裁剪
+        drawState.enableDepthTest = shapeAttributes.depthTest // 深度测试
 
         if (isSurfaceShape) {
             rc.offerSurfaceDrawable(drawable, 0.0 /*zOrder*/)
@@ -237,23 +223,26 @@ class Path : AbstractShape {
         }
     }
 
+    /**
+     * 是否需要组装
+     */
     protected fun mustAssembleGeometry(rc: RenderContext): Boolean {
         return vertexArray.size() == 0
     }
 
+    /**
+     * 组装线的顶点和顶点索引
+     */
     protected fun assembleGeometry(rc: RenderContext) {
-
-        // Determine whether the shape geometry must be assembled as Cartesian geometry or as geographic geometry.
+        // 确定形状几何必须组装为笛卡尔几何还是地理几何。
         isSurfaceShape = altitudeMode == WorldWind.CLAMP_TO_GROUND && followTerrain
-        vertexArray.clear()
-        interiorElements.clear()
-        outlineElements.clear()
-        verticalElements.clear()
-        // Compute the path's local Cartesian coordinate origin and add the first vertex.
+        // 初始化
+        reset()
+        // 计算路径的本地笛卡尔坐标原点并添加第一个顶点。
         // 取出点1
         var begin = positions[0]
         this.addVertex(rc, begin.latitude, begin.longitude, begin.altitude, false /*tessellated*/)
-        // Add the remaining path vertices, tessellating each segment as indicated by the path's properties.
+        // 添加剩余的路径顶点，按照路径属性指示的方式细分每个线段。
         var idx = 1
         val len = positions.size
         while (idx < len) {
@@ -263,36 +252,18 @@ class Path : AbstractShape {
             begin = end
             idx++
         }
-        // Compute the path's bounding box or bounding sector from its assembled coordinates.
-
-        // Compute the shape's bounding box or bounding sector from its assembled coordinates.
-        if (isSurfaceShape) {
+        // 根据其组合坐标计算路径的边界框或边界扇区。
+        if (isSurfaceShape) { // 如果是经纬度 计算出该线所占的sector区域 最后再进行位移到真实的位置
             boundingSector.setEmpty()
-            boundingSector.union(
-                vertexArray.array(),
-                vertexArray.size(),
-                VERTEX_STRIDE
-            )
-            boundingSector.translate(
-                vertexOrigin.y /*latitude*/,
-                vertexOrigin.x /*longitude*/
-            )
+            boundingSector.union(vertexArray.array(), vertexArray.size(), VERTEX_STRIDE)
+            boundingSector.translate(vertexOrigin.y /*latitude*/, vertexOrigin.x /*longitude*/)
             boundingBox.setToUnitBox() // Surface/geographic shape bounding box is unused
         } else {
-            boundingBox.setToPoints(
-                vertexArray.array(),
-                vertexArray.size(),
-                VERTEX_STRIDE
-            )
-            boundingBox.translate(
-                vertexOrigin.x,
-                vertexOrigin.y,
-                vertexOrigin.z
-            )
+            boundingBox.setToPoints(vertexArray.array(), vertexArray.size(), VERTEX_STRIDE)
+            boundingBox.translate(vertexOrigin.x, vertexOrigin.y, vertexOrigin.z)
             boundingSector.setEmpty() // Cartesian shape bounding sector is unused
         }
     }
-
 
     protected fun addIntermediateVertices(rc: RenderContext, begin: Position, end: Position) {
         if (pathType == WorldWind.LINEAR) {
@@ -342,44 +313,48 @@ class Path : AbstractShape {
         altitude: Double,
         intermediate: Boolean
     ) {
-        val vertex: Int = vertexArray.size() / Path.VERTEX_STRIDE
+        val vertex: Int = vertexArray.size() / VERTEX_STRIDE
         var point = rc.geographicToCartesian(latitude, longitude, altitude, this.altitudeMode, point)
 
-        if (vertex == 0) {
+        if (vertex == 0) { // 起点
             if (isSurfaceShape) {
+                // 起点设置为经纬度
                 vertexOrigin.set(longitude, latitude, altitude)
             } else {
+                // 起点设置为笛卡尔
                 vertexOrigin.set(point)
             }
-            texCoord1d = 0.0
-            prevPoint.set(point)
+            texCoord1d = 0.0 // 距离
+            prevPoint.set(point) // 上个点
         } else {
-            texCoord1d += point.distanceTo(prevPoint)
-            prevPoint.set(point)
+            texCoord1d += point.distanceTo(prevPoint) // 累计距离
+            prevPoint.set(point) // 设置上个点
         }
 
-        if (isSurfaceShape) {
-            vertexArray.add((longitude - vertexOrigin.x).toFloat())
-            vertexArray.add((latitude - vertexOrigin.y).toFloat())
-            vertexArray.add((altitude - vertexOrigin.z).toFloat())
-            vertexArray.add(texCoord1d.toFloat())
-            outlineElements.add(vertex.toShort())
+        if (isSurfaceShape) { // 经纬度就不能加上下摆的拉伸
+            vertexArray.add((longitude - vertexOrigin.x).toFloat()) // 设置点的和起点的差值 x
+            vertexArray.add((latitude - vertexOrigin.y).toFloat())  // 设置点的和起点的差值 y
+            vertexArray.add((altitude - vertexOrigin.z).toFloat())  // 设置点的和起点的差值 z
+            vertexArray.add(texCoord1d.toFloat()) // 距离设置进去
+            outlineElements.add(vertex.toShort()) // 设置点索引
         } else {
             vertexArray.add((point.x - vertexOrigin.x).toFloat())
             vertexArray.add((point.y - vertexOrigin.y).toFloat())
             vertexArray.add((point.z - vertexOrigin.z).toFloat())
             vertexArray.add(texCoord1d.toFloat())
             outlineElements.add(vertex.toShort())
-            if (extrude) {
-                point = rc.geographicToCartesian(latitude, longitude, 0.0, altitudeMode, this.point)
+
+            if (extrude) { // 拉伸是否需要拉伸
+                point = rc.geographicToCartesian(latitude, longitude, 0.0, altitudeMode, this.point) // 改点的下摆点
                 vertexArray.add((point.x - vertexOrigin.x).toFloat())
                 vertexArray.add((point.y - vertexOrigin.y).toFloat())
                 vertexArray.add((point.z - vertexOrigin.z).toFloat())
                 vertexArray.add(0.toFloat() /*unused*/)
+
                 interiorElements.add(vertex.toShort())
                 interiorElements.add((vertex + 1).toShort())
             }
-            if (extrude && !intermediate) {
+            if (extrude && !intermediate) { // 又需要拉伸, 又需要 拉伸线 红线
                 verticalElements.add(vertex.toShort())
                 verticalElements.add((vertex + 1).toShort())
             }

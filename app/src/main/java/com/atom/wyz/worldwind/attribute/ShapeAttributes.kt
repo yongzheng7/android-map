@@ -23,6 +23,9 @@ class ShapeAttributes {
 
     var depthTest = false
 
+    /**
+     * 向下拉伸的线
+     */
     var drawVerticals = false
 
     constructor() {

@@ -3,13 +3,12 @@ package com.atom.wyz.worldwind.app
 import com.atom.wyz.worldwind.R
 import com.atom.wyz.worldwind.WorldWind
 import com.atom.wyz.worldwind.WorldWindow
+import com.atom.wyz.worldwind.attribute.ShapeAttributes
 import com.atom.wyz.worldwind.geom.Position
 import com.atom.wyz.worldwind.layer.RenderableLayer
 import com.atom.wyz.worldwind.render.ImageSource
-import com.atom.wyz.worldwind.shape.Ellipse
 import com.atom.wyz.worldwind.shape.Path
 import com.atom.wyz.worldwind.shape.Polygon
-import com.atom.wyz.worldwind.attribute.ShapeAttributes
 import java.util.*
 
 class ShapesDashAndFillFragment : BasicGlobeActivity() {
@@ -22,18 +21,17 @@ class ShapesDashAndFillFragment : BasicGlobeActivity() {
         val layer = RenderableLayer()
         wwd.layers.addLayer(layer)
         // Thicken all lines used in the tutorial.
+
         val thickenLine = ShapeAttributes()
         thickenLine.outlineWidth = (4f)
-        // Create a path with a simple dashed pattern generated from the ImageSource factory. The
-        // ImageSource.fromLineStipple function generates a texture based on the provided factor and pattern, similar to
-        // stipple parameters of OpenGL 2. The binary representation of the pattern value will be the pattern displayed,
-        // where positions with a 1 appearing as opaque and a 0 as transparent.
+
         var positions = Arrays.asList(
             Position.fromDegrees(60.0, -100.0, 1e5),
             Position.fromDegrees(30.0, -120.0, 1e5),
             Position.fromDegrees(0.0, -100.0, 1e5)
         )
         var path = Path(positions)
+
         var sa = ShapeAttributes(thickenLine)
         sa.outlineImageSource = (
             ImageSource.fromLineStipple(
@@ -43,6 +41,8 @@ class ShapesDashAndFillFragment : BasicGlobeActivity() {
         )
         path.attributes = (sa)
         layer.addRenderable(path)
+
+
 
         // Modify the factor of the pattern for comparison to first path. Only the factor is modified, not the pattern.
         positions = Arrays.asList(
@@ -62,8 +62,6 @@ class ShapesDashAndFillFragment : BasicGlobeActivity() {
         layer.addRenderable(path)
 
         // Create a path conforming to the terrain with a different pattern from the first two Paths.
-
-        // Create a path conforming to the terrain with a different pattern from the first two Paths.
         positions = Arrays.asList(
             Position.fromDegrees(60.0, -80.0, 0.0),
             Position.fromDegrees(30.0, -100.0, 0.0),
@@ -81,18 +79,18 @@ class ShapesDashAndFillFragment : BasicGlobeActivity() {
         path.altitudeMode = (WorldWind.CLAMP_TO_GROUND)
         path.followTerrain = (true)
         layer.addRenderable(path)
-
-        // Create an Ellipse using an image as a repeating fill pattern
-
-        // Create an Ellipse using an image as a repeating fill pattern
-        val ellipseCenter = Position(40.0, -70.0, 1e5)
-        val ellipse = Ellipse(ellipseCenter, 1.5e6, 800e3)
-        sa = ShapeAttributes(thickenLine)
-        sa.interiorImageSource = (ImageSource.fromResource(R.drawable.nasa_logo))
-        ellipse.attributes = (sa)
-        layer.addRenderable(ellipse)
-        // Create a surface polygon using an image as a repeating fill pattern and a dash pattern for the outline
-        // of the polygon.
+//
+//        // Create an Ellipse using an image as a repeating fill pattern
+//
+//        // Create an Ellipse using an image as a repeating fill pattern
+//        val ellipseCenter = Position(40.0, -70.0, 1e5)
+//        val ellipse = Ellipse(ellipseCenter, 1.5e6, 800e3)
+//        sa = ShapeAttributes(thickenLine)
+//        sa.interiorImageSource = (ImageSource.fromResource(R.drawable.nasa_logo))
+//        ellipse.attributes = (sa)
+//        layer.addRenderable(ellipse)
+//        // Create a surface polygon using an image as a repeating fill pattern and a dash pattern for the outline
+//        // of the polygon.
         positions = Arrays.asList(
             Position.fromDegrees(25.0, -85.0, 0.0),
             Position.fromDegrees(10.0, -80.0, 0.0),

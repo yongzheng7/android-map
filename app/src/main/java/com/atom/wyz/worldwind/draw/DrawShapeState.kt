@@ -8,6 +8,7 @@ import com.atom.wyz.worldwind.shader.BufferObject
 import com.atom.wyz.worldwind.shader.GpuTexture
 
 class DrawShapeState {
+
     companion object {
         const val MAX_DRAW_ELEMENTS = 4
     }
@@ -43,11 +44,7 @@ class DrawShapeState {
     var prims: Array<DrawElements>
 
     constructor() {
-        val tempList = mutableListOf<DrawElements>()
-        for (idx in 0 until MAX_DRAW_ELEMENTS) {
-            tempList.add(idx, DrawElements());
-        }
-        prims = tempList.toTypedArray()
+        prims = arrayOf(DrawElements(), DrawElements(), DrawElements(), DrawElements())
     }
 
     fun reset() {

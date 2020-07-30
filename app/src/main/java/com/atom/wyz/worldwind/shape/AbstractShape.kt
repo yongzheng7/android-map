@@ -1,8 +1,8 @@
 package com.atom.wyz.worldwind.shape
 
-import com.atom.wyz.worldwind.context.RenderContext
 import com.atom.wyz.worldwind.WorldWind
 import com.atom.wyz.worldwind.attribute.ShapeAttributes
+import com.atom.wyz.worldwind.context.RenderContext
 import com.atom.wyz.worldwind.geom.*
 import com.atom.wyz.worldwind.pick.PickedObject
 import com.atom.wyz.worldwind.render.AbstractRenderable
@@ -55,6 +55,7 @@ abstract class AbstractShape(attributes: ShapeAttributes = ShapeAttributes()) : 
             return
         }
         this.determineActiveAttributes(rc)
+
         if (activeAttributes == null) {
             return
         }

@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-        xmlns:tools="http://schemas.android.com/tools"
         package="com.atom.wyz.worldwind">
 
     <uses-permission android:name="android.permission.INTERNET"/>
@@ -37,6 +36,9 @@
                 android:theme="@style/AppTheme">
         </activity>
         <activity android:name=".app.CameraControlActivity"
+                android:theme="@style/AppTheme">
+        </activity>
+        <activity android:name=".app.Paths_2_Activity"
                 android:theme="@style/AppTheme">
         </activity>
         <activity android:name=".app.CameraViewActivity"

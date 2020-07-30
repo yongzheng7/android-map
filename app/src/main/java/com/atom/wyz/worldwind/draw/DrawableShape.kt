@@ -73,7 +73,6 @@ class DrawableShape() : Drawable {
             } else {
                 program.enableTexture(false)
             }
-
             GLES20.glVertexAttribPointer(
                 1 /*vertexTexCoord*/,
                 prim.texCoordAttrib.size,

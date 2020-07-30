@@ -4,10 +4,10 @@ import android.opengl.GLES20
 import com.atom.wyz.worldwind.draw.Drawable
 import com.atom.wyz.worldwind.draw.DrawableQueue
 import com.atom.wyz.worldwind.draw.DrawableTerrain
+import com.atom.wyz.worldwind.frame.Framebuffer
 import com.atom.wyz.worldwind.geom.*
 import com.atom.wyz.worldwind.pick.PickedObjectList
 import com.atom.wyz.worldwind.shader.BufferObject
-import com.atom.wyz.worldwind.frame.Framebuffer
 import com.atom.wyz.worldwind.shader.GpuTexture
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
@@ -58,7 +58,7 @@ class DrawContext {
 
     var unitSquareBuffer: BufferObject? = null
 
-    var scratchList = ArrayList<Any?>()
+    var scratchList = ArrayList<Any>()
 
     var scratchBuffer = ByteBuffer.allocateDirect(4).order(ByteOrder.nativeOrder())
 
@@ -142,7 +142,6 @@ class DrawContext {
                 GLES20.GL_DEPTH_COMPONENT,
                 GLES20.GL_UNSIGNED_SHORT
             )
-        // TODO consider modifying Texture's tex parameter behavior in order to make this unnecessary
         depthAttachment.setTexParameter(GLES20.GL_TEXTURE_MIN_FILTER, GLES20.GL_NEAREST)
         depthAttachment.setTexParameter(GLES20.GL_TEXTURE_MAG_FILTER, GLES20.GL_NEAREST)
         framebuffer.attachTexture(this, colorAttachment, GLES20.GL_COLOR_ATTACHMENT0)
@@ -229,7 +228,7 @@ class DrawContext {
         return bufferObject.also { unitSquareBuffer = it }
     }
 
-    fun scratchList(): ArrayList<Any?> {
+    fun scratchList(): ArrayList<Any> {
         return scratchList
     }
 

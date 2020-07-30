@@ -7,18 +7,20 @@ import android.view.GestureDetector
 import android.view.GestureDetector.SimpleOnGestureListener
 import android.view.MotionEvent
 import android.widget.Toast
-import com.atom.wyz.worldwind.controller.BasicWorldWindowController
 import com.atom.wyz.worldwind.R
 import com.atom.wyz.worldwind.WorldWind
 import com.atom.wyz.worldwind.attribute.ShapeAttributes
 import com.atom.wyz.worldwind.attribute.TextAttributes
+import com.atom.wyz.worldwind.controller.BasicWorldWindowController
 import com.atom.wyz.worldwind.geom.Color
 import com.atom.wyz.worldwind.geom.Offset
 import com.atom.wyz.worldwind.geom.Position
 import com.atom.wyz.worldwind.layer.RenderableLayer
 import com.atom.wyz.worldwind.render.Label
 import com.atom.wyz.worldwind.render.Renderable
-import com.atom.wyz.worldwind.shape.*
+import com.atom.wyz.worldwind.shape.Highlightable
+import com.atom.wyz.worldwind.shape.Path
+import com.atom.wyz.worldwind.shape.Polygon
 import com.atom.wyz.worldwind.util.Logger
 import com.atom.wyz.worldwind.util.WWUtil
 import java.io.BufferedReader
@@ -130,8 +132,7 @@ class PathsAndPolygonsActivity : BasicWorldWindActivity() {
             val attrs = ShapeAttributes()
             attrs.outlineColor.set(1.0f, 1.0f, 0.0f, 1.0f)
             attrs.outlineWidth= (3f)
-            val highlightAttrs =
-                ShapeAttributes()
+            val highlightAttrs = ShapeAttributes()
             highlightAttrs.outlineColor.set(1.0f, 0.0f, 0.0f, 1.0f)
             highlightAttrs.outlineWidth = (7f)
             var reader: BufferedReader? = null

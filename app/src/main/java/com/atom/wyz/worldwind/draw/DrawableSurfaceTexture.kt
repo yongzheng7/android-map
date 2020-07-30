@@ -5,8 +5,8 @@ import com.atom.wyz.worldwind.context.DrawContext
 import com.atom.wyz.worldwind.geom.Color
 import com.atom.wyz.worldwind.geom.Matrix3
 import com.atom.wyz.worldwind.geom.Sector
-import com.atom.wyz.worldwind.shader.GpuTexture
 import com.atom.wyz.worldwind.render.SurfaceTexture
+import com.atom.wyz.worldwind.shader.GpuTexture
 import com.atom.wyz.worldwind.shader.SurfaceTextureProgram
 import com.atom.wyz.worldwind.util.pool.Pool
 
@@ -78,7 +78,7 @@ class DrawableSurfaceTexture : Drawable, SurfaceTexture {
             var next: Drawable?
             while (dc.peekDrawable().also { next = it } != null
                 && this.canBatchWith(next!!)) {
-                scratchList.add(dc.pollDrawable() as SurfaceTexture?) // take it off the queue
+                scratchList.add(dc.pollDrawable()!!) // take it off the queue
             }
             // Draw the accumulated  surface textures.
             this.drawSurfaceTextures(dc)
