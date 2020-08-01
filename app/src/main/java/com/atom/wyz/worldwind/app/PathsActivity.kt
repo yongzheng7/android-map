@@ -3,8 +3,8 @@ package com.atom.wyz.worldwind.app
 import android.os.Bundle
 import com.atom.wyz.worldwind.WorldWind
 import com.atom.wyz.worldwind.attribute.ShapeAttributes
-import com.atom.wyz.worldwind.geom.SimpleColor
 import com.atom.wyz.worldwind.geom.Position
+import com.atom.wyz.worldwind.geom.SimpleColor
 import com.atom.wyz.worldwind.layer.RenderableLayer
 import com.atom.wyz.worldwind.shape.Path
 import java.util.*
@@ -25,7 +25,7 @@ class PathsActivity : BasicWorldWindActivity() {
             Position.fromDegrees(50.0, -40.0, 1e5)
         )
         var path = Path(positions)
-        //layer.addRenderable(path)
+        layer.addRenderable(path)
 
         // line  2
         positions = Arrays.asList(
@@ -46,7 +46,7 @@ class PathsActivity : BasicWorldWindActivity() {
         )
         path = Path(positions)
         path.extrude = (true)
-        //layer.addRenderable(path)
+        layer.addRenderable(path)
 
         // line  4
         positions = Arrays.asList(
@@ -65,6 +65,6 @@ class PathsActivity : BasicWorldWindActivity() {
         attrs.outlineWidth = (3f)
         path = Path(positions, attrs)
         path.extrude = (true)
-        //layer.addRenderable(path)
+        layer.addRenderable(path)
     }
 }

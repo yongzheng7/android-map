@@ -5,8 +5,8 @@ import android.opengl.GLES20
 import com.atom.wyz.worldwind.WorldWind
 import com.atom.wyz.worldwind.context.RenderContext
 import com.atom.wyz.worldwind.draw.DrawableCartesian
-import com.atom.wyz.worldwind.geom.SimpleColor
 import com.atom.wyz.worldwind.geom.Vec3
+import com.atom.wyz.worldwind.geom.SimpleColor
 import com.atom.wyz.worldwind.shader.BufferObject
 import com.atom.wyz.worldwind.shader.CartesianProgram
 import com.atom.wyz.worldwind.util.pool.Pool

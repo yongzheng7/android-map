@@ -12,9 +12,9 @@ import com.atom.wyz.worldwind.WorldWind
 import com.atom.wyz.worldwind.attribute.ShapeAttributes
 import com.atom.wyz.worldwind.attribute.TextAttributes
 import com.atom.wyz.worldwind.controller.BasicWorldWindowController
-import com.atom.wyz.worldwind.geom.SimpleColor
 import com.atom.wyz.worldwind.geom.Offset
 import com.atom.wyz.worldwind.geom.Position
+import com.atom.wyz.worldwind.geom.SimpleColor
 import com.atom.wyz.worldwind.layer.RenderableLayer
 import com.atom.wyz.worldwind.render.Label
 import com.atom.wyz.worldwind.render.Renderable

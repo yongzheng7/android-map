@@ -195,7 +195,6 @@ class Path : AbstractShape {
             drawState.lineWidth(if (isSurfaceShape) shapeAttributes.outlineWidth + 0.5f else shapeAttributes.outlineWidth)
             drawState.drawElements(GLES20.GL_LINE_STRIP, outlineElements.size(), GLES20.GL_UNSIGNED_SHORT, interiorElements.size() * 2)
         }
-
         // Disable texturing for the remaining drawable primitives.
         drawState.texture = null
 

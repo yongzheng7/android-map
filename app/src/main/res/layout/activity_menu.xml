@@ -81,13 +81,6 @@
                     android:onClick="menuButton"
                     android:textAllCaps="false"/>
             <Button
-                    android:id="@+id/paths_2_Activity"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="paths_2_Activity"
-                    android:onClick="menuButton"
-                    android:textAllCaps="false"/>
-            <Button
                     android:id="@+id/paths_Example_Activity"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"

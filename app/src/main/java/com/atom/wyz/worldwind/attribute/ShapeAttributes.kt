@@ -1,5 +1,6 @@
 package com.atom.wyz.worldwind.attribute
 
+import android.graphics.Color
 import com.atom.wyz.worldwind.geom.SimpleColor
 import com.atom.wyz.worldwind.render.ImageSource
 
@@ -32,8 +33,8 @@ class ShapeAttributes {
         drawInterior = true
         drawOutline = true
         enableLighting = false
-        interiorColor = SimpleColor(-0x1)
-        outlineColor = SimpleColor(-0x10000)
+        interiorColor = SimpleColor(Color.WHITE)
+        outlineColor = SimpleColor(Color.RED)
         outlineWidth = 1.0f
         interiorImageSource = null
         outlineImageSource = null

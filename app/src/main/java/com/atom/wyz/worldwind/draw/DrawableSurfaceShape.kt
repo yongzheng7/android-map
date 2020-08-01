@@ -3,10 +3,10 @@ package com.atom.wyz.worldwind.draw
 import android.opengl.GLES20
 import android.util.Log
 import com.atom.wyz.worldwind.context.DrawContext
-import com.atom.wyz.worldwind.geom.SimpleColor
 import com.atom.wyz.worldwind.geom.Matrix3
 import com.atom.wyz.worldwind.geom.Matrix4
 import com.atom.wyz.worldwind.geom.Sector
+import com.atom.wyz.worldwind.geom.SimpleColor
 import com.atom.wyz.worldwind.util.Logger
 import com.atom.wyz.worldwind.util.pool.Pool
 
@@ -132,7 +132,7 @@ class DrawableSurfaceShape : Drawable {
                         1, prim.texCoordAttrib.size, GLES20.GL_FLOAT,
                         false, shape.drawState.vertexStride, prim.texCoordAttrib.offset
                     )
-                    GLES20.glLineWidth(10f)
+                    GLES20.glLineWidth(prim.lineWidth)
                     GLES20.glDrawElements(prim.mode, prim.count, prim.type, prim.offset)
                 }
                 shapeCount++

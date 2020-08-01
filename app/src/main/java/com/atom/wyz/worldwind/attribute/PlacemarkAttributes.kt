@@ -1,7 +1,7 @@
 package com.atom.wyz.worldwind.attribute
 
-import com.atom.wyz.worldwind.geom.SimpleColor
 import com.atom.wyz.worldwind.geom.Offset
+import com.atom.wyz.worldwind.geom.SimpleColor
 import com.atom.wyz.worldwind.render.ImageSource
 import com.atom.wyz.worldwind.util.Logger
 

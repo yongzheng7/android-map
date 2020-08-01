@@ -6,8 +6,8 @@ import com.atom.wyz.worldwind.context.RenderContext
 import com.atom.wyz.worldwind.draw.DrawableSightline
 import com.atom.wyz.worldwind.geom.BoundingSphere
 import com.atom.wyz.worldwind.geom.Position
-import com.atom.wyz.worldwind.geom.SimpleColor
 import com.atom.wyz.worldwind.geom.Vec3
+import com.atom.wyz.worldwind.geom.SimpleColor
 import com.atom.wyz.worldwind.globe.Globe
 import com.atom.wyz.worldwind.pick.PickedObject
 import com.atom.wyz.worldwind.shader.SensorProgram

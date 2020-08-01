@@ -5,9 +5,9 @@ import com.atom.wyz.worldwind.context.DrawContext
 import com.atom.wyz.worldwind.context.RenderContext
 import com.atom.wyz.worldwind.draw.Drawable
 import com.atom.wyz.worldwind.draw.DrawableSurfaceColor
-import com.atom.wyz.worldwind.geom.SimpleColor
 import com.atom.wyz.worldwind.geom.Position
 import com.atom.wyz.worldwind.geom.Vec3
+import com.atom.wyz.worldwind.geom.SimpleColor
 import com.atom.wyz.worldwind.pick.PickedObject
 import com.atom.wyz.worldwind.shader.BasicProgram
 import com.atom.wyz.worldwind.util.Logger

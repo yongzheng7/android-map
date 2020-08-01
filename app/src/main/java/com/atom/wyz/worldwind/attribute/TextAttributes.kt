@@ -1,8 +1,8 @@
 package com.atom.wyz.worldwind.attribute
 
 import android.graphics.Typeface
-import com.atom.wyz.worldwind.geom.SimpleColor
 import com.atom.wyz.worldwind.geom.Offset
+import com.atom.wyz.worldwind.geom.SimpleColor
 
 class TextAttributes {
     var textColor: SimpleColor

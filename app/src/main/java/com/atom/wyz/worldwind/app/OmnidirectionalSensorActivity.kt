@@ -4,10 +4,10 @@ import com.atom.wyz.worldwind.R
 import com.atom.wyz.worldwind.WorldWind
 import com.atom.wyz.worldwind.WorldWindow
 import com.atom.wyz.worldwind.attribute.ShapeAttributes
-import com.atom.wyz.worldwind.geom.SimpleColor
 import com.atom.wyz.worldwind.geom.LookAt
 import com.atom.wyz.worldwind.geom.Position
 import com.atom.wyz.worldwind.geom.Sector
+import com.atom.wyz.worldwind.geom.SimpleColor
 import com.atom.wyz.worldwind.layer.CartesianLayer
 import com.atom.wyz.worldwind.layer.RenderableLayer
 import com.atom.wyz.worldwind.layer.ShowTessellationLayer

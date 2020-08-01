@@ -38,9 +38,6 @@
         <activity android:name=".app.CameraControlActivity"
                 android:theme="@style/AppTheme">
         </activity>
-        <activity android:name=".app.Paths_2_Activity"
-                android:theme="@style/AppTheme">
-        </activity>
         <activity android:name=".app.CameraViewActivity"
                 android:theme="@style/AppTheme">
         </activity>
