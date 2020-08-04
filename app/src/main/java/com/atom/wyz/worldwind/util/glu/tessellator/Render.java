@@ -350,7 +350,7 @@ class Render {
              * edge "e".  The strip *should* contain exactly "size" triangles
              * (otherwise we've goofed up somewhere).
              */
-            tess.callBeginOrBeginData( GLES10.GL_TRIANGLE_STRIP);
+            tess.callBeginOrBeginData(GLES10.GL_TRIANGLE_STRIP);
             tess.callVertexOrVertexData( e.Org.data);
             tess.callVertexOrVertexData( e.Sym.Org.data);
 

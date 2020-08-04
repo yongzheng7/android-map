@@ -1,7 +1,9 @@
 package com.atom.wyz.worldwind.app
 
 import android.util.Log
+import com.atom.wyz.worldwind.WorldWind
 import com.atom.wyz.worldwind.WorldWindow
+import com.atom.wyz.worldwind.geom.LookAt
 import com.atom.wyz.worldwind.layer.CartesianLayer
 import com.atom.wyz.worldwind.layer.Layer
 import com.atom.wyz.worldwind.layer.LayerFactory

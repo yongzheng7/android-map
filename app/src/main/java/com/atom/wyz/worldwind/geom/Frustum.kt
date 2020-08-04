@@ -234,8 +234,7 @@ class Frustum {
     }
 
 
-    fun intersectsViewport(viewport: Viewport?): Boolean {
-        requireNotNull(viewport) { Logger.logMessage(Logger.ERROR, "Frustum", "intersectsViewport", "missingViewport") }
+    fun intersectsViewport(viewport: Viewport): Boolean {
         return this.viewport.intersects(viewport)
     }
 
