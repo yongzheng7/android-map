@@ -4,7 +4,6 @@
     <modules>
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/WorldWind_temp.iml" filepath="$PROJECT_DIR$/.idea/modules/WorldWind_temp.iml" group="WorldWind_temp" />
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" group="WorldWind_temp/app" />
-      <module fileurl="file://$PROJECT_DIR$/.idea/modules/im/im.iml" filepath="$PROJECT_DIR$/.idea/modules/im/im.iml" group="WorldWind_temp/im" />
     </modules>
   </component>
 </project>

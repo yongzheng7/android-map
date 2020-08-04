@@ -1,14 +1,2 @@
-include ':im'
 include ':app'
 
-// 个推
-//  user        = getui15523@163.com
-//  password    = "Was153523.
-//  APPID       = tmM9C5lUBm6kjqPwBFiqP3
-//  appKey      = 4gNp2vcTfQ9f6ikHfSAxY5
-//  appSecret   = gkKTvqSQ3WAU0pcpXytP32
-//  masterSecret= 0WRs1VWxJ485ghC4udS5O6
-
-// oss
-// AccessKey ID = LTAI4G6P7a83eBmAvCTfZ2Ze
-// AccessKey Secret = GRZdnwVIfyvaqkEAdka4nJm9wn4inh

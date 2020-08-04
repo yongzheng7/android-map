@@ -83,7 +83,7 @@ class PolygonsActivity :BasicWorldWindActivity () {
             )
         )
         poly.addBoundary(
-            Arrays.asList(
+            listOf(
                 Position.fromDegrees(2.5, -130.0, 6.0e5),
                 Position.fromDegrees(5.0, -135.0, 7.0e5),
                 Position.fromDegrees(7.5, -130.0, 8.0e5),
@@ -92,10 +92,10 @@ class PolygonsActivity :BasicWorldWindActivity () {
         )
         layer.addRenderable(poly)
         // Create an extruded polygon with an inner hole and custom attributes that display the extruded vertical lines,
-// make the extruded interior 50% transparent, and increase the polygon line with.
+        // make the extruded interior 50% transparent, and increase the polygon line with.
         poly = Polygon(attrs)
         poly.addBoundary(
-            Arrays.asList(
+            listOf(
                 Position.fromDegrees(0.0, -105.0, 5.0e5),
                 Position.fromDegrees(5.0, -110.0, 7.0e5),
                 Position.fromDegrees(10.0, -100.0, 9.0e5),
