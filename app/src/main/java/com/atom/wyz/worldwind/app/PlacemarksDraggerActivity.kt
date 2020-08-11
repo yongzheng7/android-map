@@ -6,10 +6,10 @@ import android.os.Bundle
 import android.view.GestureDetector
 import android.view.GestureDetector.SimpleOnGestureListener
 import android.view.MotionEvent
-import com.atom.wyz.worldwind.controller.BasicWorldWindowController
 import com.atom.wyz.worldwind.R
 import com.atom.wyz.worldwind.WorldWind
 import com.atom.wyz.worldwind.WorldWindow
+import com.atom.wyz.worldwind.controller.BasicWorldWindowController
 import com.atom.wyz.worldwind.geom.*
 import com.atom.wyz.worldwind.globe.Globe
 import com.atom.wyz.worldwind.layer.RenderableLayer
@@ -35,18 +35,7 @@ class PlacemarksDraggerActivity : BasicWorldWindActivity() {
     }
 
     class SimpleDragger : Dragger {
-        /**
-         * Drags a Movable object to a new position determined by the events' x and y screen offsets.
-         *
-         * @param wwd       The WorldWindow screen object
-         * @param movable   The object to be moved
-         * @param downEvent Initial ACTION_DOWN event; not used
-         * @param moveEvent Current ACTION_MOVE event; not used
-         * @param distanceX delta x screen offset to move
-         * @param distanceY delta y screen offset to move
-         *
-         * @return true if the object was moved, otherwise false.
-         */
+
         override fun drag(
             wwd: WorldWindow,
             movable: Movable,

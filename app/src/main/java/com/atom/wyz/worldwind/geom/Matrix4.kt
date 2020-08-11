@@ -8,7 +8,6 @@ class Matrix4 {
 
     companion object {
 
-        val identity = doubleArrayOf(1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0)
         /**
          * 具有LU分解矩阵的线性系统的实用方法
          */
@@ -210,10 +209,14 @@ class Matrix4 {
         }
     }
 
-    val m = doubleArrayOf(1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0)
+    val m = doubleArrayOf(
+        1.0, 0.0, 0.0, 0.0,
+        0.0, 1.0, 0.0, 0.0,
+        0.0, 0.0, 1.0, 0.0,
+        0.0, 0.0, 0.0, 1.0
+    )
 
-    constructor() {
-    }
+    constructor()
 
     constructor(
         m11: Double, m12: Double, m13: Double, m14: Double,

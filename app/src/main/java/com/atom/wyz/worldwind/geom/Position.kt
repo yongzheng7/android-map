@@ -19,13 +19,14 @@ class Position(latitude: Double, longitude: Double) : Location(latitude, longitu
     }
 
 
-    constructor():this(0.0, 0.0 , 0.0){
-    }
+    constructor():this(0.0, 0.0 , 0.0)
+
     constructor(latitude: Double, longitude: Double , altitude : Double):this(latitude, longitude){
         this.altitude = altitude
     }
-    constructor( position : Position ):this(position.latitude, position.longitude , position.altitude){
-    }
+
+    constructor( position : Position ):this(position.latitude, position.longitude , position.altitude)
+
 
     override fun hashCode(): Int {
         var result = super.hashCode()

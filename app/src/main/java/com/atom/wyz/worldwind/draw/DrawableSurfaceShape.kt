@@ -1,13 +1,11 @@
 package com.atom.wyz.worldwind.draw
 
 import android.opengl.GLES20
-import android.util.Log
 import com.atom.wyz.worldwind.context.DrawContext
 import com.atom.wyz.worldwind.geom.Matrix3
 import com.atom.wyz.worldwind.geom.Matrix4
 import com.atom.wyz.worldwind.geom.Sector
 import com.atom.wyz.worldwind.geom.SimpleColor
-import com.atom.wyz.worldwind.util.Logger
 import com.atom.wyz.worldwind.util.pool.Pool
 
 /**
@@ -161,7 +159,6 @@ class DrawableSurfaceShape : Drawable {
         if (!colorAttachment.bindTexture(dc)) {
             return  // framebuffer texture failed to bind
         }
-        Logger.logMessage(Log.ERROR , "DrawableSurfaceShape" , "drawTextureToTerrain" , "colorAttachment > ${colorAttachment.getTextureName(dc)}  identityMatrix3 > $identityMatrix3")
         basicProgram.enablePickMode(false)
         basicProgram.enableTexture(true)
         basicProgram.loadTexCoordMatrix(identityMatrix3)

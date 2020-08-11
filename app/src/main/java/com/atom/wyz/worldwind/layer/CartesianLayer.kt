@@ -20,7 +20,8 @@ class CartesianLayer : AbstractLayer("CartesianLayer") {
         private val TRI_STRIP_ELEMENTS_KEY = CartesianLayer::class.java.name + ".triStripElements"
 
         private val VERTEX_POINTS_F_KEY = CartesianLayer::class.java.name + ".vertexPoints.f"
-        private val TRI_STRIP_ELEMENTS_F_KEY = CartesianLayer::class.java.name + ".triStripElements.f"
+        private val TRI_STRIP_ELEMENTS_F_KEY =
+            CartesianLayer::class.java.name + ".triStripElements.f"
     }
 
     init {
@@ -45,7 +46,7 @@ class CartesianLayer : AbstractLayer("CartesianLayer") {
         }
 
         val pool: Pool<DrawableCartesian> = rc.getDrawablePool(DrawableCartesian::class.java)
-        var drawable = DrawableCartesian.obtain(pool).set(program, color , true)
+        var drawable = DrawableCartesian.obtain(pool).set(program, color, true)
         // 笛卡尔坐标系
         drawable.vertexPoints = rc.getBufferObject(VERTEX_POINTS_KEY)
         if (drawable.vertexPoints == null) {
@@ -65,7 +66,7 @@ class CartesianLayer : AbstractLayer("CartesianLayer") {
         }
         rc.offerDrawable(drawable, WorldWind.SCREEN_DRAWABLE, 10.0)
         // 观察空间
-        drawable = DrawableCartesian.obtain(pool).set(program, color , true)
+        drawable = DrawableCartesian.obtain(pool).set(program, color, true)
         drawable.vertexPoints = rc.getBufferObject(VERTEX_POINTS_F_KEY)
         if (drawable.vertexPoints == null) {
             drawable.vertexPoints =
@@ -139,7 +140,6 @@ class CartesianLayer : AbstractLayer("CartesianLayer") {
         )
     }
 
-
     private fun assembleVertexPoints2(rc: RenderContext): BufferObject {
         val frustum = rc.frustum
         val left = frustum.left
@@ -149,36 +149,44 @@ class CartesianLayer : AbstractLayer("CartesianLayer") {
         val near = frustum.near
         val far = frustum.far
 
+        var leftPoint = Vec3(left.normal).also { it.multiply(-left.distance) }
+        var rightPoint = Vec3(right.normal).also { it.multiply(-right.distance) }
+        var topPoint = Vec3(top.normal).also { it.multiply(-top.distance) }
+        var bottomPoint = Vec3(bottom.normal).also { it.multiply(-bottom.distance) }
+        var nearPoint = Vec3(near.normal).also { it.multiply(-near.distance) }
+        var farPoint = Vec3(far.normal).also { it.multiply(-far.distance) }
+
+
         val points = FloatArray(6 * 4)
         // left 0
-        points[0] = (-left.normal.x * left.distance).toFloat()
-        points[1] = (-left.normal.y * left.distance).toFloat()
-        points[2] = (-left.normal.z * left.distance).toFloat()
+        points[0] = (leftPoint.x).toFloat()
+        points[1] = (leftPoint.y).toFloat()
+        points[2] = (leftPoint.z).toFloat()
         points[3] = 1f
         //right 1
-        points[4] = (-right.normal.x * right.distance).toFloat()
-        points[5] = (-right.normal.y * right.distance).toFloat()
-        points[6] = (-right.normal.z * right.distance).toFloat()
+        points[4] = (rightPoint.x).toFloat()
+        points[5] = (rightPoint.y).toFloat()
+        points[6] = (rightPoint.z).toFloat()
         points[7] = 1f
         //bottom 2
-        points[8] = (-bottom.normal.x * bottom.distance).toFloat()
-        points[9] = (-bottom.normal.y * bottom.distance).toFloat()
-        points[10] = (-bottom.normal.z * bottom.distance).toFloat()
+        points[8] = (bottomPoint.x).toFloat()
+        points[9] = (bottomPoint.y).toFloat()
+        points[10] = (bottomPoint.z).toFloat()
         points[11] = 1f
         // top 3
-        points[12] = (-top.normal.x * top.distance).toFloat()
-        points[13] = (-top.normal.y * top.distance).toFloat()
-        points[14] = (-top.normal.z * top.distance).toFloat()
+        points[12] = (topPoint.x).toFloat()
+        points[13] = (topPoint.y).toFloat()
+        points[14] = (topPoint.z).toFloat()
         points[15] = 1f
         // near 4
-        points[16] = (-near.normal.x * near.distance).toFloat()
-        points[17] = (-near.normal.y * near.distance).toFloat()
-        points[18] = (-near.normal.z * near.distance).toFloat()
+        points[16] = (nearPoint.x).toFloat()
+        points[17] = (nearPoint.y).toFloat()
+        points[18] = (nearPoint.z).toFloat()
         points[19] = 1f
         // far 5
-        points[20] = (-far.normal.x * far.distance).toFloat()
-        points[21] = (-far.normal.y * far.distance).toFloat()
-        points[22] = (-far.normal.z * far.distance).toFloat()
+        points[20] = (farPoint.x).toFloat()
+        points[21] = (farPoint.y).toFloat()
+        points[22] = (farPoint.z).toFloat()
         points[23] = 1f
 
         val size = points.size * 4
@@ -241,5 +249,82 @@ class CartesianLayer : AbstractLayer("CartesianLayer") {
             buffer
         )
     }
+
+
+    private fun assembleVertexPoints3(rc: RenderContext): BufferObject {
+        val frustum = rc.frustum
+        val left = frustum.left
+        val right = frustum.right
+        val bottom = frustum.bottom
+        val top = frustum.top
+        val near = frustum.near
+        val far = frustum.far
+        var leftPoint = Vec3(left.normal).also { it.multiply(-left.distance) }
+        var rightPoint = Vec3(right.normal).also { it.multiply(-right.distance) }
+        var topPoint = Vec3(top.normal).also { it.multiply(-top.distance) }
+        var bottomPoint = Vec3(bottom.normal).also { it.multiply(-bottom.distance) }
+        var nearPoint = Vec3(near.normal).also { it.multiply(-near.distance) }
+        var farPoint = Vec3(far.normal).also { it.multiply(-far.distance) }
+        val origin = arrayOf(leftPoint, rightPoint, topPoint, bottomPoint, nearPoint, farPoint)
+        val vec3List = mutableListOf<Vec3>()
+        val ints = intArrayOf(
+            0, 4, 2,
+            4, 2, 1,
+            0, 4, 3,
+            3, 4, 1,
+            0, 5, 2,
+            1, 2, 5,
+            0, 3, 5,
+            3, 1, 5
+        )
+        var idx = 0
+        while (idx < ints.size) {
+            val temp = Vec3(origin[ints[idx++]])
+            temp.add(origin[ints[idx++]])
+            temp.add(origin[ints[idx++]])
+            vec3List.add(temp)
+        }
+        val points = FloatArray(8 * 4)
+        idx = 0
+        while (idx < 32) {
+            val id = idx % 4
+            val get = vec3List.get(id)
+            points[idx++] = get.x.toFloat()
+            points[idx++] = get.y.toFloat()
+            points[idx++] = get.z.toFloat()
+            points[idx++] = 1f
+        }
+        val size = points.size * 4
+        val buffer = ByteBuffer.allocateDirect(size).order(ByteOrder.nativeOrder()).asFloatBuffer()
+        buffer.put(points).rewind()
+        return BufferObject(
+            GLES20.GL_ARRAY_BUFFER,
+            size,
+            buffer
+        )
+    }
+
+    private fun assembleTriStripElements3()
+            : BufferObject {
+        //        val elements = shortArrayOf(
+        //            0,2,2,6,6,4,4,0,
+        //            1,3,3,7,7,5,5,1,
+        //            0,1,2,3,6,7,4,5
+        //        )
+        val elements = shortArrayOf(
+            0, 1, 0, 2, 0, 3, 0, 4,
+            0, 5, 0, 0, 7
+        )
+
+        val size = elements.size * 2
+        val buffer = ByteBuffer.allocateDirect(size).order(ByteOrder.nativeOrder()).asShortBuffer()
+        buffer.put(elements).rewind()
+        return BufferObject(
+            GLES20.GL_ELEMENT_ARRAY_BUFFER,
+            size,
+            buffer
+        )
+    }
+
 
 }

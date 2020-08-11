@@ -8,7 +8,11 @@ class Matrix3 {
         val identity = doubleArrayOf(1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0)
     }
 
-    val m = doubleArrayOf(1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0)
+    val m = doubleArrayOf(
+        1.0, 0.0, 0.0,
+        0.0, 1.0, 0.0,
+        0.0, 0.0, 1.0
+    )
 
     constructor()
     constructor(m11: Double, m12: Double, m13: Double,
@@ -27,11 +31,7 @@ class Matrix3 {
         m[8] = m33
     }
 
-    constructor(matrix: Matrix3?) {
-        if (matrix == null) {
-            throw java.lang.IllegalArgumentException(
-                    Logger.logMessage(Logger.ERROR, "Matrix3", "constructor", "missingMatrix"))
-        }
+    constructor(matrix: Matrix3) {
         System.arraycopy(matrix.m, 0, m, 0, 9)
     }
 

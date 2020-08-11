@@ -1,8 +1,8 @@
 package com.atom.wyz.worldwind.draw
 
 import com.atom.wyz.worldwind.geom.Matrix3
-import com.atom.wyz.worldwind.geom.Vec3
 import com.atom.wyz.worldwind.geom.SimpleColor
+import com.atom.wyz.worldwind.geom.Vec3
 import com.atom.wyz.worldwind.shader.BasicProgram
 import com.atom.wyz.worldwind.shader.BufferObject
 import com.atom.wyz.worldwind.shader.GpuTexture
@@ -101,11 +101,17 @@ class DrawShapeState {
         var texture: GpuTexture? = null
         var texCoordMatrix = Matrix3()
         var texCoordAttrib = VertexAttrib()
+        override fun toString(): String {
+            return "DrawElements(mode=$mode, count=$count, type=$type, offset=$offset, color=$color, lineWidth=$lineWidth, texture=$texture, texCoordMatrix=$texCoordMatrix, texCoordAttrib=$texCoordAttrib)"
+        }
     }
 
 
     class VertexAttrib {
         var size = 0
         var offset = 0
+        override fun toString(): String {
+            return "VertexAttrib(size=$size, offset=$offset)"
+        }
     }
 }

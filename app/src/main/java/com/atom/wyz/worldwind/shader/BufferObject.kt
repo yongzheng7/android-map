@@ -22,16 +22,16 @@ class BufferObject : RenderResource {
     var ranges: SparseArray<Range> = SparseArray<Range>()
 
     constructor(target: Int, size: Int, buffer: Buffer?) {
-        bufferTarget = target
-        bufferLength = buffer?.remaining() ?: 0
-        bufferByteCount = size
+        this.bufferTarget = target
+        this. bufferLength = buffer?.remaining() ?: 0
+        this.bufferByteCount = size
         this.buffer = buffer
     }
 
     fun bindBuffer(dc: DrawContext): Boolean {
-        if (buffer != null) {
+        if (this.buffer != null) {
             this.loadBuffer(dc)
-            buffer = null
+            this.buffer = null
         }
         if (bufferId[0] != 0) {
             dc.bindBuffer(bufferTarget, bufferId[0])
@@ -51,7 +51,6 @@ class BufferObject : RenderResource {
             if (bufferId[0] == 0) {
                 createBufferObject(dc)
             }
-
             dc.bindBuffer(bufferTarget, bufferId[0])
 
             loadBufferObjectData(dc)

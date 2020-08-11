@@ -38,10 +38,6 @@ class Polygon : AbstractShape {
 
         protected val defaultOutlineImageOptions: ImageOptions = ImageOptions()
 
-        protected fun nextCacheKey(): Any {
-            return Any()
-        }
-
         init {
             defaultInteriorImageOptions.wrapMode = WorldWind.REPEAT
             defaultOutlineImageOptions.resamplingMode = WorldWind.NEAREST_NEIGHBOR

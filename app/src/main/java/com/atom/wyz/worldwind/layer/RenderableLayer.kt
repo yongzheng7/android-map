@@ -10,11 +10,7 @@ open class RenderableLayer(displayName: String) : AbstractLayer(displayName), It
 
     constructor() : this("RenderableLayer")
 
-    constructor(renderables: Iterable<Renderable?>?) : this("RenderableLayer") {
-        if (renderables == null) {
-            throw java.lang.IllegalArgumentException(
-                    Logger.logMessage(Logger.ERROR, "RenderableLayer", "constructor", "missingList"))
-        }
+    constructor(renderables: Iterable<Renderable>) : this("RenderableLayer") {
         addAllRenderables(renderables)
     }
 
@@ -75,36 +71,19 @@ open class RenderableLayer(displayName: String) : AbstractLayer(displayName), It
         return -1
     }
 
-    fun addRenderable(renderable: Renderable?) {
-        if (renderable == null) {
-            throw java.lang.IllegalArgumentException(
-                    Logger.logMessage(Logger.ERROR, "RenderableLayer", "addRenderable", "missingRenderable"))
-        }
+    fun addRenderable(renderable: Renderable) {
         renderables.add(renderable)
     }
 
-    fun addRenderable(index: Int, renderable: Renderable?) {
+    fun addRenderable(index: Int, renderable: Renderable) {
         if (index < 0 || index > renderables.size) {
             throw java.lang.IllegalArgumentException(
                     Logger.logMessage(Logger.ERROR, "RenderableLayer", "addRenderable", "invalidIndex"))
         }
-        if (renderable == null) {
-            throw java.lang.IllegalArgumentException(
-                    Logger.logMessage(Logger.ERROR, "RenderableLayer", "addRenderable", "missingRenderable"))
-        }
-
         renderables.add(index, renderable)
     }
 
-    open fun addAllRenderables(layer: RenderableLayer?) {
-        requireNotNull(layer) {
-            Logger.logMessage(
-                Logger.ERROR,
-                "RenderableLayer",
-                "addAllRenderables",
-                "missingLayer"
-            )
-        }
+    open fun addAllRenderables(layer: RenderableLayer) {
         val thisList = renderables
         val thatList = layer.renderables
         thisList.ensureCapacity(thatList.size)
@@ -115,25 +94,13 @@ open class RenderableLayer(displayName: String) : AbstractLayer(displayName), It
             idx++
         }
     }
-    fun addAllRenderables(renderables: Iterable<Renderable?>?) {
-        if (renderables == null) {
-            throw java.lang.IllegalArgumentException(
-                    Logger.logMessage(Logger.ERROR, "RenderableLayer", "addAllRenderables", "missingList"))
-        }
+    fun addAllRenderables(renderables: Iterable<Renderable>) {
         for (renderable in renderables) {
-            if (renderable == null) {
-                throw java.lang.IllegalArgumentException(
-                        Logger.logMessage(Logger.ERROR, "RenderableLayer", "addAllRenderables", "missingRenderable"))
-            }
             this.renderables.add(renderable)
         }
     }
 
-    fun removeRenderable(renderable: Renderable?): Boolean {
-        if (renderable == null) {
-            throw java.lang.IllegalArgumentException(
-                    Logger.logMessage(Logger.ERROR, "RenderableLayer", "removeRenderable", "missingRenderable"))
-        }
+    fun removeRenderable(renderable: Renderable): Boolean {
         return renderables.remove(renderable)
     }
 
@@ -145,17 +112,9 @@ open class RenderableLayer(displayName: String) : AbstractLayer(displayName), It
         return renderables.removeAt(index)
     }
 
-    fun removeAllRenderables(renderables: Iterable<Renderable?>?): Boolean {
-        if (renderables == null) {
-            throw java.lang.IllegalArgumentException(
-                    Logger.logMessage(Logger.ERROR, "RenderableLayer", "removeAllRenderables", "missingList"))
-        }
+    fun removeAllRenderables(renderables: Iterable<Renderable>): Boolean {
         var removed = false
         for (renderable in renderables) {
-            if (renderable == null) {
-                throw java.lang.IllegalArgumentException(
-                        Logger.logMessage(Logger.ERROR, "RenderableLayer", "removeAllRenderables", "missingRenderable"))
-            }
             removed = removed or this.renderables.remove(renderable)
         }
         return removed

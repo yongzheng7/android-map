@@ -7,6 +7,7 @@ import com.atom.wyz.worldwind.attribute.ShapeAttributes
 import com.atom.wyz.worldwind.geom.Position
 import com.atom.wyz.worldwind.layer.RenderableLayer
 import com.atom.wyz.worldwind.render.ImageSource
+import com.atom.wyz.worldwind.shape.Ellipse
 import com.atom.wyz.worldwind.shape.Path
 import com.atom.wyz.worldwind.shape.Polygon
 import java.util.*
@@ -41,8 +42,6 @@ class ShapesDashAndFillFragment : BasicGlobeActivity() {
         )
         path.attributes = (sa)
         layer.addRenderable(path)
-
-
 
         // Modify the factor of the pattern for comparison to first path. Only the factor is modified, not the pattern.
         positions = Arrays.asList(
@@ -79,18 +78,17 @@ class ShapesDashAndFillFragment : BasicGlobeActivity() {
         path.altitudeMode = (WorldWind.CLAMP_TO_GROUND)
         path.followTerrain = (true)
         layer.addRenderable(path)
-//
-//        // Create an Ellipse using an image as a repeating fill pattern
-//
-//        // Create an Ellipse using an image as a repeating fill pattern
-//        val ellipseCenter = Position(40.0, -70.0, 1e5)
-//        val ellipse = Ellipse(ellipseCenter, 1.5e6, 800e3)
-//        sa = ShapeAttributes(thickenLine)
-//        sa.interiorImageSource = (ImageSource.fromResource(R.drawable.nasa_logo))
-//        ellipse.attributes = (sa)
-//        layer.addRenderable(ellipse)
-//        // Create a surface polygon using an image as a repeating fill pattern and a dash pattern for the outline
-//        // of the polygon.
+
+        // Create an Ellipse using an image as a repeating fill pattern
+
+        // Create an Ellipse using an image as a repeating fill pattern
+        val ellipse = Ellipse(Position(40.0, -70.0, 1e5), 1.5e6, 800e3)
+        sa = ShapeAttributes(thickenLine)
+        sa.interiorImageSource = (ImageSource.fromResource(R.drawable.nasa_logo))
+        ellipse.attributes = (sa)
+        layer.addRenderable(ellipse)
+        // Create a surface polygon using an image as a repeating fill pattern and a dash pattern for the outline
+        // of the polygon.
         positions = Arrays.asList(
             Position.fromDegrees(25.0, -85.0, 0.0),
             Position.fromDegrees(10.0, -80.0, 0.0),

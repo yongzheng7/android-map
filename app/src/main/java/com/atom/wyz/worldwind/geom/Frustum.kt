@@ -15,7 +15,7 @@ class Frustum {
 
     val far: Plane = Plane(0.0, 0.0, 1.0, 1.0)
 
-    private var planes = arrayOf(this.left, this.right, this.top, this.bottom, this.near, this.far)
+    val planes = arrayOf(this.left, this.right, this.top, this.bottom, this.near, this.far)
 
     protected val viewport = Viewport(0, 0, 1, 1)
 

@@ -1,20 +1,17 @@
 package com.atom.wyz.worldwind.geom
 
-class Range(
-    /**
-     * The range's upper bound, inclusive.
-     * 范围的上限（含）。
-     */
-    var upper: Int,
-    /**
-     * The range's lower bound, inclusive.
-     * 范围的下限（含）。
-     */
-    var lower: Int
-) {
+class Range {
 
-    constructor() : this(0, 0)
-    constructor(range: Range) : this(range.upper, range.lower)
+    var lower: Int = 0
+
+    var upper: Int = 0
+
+    constructor()
+    constructor(range: Range) : this(range.lower , range.upper)
+    constructor(lower: Int , upper: Int) {
+        this.lower = lower
+        this.upper = upper
+    }
 
 
     override fun equals(other: Any?): Boolean {

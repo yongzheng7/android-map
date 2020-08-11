@@ -13,6 +13,10 @@ abstract class AbstractShape(attributes: ShapeAttributes = ShapeAttributes()) : 
 
     companion object {
         const val NEAR_ZERO_THRESHOLD = 1.0e-10
+
+        fun nextCacheKey(): Any {
+            return Any()
+        }
     }
 
     override var attributes: ShapeAttributes? = attributes
@@ -42,8 +46,7 @@ abstract class AbstractShape(attributes: ShapeAttributes = ShapeAttributes()) : 
 
     var pickedObjectId = 0
 
-    var pickColor: SimpleColor =
-        SimpleColor()
+    var pickColor: SimpleColor = SimpleColor()
 
     var boundingSector: Sector = Sector()
 

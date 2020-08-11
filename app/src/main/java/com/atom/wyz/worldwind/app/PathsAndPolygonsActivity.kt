@@ -65,7 +65,7 @@ class PathsAndPolygonsActivity : BasicWorldWindActivity() {
          */
         override fun onProgressUpdate(vararg values: Renderable?) {
             super.onProgressUpdate(*values)
-            shapesLayer.addRenderable(values[0])
+            shapesLayer.addRenderable(values[0]!!)
             getWorldWindow().requestRedraw()
         }
 
