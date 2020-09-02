@@ -154,8 +154,8 @@ class WorldWindow : GLSurfaceView, GLSurfaceView.Renderer, MessageListener, Fram
 
         navigator.latitude = 39.916527
         navigator.longitude = 116.397128
-        navigator.latitude = 0.0
-        navigator.longitude = 0.0
+        //navigator.latitude = 0.0
+        //navigator.longitude = 0.0
         navigator.altitude = initAltitude
 
         this.worldWindowController.worldWindow = this

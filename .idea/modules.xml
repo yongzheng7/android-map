@@ -2,8 +2,8 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/.idea/modules/WorldWind_temp.iml" filepath="$PROJECT_DIR$/.idea/modules/WorldWind_temp.iml" group="WorldWind_temp" />
-      <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" group="WorldWind_temp/app" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/OpenWorld.iml" filepath="$PROJECT_DIR$/.idea/modules/OpenWorld.iml" group="OpenWorld" />
+      <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" group="OpenWorld/app" />
     </modules>
   </component>
 </project>

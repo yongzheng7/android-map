@@ -13,7 +13,6 @@ class WmsLayerActivity : BasicGlobeActivity() {
     override fun createWorldWindow(): WorldWindow {
         val wwd: WorldWindow = super.createWorldWindow()
         wwd.layers.clearLayers()
-        wwd.layers.addLayer(CartesianLayer())
         wwd.layers.addLayer(ShowTessellationLayer())
         // Create an OGC Web Map Service (WMS) layer to display the
         // surface temperature layer from NASA's Near Earth Observations WMS.

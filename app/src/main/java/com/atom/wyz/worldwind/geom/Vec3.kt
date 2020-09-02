@@ -56,6 +56,13 @@ class Vec3(var x: Double, var y: Double, var z: Double) {
         return set(vector.x , vector.y , vector.z)
     }
 
+    fun reset(): Vec3 {
+        this.x = 0.0
+        this.y = 0.0
+        this.z = 0.0
+        return this
+    }
+
     fun swap(vector: Vec3): Vec3 {
         var tmp = x
         x = vector.x

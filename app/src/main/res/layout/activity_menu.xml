@@ -13,6 +13,13 @@
                 android:orientation="vertical">
 
             <Button
+                    android:id="@+id/cartesian_Activity"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:onClick="menuButton"
+                    android:text="cartesian_Activity"
+                    android:textAllCaps="false" />
+            <Button
                     android:id="@+id/ellipse_Fragment"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"

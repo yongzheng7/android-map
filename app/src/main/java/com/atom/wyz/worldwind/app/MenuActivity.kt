@@ -18,6 +18,9 @@ class MenuActivity : AppCompatActivity() {
             R.id.omnidirectionalSensor2_Activity -> {
                 startActivity(Intent(this, OmnidirectionalSensor2Activity::class.java))
             }
+            R.id.cartesian_Activity -> {
+                startActivity(Intent(this, CartesianActivity::class.java))
+            }
             R.id.omnidirectionalSensor_Activity -> {
                 startActivity(Intent(this, OmnidirectionalSensorActivity::class.java))
             }

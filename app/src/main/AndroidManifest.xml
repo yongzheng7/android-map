@@ -23,6 +23,9 @@
             </intent-filter>
         </activity>
 
+        <activity android:name=".app.CartesianActivity"
+                android:theme="@style/AppTheme">
+        </activity>
         <activity android:name=".app.BasicWorldWindActivity"
                 android:theme="@style/AppTheme">
         </activity>

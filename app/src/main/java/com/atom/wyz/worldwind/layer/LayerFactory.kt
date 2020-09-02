@@ -5,7 +5,6 @@ import android.os.Handler
 import android.os.Looper
 import com.atom.wyz.worldwind.WorldWind
 import com.atom.wyz.worldwind.geom.Sector
-import com.atom.wyz.worldwind.tile.TileFactory
 import com.atom.wyz.worldwind.ogc.WmsLayerConfig
 import com.atom.wyz.worldwind.ogc.WmsTileFactory
 import com.atom.wyz.worldwind.ogc.WmtsTileFactory
@@ -16,8 +15,10 @@ import com.atom.wyz.worldwind.ogc.gpkg.GpkgTileUserMetrics
 import com.atom.wyz.worldwind.ogc.ows.*
 import com.atom.wyz.worldwind.ogc.wms.WmsCapabilities
 import com.atom.wyz.worldwind.ogc.wms.WmsLayer
-import com.atom.wyz.worldwind.ogc.wtms.*
+import com.atom.wyz.worldwind.ogc.wtms.WmtsCapabilities
+import com.atom.wyz.worldwind.ogc.wtms.WmtsLayer
 import com.atom.wyz.worldwind.render.TiledSurfaceImage
+import com.atom.wyz.worldwind.tile.TileFactory
 import com.atom.wyz.worldwind.util.LevelSet
 import com.atom.wyz.worldwind.util.LevelSetConfig
 import com.atom.wyz.worldwind.util.Logger
@@ -165,8 +166,7 @@ open class LayerFactory() {
             config.sector[content.minY, content.minX, content.maxY - content.minY] =
                 content.maxX - content.minX
             config.firstLevelDelta = 180.0
-            config.numLevels =
-                tileMetrics.getMaxZoomLevel() + 1 // zero when there are no zoom levels, (0 = -1 + 1)
+            config.numLevels = tileMetrics.getMaxZoomLevel() + 1 // zero when there are no zoom levels, (0 = -1 + 1)
             config.tileWidth = 256
             config.tileHeight = 256
             val surfaceImage = TiledSurfaceImage()
