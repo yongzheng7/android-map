@@ -42,7 +42,7 @@ import java.util.concurrent.TimeUnit
 import javax.microedition.khronos.egl.EGLConfig
 import javax.microedition.khronos.opengles.GL10
 
-class WorldWindow : GLSurfaceView, GLSurfaceView.Renderer, MessageListener, FrameCallback  , WorldHelper{
+class WorldWindow : GLSurfaceView , GLSurfaceView.Renderer , MessageListener , FrameCallback , WorldHelper{
 
     companion object {
         const val MAX_FRAME_QUEUE_SIZE = 2
@@ -159,7 +159,7 @@ class WorldWindow : GLSurfaceView, GLSurfaceView.Renderer, MessageListener, Fram
         this.worldWindowController.world = this
 
         // Initialize the World Window's render resource cache.
-        val cacheCapacity = RenderResourceCache.recommendedCapacity(this.context)
+        val cacheCapacity = RenderResourceCache.recommendedCapacity(App.getInstance())
         renderResourceCache = RenderResourceCache(cacheCapacity)
 
         // Set up to render on demand to an OpenGL ES 2.x context
@@ -311,8 +311,11 @@ class WorldWindow : GLSurfaceView, GLSurfaceView.Renderer, MessageListener, Fram
             rc.cameraPoint
         )
         rc.renderResourceCache = this.renderResourceCache
-        rc.renderResourceCache?.resources = (this.context.resources)
-        rc.resources = this.context.resources
+
+        App.getInstance().resources.also {
+            rc.resources = it
+            rc.renderResourceCache?.resources = it
+        }
         computeViewingTransform(frame.projection, frame.modelview)
         frame.viewport.set(this.viewport)
         frame.infiniteProjection.setToInfiniteProjection(
