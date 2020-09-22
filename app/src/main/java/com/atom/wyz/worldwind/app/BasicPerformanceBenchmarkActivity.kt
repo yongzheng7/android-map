@@ -7,8 +7,10 @@ import android.view.MotionEvent
 import androidx.annotation.NonNull
 import androidx.core.util.Pools
 import com.atom.wyz.worldwind.R
+import com.atom.wyz.worldwind.WorldHelper
 import com.atom.wyz.worldwind.WorldWind
 import com.atom.wyz.worldwind.WorldWindow
+import com.atom.wyz.worldwind.attribute.PlacemarkAttributes
 import com.atom.wyz.worldwind.controller.WorldWindowController
 import com.atom.wyz.worldwind.geom.Camera
 import com.atom.wyz.worldwind.geom.Location
@@ -18,7 +20,6 @@ import com.atom.wyz.worldwind.layer.LayerList
 import com.atom.wyz.worldwind.layer.RenderableLayer
 import com.atom.wyz.worldwind.render.ImageSource
 import com.atom.wyz.worldwind.render.Placemark
-import com.atom.wyz.worldwind.attribute.PlacemarkAttributes
 import com.atom.wyz.worldwind.util.Logger
 import com.atom.wyz.worldwind.util.WWMath
 import com.atom.wyz.worldwind.util.WWUtil
@@ -137,7 +138,7 @@ class BasicPerformanceBenchmarkActivity : BasicWorldWindActivity() {
 
     class NoOpWorldWindowController :
         WorldWindowController {
-        override var worldWindow: WorldWindow?
+        override var world: WorldHelper?
             get() = null
             set(wwd) {}
 

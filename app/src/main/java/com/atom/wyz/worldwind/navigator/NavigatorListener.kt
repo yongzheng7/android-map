@@ -1,9 +1,9 @@
 package com.atom.wyz.worldwind.navigator
 
-import com.atom.wyz.worldwind.WorldWindow
+import com.atom.wyz.worldwind.WorldHelper
 
 interface NavigatorListener {
 
-    fun onNavigatorEvent(wwd: WorldWindow, event: NavigatorEvent)
+    fun onNavigatorEvent(wwd: WorldHelper, event: NavigatorEvent)
 
 }

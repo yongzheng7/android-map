@@ -8,14 +8,14 @@ import com.atom.wyz.worldwind.gesture.PinchRecognizer
 import com.atom.wyz.worldwind.gesture.RotationRecognizer
 import com.atom.wyz.worldwind.util.WWMath
 
-class CustomWorldWindowCameraController : BasicWorldWindowController() {
+open class CustomWorldWindowCameraController : BasicWorldWindowController() {
 
     protected var camera: Camera = Camera()
 
     protected var beginCamera: Camera = Camera()
 
-    override protected fun handlePan(recognizer: GestureRecognizer) {
-        val wwd = this.worldWindow ?: return
+    override fun handlePan(recognizer: GestureRecognizer) {
+        val wwd = this.world ?: return
         val state: Int = recognizer.state
         val dx: Float = recognizer.translationX
         val dy: Float = recognizer.translationY
@@ -33,7 +33,7 @@ class CustomWorldWindowCameraController : BasicWorldWindowController() {
             val sideMeters = -(dx - lastX) * metersPerPixel
             lastX = dx
             lastY = dy
-            val globeRadius: Double = wwd.globe.getRadiusAt(lat, lon)
+            val globeRadius: Double = wwd.globe().getRadiusAt(lat, lon)
             val forwardDegrees = Math.toDegrees(forwardMeters / globeRadius)
             val sideDegrees = Math.toDegrees(sideMeters / globeRadius)
             // Adjust the change in latitude and longitude based on the navigator's heading.
@@ -56,7 +56,7 @@ class CustomWorldWindowCameraController : BasicWorldWindowController() {
                 camera.longitude = lon
             }
             //this.camera.heading = WWMath.normalizeAngle360(heading + sideDegrees * 1000);
-            wwd.navigator.setAsCamera(wwd.globe, camera)
+            wwd.navigator().setAsCamera(wwd.globe(), camera)
             wwd.requestRedraw()
         } else if (state == WorldWind.ENDED || state == WorldWind.CANCELLED) {
             gestureDidEnd()
@@ -64,7 +64,7 @@ class CustomWorldWindowCameraController : BasicWorldWindowController() {
     }
 
     override fun handlePinch(recognizer: GestureRecognizer) {
-        val wwd = this.worldWindow ?: return
+        val wwd = this.world ?: return
         val state: Int = recognizer.state
         val scale: Float = (recognizer as PinchRecognizer).scale()
         if (state == WorldWind.BEGAN) {
@@ -73,7 +73,7 @@ class CustomWorldWindowCameraController : BasicWorldWindowController() {
             if (scale != 0f) { // Apply the change in scale to the navigator, relative to when the gesture began.
                 camera.altitude = camera.altitude + if (scale > 1) scale * 1000 else -1 / scale * 1000
                 this.applyLimits(camera)
-                wwd.navigator.setAsCamera(wwd.globe, camera)
+                wwd.navigator().setAsCamera(wwd.globe(), camera)
                 wwd.requestRedraw()
             }
         } else if (state == WorldWind.ENDED || state == WorldWind.CANCELLED) {
@@ -81,8 +81,8 @@ class CustomWorldWindowCameraController : BasicWorldWindowController() {
         }
     }
 
-    override protected fun handleRotate(recognizer: GestureRecognizer) {
-        val wwd = this.worldWindow ?: return
+    override fun handleRotate(recognizer: GestureRecognizer) {
+        val wwd = this.world ?: return
         val state: Int = recognizer.state
         val rotation: Float = (recognizer as RotationRecognizer).rotation()
         if (state == WorldWind.BEGAN) {
@@ -92,15 +92,15 @@ class CustomWorldWindowCameraController : BasicWorldWindowController() {
             val headingDegrees = lastRotation - rotation.toDouble()
             camera.heading = WWMath.normalizeAngle360(camera.heading + headingDegrees)
             lastRotation = rotation
-            wwd.navigator.setAsCamera(wwd.globe, camera)
+            wwd.navigator().setAsCamera(wwd.globe(), camera)
             wwd.requestRedraw()
         } else if (state == WorldWind.ENDED || state == WorldWind.CANCELLED) {
             gestureDidEnd()
         }
     }
 
-    override protected fun handleTilt(recognizer: GestureRecognizer) {
-        val wwd = this.worldWindow ?: return
+    override fun handleTilt(recognizer: GestureRecognizer) {
+        val wwd = this.world ?: return
         val state: Int = recognizer.state
         val dx: Float = recognizer.translationX
         val dy: Float = recognizer.translationY
@@ -112,7 +112,7 @@ class CustomWorldWindowCameraController : BasicWorldWindowController() {
             val tiltDegrees: Double = -180 * dy / wwd.getHeight().toDouble()
             camera.heading = WWMath.normalizeAngle360(beginCamera.heading + headingDegrees)
             camera.tilt = beginCamera.tilt + tiltDegrees
-            wwd.navigator.setAsCamera(wwd.globe, camera)
+            wwd.navigator().setAsCamera(wwd.globe(), camera)
             wwd.requestRedraw()
         } else if (state == WorldWind.ENDED || state == WorldWind.CANCELLED) {
             gestureDidEnd()
@@ -120,15 +120,15 @@ class CustomWorldWindowCameraController : BasicWorldWindowController() {
     }
 
     override fun gestureDidBegin() {
-        val wwd = this.worldWindow ?: return
+        val wwd = this.world ?: return
         if (activeGestures++ == 0) {
-            wwd.navigator.getAsCamera(wwd.globe, beginCamera)
+            wwd.navigator().getAsCamera(wwd.globe(), beginCamera)
             camera.set(beginCamera)
         }
     }
 
     protected fun applyLimits(camera: Camera) {
-        val wwd = this.worldWindow ?: return
+        val wwd = this.world ?: return
         val distanceToExtents: Double = wwd.distanceToViewGlobeExtents()
         val minRange = 100.0
         val maxRange = distanceToExtents * 2

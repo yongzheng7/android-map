@@ -1,8 +1,8 @@
 package com.atom.wyz.worldwind.controller
 
 import android.view.MotionEvent
+import com.atom.wyz.worldwind.WorldHelper
 import com.atom.wyz.worldwind.WorldWind
-import com.atom.wyz.worldwind.WorldWindow
 import com.atom.wyz.worldwind.geom.Location
 import com.atom.wyz.worldwind.geom.LookAt
 import com.atom.wyz.worldwind.gesture.*
@@ -12,7 +12,7 @@ import java.util.*
 open class BasicWorldWindowController : WorldWindowController, GestureListener {
 
 
-    override var worldWindow: WorldWindow? = null
+    override var world: WorldHelper? = null
 
     protected var lastX = 0f
 
@@ -59,7 +59,7 @@ open class BasicWorldWindowController : WorldWindowController, GestureListener {
     }
 
     protected open fun handlePan(recognizer: GestureRecognizer) {
-        val wwd = this.worldWindow ?: return
+        val wwd = this.world ?: return
         val state: Int = recognizer.state
         val dx: Float = recognizer.translationX
         val dy: Float = recognizer.translationY
@@ -82,7 +82,7 @@ open class BasicWorldWindowController : WorldWindowController, GestureListener {
             lastX = dx
             lastY = dy
 
-            val globeRadius: Double = wwd.globe.getRadiusAt(lat, lon)
+            val globeRadius: Double = wwd.globe().getRadiusAt(lat, lon)
 
             val forwardDegrees = Math.toDegrees(forwardMeters / globeRadius)
             val sideDegrees = Math.toDegrees(sideMeters / globeRadius)
@@ -107,7 +107,7 @@ open class BasicWorldWindowController : WorldWindowController, GestureListener {
                 this.lookAt.longitude = lon
             }
 
-            wwd.navigator.setAsLookAt(wwd.globe, lookAt)
+            wwd.navigator().setAsLookAt(wwd.globe(), lookAt)
             wwd.requestRedraw()
             lastX = dx
             lastY = dy
@@ -117,7 +117,7 @@ open class BasicWorldWindowController : WorldWindowController, GestureListener {
     }
 
     protected open fun handlePinch(recognizer: GestureRecognizer) {
-        val wwd = this.worldWindow ?: return
+        val wwd = this.world ?: return
         val state: Int = recognizer.state
         val scale: Float = (recognizer as PinchRecognizer).scale()
 
@@ -128,7 +128,7 @@ open class BasicWorldWindowController : WorldWindowController, GestureListener {
                 // Apply the change in scale to the navigator, relative to when the gesture began.
                 this.lookAt.range = beginLookAt.range / scale
                 this.applyLimits(lookAt)
-                wwd.navigator.setAsLookAt(wwd.globe, lookAt)
+                wwd.navigator().setAsLookAt(wwd.globe(), lookAt)
                 wwd.requestRedraw()
             }
         } else if (state == WorldWind.ENDED || state == WorldWind.CANCELLED) {
@@ -137,7 +137,7 @@ open class BasicWorldWindowController : WorldWindowController, GestureListener {
     }
 
     protected open fun handleRotate(recognizer: GestureRecognizer) {
-        val wwd = this.worldWindow ?: return
+        val wwd = this.world ?: return
         val state: Int = recognizer.state
         val rotation: Float = (recognizer as RotationRecognizer).rotation()
 
@@ -150,7 +150,7 @@ open class BasicWorldWindowController : WorldWindowController, GestureListener {
             lookAt.heading = WWMath.normalizeAngle360(lookAt.heading + headingDegrees)
             lastRotation = rotation
 
-            wwd.navigator.setAsLookAt(wwd.globe, lookAt)
+            wwd.navigator().setAsLookAt(wwd.globe(), lookAt)
             wwd.requestRedraw()
         } else if (state == WorldWind.ENDED || state == WorldWind.CANCELLED) {
             gestureDidEnd()
@@ -158,7 +158,7 @@ open class BasicWorldWindowController : WorldWindowController, GestureListener {
     }
 
     protected open fun handleTilt(recognizer: GestureRecognizer) {
-        val wwd = this.worldWindow ?: return
+        val wwd = this.world ?: return
         val state: Int = recognizer.state
         val dx: Float = recognizer.translationX
         val dy: Float = recognizer.translationY
@@ -174,7 +174,7 @@ open class BasicWorldWindowController : WorldWindowController, GestureListener {
             lookAt.tilt = beginLookAt.tilt + tiltDegrees
             this.applyLimits(lookAt)
 
-            wwd.navigator.setAsLookAt(wwd.globe, lookAt)
+            wwd.navigator().setAsLookAt(wwd.globe(), lookAt)
             wwd.requestRedraw()
         } else if (state == WorldWind.ENDED || state == WorldWind.CANCELLED) {
             gestureDidEnd()
@@ -182,7 +182,7 @@ open class BasicWorldWindowController : WorldWindowController, GestureListener {
     }
 
     protected open fun applyLimits(lookAt: LookAt) {
-        val wwd = this.worldWindow ?: return
+        val wwd = this.world ?: return
         val distanceToExtents: Double = wwd.distanceToViewGlobeExtents()
         val minRange = 10.0
         val maxRange = distanceToExtents * 2
@@ -209,7 +209,7 @@ open class BasicWorldWindowController : WorldWindowController, GestureListener {
 
     protected open fun gestureDidBegin() {
         if (activeGestures++ == 0) {
-            this.worldWindow?.navigator?.getAsLookAt(this.worldWindow!!.globe, beginLookAt)
+            this.world?.navigator()?.getAsLookAt(this.world!!.globe(), beginLookAt)
             lookAt.set(beginLookAt)
         }
     }

@@ -42,7 +42,7 @@ import java.util.concurrent.TimeUnit
 import javax.microedition.khronos.egl.EGLConfig
 import javax.microedition.khronos.opengles.GL10
 
-class WorldWindow : GLSurfaceView, GLSurfaceView.Renderer, MessageListener, FrameCallback {
+class WorldWindow : GLSurfaceView, GLSurfaceView.Renderer, MessageListener, FrameCallback  , WorldHelper{
 
     companion object {
         const val MAX_FRAME_QUEUE_SIZE = 2
@@ -79,19 +79,17 @@ class WorldWindow : GLSurfaceView, GLSurfaceView.Renderer, MessageListener, Fram
             field = value
         }
 
-    var navigatorEvents =
-        NavigatorEventSupport(this)
+    var navigatorEvents = NavigatorEventSupport(this)
 
     var frameController: FrameController = BasicFrameController()
 
     var frameMetrics = FrameMetrics()
 
-    var worldWindowController: WorldWindowController =
-        BasicWorldWindowController()
+    var worldWindowController: WorldWindowController = BasicWorldWindowController()
         set(value) {
-            field.worldWindow = (null)
+            field.world = (null)
             field = value
-            field.worldWindow = (this)
+            field.world = (this)
         }
     var renderResourceCache: RenderResourceCache? = null
 
@@ -158,7 +156,7 @@ class WorldWindow : GLSurfaceView, GLSurfaceView.Renderer, MessageListener, Fram
         //navigator.longitude = 0.0
         navigator.altitude = initAltitude
 
-        this.worldWindowController.worldWindow = this
+        this.worldWindowController.world = this
 
         // Initialize the World Window's render resource cache.
         val cacheCapacity = RenderResourceCache.recommendedCapacity(this.context)
@@ -394,7 +392,9 @@ class WorldWindow : GLSurfaceView, GLSurfaceView.Renderer, MessageListener, Fram
         dc.pickedObjects = frame.pickedObjects
         dc.pickPoint = frame.pickPoint
         dc.pickMode = frame.pickMode
+
         frameController.drawFrame(dc)
+
         renderResourceCache?.releaseEvictedResources(dc)
         if (!pickMode) {
             frameMetrics.endDrawing(this.dc)
@@ -453,7 +453,7 @@ class WorldWindow : GLSurfaceView, GLSurfaceView.Renderer, MessageListener, Fram
      * distance = 视角的高度
      * 获取到可视的水平面长度和手机屏幕的比例
      */
-    fun pixelSizeAtDistance(distance: Double): Double {
+    override fun pixelSizeAtDistance(distance: Double): Double {
         // 视角一半的tan
         val tanfovy_2 = Math.tan(Math.toRadians(fieldOfView * 0.5))
 
@@ -461,14 +461,24 @@ class WorldWindow : GLSurfaceView, GLSurfaceView.Renderer, MessageListener, Fram
         return frustumHeight / this.height
     }
 
+
     /**
      * 返回使地球范围在此世界窗口中可见所需的距地球表面的最小距离。
      */
-    fun distanceToViewGlobeExtents(): Double {
+    override fun distanceToViewGlobeExtents(): Double {
         val sinfovy_2 = Math.sin(Math.toRadians(fieldOfView * 0.5))
         val radius: Double = globe.getEquatorialRadius()
         return radius / sinfovy_2 - radius
     }
+
+    override fun globe(): Globe {
+        return globe
+    }
+
+    override fun navigator(): Navigator {
+        return navigator
+    }
+
 
     override fun onMessage(name: String?, sender: Any?, userProperties: Map<Any?, Any?>?) {
         if (name == WorldWind.REQUEST_REDRAW) {
@@ -493,7 +503,7 @@ class WorldWindow : GLSurfaceView, GLSurfaceView.Renderer, MessageListener, Fram
         navigatorEvents.setNavigatorStoppedDelay(delay, unit!!)
     }
 
-    fun requestRedraw() {
+    override fun requestRedraw() {
         if (Thread.currentThread() !== Looper.getMainLooper().thread) {
             mainLoopHandler.sendEmptyMessage(MSG_ID_REQUEST_REDRAW /*what*/);
             return

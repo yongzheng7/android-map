@@ -5,15 +5,15 @@ import android.os.Handler
 import android.os.Looper
 import android.view.InputEvent
 import android.view.MotionEvent
+import com.atom.wyz.worldwind.WorldHelper
 import com.atom.wyz.worldwind.WorldWind
-import com.atom.wyz.worldwind.WorldWindow
 import com.atom.wyz.worldwind.context.RenderContext
 import com.atom.wyz.worldwind.geom.Matrix4
 import com.atom.wyz.worldwind.util.Logger
 import java.util.*
 import java.util.concurrent.TimeUnit
 
-class NavigatorEventSupport(wwd: WorldWindow) {
+class NavigatorEventSupport(wwd: WorldHelper) {
     protected var wwd = wwd
 
     protected var listeners = ArrayList<NavigatorListener>()
@@ -113,7 +113,7 @@ class NavigatorEventSupport(wwd: WorldWindow) {
 
     protected fun notifyListeners(action: Int, inputEvent: InputEvent?) {
         inputEvent ?.let {
-            val event = NavigatorEvent.obtain(wwd.navigator, action, it)
+            val event = NavigatorEvent.obtain(wwd.navigator(), action, it)
             var idx = 0
             val len = listeners.size
             while (idx < len) {

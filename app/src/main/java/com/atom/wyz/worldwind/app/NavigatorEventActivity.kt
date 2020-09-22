@@ -12,7 +12,9 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
-import com.atom.wyz.worldwind.*
+import com.atom.wyz.worldwind.R
+import com.atom.wyz.worldwind.WorldHelper
+import com.atom.wyz.worldwind.WorldWind
 import com.atom.wyz.worldwind.geom.Camera
 import com.atom.wyz.worldwind.geom.Location
 import com.atom.wyz.worldwind.geom.LookAt
@@ -84,7 +86,7 @@ class NavigatorEventActivity : BasicWorldWindActivity() , FrameCallback {
 
         val listener: NavigatorListener = object :
             NavigatorListener {
-            override fun onNavigatorEvent(wwd: WorldWindow, event: NavigatorEvent) {
+            override fun onNavigatorEvent(wwd: WorldHelper, event: NavigatorEvent) {
                 val currentTime = System.currentTimeMillis()
                 val elapsedTime = currentTime - lastEventTime
 

@@ -1,10 +1,11 @@
 package com.atom.wyz.worldwind.controller
 
 import android.view.MotionEvent
-import com.atom.wyz.worldwind.WorldWindow
+import com.atom.wyz.worldwind.WorldHelper
 
 interface WorldWindowController {
-    var worldWindow: WorldWindow?
+
+    var world : WorldHelper?
 
     fun onTouchEvent(event: MotionEvent): Boolean
 }
