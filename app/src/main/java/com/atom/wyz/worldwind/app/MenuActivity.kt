@@ -18,6 +18,12 @@ class MenuActivity : AppCompatActivity() {
             R.id.omnidirectionalSensor2_Activity -> {
                 startActivity(Intent(this, OmnidirectionalSensor2Activity::class.java))
             }
+            R.id.Basic_Globe2_Activity -> {
+                startActivity(Intent(this, BasicGlobe2Activity::class.java))
+            }
+            R.id.background_draw_Activity -> {
+                startActivity(Intent(this, BasicTextureWorldWindActivity::class.java))
+            }
             R.id.cartesian_Activity -> {
                 startActivity(Intent(this, CartesianActivity::class.java))
             }
