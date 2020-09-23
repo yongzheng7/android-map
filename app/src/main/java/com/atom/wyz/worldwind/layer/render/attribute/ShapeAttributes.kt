@@ -10,8 +10,6 @@ class ShapeAttributes {
 
     var drawOutline = false
 
-    var enableLighting = false
-
     var interiorColor: SimpleColor
 
     var outlineColor: SimpleColor
@@ -23,7 +21,6 @@ class ShapeAttributes {
     var outlineImageSource: ImageSource? = null
 
     var depthTest = false
-
     /**
      * 向下拉伸的线
      */
@@ -32,7 +29,6 @@ class ShapeAttributes {
     constructor() {
         drawInterior = true
         drawOutline = true
-        enableLighting = false
         interiorColor = SimpleColor(Color.WHITE)
         outlineColor = SimpleColor(Color.RED)
         outlineWidth = 1.0f
@@ -45,7 +41,6 @@ class ShapeAttributes {
     constructor(attributes: ShapeAttributes) {
         drawInterior = attributes.drawInterior
         drawOutline = attributes.drawOutline
-        enableLighting = attributes.enableLighting
         interiorColor = SimpleColor(
             attributes.interiorColor
         )
@@ -64,7 +59,6 @@ class ShapeAttributes {
         attributes.outlineColor.let { outlineColor.set(it) }
         drawInterior = attributes.drawInterior
         drawOutline = attributes.drawOutline
-        enableLighting = attributes.enableLighting
         outlineWidth = attributes.outlineWidth
         interiorImageSource = attributes.interiorImageSource
         outlineImageSource = attributes.outlineImageSource
@@ -81,7 +75,7 @@ class ShapeAttributes {
             return false
         }
         val that = other as ShapeAttributes
-        return (drawInterior == that.drawInterior && drawOutline == that.drawOutline && drawVerticals == that.drawVerticals && depthTest == that.depthTest && enableLighting == that.enableLighting && interiorColor.equals(
+        return (drawInterior == that.drawInterior && drawOutline == that.drawOutline && drawVerticals == that.drawVerticals && depthTest == that.depthTest && interiorColor.equals(
             that.interiorColor
         )
                 && outlineColor == that.outlineColor
@@ -98,7 +92,6 @@ class ShapeAttributes {
         result = 31 * result + if (drawOutline) 1 else 0
         result = 31 * result + if (depthTest) 1 else 0
         result = 31 * result + if (drawVerticals) 1 else 0
-        result = 31 * result + if (enableLighting) 1 else 0
         result = 31 * result + interiorColor.hashCode()
         result = 31 * result + outlineColor.hashCode()
         result = 31 * result + if (outlineWidth != 0.0f) outlineWidth.toBits() else 0

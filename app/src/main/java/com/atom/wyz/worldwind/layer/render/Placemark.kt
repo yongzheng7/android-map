@@ -285,7 +285,7 @@ open class Placemark : AbstractRenderable,
 
     protected open fun mustDrawLeader(dc: RenderContext): Boolean {
         val activeAttributes = this.activeAttributes ?: return false
-        return (activeAttributes.drawLeader && activeAttributes.leaderAttributes != null && (enableLeaderPicking || !dc.pickMode))
+        return (activeAttributes.drawLeader  && (enableLeaderPicking || !dc.pickMode))
     }
 
 

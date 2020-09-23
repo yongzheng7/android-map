@@ -42,10 +42,10 @@ open class Label : AbstractRenderable,
 
     var text: String? = null
 
-     var rotation = 0.0
+    var rotation = 0.0
 
     @WorldWind.OrientationMode
-     var rotationMode = WorldWind.RELATIVE_TO_SCREEN
+    var rotationMode = WorldWind.RELATIVE_TO_SCREEN
 
     private var attributes: TextAttributes
 
@@ -66,7 +66,7 @@ open class Label : AbstractRenderable,
         this.attributes = attributes
     }
 
-    constructor(position: Position, text: String, attributes: TextAttributes) : super(text)  {
+    constructor(position: Position, text: String, attributes: TextAttributes) : super(text) {
         this.position.set(position)
         this.text = text
         this.attributes = attributes
@@ -116,10 +116,17 @@ open class Label : AbstractRenderable,
 
         if (mustDrawLeader(rc)) {
             // Compute the placemark's Cartesian ground point.
-            renderData.groundPoint = rc.geographicToCartesian(position.latitude, position.longitude, 0.0, WorldWind.CLAMP_TO_GROUND, renderData.groundPoint)
+            renderData.groundPoint = rc.geographicToCartesian(
+                position.latitude,
+                position.longitude,
+                0.0,
+                WorldWind.CLAMP_TO_GROUND,
+                renderData.groundPoint
+            )
             if (rc.frustum.intersectsSegment(renderData.groundPoint, renderData.placePoint)) {
                 val pool: Pool<DrawableLines> = rc.getDrawablePool(
-                    DrawableLines::class.java)
+                    DrawableLines::class.java
+                )
                 val drawable = DrawableLines.obtain(pool)
                 prepareDrawableLeader(rc, drawable)
                 rc.offerShapeDrawable(drawable, renderData.cameraDistance)
@@ -147,7 +154,7 @@ open class Label : AbstractRenderable,
 
     protected open fun mustDrawLeader(dc: RenderContext): Boolean {
         val activeAttributes = this.activeAttributes ?: return false
-        return (activeAttributes.drawLeader && activeAttributes.leaderAttributes != null&& !dc.pickMode )
+        return (activeAttributes.drawLeader && !dc.pickMode)
     }
 
     protected open fun prepareDrawableLeader(
@@ -169,12 +176,16 @@ open class Label : AbstractRenderable,
         drawable.vertexPoints[1] = 0f // groundPoint.y - groundPoint.y
         drawable.vertexPoints[2] = 0f // groundPoint.z - groundPoint.z
 
-        drawable.vertexPoints[3] = ( renderData.placePoint.x -  renderData.groundPoint.x).toFloat()
-        drawable.vertexPoints[4] = ( renderData.placePoint.y -  renderData.groundPoint.y).toFloat()
-        drawable.vertexPoints[5] = ( renderData.placePoint.z -  renderData.groundPoint.z).toFloat()
+        drawable.vertexPoints[3] = (renderData.placePoint.x - renderData.groundPoint.x).toFloat()
+        drawable.vertexPoints[4] = (renderData.placePoint.y - renderData.groundPoint.y).toFloat()
+        drawable.vertexPoints[5] = (renderData.placePoint.z - renderData.groundPoint.z).toFloat()
 
         drawable.mvpMatrix.set(rc.modelviewProjection)
-        drawable.mvpMatrix.multiplyByTranslation( renderData.groundPoint.x,  renderData.groundPoint.y,  renderData.groundPoint.z)
+        drawable.mvpMatrix.multiplyByTranslation(
+            renderData.groundPoint.x,
+            renderData.groundPoint.y,
+            renderData.groundPoint.z
+        )
 
         drawable.lineWidth = activeAttributes.leaderAttributes!!.outlineWidth
         drawable.enableDepthTest = activeAttributes.leaderAttributes!!.depthTest
@@ -226,7 +237,8 @@ open class Label : AbstractRenderable,
                     0.0,
                     0.0,
                     1.0,
-                    rotation)
+                    rotation
+                )
                 renderData.unitSquareTransform.multiplyByTranslation(
                     -renderData.offset.x,
                     -renderData.offset.y,
@@ -283,8 +295,6 @@ open class Label : AbstractRenderable,
     override fun moveTo(globe: Globe, position: Position?) {
         this.position.set(position)
     }
-
-
 
 
 }
