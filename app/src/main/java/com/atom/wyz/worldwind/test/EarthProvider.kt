@@ -1,4 +1,4 @@
-package com.atom.wyz.worldwind.core
+package com.atom.wyz.worldwind.test
 
 import android.graphics.Point
 import android.graphics.PointF
@@ -15,8 +15,7 @@ import com.atom.wyz.worldwind.context.DrawContext
 import com.atom.wyz.worldwind.context.RenderContext
 import com.atom.wyz.worldwind.controller.BasicWorldWindowController
 import com.atom.wyz.worldwind.controller.WorldWindowController
-import com.atom.wyz.worldwind.core.api.ITextureProvider
-import com.atom.wyz.worldwind.core.bean.TextureBean
+import com.atom.wyz.worldwind.test.bean.TextureBean
 import com.atom.wyz.worldwind.frame.BasicFrameController
 import com.atom.wyz.worldwind.frame.Frame
 import com.atom.wyz.worldwind.frame.FrameController

@@ -5,6 +5,8 @@ import android.os.Bundle
 import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import com.atom.wyz.worldwind.R
+import com.atom.wyz.worldwind.test.BasicGlobe2Activity
+import com.atom.wyz.worldwind.test.BasicTextureWorldWindActivity
 
 class MenuActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {

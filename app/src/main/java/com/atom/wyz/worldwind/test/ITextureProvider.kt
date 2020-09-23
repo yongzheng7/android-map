@@ -1,4 +1,4 @@
-package com.atom.wyz.worldwind.core.api
+package com.atom.wyz.worldwind.test
 
 import android.graphics.Point
 

@@ -1,4 +1,4 @@
-package com.atom.wyz.worldwind
+package com.atom.wyz.worldwind.test
 
 import android.annotation.SuppressLint
 import android.content.Context
@@ -9,13 +9,15 @@ import android.view.Choreographer.FrameCallback
 import android.view.MotionEvent
 import android.view.SurfaceHolder
 import com.atom.wyz.worldwind.layer.Layer
+import com.atom.wyz.worldwind.test.WorldWindowHelper
 import javax.microedition.khronos.egl.EGLConfig
 import javax.microedition.khronos.opengles.GL10
 
 class WorldWindow2 : GLSurfaceView, GLSurfaceView.Renderer, FrameCallback,
     WorldWindowHelper.Listener {
 
-    val helper: WorldWindowHelper = WorldWindowHelper(this)
+    val helper: WorldWindowHelper =
+        WorldWindowHelper(this)
 
     constructor(context: Context) : super(context) {
     }

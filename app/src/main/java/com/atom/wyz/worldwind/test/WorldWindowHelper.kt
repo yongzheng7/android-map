@@ -1,4 +1,4 @@
-package com.atom.wyz.worldwind
+package com.atom.wyz.worldwind.test
 
 import android.graphics.PointF
 import android.opengl.GLES20
@@ -7,6 +7,9 @@ import android.os.Looper
 import android.os.Message
 import android.view.MotionEvent
 import android.view.View
+import com.atom.wyz.worldwind.App
+import com.atom.wyz.worldwind.WorldHelper
+import com.atom.wyz.worldwind.WorldWind
 import com.atom.wyz.worldwind.context.DrawContext
 import com.atom.wyz.worldwind.context.RenderContext
 import com.atom.wyz.worldwind.controller.BasicWorldWindowController
@@ -36,7 +39,8 @@ import java.util.*
 import java.util.concurrent.ConcurrentLinkedQueue
 import java.util.concurrent.TimeUnit
 
-class WorldWindowHelper : WorldRenderer,  MessageListener,  WorldHelper, View.OnTouchListener {
+class WorldWindowHelper : WorldRenderer,  MessageListener,
+    WorldHelper, View.OnTouchListener {
 
     companion object {
         const val MAX_FRAME_QUEUE_SIZE = 2

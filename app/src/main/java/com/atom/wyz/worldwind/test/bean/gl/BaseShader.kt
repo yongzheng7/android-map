@@ -1,14 +1,14 @@
-package com.atom.wyz.worldwind.core.bean.gl
+package com.atom.wyz.worldwind.test.bean.gl
 
 import android.content.res.Resources
 import android.opengl.GLES20
-import com.atom.wyz.worldwind.core.api.Renderer
-import com.atom.wyz.worldwind.core.bean.FrameBuffer
-import com.atom.wyz.worldwind.core.utils.MatrixUtils.Companion.getOriginalMatrix
-import com.atom.wyz.worldwind.core.utils.MatrixUtils.Companion.getOriginalTextureCo
-import com.atom.wyz.worldwind.core.utils.MatrixUtils.Companion.getOriginalVertexCo
-import com.atom.wyz.worldwind.core.utils.ShaderUtils.Companion.createGLProgram
-import com.atom.wyz.worldwind.core.utils.ShaderUtils.Companion.createGLProgramByAssetsFile
+import com.atom.wyz.worldwind.test.Renderer
+import com.atom.wyz.worldwind.test.bean.FrameBuffer
+import com.atom.wyz.worldwind.test.utils.MatrixUtils.Companion.getOriginalMatrix
+import com.atom.wyz.worldwind.test.utils.MatrixUtils.Companion.getOriginalTextureCo
+import com.atom.wyz.worldwind.test.utils.MatrixUtils.Companion.getOriginalVertexCo
+import com.atom.wyz.worldwind.test.utils.ShaderUtils.Companion.createGLProgram
+import com.atom.wyz.worldwind.test.utils.ShaderUtils.Companion.createGLProgramByAssetsFile
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
 import java.nio.FloatBuffer

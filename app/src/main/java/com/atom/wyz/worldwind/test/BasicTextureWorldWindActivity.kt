@@ -1,4 +1,4 @@
-package com.atom.wyz.worldwind.app
+package com.atom.wyz.worldwind.test
 
 import android.annotation.SuppressLint
 import android.os.Bundle
@@ -6,7 +6,7 @@ import android.view.SurfaceHolder
 import android.view.SurfaceView
 import androidx.appcompat.app.AppCompatActivity
 import com.atom.wyz.worldwind.R
-import com.atom.wyz.worldwind.core.EarthHelper
+import com.atom.wyz.worldwind.test.EarthHelper
 import com.atom.wyz.worldwind.layer.AtmosphereLayer
 import com.atom.wyz.worldwind.layer.BackgroundLayer
 import com.atom.wyz.worldwind.layer.BlueMarbleLandsatLayer

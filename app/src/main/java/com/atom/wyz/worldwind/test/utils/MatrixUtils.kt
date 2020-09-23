@@ -1,4 +1,4 @@
-package com.atom.wyz.worldwind.core.utils
+package com.atom.wyz.worldwind.test.utils
 
 import android.opengl.Matrix
 

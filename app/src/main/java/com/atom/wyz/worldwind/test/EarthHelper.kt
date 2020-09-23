@@ -1,4 +1,4 @@
-package com.atom.wyz.worldwind.core
+package com.atom.wyz.worldwind.test
 
 import android.view.MotionEvent
 import android.view.View
@@ -10,7 +10,7 @@ class EarthHelper : View.OnTouchListener{
             EarthHelper()
         }
 
-        fun instance() : EarthHelper{
+        fun instance() : EarthHelper {
             return instance
         }
     }
@@ -18,7 +18,8 @@ class EarthHelper : View.OnTouchListener{
 
     private val mEarthProvider: EarthProvider
 
-    private val mShower: EarthShower = EarthShower()
+    private val mShower: EarthShower =
+        EarthShower()
 
     constructor() {
         //用于预览图像

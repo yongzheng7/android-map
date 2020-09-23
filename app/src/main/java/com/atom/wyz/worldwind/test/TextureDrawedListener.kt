@@ -1,7 +1,7 @@
-package com.atom.wyz.worldwind.core.api
+package com.atom.wyz.worldwind.test
 
 import android.opengl.EGLSurface
-import com.atom.wyz.worldwind.core.bean.TextureBean
+import com.atom.wyz.worldwind.test.bean.TextureBean
 
 interface TextureDrawedListener{
     /**

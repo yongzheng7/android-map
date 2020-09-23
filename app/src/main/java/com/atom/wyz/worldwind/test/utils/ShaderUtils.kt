@@ -1,4 +1,4 @@
-package com.atom.wyz.worldwind.core.utils
+package com.atom.wyz.worldwind.test.utils
 
 import android.content.res.Resources
 import android.opengl.GLES20
@@ -53,11 +53,19 @@ enum class ShaderUtils {
          * @return programId
          */
         open fun createGLProgram(vertexSource: String?, fragmentSource: String?): Int {
-            val vertex = loadShader(GLES20.GL_VERTEX_SHADER, vertexSource)
+            val vertex =
+                loadShader(
+                    GLES20.GL_VERTEX_SHADER,
+                    vertexSource
+                )
             if (vertex == 0) {
                 return 0
             }
-            val fragment = loadShader(GLES20.GL_FRAGMENT_SHADER, fragmentSource)
+            val fragment =
+                loadShader(
+                    GLES20.GL_FRAGMENT_SHADER,
+                    fragmentSource
+                )
             if (fragment == 0) {
                 return 0
             }
@@ -88,7 +96,16 @@ enum class ShaderUtils {
          * @return programId
          */
         open fun createGLProgramByAssetsFile(res: Resources, vertex: String, fragment: String): Int {
-            return createGLProgram(readText(res, vertex), readText(res, fragment))
+            return createGLProgram(
+                readText(
+                    res,
+                    vertex
+                ),
+                readText(
+                    res,
+                    fragment
+                )
+            )
         }
     }
 

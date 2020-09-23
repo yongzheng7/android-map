@@ -1,16 +1,15 @@
-package com.atom.wyz.worldwind.core
+package com.atom.wyz.worldwind.test
 
 import android.opengl.EGLSurface
 import android.opengl.GLES20
 import android.util.Log
 import com.atom.wyz.worldwind.core.api.IObserver
-import com.atom.wyz.worldwind.core.api.TextureDrawedListener
-import com.atom.wyz.worldwind.core.bean.TextureBean
-import com.atom.wyz.worldwind.core.bean.gl.BaseShader
-import com.atom.wyz.worldwind.core.bean.gl.LazyShader
-import com.atom.wyz.worldwind.core.utils.MatrixUtils.Companion.TYPE_CENTERCROP
-import com.atom.wyz.worldwind.core.utils.MatrixUtils.Companion.flip
-import com.atom.wyz.worldwind.core.utils.MatrixUtils.Companion.getMatrix
+import com.atom.wyz.worldwind.test.bean.TextureBean
+import com.atom.wyz.worldwind.test.bean.gl.BaseShader
+import com.atom.wyz.worldwind.test.bean.gl.LazyShader
+import com.atom.wyz.worldwind.test.utils.MatrixUtils.Companion.TYPE_CENTERCROP
+import com.atom.wyz.worldwind.test.utils.MatrixUtils.Companion.flip
+import com.atom.wyz.worldwind.test.utils.MatrixUtils.Companion.getMatrix
 
 class EarthShower : IObserver<TextureBean> {
 

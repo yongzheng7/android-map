@@ -11,7 +11,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.atom.wyz.worldwind.core.bean;
+package com.atom.wyz.worldwind.test.bean;
 
 import android.opengl.GLES20;
 

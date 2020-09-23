@@ -1,4 +1,4 @@
-package com.atom.wyz.worldwind.core.bean
+package com.atom.wyz.worldwind.test.bean
 
 import com.atom.wyz.worldwind.core.egl.EGLHelper
 

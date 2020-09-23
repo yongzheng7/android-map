@@ -1,14 +1,13 @@
-package com.atom.wyz.worldwind.core
+package com.atom.wyz.worldwind.test
 
 import android.graphics.SurfaceTexture
 import android.opengl.EGL14
 import android.opengl.GLES20
 import android.util.Log
 import com.atom.wyz.worldwind.core.api.IObserver
-import com.atom.wyz.worldwind.core.api.ITextureProvider
 import com.atom.wyz.worldwind.core.api.Observable
-import com.atom.wyz.worldwind.core.bean.FrameBuffer
-import com.atom.wyz.worldwind.core.bean.TextureBean
+import com.atom.wyz.worldwind.test.bean.FrameBuffer
+import com.atom.wyz.worldwind.test.bean.TextureBean
 import com.atom.wyz.worldwind.core.egl.EGLConfigAttrs
 import com.atom.wyz.worldwind.core.egl.EGLContextAttrs
 import com.atom.wyz.worldwind.core.egl.EGLHelper

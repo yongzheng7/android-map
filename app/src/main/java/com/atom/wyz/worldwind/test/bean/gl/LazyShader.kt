@@ -1,4 +1,4 @@
-package com.atom.wyz.worldwind.core.bean.gl
+package com.atom.wyz.worldwind.test.bean.gl
 
 import android.content.res.Resources
 
@@ -8,6 +8,9 @@ open class LazyShader : BaseShader {
 
     constructor(vert: String, frag: String) : super(null, vert, frag)
 
-    constructor() : super(null, BASE_VERT, BASE_FRAG)
+    constructor() : super(null,
+        BASE_VERT,
+        BASE_FRAG
+    )
 
 }

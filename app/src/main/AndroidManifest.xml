@@ -129,10 +129,10 @@
         <activity android:name=".app.WtmsLayerActivity"
                 android:theme="@style/AppTheme">
         </activity>
-        <activity android:name=".app.BasicTextureWorldWindActivity"
+        <activity android:name=".test.BasicTextureWorldWindActivity"
                 android:theme="@style/AppTheme">
         </activity>
-        <activity android:name=".app.BasicGlobe2Activity"
+        <activity android:name=".test.BasicGlobe2Activity"
                 android:theme="@style/AppTheme">
         </activity>
 
