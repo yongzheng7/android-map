@@ -3,21 +3,21 @@ package com.atom.wyz.worldwind.layer.render
 import android.content.res.Resources
 import android.graphics.Typeface
 import com.atom.wyz.worldwind.WorldWind
-import com.atom.wyz.worldwind.layer.draw.Drawable
-import com.atom.wyz.worldwind.layer.draw.DrawableQueue
-import com.atom.wyz.worldwind.layer.draw.DrawableTerrain
+import com.atom.wyz.worldwind.core.shader.BufferObject
+import com.atom.wyz.worldwind.core.shader.GpuProgram
+import com.atom.wyz.worldwind.core.shader.GpuTexture
 import com.atom.wyz.worldwind.geom.*
 import com.atom.wyz.worldwind.globe.Globe
 import com.atom.wyz.worldwind.globe.Terrain
 import com.atom.wyz.worldwind.globe.Tessellator
 import com.atom.wyz.worldwind.layer.Layer
 import com.atom.wyz.worldwind.layer.LayerList
+import com.atom.wyz.worldwind.layer.draw.Drawable
+import com.atom.wyz.worldwind.layer.draw.DrawableQueue
+import com.atom.wyz.worldwind.layer.draw.DrawableTerrain
+import com.atom.wyz.worldwind.layer.render.attribute.TextAttributes
 import com.atom.wyz.worldwind.layer.render.pick.PickedObject
 import com.atom.wyz.worldwind.layer.render.pick.PickedObjectList
-import com.atom.wyz.worldwind.layer.render.attribute.TextAttributes
-import com.atom.wyz.worldwind.core.shader.BufferObject
-import com.atom.wyz.worldwind.core.shader.GpuProgram
-import com.atom.wyz.worldwind.core.shader.GpuTexture
 import com.atom.wyz.worldwind.util.RenderResourceCache
 import com.atom.wyz.worldwind.util.glu.GLU
 import com.atom.wyz.worldwind.util.glu.GLUtessellator
@@ -295,8 +295,10 @@ open class RenderContext {
     }
 
     open fun offerSurfaceDrawable(drawable: Drawable, zOrder: Double) {
-        drawableQueue?.offerDrawable(drawable,
-            WorldWind.SURFACE_DRAWABLE, zOrder)
+        drawableQueue?.offerDrawable(
+            drawable,
+            WorldWind.SURFACE_DRAWABLE, zOrder
+        )
     }
 
     open fun offerShapeDrawable(drawable: Drawable, cameraDistance: Double) {
@@ -321,8 +323,10 @@ open class RenderContext {
     }
 
     open fun offerDrawableTerrain(drawable: DrawableTerrain, cameraDistance: Double) {
-        drawableTerrain?.offerDrawable(drawable,
-            WorldWind.SURFACE_DRAWABLE, cameraDistance)
+        drawableTerrain?.offerDrawable(
+            drawable,
+            WorldWind.SURFACE_DRAWABLE, cameraDistance
+        )
     }
 
 
@@ -367,18 +371,17 @@ open class RenderContext {
         return renderResourceCache?.get(key) as GpuTexture?
     }
 
-    open fun renderText(text: String, attributes: TextAttributes): GpuTexture? {
-        val key = TextCacheKey()
-            .set(text, attributes)
+    open fun renderText(text: String, attributes: TextAttributes): GpuTexture {
+        val key = TextCacheKey().set(text, attributes)
         textRenderer.textColor = (attributes.textColor)
         textRenderer.textSize = (attributes.textSize)
         attributes.typeface?.also { textRenderer.typeface = it }
         textRenderer.enableOutline = (attributes.enableOutline)
         textRenderer.outlineColor = (attributes.outlineColor)
         textRenderer.outlineWidth = (attributes.outlineWidth)
-        val texture: GpuTexture? = textRenderer.renderText(text)
-        renderResourceCache?.put(key, texture!!, texture.textureByteCount)
-        return texture
+        return  textRenderer.renderText(text).also {
+            renderResourceCache?.put(key, it, it.textureByteCount)
+        }
     }
 
     open fun geographicToCartesian(

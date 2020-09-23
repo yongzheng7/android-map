@@ -6,7 +6,6 @@ import android.os.Bundle
 import android.os.Handler
 import com.atom.wyz.worldwind.R
 import com.atom.wyz.worldwind.WorldWind
-import com.atom.wyz.worldwind.layer.render.attribute.PlacemarkAttributes
 import com.atom.wyz.worldwind.geom.LookAt
 import com.atom.wyz.worldwind.geom.Offset
 import com.atom.wyz.worldwind.geom.Position
@@ -14,6 +13,7 @@ import com.atom.wyz.worldwind.geom.SimpleColor
 import com.atom.wyz.worldwind.layer.RenderableLayer
 import com.atom.wyz.worldwind.layer.render.ImageSource
 import com.atom.wyz.worldwind.layer.render.Placemark
+import com.atom.wyz.worldwind.layer.render.attribute.PlacemarkAttributes
 
 class Placemarks2Activity : BasicWorldWindActivity() {
 

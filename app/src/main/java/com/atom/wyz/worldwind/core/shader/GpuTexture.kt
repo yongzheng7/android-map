@@ -4,8 +4,8 @@ import android.graphics.Bitmap
 import android.opengl.GLES20
 import android.opengl.GLUtils
 import android.util.SparseIntArray
-import com.atom.wyz.worldwind.layer.draw.DrawContext
 import com.atom.wyz.worldwind.geom.Matrix3
+import com.atom.wyz.worldwind.layer.draw.DrawContext
 import com.atom.wyz.worldwind.util.Logger
 import com.atom.wyz.worldwind.util.WWMath
 
@@ -17,23 +17,23 @@ class GpuTexture : RenderResource {
     var textureName: IntArray =
         UNINITIALIZED_NAME
 
-    var textureWidth = 0
+    var textureWidth : Int = 0
 
-    var textureHeight = 0
+    var textureHeight : Int = 0
 
-    var textureFormat = 0
+    var textureFormat : Int = 0
 
-    var textureType = 0
+    var textureType : Int = 0
 
-    var textureByteCount = 0
+    var textureByteCount : Int = 0
 
     var imageBitmap: Bitmap? = null
 
     var texCoordTransform = Matrix3()
 
-    var imageHasMipMap = false
+    var imageHasMipMap : Boolean = false
 
-    var pickMode = false
+    var pickMode : Boolean = false
 
     var texParameters: SparseIntArray? = null
 

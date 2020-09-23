@@ -19,10 +19,6 @@ open class Label : AbstractRenderable,
     Movable {
     companion object {
         const val DEFAULT_DEPTH_OFFSET = -0.1
-        internal var renderData: RenderData = RenderData()
-    }
-
-    internal class RenderData {
         var groundPoint = Vec3()
         var placePoint: Vec3 = Vec3()
         var screenPlacePoint: Vec3 = Vec3()
@@ -34,13 +30,12 @@ open class Label : AbstractRenderable,
         var cameraDistance = 0.0
     }
 
-
     var position = Position()
 
     @WorldWind.AltitudeMode
     var altitudeMode: Int = WorldWind.ABSOLUTE
 
-    var text: String? = null
+    var text: String
 
     var rotation = 0.0
 
@@ -55,15 +50,12 @@ open class Label : AbstractRenderable,
 
     override var highlighted: Boolean = false
 
+    var textTexture: GpuTexture? = null
+
     constructor(position: Position, text: String) : super(text) {
         this.position.set(position)
         this.text = text
         attributes = TextAttributes()
-    }
-
-    constructor(position: Position, attributes: TextAttributes) {
-        this.position.set(position)
-        this.attributes = attributes
     }
 
     constructor(position: Position, text: String, attributes: TextAttributes) : super(text) {
@@ -81,66 +73,85 @@ open class Label : AbstractRenderable,
             position.longitude,
             position.altitude,
             altitudeMode,
-            renderData.placePoint
+            placePoint
         )
 
         // 计算距离摄像机的长度
-        renderData.cameraDistance = rc.cameraPoint.distanceTo(renderData.placePoint)
+        cameraDistance = rc.cameraPoint.distanceTo(placePoint)
 
         // 计算偏移量
         var depthOffset = 0.0
-        if (renderData.cameraDistance < rc.horizonDistance) { // 摄像机能够看到
+        if (cameraDistance < rc.horizonDistance) { // 摄像机能够看到
             depthOffset =
                 DEFAULT_DEPTH_OFFSET
         }
         // 根据偏移计算出在屏幕上的坐标位置 xy
-        if (!rc.projectWithDepth(renderData.placePoint, depthOffset, renderData.screenPlacePoint)) {
+        if (!rc.projectWithDepth(placePoint, depthOffset, screenPlacePoint)) {
             return  // clipped by the near plane or the far plane
         }
 
         // 获取活跃的属性
         this.determineActiveAttributes(rc)
+
         if (activeAttributes == null) {
             return
         }
 
         // Keep track of the drawable count to determine whether or not this label has enqueued drawables.
         val drawableCount = rc.drawableCount()
+
         if (rc.pickMode) {
-            renderData.pickedObjectId = rc.nextPickedObjectId()
-            renderData.pickColor = PickedObject.identifierToUniqueColor(
-                renderData.pickedObjectId,
-                renderData.pickColor
+            pickedObjectId = rc.nextPickedObjectId()
+            pickColor = PickedObject.identifierToUniqueColor(
+                pickedObjectId,
+                pickColor
             )
         }
 
         if (mustDrawLeader(rc)) {
             // Compute the placemark's Cartesian ground point.
-            renderData.groundPoint = rc.geographicToCartesian(
+            groundPoint = rc.geographicToCartesian(
                 position.latitude,
                 position.longitude,
                 0.0,
                 WorldWind.CLAMP_TO_GROUND,
-                renderData.groundPoint
+                groundPoint
             )
-            if (rc.frustum.intersectsSegment(renderData.groundPoint, renderData.placePoint)) {
+            if (rc.frustum.intersectsSegment(groundPoint, placePoint)) {
                 val pool: Pool<DrawableLines> = rc.getDrawablePool(
                     DrawableLines::class.java
                 )
                 val drawable = DrawableLines.obtain(pool)
                 prepareDrawableLeader(rc, drawable)
-                rc.offerShapeDrawable(drawable, renderData.cameraDistance)
+                rc.offerShapeDrawable(drawable, cameraDistance)
             }
         }
 
+        if(rc.getText(text, activeAttributes!!).also { textTexture = it } == null){
+            if (!rc.frustum.containsPoint(placePoint)) {
+                return
+            }
+        }
 
-        this.makeDrawable(rc)
+        this.determineActiveLabelBounds(rc)
+
+        WWMath.boundingRectForUnitSquare(unitSquareTransform, screenBounds)
+
+        if (rc.frustum.intersectsViewport(screenBounds)) {
+            val pool: Pool<DrawableScreenTexture> = rc.getDrawablePool(DrawableScreenTexture::class.java)
+            val drawable: DrawableScreenTexture = DrawableScreenTexture.obtain(pool)
+            prepareDrawableLabel(rc, drawable)
+            // Enqueue a drawable for processing on the OpenGL thread.
+            rc.offerShapeDrawable(drawable, cameraDistance)
+        }
+
+        textTexture = null
 
         // Enqueue a picked object that associates the label's drawables with its picked object ID.
         if (rc.pickMode && rc.drawableCount() != drawableCount) {
             rc.offerPickedObject(
                 PickedObject.fromRenderable(
-                    renderData.pickedObjectId,
+                    pickedObjectId,
                     this,
                     rc.currentLayer!!
                 )
@@ -176,37 +187,50 @@ open class Label : AbstractRenderable,
         drawable.vertexPoints[1] = 0f // groundPoint.y - groundPoint.y
         drawable.vertexPoints[2] = 0f // groundPoint.z - groundPoint.z
 
-        drawable.vertexPoints[3] = (renderData.placePoint.x - renderData.groundPoint.x).toFloat()
-        drawable.vertexPoints[4] = (renderData.placePoint.y - renderData.groundPoint.y).toFloat()
-        drawable.vertexPoints[5] = (renderData.placePoint.z - renderData.groundPoint.z).toFloat()
+        drawable.vertexPoints[3] = (placePoint.x - groundPoint.x).toFloat()
+        drawable.vertexPoints[4] = (placePoint.y - groundPoint.y).toFloat()
+        drawable.vertexPoints[5] = (placePoint.z - groundPoint.z).toFloat()
 
         drawable.mvpMatrix.set(rc.modelviewProjection)
         drawable.mvpMatrix.multiplyByTranslation(
-            renderData.groundPoint.x,
-            renderData.groundPoint.y,
-            renderData.groundPoint.z
+            groundPoint.x,
+            groundPoint.y,
+            groundPoint.z
         )
 
         drawable.lineWidth = activeAttributes.leaderAttributes!!.outlineWidth
         drawable.enableDepthTest = activeAttributes.leaderAttributes!!.depthTest
-        drawable.color.set(if (rc.pickMode) renderData.pickColor else activeAttributes.leaderAttributes!!.outlineColor)
+        drawable.color.set(if (rc.pickMode) pickColor else activeAttributes.leaderAttributes!!.outlineColor)
 
     }
 
-    private fun makeDrawable(rc: RenderContext) {
-        var texture: GpuTexture? = null
-        isTwoNotNull(text, activeAttributes, { text: String, textAttributes: TextAttributes ->
-            texture = rc.getText(text, textAttributes)
-        })
+    protected open fun prepareDrawableLabel(
+        rc: RenderContext,
+        drawable: DrawableScreenTexture
+    ){
+        drawable.program = rc.getProgram(BasicProgram.KEY) as BasicProgram?
+        if (drawable.program == null) {
+            drawable.program =
+                rc.putProgram(
+                    BasicProgram.KEY,
+                    BasicProgram(rc.resources)
+                ) as BasicProgram
+        }
+        drawable.unitSquareTransform.set(unitSquareTransform)
+        drawable.color.set(if (rc.pickMode) pickColor else activeAttributes!!.textColor)
+        drawable.texture = textTexture
+        drawable.enableDepthTest = activeAttributes!!.enableDepthTest
 
-        if (texture == null && rc.frustum.containsPoint(renderData.placePoint)) {
-            texture = rc.renderText(text!!, activeAttributes!!)
+    }
+
+    private fun determineActiveLabelBounds(rc: RenderContext) {
+        if (textTexture == null) {
+            textTexture = rc.renderText(text, activeAttributes!!)
         }
 
-        texture?.let {
-
+        textTexture?.let {
             // Initialize the unit square transform to the identity matrix.
-            renderData.unitSquareTransform.setToIdentity()
+            unitSquareTransform.setToIdentity()
 
             val w: Int = it.textureWidth
             val h: Int = it.textureHeight
@@ -214,77 +238,46 @@ open class Label : AbstractRenderable,
             activeAttributes!!.textOffset.offsetForSize(
                 w.toDouble(),
                 h.toDouble(),
-                renderData.offset
+                offset
             )
 
-            renderData.unitSquareTransform.setTranslation(
-                renderData.screenPlacePoint.x - renderData.offset.x,
-                renderData.screenPlacePoint.y - renderData.offset.y,
-                renderData.screenPlacePoint.z
+            unitSquareTransform.setTranslation(
+                screenPlacePoint.x - offset.x,
+                screenPlacePoint.y - offset.y,
+                screenPlacePoint.z
             )
 
             // Apply the label's rotation according to its rotation value and orientation mode. The rotation is applied
             // such that the text rotates around the text offset point.
-            val rotation =
-                if (rotationMode == WorldWind.RELATIVE_TO_GLOBE) rc.camera.heading - rotation else -rotation
+            val rotation = if (rotationMode == WorldWind.RELATIVE_TO_GLOBE) rc.camera.heading - rotation else -rotation
             if (rotation != 0.0) {
-                renderData.unitSquareTransform.multiplyByTranslation(
-                    renderData.offset.x,
-                    renderData.offset.y,
+                unitSquareTransform.multiplyByTranslation(
+                    offset.x,
+                    offset.y,
                     0.0
                 )
-                renderData.unitSquareTransform.multiplyByRotation(
+                unitSquareTransform.multiplyByRotation(
                     0.0,
                     0.0,
                     1.0,
                     rotation
                 )
-                renderData.unitSquareTransform.multiplyByTranslation(
-                    -renderData.offset.x,
-                    -renderData.offset.y,
+                unitSquareTransform.multiplyByTranslation(
+                    -offset.x,
+                    -offset.y,
                     0.0
                 )
             }
             // Apply the label's translation and scale according to its text size.
-            renderData.unitSquareTransform.multiplyByScale(w.toDouble(), h.toDouble(), 1.0)
-
-
-            WWMath.boundingRectForUnitSquare(
-                renderData.unitSquareTransform,
-                renderData.screenBounds
-            )
-
-            if (!rc.frustum.intersectsViewport(renderData.screenBounds)) {
-                return  // the text is outside the viewport
-            }
-
-            val pool: Pool<DrawableScreenTexture> =
-                rc.getDrawablePool(DrawableScreenTexture::class.java)
-            val drawable: DrawableScreenTexture = DrawableScreenTexture.obtain(pool)
-
-            drawable.program = rc.getProgram(BasicProgram.KEY) as BasicProgram?
-            if (drawable.program == null) {
-                drawable.program =
-                    rc.putProgram(
-                        BasicProgram.KEY,
-                        BasicProgram(rc.resources)
-                    ) as BasicProgram
-            }
-            drawable.unitSquareTransform.set(renderData.unitSquareTransform)
-
-            drawable.color.set(if (rc.pickMode) renderData.pickColor else activeAttributes!!.textColor)
-            drawable.texture = texture
-            drawable.enableDepthTest = activeAttributes!!.enableDepthTest
-            // Enqueue a drawable for processing on the OpenGL thread.
-            rc.offerShapeDrawable(drawable, renderData.cameraDistance)
+            unitSquareTransform.multiplyByScale(w.toDouble(), h.toDouble(), 1.0)
         }
     }
 
-    protected fun determineActiveAttributes(rc: RenderContext) {
-        if (highlighted && highlightAttributes != null) {
-            activeAttributes = highlightAttributes
+    private fun determineActiveAttributes(rc: RenderContext) {
+        activeAttributes = if (highlighted && highlightAttributes != null) {
+            highlightAttributes
         } else {
-            activeAttributes = attributes
+            attributes
         }
     }
 
@@ -295,6 +288,5 @@ open class Label : AbstractRenderable,
     override fun moveTo(globe: Globe, position: Position?) {
         this.position.set(position)
     }
-
 
 }

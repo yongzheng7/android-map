@@ -13,17 +13,17 @@ import android.widget.FrameLayout
 import android.widget.TextView
 import android.widget.Toast
 import androidx.annotation.DrawableRes
-import com.atom.wyz.worldwind.controller.BasicWorldWindowController
 import com.atom.wyz.worldwind.R
-import com.atom.wyz.worldwind.layer.render.RenderContext
 import com.atom.wyz.worldwind.WorldWind
+import com.atom.wyz.worldwind.controller.BasicWorldWindowController
 import com.atom.wyz.worldwind.geom.Position
 import com.atom.wyz.worldwind.layer.RenderableLayer
 import com.atom.wyz.worldwind.layer.render.ImageSource
 import com.atom.wyz.worldwind.layer.render.Placemark
+import com.atom.wyz.worldwind.layer.render.RenderContext
 import com.atom.wyz.worldwind.layer.render.Renderable
-import com.atom.wyz.worldwind.layer.render.shape.Highlightable
 import com.atom.wyz.worldwind.layer.render.attribute.PlacemarkAttributes
+import com.atom.wyz.worldwind.layer.render.shape.Highlightable
 import com.atom.wyz.worldwind.util.Logger
 import com.atom.wyz.worldwind.util.WWUtil
 import java.io.BufferedReader
@@ -518,7 +518,7 @@ class PlacemarksDemoActivity : BasicWorldWindActivity() {
             for (place in places) {
                 val placemark = Placemark(
                     place.position,
-                    null,
+                    PlacemarkAttributes(),
                     place.name
                 )
                 placemark.levelOfDetailSelector = (PlaceLevelOfDetailSelector(getResources(), place))

@@ -54,20 +54,27 @@ class PlacemarkAttributes {
     var imageColor: SimpleColor
     var imageOffset: Offset
     var imageScale = 0.0
+
+    var drawLabel = false
     var labelAttributes: TextAttributes
     var drawLeader = false
     var leaderAttributes: ShapeAttributes
+
     var minimumImageScale = 0.0
     var depthTest = false
 
     constructor() {
         imageColor = SimpleColor(1f, 1f, 1f, 1f)
-        imageOffset = Offset(Offset.center())
+        imageOffset = Offset(Offset.bottomCenter())
         imageScale = 1.0
         imageSource = null
         drawLeader = false
+        drawLabel = true
         depthTest = true
-        labelAttributes = TextAttributes()
+        labelAttributes = TextAttributes().apply {
+            this.drawLeader = false
+            this.textOffset = Offset.negate(imageOffset)
+        }
         leaderAttributes = ShapeAttributes()
     }
 
@@ -79,7 +86,7 @@ class PlacemarkAttributes {
         minimumImageScale = attributes.minimumImageScale
         depthTest = attributes.depthTest
         drawLeader = attributes.drawLeader
-
+        drawLabel = attributes.drawLabel
         labelAttributes = TextAttributes(attributes.labelAttributes)
         leaderAttributes = ShapeAttributes(attributes.leaderAttributes)
 
@@ -93,6 +100,7 @@ class PlacemarkAttributes {
         depthTest = attributes.depthTest
         minimumImageScale = attributes.minimumImageScale
         drawLeader = attributes.drawLeader
+        drawLabel = attributes.drawLabel
         labelAttributes = TextAttributes(attributes.labelAttributes)
         leaderAttributes = ShapeAttributes(attributes.leaderAttributes)
         return this
@@ -107,12 +115,13 @@ class PlacemarkAttributes {
             return false
         }
         val that = other as PlacemarkAttributes
-        return ((if (imageSource == null) that.imageSource == null else imageSource!!.equals(that.imageSource))
+        return ((if (imageSource == null) that.imageSource == null else imageSource!! == that.imageSource)
                 && imageColor == that.imageColor
                 && imageOffset == that.imageOffset
                 && imageScale == that.imageScale
                 && minimumImageScale == that.minimumImageScale
                 && drawLeader == that.drawLeader
+                && drawLabel == that.drawLabel
                 && depthTest == that.depthTest
                 && (labelAttributes == that.labelAttributes)
                 && leaderAttributes == that.leaderAttributes)
@@ -127,6 +136,7 @@ class PlacemarkAttributes {
         temp = minimumImageScale.toBits()
         result = 31 * result + (temp xor (temp ushr 32)).toInt()
         result = 31 * result + if (drawLeader) 1 else 0
+        result = 31 * result + if (drawLabel) 1 else 0
         result = 31 * result + if (depthTest) 1 else 0
         result = 31 * result + labelAttributes.hashCode()
         result = 31 * result + leaderAttributes.hashCode()

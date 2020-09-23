@@ -4,14 +4,16 @@ import com.atom.wyz.worldwind.WorldWind
 
 class Offset {
 
-    companion object{
+    companion object {
 
         fun center(): Offset {
             return Offset(WorldWind.OFFSET_FRACTION, 0.5, WorldWind.OFFSET_FRACTION, 0.5)
         }
+
         fun centerLeft(): Offset {
             return Offset(WorldWind.OFFSET_FRACTION, 0.0, WorldWind.OFFSET_FRACTION, 0.5)
         }
+
         fun centerRight(): Offset {
             return Offset(WorldWind.OFFSET_FRACTION, 1.0, WorldWind.OFFSET_FRACTION, 0.5)
         }
@@ -19,31 +21,55 @@ class Offset {
         fun bottomLeft(): Offset {
             return Offset(WorldWind.OFFSET_FRACTION, 0.0, WorldWind.OFFSET_FRACTION, 0.0)
         }
+
         fun bottomCenter(): Offset {
             return Offset(WorldWind.OFFSET_FRACTION, 0.5, WorldWind.OFFSET_FRACTION, 0.0)
         }
+
         fun bottomRight(): Offset {
             return Offset(WorldWind.OFFSET_FRACTION, 1.0, WorldWind.OFFSET_FRACTION, 0.0)
         }
+
         fun topLeft(): Offset {
             return Offset(WorldWind.OFFSET_FRACTION, 0.0, WorldWind.OFFSET_FRACTION, 1.0)
         }
+
         fun topCenter(): Offset {
             return Offset(WorldWind.OFFSET_FRACTION, 0.5, WorldWind.OFFSET_FRACTION, 1.0)
         }
-        fun topRight(): Offset  {
+
+        fun topRight(): Offset {
             return Offset(WorldWind.OFFSET_FRACTION, 1.0, WorldWind.OFFSET_FRACTION, 1.0)
         }
+
+        fun negate(res: Offset): Offset {
+            val result = Offset(res)
+            if (res.xUnits == WorldWind.OFFSET_FRACTION) {
+                result.x = 1.0 - res.x
+            }
+            if (res.yUnits == WorldWind.OFFSET_FRACTION) {
+                result.y = 1.0 - res.y
+            }
+            return result
+        }
     }
+
     var x = 0.0
     var y = 0.0
+
     @WorldWind.OffsetMode
     var xUnits = 0
+
     @WorldWind.OffsetMode
     var yUnits = 0
 
-    
-    constructor(@WorldWind.OffsetMode xUnits: Int, x: Double, @WorldWind.OffsetMode yUnits: Int, y: Double) {
+
+    constructor(
+        @WorldWind.OffsetMode xUnits: Int,
+        x: Double,
+        @WorldWind.OffsetMode yUnits: Int,
+        y: Double
+    ) {
         this.x = x
         this.y = y
         this.xUnits = xUnits
@@ -98,19 +124,19 @@ class Offset {
                 '}'
     }
 
-    fun offsetForSize(width: Double, height: Double , result : Vec2 ): Vec2 {
+    fun offsetForSize(width: Double, height: Double, result: Vec2): Vec2 {
         val x: Double =
             when (xUnits) {
-            WorldWind.OFFSET_FRACTION -> {
-                width * this.x
+                WorldWind.OFFSET_FRACTION -> {
+                    width * this.x
+                }
+                WorldWind.OFFSET_INSET_PIXELS -> {
+                    width - this.x
+                }
+                else -> { // default to OFFSET_PIXELS
+                    this.x
+                }
             }
-            WorldWind.OFFSET_INSET_PIXELS -> {
-                width - this.x
-            }
-            else -> { // default to OFFSET_PIXELS
-                this.x
-            }
-        }
         val y: Double = when (yUnits) {
             WorldWind.OFFSET_FRACTION -> {
                 height * this.y
@@ -122,7 +148,8 @@ class Offset {
                 this.y
             }
         }
-        return result.set(x ,y)
+        return result.set(x, y)
     }
+
 
 }

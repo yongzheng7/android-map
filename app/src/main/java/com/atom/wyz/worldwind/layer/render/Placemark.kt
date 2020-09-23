@@ -1,5 +1,6 @@
 package com.atom.wyz.worldwind.layer.render
 
+import android.util.Log
 import com.atom.wyz.worldwind.WorldWind
 import com.atom.wyz.worldwind.core.shader.BasicProgram
 import com.atom.wyz.worldwind.core.shader.GpuTexture
@@ -11,7 +12,7 @@ import com.atom.wyz.worldwind.layer.render.attribute.PlacemarkAttributes
 import com.atom.wyz.worldwind.layer.render.pick.PickedObject
 import com.atom.wyz.worldwind.layer.render.shape.Highlightable
 import com.atom.wyz.worldwind.layer.render.shape.Movable
-import com.atom.wyz.worldwind.util.Logger
+import com.atom.wyz.worldwind.util.StringUtils
 import com.atom.wyz.worldwind.util.WWMath
 import com.atom.wyz.worldwind.util.pool.Pool
 
@@ -48,7 +49,11 @@ open class Placemark : AbstractRenderable,
             )
         }
 
-        fun createSimpleImageAndLabel(position: Position, imageSource: ImageSource?, label: String?): Placemark {
+        fun createSimpleImageAndLabel(
+            position: Position,
+            imageSource: ImageSource?,
+            label: String
+        ): Placemark {
             return Placemark(
                 position,
                 PlacemarkAttributes.withImage(
@@ -66,7 +71,9 @@ open class Placemark : AbstractRenderable,
         private val unitSquareTransform: Matrix4 = Matrix4()
     }
 
-    var position: Position?
+    var position: Position? = null
+
+    var label: String
 
     var cameraDistance = 0.0
 
@@ -76,8 +83,6 @@ open class Placemark : AbstractRenderable,
     var highlightAttributes: PlacemarkAttributes? = null
     var activeAttributes: PlacemarkAttributes? = null
 
-    var activeTexture: GpuTexture? = null
-
     var eyeDistanceScaling: Boolean
     var eyeDistanceScalingThreshold: Double
     var eyeDistanceScalingLabelThreshold: Double
@@ -85,11 +90,9 @@ open class Placemark : AbstractRenderable,
     @WorldWind.AltitudeMode
     var altitudeMode: Int = WorldWind.ABSOLUTE
 
-    var enableLeaderPicking: Boolean = false
-
     var imageRotation = 0.0
-    var imageTilt = 0.0
 
+    var imageTilt = 0.0
 
     @WorldWind.OrientationMode
     var imageRotationReference = 0
@@ -100,73 +103,68 @@ open class Placemark : AbstractRenderable,
     /**
      * The picked object ID associated with the placemark during the current render pass.
      */
-    protected var pickedObjectId = 0
+    private var pickedObjectId = 0
 
     protected var pickColor = SimpleColor()
 
-
     constructor(position: Position) : this(position, PlacemarkAttributes.defaults())
 
-    constructor(position: Position, attributes: PlacemarkAttributes) : this(position, attributes, null)
-
-    constructor(position: Position?, attributes: PlacemarkAttributes?, displayName: String?) {
-        if (position == null) {
-            throw IllegalArgumentException(
-                Logger.logMessage(Logger.ERROR, "Placemark", "constructor", "missingPosition")
-            )
-        }
+    constructor(
+        position: Position,
+        attributes: PlacemarkAttributes,
+        label: String = StringUtils.getRandomString(6)
+    ) : super("Placemark") {
         this.position = position
-        this.altitudeMode = WorldWind.ABSOLUTE
-        displayName?.let { this.displayName = it } ?: let { this.displayName = "Placemark" }
-        this.attributes = if (attributes != null) attributes else PlacemarkAttributes()
-
-
+        this.label = label
+        this.attributes = attributes
         this.eyeDistanceScaling = false
-        eyeDistanceScalingThreshold =
-            DEFAULT_EYE_DISTANCE_SCALING_THRESHOLD
-        eyeDistanceScalingLabelThreshold = 1.5 * eyeDistanceScalingThreshold
-
-        imageRotationReference = WorldWind.RELATIVE_TO_SCREEN
-        imageTiltReference = WorldWind.RELATIVE_TO_SCREEN
-
+        this.altitudeMode = WorldWind.ABSOLUTE
+        this.eyeDistanceScalingThreshold = DEFAULT_EYE_DISTANCE_SCALING_THRESHOLD
+        this.eyeDistanceScalingLabelThreshold = 1.5 * eyeDistanceScalingThreshold
+        this.imageRotationReference = WorldWind.RELATIVE_TO_SCREEN
+        this.imageTiltReference = WorldWind.RELATIVE_TO_SCREEN
     }
 
     protected open fun determineActiveAttributes(rc: RenderContext) {
-        if (highlighted && highlightAttributes != null) {
-            activeAttributes = highlightAttributes
+        activeAttributes = if (highlighted && highlightAttributes != null) {
+            highlightAttributes
         } else {
-            activeAttributes = attributes
+            attributes
         }
     }
 
     override fun doRender(rc: RenderContext) {
-
         val position = this.position ?: return
         // Compute the placemark's Cartesian model point.
-        rc.geographicToCartesian(position.latitude, position.longitude, position.altitude, altitudeMode,
+        rc.geographicToCartesian(
+            position.latitude,
+            position.longitude,
+            position.altitude,
+            altitudeMode,
             placePoint
         )
 
         cameraDistance = rc.cameraPoint.distanceTo(placePoint)
 
         var depthOffset = 0.0
-        if (cameraDistance < rc.horizonDistance) {
-            depthOffset =
-                DEFAULT_DEPTH_OFFSET
-        }
 
+        if (cameraDistance < rc.horizonDistance) {
+            depthOffset = DEFAULT_DEPTH_OFFSET
+        }
         if (!rc.projectWithDepth(
                 placePoint, depthOffset,
                 screenPlacePoint
-            )) {
+            )
+        ) {
             return
         }
         determineActiveAttributes(rc)
+
         if (activeAttributes == null) {
             return
         }
 
-        // Allow the placemark to adjust the level of detail based on distance to the camera
+        // 允许地标根据距相机的距离调整细节级别
         levelOfDetailSelector?.selectLevelOfDetail(rc, this, cameraDistance)
 
         val drawableCount = rc.drawableCount()
@@ -174,58 +172,90 @@ open class Placemark : AbstractRenderable,
             pickedObjectId = rc.nextPickedObjectId()
             pickColor = PickedObject.identifierToUniqueColor(pickedObjectId, pickColor)
         }
+
+
         if (mustDrawLeader(rc)) {
             // Compute the placemark's Cartesian ground point.
-            groundPoint = rc.geographicToCartesian(position.latitude, position.longitude, 0.0, WorldWind.CLAMP_TO_GROUND,
+            groundPoint = rc.geographicToCartesian(
+                position.latitude, position.longitude, 0.0, WorldWind.CLAMP_TO_GROUND,
                 groundPoint
             )
-            if (rc.frustum.intersectsSegment(
-                    groundPoint,
-                    placePoint
-                )) {
-                val pool: Pool<DrawableLines> = rc.getDrawablePool(
-                    DrawableLines::class.java)
-                val drawable = DrawableLines.obtain(pool)
-                prepareDrawableLeader(rc, drawable)
+            if (rc.frustum.intersectsSegment(groundPoint, placePoint)) {
+                val leader: Pool<DrawableLines> = rc.getDrawablePool(
+                    DrawableLines::class.java
+                )
+                val leaderDrawable = DrawableLines.obtain(leader)
+                prepareDrawableLeader(rc, leaderDrawable)
+                rc.offerShapeDrawable(leaderDrawable, cameraDistance)
+            }
+        }
+
+        if (mustDrawLabel(rc)) {
+            var labelTexture: GpuTexture? = null
+            if (rc.getText(label, activeAttributes!!.labelAttributes)
+                    .also { labelTexture = it } == null
+            ) {
+                if (!rc.frustum.containsPoint(placePoint)) {
+                    return
+                }
+            }
+            labelTexture = determineActiveLabelBounds(rc, labelTexture)
+
+            // TODO allocation
+            WWMath.boundingRectForUnitSquare(
+                unitSquareTransform,
+                screenBounds
+            )
+            if (rc.frustum.intersectsViewport(screenBounds) && labelTexture != null) {
+                val pool: Pool<DrawableScreenTexture> = rc.getDrawablePool(DrawableScreenTexture::class.java)
+                val drawable: DrawableScreenTexture = DrawableScreenTexture.obtain(pool)
+                prepareDrawableLabel(rc, drawable , labelTexture!!)
                 rc.offerShapeDrawable(drawable, cameraDistance)
             }
         }
 
-        activeAttributes?.imageSource?.let {
-            activeTexture = rc.getTexture(activeAttributes!!.imageSource!!)
-            if (activeTexture == null) {
+        var surfaceTexture: GpuTexture? = null
+        activeAttributes!!.imageSource?.let {
+            if (rc.getTexture(it).also { itTexture -> surfaceTexture = itTexture } == null) {
                 if (!rc.frustum.containsPoint(placePoint)) {
                     return
                 }
             }
         }
-        this.determineActiveTexture(rc)
+        surfaceTexture = this.determineActiveTextureBounds(rc, surfaceTexture)
 
+        // TODO allocation
         WWMath.boundingRectForUnitSquare(
             unitSquareTransform,
             screenBounds
-        ) // TODO allocation
+        )
 
-        if (rc.frustum.intersectsViewport(screenBounds)) {
+        if (rc.frustum.intersectsViewport(screenBounds) && surfaceTexture != null) {
             val pool: Pool<DrawableScreenTexture> = rc.getDrawablePool(
-                DrawableScreenTexture::class.java)
+                DrawableScreenTexture::class.java
+            )
             val drawable: DrawableScreenTexture = DrawableScreenTexture.obtain(pool)
-            prepareDrawableIcon(rc, drawable)
+            prepareDrawableIcon(rc, drawable, surfaceTexture!!)
             rc.offerShapeDrawable(drawable, cameraDistance)
         }
 
-        activeTexture = null
-
         // Enqueue a picked object that associates the placemark's icon and leader with its picked object ID.
         if (rc.pickMode && rc.drawableCount() != drawableCount) {
-            rc.offerPickedObject(PickedObject.fromRenderable(pickedObjectId, this, rc.currentLayer!!))
+            rc.offerPickedObject(
+                PickedObject.fromRenderable(
+                    pickedObjectId,
+                    this,
+                    rc.currentLayer!!
+                )
+            )
         }
 
     }
 
     protected open fun prepareDrawableIcon(
         rc: RenderContext,
-        drawable: DrawableScreenTexture
+        drawable: DrawableScreenTexture,
+        texture: GpuTexture
     ) {
         val activeAttributes = this.activeAttributes ?: return
 
@@ -240,14 +270,13 @@ open class Placemark : AbstractRenderable,
         drawable.unitSquareTransform.set(unitSquareTransform)
 
 
-
         // Configure the drawable according to the placemark's active attributes. Use a color appropriate for the pick
         // mode. When picking use a unique color associated with the picked object ID. Use the texture associated with
         // the active attributes' image source and its associated tex coord transform. If the texture is not specified
         // or not available, draw a simple colored square.
-        drawable.color.set(if (rc.pickMode) pickColor else activeAttributes.imageColor!!)
+        drawable.color.set(if (rc.pickMode) pickColor else activeAttributes.imageColor)
         drawable.enableDepthTest = activeAttributes.depthTest
-        drawable.texture = activeTexture
+        drawable.texture = texture
     }
 
     protected open fun prepareDrawableLeader(
@@ -277,45 +306,66 @@ open class Placemark : AbstractRenderable,
         drawable.mvpMatrix.set(rc.modelviewProjection)
         drawable.mvpMatrix.multiplyByTranslation(groundPoint.x, groundPoint.y, groundPoint.z)
 
-        drawable.lineWidth = activeAttributes.leaderAttributes!!.outlineWidth
-        drawable.enableDepthTest = activeAttributes.leaderAttributes!!.depthTest
-        drawable.color.set(if (rc.pickMode) pickColor else activeAttributes.leaderAttributes!!.outlineColor)
+        drawable.lineWidth = activeAttributes.leaderAttributes.outlineWidth
+        drawable.enableDepthTest = activeAttributes.leaderAttributes.depthTest
+        drawable.color.set(if (rc.pickMode) pickColor else activeAttributes.leaderAttributes.outlineColor)
 
+    }
+
+    private fun prepareDrawableLabel(rc: RenderContext,
+                                     drawable: DrawableScreenTexture , texture : GpuTexture) {
+        drawable.program = rc.getProgram(BasicProgram.KEY) as BasicProgram?
+        if (drawable.program == null) {
+            drawable.program =
+                rc.putProgram(
+                    BasicProgram.KEY,
+                    BasicProgram(rc.resources)
+                ) as BasicProgram
+        }
+        drawable.unitSquareTransform.set(unitSquareTransform)
+        drawable.color.set(if (rc.pickMode) pickColor else activeAttributes!!.labelAttributes.textColor)
+        drawable.texture = texture
+        drawable.enableDepthTest = activeAttributes!!.labelAttributes.enableDepthTest
     }
 
     protected open fun mustDrawLeader(dc: RenderContext): Boolean {
         val activeAttributes = this.activeAttributes ?: return false
-        return (activeAttributes.drawLeader  && (enableLeaderPicking || !dc.pickMode))
+        return (activeAttributes.drawLeader && !dc.pickMode)
+    }
+
+    protected open fun mustDrawLabel(dc: RenderContext): Boolean {
+        val activeAttributes = this.activeAttributes ?: return false
+        return (activeAttributes.drawLabel && !dc.pickMode)
     }
 
 
-    protected open fun determineActiveTexture(rc: RenderContext) {
-        val activeAttributes = this.activeAttributes ?: return
-        if (activeAttributes.imageSource != null) {
-            if (activeTexture == null) {
-                activeTexture = rc.retrieveTexture(activeAttributes.imageSource!! , null) // puts retrieved textures in the cache
+    protected open fun determineActiveTextureBounds(
+        rc: RenderContext,
+        texture: GpuTexture?
+    ): GpuTexture? {
+        var tempTexture = texture
+        if (activeAttributes!!.imageSource != null) {
+            if (tempTexture == null) {
+                tempTexture = rc.retrieveTexture(activeAttributes!!.imageSource!!, null)
             }
-        } else {
-            activeTexture = null // there is no imageSource; draw a simple colored square
         }
 
         val visibilityScale: Double = if (this.eyeDistanceScaling) WWMath.clamp(
             value = this.eyeDistanceScalingThreshold / cameraDistance,
-            min = activeAttributes.minimumImageScale,
+            min = activeAttributes!!.minimumImageScale,
             max = 1.0
         ) else 1.0
 
         unitSquareTransform.setToIdentity()
 
-        if (activeTexture != null) {
-            val activeTexture = this.activeTexture!!
-            val w: Int = activeTexture.textureWidth
-            val h: Int = activeTexture.textureHeight
-            val s = activeAttributes.imageScale * visibilityScale
-            val offset =
-                activeAttributes.imageOffset!!.offsetForSize(w.toDouble(), h.toDouble(),
-                    offset
-                ) // TODO allocation
+        if (tempTexture != null) {
+            val w: Int = tempTexture.textureWidth
+            val h: Int = tempTexture.textureHeight
+            val s = activeAttributes!!.imageScale * visibilityScale
+            val offset = activeAttributes!!.imageOffset.offsetForSize(
+                w.toDouble(), h.toDouble(),
+                offset
+            ) // TODO allocation
             unitSquareTransform.multiplyByTranslation(
                 screenPlacePoint.x - offset.x * s,
                 screenPlacePoint.y - offset.y * s,
@@ -325,7 +375,7 @@ open class Placemark : AbstractRenderable,
         } else {
             // This branch serves both non-textured attributes and also textures that haven't been loaded yet.
             // We set the size for non-loaded textures to the typical size of a contemporary "small" icon (24px)
-            var size: Double = if (activeAttributes.imageSource != null) 24.0 else activeAttributes.imageScale
+            var size: Double = if (activeAttributes!!.imageSource != null) 24.0 else activeAttributes!!.imageScale
             size *= visibilityScale
             unitSquareTransform.multiplyByTranslation(
                 screenPlacePoint.x - offset.x,
@@ -334,6 +384,7 @@ open class Placemark : AbstractRenderable,
             )
             unitSquareTransform.multiplyByScale(size, size, 1.0)
         }
+
         if (imageRotation != 0.0) {
             val rotation =
                 if (imageRotationReference == WorldWind.RELATIVE_TO_GLOBE) rc.camera.heading - imageRotation else -imageRotation
@@ -346,6 +397,64 @@ open class Placemark : AbstractRenderable,
                 if (imageTiltReference == WorldWind.RELATIVE_TO_GLOBE) rc.camera.tilt + imageTilt else imageTilt
             unitSquareTransform.multiplyByRotation(-1.0, 0.0, 0.0, tilt)
         }
+        return tempTexture
+    }
+
+    protected open fun determineActiveLabelBounds(
+        rc: RenderContext,
+        texture: GpuTexture?
+    ): GpuTexture? {
+
+        var textTexture = texture
+
+        if (textTexture == null) {
+            textTexture = rc.renderText(label, activeAttributes!!.labelAttributes)
+        }
+
+        unitSquareTransform.setToIdentity()
+
+        textTexture.let {
+
+            val w: Int = it.textureWidth
+            val h: Int = it.textureHeight
+
+            activeAttributes!!.labelAttributes.textOffset.offsetForSize(
+                w.toDouble(),
+                h.toDouble(),
+                offset
+            )
+
+            unitSquareTransform.setTranslation(
+                screenPlacePoint.x - offset.x,
+                screenPlacePoint.y - offset.y,
+                screenPlacePoint.z
+            )
+
+            // Apply the label's rotation according to its rotation value and orientation mode. The rotation is applied
+            // such that the text rotates around the text offset point.
+            val rotation = if ( imageRotationReference == WorldWind.RELATIVE_TO_GLOBE ) rc.camera.heading - imageRotation else -imageRotation
+            if (rotation != 0.0) {
+                unitSquareTransform.multiplyByTranslation(
+                    offset.x,
+                    offset.y,
+                    0.0
+                )
+                unitSquareTransform.multiplyByRotation(
+                    0.0,
+                    0.0,
+                    1.0,
+                    rotation
+                )
+                unitSquareTransform.multiplyByTranslation(
+                    -offset.x,
+                    -offset.y,
+                    0.0
+                )
+            }
+            // Apply the label's translation and scale according to its text size.
+            unitSquareTransform.multiplyByScale(w.toDouble(), h.toDouble(), 1.0)
+        }
+        return textTexture
     }
 
 

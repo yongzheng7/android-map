@@ -3,6 +3,9 @@ package com.atom.wyz.worldwind.layer.render
 import android.graphics.*
 import com.atom.wyz.worldwind.core.shader.GpuTexture
 import com.atom.wyz.worldwind.geom.SimpleColor
+import com.atom.wyz.worldwind.util.StringUtils
+import com.atom.wyz.worldwind.util.otherwise
+import com.atom.wyz.worldwind.util.yes
 
 
 class TextRenderer {
@@ -48,13 +51,12 @@ class TextRenderer {
         outlineWidth = paint.strokeWidth
     }
 
-    fun renderText(text: String?): GpuTexture? {
-        return if (text != null && text.isNotEmpty()) {
-            val bitmap: Bitmap = this.drawText(text)
-            GpuTexture(bitmap)
-        } else {
-            null
-        }
+    fun renderText(text: String): GpuTexture {
+        val temp = text.isEmpty().yes {
+            StringUtils.getRandomString(6)
+        }.otherwise { text }
+        val bitmap: Bitmap = this.drawText(temp)
+        return GpuTexture(bitmap)
     }
 
     protected fun drawText(text: String): Bitmap {
