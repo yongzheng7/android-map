@@ -6,49 +6,43 @@ import com.atom.wyz.worldwind.util.Logger
 class LayerList() : Iterable<Layer> {
     protected val layers = arrayListOf<Layer>()
 
-    constructor(layers: Iterable<Layer>) : this(){
+    constructor(layers: Iterable<Layer>) : this() {
         this.addAllLayers(layers)
     }
 
-    constructor(layerList: LayerList):this() {
+    constructor(layerList: LayerList) : this() {
         this.addAllLayers(layerList)
     }
-    
+
     fun count(): Int {
         return layers.size
     }
 
-    fun getLayer(index: Int): Layer? {
+    fun getLayer(index: Int): Layer {
         if (index < 0 || index >= layers.size) {
             throw IllegalArgumentException(
-                    Logger.logMessage(Logger.ERROR, "LayerList", "getLayer", "invalidIndex"))
+                Logger.logMessage(Logger.ERROR, "LayerList", "getLayer", "invalidIndex")
+            )
         }
         return this.layers[index]
     }
 
-    fun setLayer(index: Int, layer: Layer?): Layer? {
+    fun setLayer(index: Int, layer: Layer): Layer {
         if (index < 0 || index >= layers.size) {
             throw java.lang.IllegalArgumentException(
-                    Logger.logMessage(Logger.ERROR, "LayerList", "setLayer", "invalidIndex"))
-        }
-        if (layer == null) {
-            throw java.lang.IllegalArgumentException(
-                    Logger.logMessage(Logger.ERROR, "LayerList", "setLayer", "missingLayer"))
+                Logger.logMessage(Logger.ERROR, "LayerList", "setLayer", "invalidIndex")
+            )
         }
         return this.layers.set(index, layer)
     }
 
-    fun indexOfLayer(layer: Layer?): Int {
-        if (layer == null) {
-            throw java.lang.IllegalArgumentException(
-                    Logger.logMessage(Logger.ERROR, "LayerList", "indexOfLayer", "missingLayer"))
-        }
+    fun indexOfLayer(layer: Layer): Int {
         return layers.indexOf(layer)
     }
 
     fun indexOfLayerNamed(name: String?): Int {
         for (i in layers.indices) {
-            val layerName: String = layers[i].displayName
+            val layerName = layers[i].displayName
             if (layerName.equals(name)) {
                 return i
             }
@@ -69,41 +63,28 @@ class LayerList() : Iterable<Layer> {
         return -1
     }
 
-    fun addLayer(layer: Layer?) {
-        if (layer == null) {
-            throw java.lang.IllegalArgumentException(
-                    Logger.logMessage(Logger.ERROR, "LayerList", "addLayer", "missingLayer"))
-        }
+    fun addLayer(layer: Layer) {
         layers.add(layer)
     }
 
-    fun addLayer(index: Int, layer: Layer?) {
+    fun addLayer(index: Int, layer: Layer) {
         if (index < 0 || index > layers.size) {
             throw java.lang.IllegalArgumentException(
-                    Logger.logMessage(Logger.ERROR, "LayerList", "addLayer", "invalidIndex"))
-        }
-        if (layer == null) {
-            throw java.lang.IllegalArgumentException(
-                    Logger.logMessage(Logger.ERROR, "LayerList", "addLayer", "missingLayer"))
+                Logger.logMessage(Logger.ERROR, "LayerList", "addLayer", "invalidIndex")
+            )
         }
         layers.add(index, layer)
     }
 
-    fun addAllLayers(layers: Iterable<Layer?>?) {
-        if (layers == null) {
-            throw java.lang.IllegalArgumentException(
-                    Logger.logMessage(Logger.ERROR, "LayerList", "addAllLayers", "missingList"))
-        }
-        for (layer in layers) {
-            if (layer == null) {
-                throw java.lang.IllegalArgumentException(
-                        Logger.logMessage(Logger.ERROR, "LayerList", "addAllLayers", "missingLayer"))
+    fun addAllLayers(layers: Iterable<Layer?>) {
+        layers.forEach {
+            it?.also { itLayer ->
+                this.layers.add(itLayer)
             }
-            this.layers.add(layer)
         }
     }
-    fun addAllLayers(layerList: LayerList?) {
-        requireNotNull(layerList) { Logger.logMessage(Logger.ERROR, "LayerList", "addAllLayers", "missingList") }
+
+    fun addAllLayers(layerList: LayerList) {
         val thisList = layers
         val thatList = layerList.layers
         thisList.ensureCapacity(thatList.size)
@@ -114,34 +95,28 @@ class LayerList() : Iterable<Layer> {
             idx++
         }
     }
-    fun removeLayer(layer: Layer?): Boolean {
-        if (layer == null) {
-            throw java.lang.IllegalArgumentException(
-                    Logger.logMessage(Logger.ERROR, "LayerList", "removeLayer", "missingLayer"))
-        }
+
+    fun removeLayer(layer: Layer): Boolean {
         return layers.remove(layer)
     }
 
     fun removeLayer(index: Int): Layer? {
         if (index < 0 || index >= layers.size) {
             throw java.lang.IllegalArgumentException(
-                    Logger.logMessage(Logger.ERROR, "LayerList", "removeLayer", "invalidIndex"))
+                Logger.logMessage(Logger.ERROR, "LayerList", "removeLayer", "invalidIndex")
+            )
         }
         return layers.removeAt(index)
     }
 
-    fun removeAllLayers(layers: Iterable<Layer?>?): Boolean {
-        if (layers == null) {
-            throw java.lang.IllegalArgumentException(
-                    Logger.logMessage(Logger.ERROR, "LayerList", "removeAllLayers", "missingList"))
-        }
+    fun removeAllLayers(layers: Iterable<Layer?>): Boolean {
         var removed = false
         for (layer in layers) {
-            if (layer == null) {
-                throw java.lang.IllegalArgumentException(
-                        Logger.logMessage(Logger.ERROR, "LayerList", "removeAllLayers", "missingLayer"))
-            }
-            removed = removed or this.layers.remove(layer)
+            val let = layer?.let {
+                this.layers.remove(it)
+            } ?: false
+            removed = removed or let
+
         }
         return removed
     }
