@@ -11,10 +11,10 @@ import com.atom.wyz.worldwind.geom.LookAt
 import com.atom.wyz.worldwind.geom.Offset
 import com.atom.wyz.worldwind.geom.Position
 import com.atom.wyz.worldwind.layer.RenderableLayer
-import com.atom.wyz.worldwind.render.ImageSource
-import com.atom.wyz.worldwind.render.Placemark
-import com.atom.wyz.worldwind.shape.Highlightable
-import com.atom.wyz.worldwind.attribute.PlacemarkAttributes
+import com.atom.wyz.worldwind.layer.render.ImageSource
+import com.atom.wyz.worldwind.layer.render.Placemark
+import com.atom.wyz.worldwind.layer.render.shape.Highlightable
+import com.atom.wyz.worldwind.layer.render.attribute.PlacemarkAttributes
 
 class PlacemarksPickingActivity : BasicWorldWindActivity() {
 

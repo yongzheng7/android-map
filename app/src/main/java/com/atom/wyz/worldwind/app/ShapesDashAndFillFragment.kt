@@ -3,13 +3,13 @@ package com.atom.wyz.worldwind.app
 import com.atom.wyz.worldwind.R
 import com.atom.wyz.worldwind.WorldWind
 import com.atom.wyz.worldwind.WorldWindow
-import com.atom.wyz.worldwind.attribute.ShapeAttributes
+import com.atom.wyz.worldwind.layer.render.attribute.ShapeAttributes
 import com.atom.wyz.worldwind.geom.Position
 import com.atom.wyz.worldwind.layer.RenderableLayer
-import com.atom.wyz.worldwind.render.ImageSource
-import com.atom.wyz.worldwind.shape.Ellipse
-import com.atom.wyz.worldwind.shape.Path
-import com.atom.wyz.worldwind.shape.Polygon
+import com.atom.wyz.worldwind.layer.render.ImageSource
+import com.atom.wyz.worldwind.layer.render.shape.Ellipse
+import com.atom.wyz.worldwind.layer.render.shape.Path
+import com.atom.wyz.worldwind.layer.render.shape.Polygon
 import java.util.*
 
 class ShapesDashAndFillFragment : BasicGlobeActivity() {
@@ -23,7 +23,8 @@ class ShapesDashAndFillFragment : BasicGlobeActivity() {
         wwd.layers.addLayer(layer)
         // Thicken all lines used in the tutorial.
 
-        val thickenLine = ShapeAttributes()
+        val thickenLine =
+            ShapeAttributes()
         thickenLine.outlineWidth = (4f)
 
         var positions = Arrays.asList(
@@ -33,7 +34,10 @@ class ShapesDashAndFillFragment : BasicGlobeActivity() {
         )
         var path = Path(positions)
 
-        var sa = ShapeAttributes(thickenLine)
+        var sa =
+            ShapeAttributes(
+                thickenLine
+            )
         sa.outlineImageSource = (
             ImageSource.fromLineStipple(
                 2 /*factor*/,
@@ -50,7 +54,9 @@ class ShapesDashAndFillFragment : BasicGlobeActivity() {
             Position.fromDegrees(0.0, -90.0, 5e4)
         )
         path = Path(positions)
-        sa = ShapeAttributes(thickenLine)
+        sa = ShapeAttributes(
+            thickenLine
+        )
         sa.outlineImageSource = (
             ImageSource.fromLineStipple(
                 4 /*factor*/,
@@ -67,7 +73,9 @@ class ShapesDashAndFillFragment : BasicGlobeActivity() {
             Position.fromDegrees(0.0, -80.0, 0.0)
         )
         path = Path(positions)
-        sa = ShapeAttributes(thickenLine)
+        sa = ShapeAttributes(
+            thickenLine
+        )
         sa.outlineImageSource = (
             ImageSource.fromLineStipple(
                 8 /*factor*/,
@@ -82,8 +90,16 @@ class ShapesDashAndFillFragment : BasicGlobeActivity() {
         // Create an Ellipse using an image as a repeating fill pattern
 
         // Create an Ellipse using an image as a repeating fill pattern
-        val ellipse = Ellipse(Position(40.0, -70.0, 1e5), 1.5e6, 800e3)
-        sa = ShapeAttributes(thickenLine)
+        val ellipse = Ellipse(
+            Position(
+                40.0,
+                -70.0,
+                1e5
+            ), 1.5e6, 800e3
+        )
+        sa = ShapeAttributes(
+            thickenLine
+        )
         sa.interiorImageSource = (ImageSource.fromResource(R.drawable.nasa_logo))
         ellipse.attributes = (sa)
         layer.addRenderable(ellipse)
@@ -95,8 +111,11 @@ class ShapesDashAndFillFragment : BasicGlobeActivity() {
             Position.fromDegrees(10.0, -60.0, 0.0),
             Position.fromDegrees(25.0, -55.0, 0.0)
         )
-        val polygon = Polygon(positions)
-        sa = ShapeAttributes(thickenLine)
+        val polygon =
+            Polygon(positions)
+        sa = ShapeAttributes(
+            thickenLine
+        )
         sa.interiorImageSource = (ImageSource.fromResource(R.drawable.nasa_logo))
         sa.outlineImageSource = (ImageSource.fromLineStipple(8, 0xDFF6.toShort()))
         polygon.attributes = (sa)

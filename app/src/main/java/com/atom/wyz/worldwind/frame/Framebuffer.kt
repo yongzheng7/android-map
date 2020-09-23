@@ -2,9 +2,9 @@ package com.atom.wyz.worldwind.frame
 
 import android.opengl.GLES20
 import android.util.SparseArray
-import com.atom.wyz.worldwind.context.DrawContext
-import com.atom.wyz.worldwind.shader.GpuTexture
-import com.atom.wyz.worldwind.shader.RenderResource
+import com.atom.wyz.worldwind.layer.draw.DrawContext
+import com.atom.wyz.worldwind.core.shader.GpuTexture
+import com.atom.wyz.worldwind.core.shader.RenderResource
 
 class Framebuffer : RenderResource {
     companion object{

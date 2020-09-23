@@ -14,10 +14,10 @@ import com.atom.wyz.worldwind.geom.Offset
 import com.atom.wyz.worldwind.geom.Position
 import com.atom.wyz.worldwind.geom.Sector
 import com.atom.wyz.worldwind.layer.RenderableLayer
-import com.atom.wyz.worldwind.render.ImageSource
-import com.atom.wyz.worldwind.render.Placemark
-import com.atom.wyz.worldwind.render.SurfaceImage
-import com.atom.wyz.worldwind.shape.Movable
+import com.atom.wyz.worldwind.layer.render.ImageSource
+import com.atom.wyz.worldwind.layer.render.Placemark
+import com.atom.wyz.worldwind.layer.render.SurfaceImage
+import com.atom.wyz.worldwind.layer.render.shape.Movable
 import java.util.*
 
 class PlacemarksDragger2Activity : BasicWorldWindActivity() {
@@ -201,9 +201,25 @@ class PlacemarksDragger2Activity : BasicWorldWindActivity() {
         // Create SurfaceImages to display an Android resource showing the NASA logo.
         // Create SurfaceImages to display an Android resource showing the NASA logo.
         val smallImage =
-            SurfaceImage(Sector(34.2, -119.2, 0.1, 0.12), ImageSource.fromResource(R.drawable.nasa_logo))
+            SurfaceImage(
+                Sector(
+                    34.2,
+                    -119.2,
+                    0.1,
+                    0.12
+                ),
+                ImageSource.fromResource(R.drawable.nasa_logo)
+            )
         val bigImage =
-            SurfaceImage(Sector(36.0, -120.0, 5.0, 10.0), ImageSource.fromResource(R.drawable.nasa_logo))
+            SurfaceImage(
+                Sector(
+                    36.0,
+                    -120.0,
+                    5.0,
+                    10.0
+                ),
+                ImageSource.fromResource(R.drawable.nasa_logo)
+            )
 
         layer.addRenderable(smallImage)
         layer.addRenderable(bigImage)

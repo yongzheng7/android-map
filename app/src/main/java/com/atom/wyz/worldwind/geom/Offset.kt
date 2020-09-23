@@ -1,7 +1,6 @@
 package com.atom.wyz.worldwind.geom
 
 import com.atom.wyz.worldwind.WorldWind
-import com.atom.wyz.worldwind.util.Logger
 
 class Offset {
 
@@ -10,6 +9,13 @@ class Offset {
         fun center(): Offset {
             return Offset(WorldWind.OFFSET_FRACTION, 0.5, WorldWind.OFFSET_FRACTION, 0.5)
         }
+        fun centerLeft(): Offset {
+            return Offset(WorldWind.OFFSET_FRACTION, 0.0, WorldWind.OFFSET_FRACTION, 0.5)
+        }
+        fun centerRight(): Offset {
+            return Offset(WorldWind.OFFSET_FRACTION, 1.0, WorldWind.OFFSET_FRACTION, 0.5)
+        }
+
         fun bottomLeft(): Offset {
             return Offset(WorldWind.OFFSET_FRACTION, 0.0, WorldWind.OFFSET_FRACTION, 0.0)
         }

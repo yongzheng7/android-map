@@ -1,10 +1,10 @@
 package com.atom.wyz.worldwind.ogc
 
 import com.atom.wyz.worldwind.geom.Sector
-import com.atom.wyz.worldwind.tile.Tile
-import com.atom.wyz.worldwind.tile.TileFactory
-import com.atom.wyz.worldwind.render.ImageSource
-import com.atom.wyz.worldwind.tile.ImageTile
+import com.atom.wyz.worldwind.core.tile.Tile
+import com.atom.wyz.worldwind.core.tile.TileFactory
+import com.atom.wyz.worldwind.layer.render.ImageSource
+import com.atom.wyz.worldwind.core.tile.ImageTile
 import com.atom.wyz.worldwind.util.Level
 import com.atom.wyz.worldwind.util.Logger
 import java.util.*
@@ -86,7 +86,12 @@ open class WmsTileFactory : TileFactory {
 
     override fun createTile(sector: Sector, level: Level, row: Int, column: Int): Tile {
         val tile =
-            ImageTile(sector, level, row, column)
+            ImageTile(
+                sector,
+                level,
+                row,
+                column
+            )
         val urlString = urlForTile(sector, level.tileWidth, level.tileHeight)
         tile.imageSource = (ImageSource.fromUrl(urlString))
         return tile

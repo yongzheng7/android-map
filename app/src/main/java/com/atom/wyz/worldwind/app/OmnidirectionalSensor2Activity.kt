@@ -15,11 +15,11 @@ import com.atom.wyz.worldwind.globe.Globe
 import com.atom.wyz.worldwind.layer.RenderableLayer
 import com.atom.wyz.worldwind.layer.ShowTessellationLayer
 import com.atom.wyz.worldwind.ogc.Wcs100ElevationCoverage
-import com.atom.wyz.worldwind.pick.PickedObjectList
-import com.atom.wyz.worldwind.render.ImageSource
-import com.atom.wyz.worldwind.render.Placemark
-import com.atom.wyz.worldwind.render.OmnidirectionalSightline
-import com.atom.wyz.worldwind.attribute.ShapeAttributes
+import com.atom.wyz.worldwind.layer.render.pick.PickedObjectList
+import com.atom.wyz.worldwind.layer.render.ImageSource
+import com.atom.wyz.worldwind.layer.render.Placemark
+import com.atom.wyz.worldwind.layer.render.OmnidirectionalSightline
+import com.atom.wyz.worldwind.layer.render.attribute.ShapeAttributes
 
 class OmnidirectionalSensor2Activity : BasicWorldWindActivity()  {
     /**
@@ -59,14 +59,16 @@ class OmnidirectionalSensor2Activity : BasicWorldWindActivity()  {
         Log.e("WcsElevationFragment","addCoverage > $addCoverage")
 
         // Initialize attributes for the OmnidirectionalSensor
-        val viewableRegions = ShapeAttributes()
+        val viewableRegions =
+            ShapeAttributes()
         viewableRegions.interiorColor= (SimpleColor(
             0f,
             1f,
             0f,
             1f
         ))
-        val blockedRegions = ShapeAttributes()
+        val blockedRegions =
+            ShapeAttributes()
         blockedRegions.interiorColor = (SimpleColor(
             0.1f,
             0.1f,
@@ -77,7 +79,10 @@ class OmnidirectionalSensor2Activity : BasicWorldWindActivity()  {
         // Initialize the OmnidirectionalSensor and Corresponding Placemark
         val pos = Position(46.202, -122.190, 500.0)
         sensor =
-            OmnidirectionalSightline(pos, 10000f)
+            OmnidirectionalSightline(
+                pos,
+                10000f
+            )
         sensor.attributes = (viewableRegions)
         sensor.occludeAttributes = (blockedRegions)
         sensor.altitudeMode = (WorldWind.RELATIVE_TO_GROUND)

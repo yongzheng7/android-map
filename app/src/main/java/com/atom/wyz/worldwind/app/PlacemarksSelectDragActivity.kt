@@ -16,11 +16,11 @@ import com.atom.wyz.worldwind.WorldWind
 import com.atom.wyz.worldwind.WorldWindow
 import com.atom.wyz.worldwind.geom.*
 import com.atom.wyz.worldwind.layer.RenderableLayer
-import com.atom.wyz.worldwind.render.ImageSource
-import com.atom.wyz.worldwind.render.Placemark
-import com.atom.wyz.worldwind.render.Renderable
-import com.atom.wyz.worldwind.shape.Highlightable
-import com.atom.wyz.worldwind.attribute.PlacemarkAttributes
+import com.atom.wyz.worldwind.layer.render.ImageSource
+import com.atom.wyz.worldwind.layer.render.Placemark
+import com.atom.wyz.worldwind.layer.render.Renderable
+import com.atom.wyz.worldwind.layer.render.shape.Highlightable
+import com.atom.wyz.worldwind.layer.render.attribute.PlacemarkAttributes
 import java.util.*
 
 /**

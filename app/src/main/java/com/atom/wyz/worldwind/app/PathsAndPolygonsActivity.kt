@@ -9,18 +9,18 @@ import android.view.MotionEvent
 import android.widget.Toast
 import com.atom.wyz.worldwind.R
 import com.atom.wyz.worldwind.WorldWind
-import com.atom.wyz.worldwind.attribute.ShapeAttributes
-import com.atom.wyz.worldwind.attribute.TextAttributes
+import com.atom.wyz.worldwind.layer.render.attribute.ShapeAttributes
+import com.atom.wyz.worldwind.layer.render.attribute.TextAttributes
 import com.atom.wyz.worldwind.controller.BasicWorldWindowController
 import com.atom.wyz.worldwind.geom.Offset
 import com.atom.wyz.worldwind.geom.Position
 import com.atom.wyz.worldwind.geom.SimpleColor
 import com.atom.wyz.worldwind.layer.RenderableLayer
-import com.atom.wyz.worldwind.render.Label
-import com.atom.wyz.worldwind.render.Renderable
-import com.atom.wyz.worldwind.shape.Highlightable
-import com.atom.wyz.worldwind.shape.Path
-import com.atom.wyz.worldwind.shape.Polygon
+import com.atom.wyz.worldwind.layer.render.shape.Label
+import com.atom.wyz.worldwind.layer.render.Renderable
+import com.atom.wyz.worldwind.layer.render.shape.Highlightable
+import com.atom.wyz.worldwind.layer.render.shape.Path
+import com.atom.wyz.worldwind.layer.render.shape.Polygon
 import com.atom.wyz.worldwind.util.Logger
 import com.atom.wyz.worldwind.util.WWUtil
 import java.io.BufferedReader
@@ -134,10 +134,12 @@ class PathsAndPolygonsActivity : BasicWorldWindActivity() {
          * Called by doInBackground(); loads the VMAP0 World Highways data.
          */
         private fun loadHighways() {
-            val attrs = ShapeAttributes()
+            val attrs =
+                ShapeAttributes()
             attrs.outlineColor.set(1.0f, 1.0f, 0.0f, 1.0f)
             attrs.outlineWidth= (3f)
-            val highlightAttrs = ShapeAttributes()
+            val highlightAttrs =
+                ShapeAttributes()
             highlightAttrs.outlineColor.set(1.0f, 0.0f, 0.0f, 1.0f)
             highlightAttrs.outlineWidth = (7f)
             var reader: BufferedReader? = null
@@ -168,7 +170,10 @@ class PathsAndPolygonsActivity : BasicWorldWindActivity() {
                         val xy = tuples[i].split(" ").toTypedArray()
                         positions.add(Position.fromDegrees(xy[1].toDouble(), xy[0].toDouble(), 0.0))
                     }
-                    val path = Path(positions, attrs)
+                    val path = Path(
+                        positions,
+                        attrs
+                    )
                     path.highlightAttributes  = (highlightAttrs)
                     path.altitudeMode = (WorldWind.CLAMP_TO_GROUND)
                     path.pathType = (WorldWind.LINEAR)
@@ -188,7 +193,8 @@ class PathsAndPolygonsActivity : BasicWorldWindActivity() {
          * Called by doInBackground(); loads the VMAP0 World Political Areas data.
          */
         private fun loadCountriesFile() {
-            val commonAttrs = ShapeAttributes()
+            val commonAttrs =
+                ShapeAttributes()
             commonAttrs.interiorColor.set(1.0f, 1.0f, 0.0f, 0.5f)
             commonAttrs.outlineColor.set(0.0f, 0.0f, 0.0f, 1.0f)
             commonAttrs.outlineWidth = (3f)
@@ -219,7 +225,8 @@ class PathsAndPolygonsActivity : BasicWorldWindActivity() {
                     val feature = line.substring(featureBegin, featureEnd)
                     val attributes = line.substring(featureEnd + 1)
                     val fields = attributes.split(",").toTypedArray()
-                    val polygon = Polygon()
+                    val polygon =
+                        Polygon()
                     polygon.altitudeMode = (WorldWind.CLAMP_TO_GROUND)
                     polygon.pathType = (WorldWind.LINEAR)
                     polygon.followTerrain =

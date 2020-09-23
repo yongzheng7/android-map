@@ -17,8 +17,8 @@ import com.atom.wyz.worldwind.ogc.wms.WmsCapabilities
 import com.atom.wyz.worldwind.ogc.wms.WmsLayer
 import com.atom.wyz.worldwind.ogc.wtms.WmtsCapabilities
 import com.atom.wyz.worldwind.ogc.wtms.WmtsLayer
-import com.atom.wyz.worldwind.render.TiledSurfaceImage
-import com.atom.wyz.worldwind.tile.TileFactory
+import com.atom.wyz.worldwind.layer.render.TiledSurfaceImage
+import com.atom.wyz.worldwind.core.tile.TileFactory
 import com.atom.wyz.worldwind.util.LevelSet
 import com.atom.wyz.worldwind.util.LevelSetConfig
 import com.atom.wyz.worldwind.util.Logger
@@ -169,7 +169,8 @@ open class LayerFactory() {
             config.numLevels = tileMetrics.getMaxZoomLevel() + 1 // zero when there are no zoom levels, (0 = -1 + 1)
             config.tileWidth = 256
             config.tileHeight = 256
-            val surfaceImage = TiledSurfaceImage()
+            val surfaceImage =
+                TiledSurfaceImage()
             surfaceImage.levelSet = (LevelSet(config))
             surfaceImage.tileFactory = (GpkgTileFactory(content))
             gpkgRenderables.addRenderable(surfaceImage)
@@ -397,7 +398,8 @@ open class LayerFactory() {
                         )
                     )
             val levelSet: LevelSet = this.createWmtsLevelSet(wmtsLayer, compatibleTileMatrixSet)
-            val surfaceImage = TiledSurfaceImage()
+            val surfaceImage =
+                TiledSurfaceImage()
             surfaceImage.tileFactory = (tileFactory)
             surfaceImage.levelSet = (levelSet)
 
@@ -660,7 +662,8 @@ open class LayerFactory() {
                 }
             }
             layer.displayName = (sb.toString())
-            val surfaceImage = TiledSurfaceImage()
+            val surfaceImage =
+                TiledSurfaceImage()
             surfaceImage.tileFactory = (WmsTileFactory(wmsLayerConfig))
             surfaceImage.levelSet = (LevelSet(levelSetConfig))
 

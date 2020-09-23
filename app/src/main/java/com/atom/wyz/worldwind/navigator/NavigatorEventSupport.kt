@@ -7,7 +7,7 @@ import android.view.InputEvent
 import android.view.MotionEvent
 import com.atom.wyz.worldwind.WorldHelper
 import com.atom.wyz.worldwind.WorldWind
-import com.atom.wyz.worldwind.context.RenderContext
+import com.atom.wyz.worldwind.layer.render.RenderContext
 import com.atom.wyz.worldwind.geom.Matrix4
 import com.atom.wyz.worldwind.util.Logger
 import java.util.*

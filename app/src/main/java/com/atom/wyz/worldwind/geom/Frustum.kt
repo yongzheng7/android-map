@@ -215,11 +215,7 @@ class Frustum {
     /**
      * 确定线段是否与该视锥相交。
      */
-    fun intersectsSegment(pointA: Vec3?, pointB: Vec3?): Boolean {
-        if (pointA == null || pointB == null) {
-            throw java.lang.IllegalArgumentException(
-                    Logger.logMessage(Logger.ERROR, "Frustum", "containsPoint", "missingPoint"))
-        }
+    fun intersectsSegment(pointA: Vec3, pointB: Vec3): Boolean {
         // First do a trivial accept test.
         if (containsPoint(pointA) || containsPoint(pointB)) return true
         if (pointA == pointB) return false

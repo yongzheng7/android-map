@@ -10,7 +10,7 @@ import com.atom.wyz.worldwind.R
 import com.atom.wyz.worldwind.WorldHelper
 import com.atom.wyz.worldwind.WorldWind
 import com.atom.wyz.worldwind.WorldWindow
-import com.atom.wyz.worldwind.attribute.PlacemarkAttributes
+import com.atom.wyz.worldwind.layer.render.attribute.PlacemarkAttributes
 import com.atom.wyz.worldwind.controller.WorldWindowController
 import com.atom.wyz.worldwind.geom.Camera
 import com.atom.wyz.worldwind.geom.Location
@@ -18,8 +18,8 @@ import com.atom.wyz.worldwind.geom.Position
 import com.atom.wyz.worldwind.layer.Layer
 import com.atom.wyz.worldwind.layer.LayerList
 import com.atom.wyz.worldwind.layer.RenderableLayer
-import com.atom.wyz.worldwind.render.ImageSource
-import com.atom.wyz.worldwind.render.Placemark
+import com.atom.wyz.worldwind.layer.render.ImageSource
+import com.atom.wyz.worldwind.layer.render.Placemark
 import com.atom.wyz.worldwind.util.Logger
 import com.atom.wyz.worldwind.util.WWMath
 import com.atom.wyz.worldwind.util.WWUtil
@@ -213,10 +213,14 @@ class BasicPerformanceBenchmarkActivity : BasicWorldWindActivity() {
     protected fun createPlacemarksLayer(): Layer {
         val layer = RenderableLayer("Placemarks")
         val attrs: Array<PlacemarkAttributes> = arrayOf<PlacemarkAttributes>(
-            PlacemarkAttributes.withImage(ImageSource.fromResource(R.drawable.air_fixwing)),
-            PlacemarkAttributes.withImage(ImageSource.fromResource(R.drawable.airplane)),
-            PlacemarkAttributes.withImage(ImageSource.fromResource(R.drawable.airport)),
-            PlacemarkAttributes.withImage(ImageSource.fromResource(R.drawable.airport_terminal))
+            PlacemarkAttributes.withImage(
+                ImageSource.fromResource(R.drawable.air_fixwing)),
+            PlacemarkAttributes.withImage(
+                ImageSource.fromResource(R.drawable.airplane)),
+            PlacemarkAttributes.withImage(
+                ImageSource.fromResource(R.drawable.airport)),
+            PlacemarkAttributes.withImage(
+                ImageSource.fromResource(R.drawable.airport_terminal))
         )
         var reader: BufferedReader? = null
         try {
@@ -235,7 +239,12 @@ class BasicPerformanceBenchmarkActivity : BasicWorldWindActivity() {
                 val fields = line.split(",").toTypedArray()
                 if (fields[NA3].startsWith("US") && fields[USE] == "49") { // display USA Civilian/Public airports
                     val pos = Position.fromDegrees(fields[LAT].toDouble(), fields[LON].toDouble(), 0.0)
-                    layer.addRenderable(Placemark(pos, attrs[attrIndex++ % attrs.size]))
+                    layer.addRenderable(
+                        Placemark(
+                            pos,
+                            attrs[attrIndex++ % attrs.size]
+                        )
+                    )
                 }
             }
         } catch (e: Exception) {

@@ -1,6 +1,6 @@
 package com.atom.wyz.worldwind.layer
 
-import com.atom.wyz.worldwind.context.RenderContext
+import com.atom.wyz.worldwind.layer.render.RenderContext
 import java.util.*
 
 abstract class AbstractLayer : Layer {

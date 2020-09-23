@@ -13,8 +13,8 @@ import android.view.Choreographer
 import android.view.Choreographer.FrameCallback
 import android.view.MotionEvent
 import android.view.SurfaceHolder
-import com.atom.wyz.worldwind.context.DrawContext
-import com.atom.wyz.worldwind.context.RenderContext
+import com.atom.wyz.worldwind.layer.draw.DrawContext
+import com.atom.wyz.worldwind.layer.render.RenderContext
 import com.atom.wyz.worldwind.controller.BasicWorldWindowController
 import com.atom.wyz.worldwind.controller.WorldWindowController
 import com.atom.wyz.worldwind.frame.BasicFrameController
@@ -30,7 +30,7 @@ import com.atom.wyz.worldwind.layer.LayerList
 import com.atom.wyz.worldwind.navigator.Navigator
 import com.atom.wyz.worldwind.navigator.NavigatorEventSupport
 import com.atom.wyz.worldwind.navigator.NavigatorListener
-import com.atom.wyz.worldwind.pick.PickedObjectList
+import com.atom.wyz.worldwind.layer.render.pick.PickedObjectList
 import com.atom.wyz.worldwind.util.Logger
 import com.atom.wyz.worldwind.util.MessageListener
 import com.atom.wyz.worldwind.util.RenderResourceCache
@@ -559,7 +559,8 @@ class WorldWindow : GLSurfaceView , GLSurfaceView.Renderer , MessageListener , F
         x: Float,
         y: Float
     ): PickedObjectList {
-        val pickedObjects = PickedObjectList()
+        val pickedObjects =
+            PickedObjectList()
 
         // Nothing can be picked if this World Window's OpenGL thread is paused.
         if (isPaused) {
@@ -691,7 +692,8 @@ class WorldWindow : GLSurfaceView , GLSurfaceView.Renderer , MessageListener , F
         height: Float
     ): PickedObjectList {
         // Allocate a list in which to collect and return the picked objects.
-        val pickedObjects = PickedObjectList()
+        val pickedObjects =
+            PickedObjectList()
         // Nothing can be picked if the World Window's OpenGL thread is paused.
         if (isPaused) {
             return pickedObjects

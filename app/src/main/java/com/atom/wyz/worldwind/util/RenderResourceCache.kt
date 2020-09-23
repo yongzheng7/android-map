@@ -7,11 +7,13 @@ import android.graphics.Bitmap
 import android.opengl.GLES20
 import android.os.Handler
 import android.os.Message
-import com.atom.wyz.worldwind.context.DrawContext
+import com.atom.wyz.worldwind.layer.draw.DrawContext
 import com.atom.wyz.worldwind.WorldWind
-import com.atom.wyz.worldwind.render.*
-import com.atom.wyz.worldwind.shader.GpuTexture
-import com.atom.wyz.worldwind.shader.RenderResource
+import com.atom.wyz.worldwind.layer.render.ImageOptions
+import com.atom.wyz.worldwind.layer.render.ImageRetriever
+import com.atom.wyz.worldwind.layer.render.ImageSource
+import com.atom.wyz.worldwind.core.shader.GpuTexture
+import com.atom.wyz.worldwind.core.shader.RenderResource
 import java.net.SocketTimeoutException
 import java.util.*
 import java.util.concurrent.ConcurrentLinkedQueue
@@ -172,7 +174,7 @@ class RenderResourceCache
         }
     }
 
-    override fun retrievalRejected(retriever: Retriever<ImageSource,ImageOptions, Bitmap>, key: ImageSource , smg : String) {
+    override fun retrievalRejected(retriever: Retriever<ImageSource, ImageOptions, Bitmap>, key: ImageSource, smg : String) {
         Logger.log(Logger.ERROR, "Image retrieval rejected \'$key\'  $smg")
     }
 

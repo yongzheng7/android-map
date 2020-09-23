@@ -4,14 +4,14 @@ import android.graphics.Color
 import android.graphics.Typeface
 import com.atom.wyz.worldwind.WorldWind
 import com.atom.wyz.worldwind.WorldWindow
-import com.atom.wyz.worldwind.attribute.TextAttributes
 import com.atom.wyz.worldwind.geom.LookAt
 import com.atom.wyz.worldwind.geom.Offset
 import com.atom.wyz.worldwind.geom.Position
 import com.atom.wyz.worldwind.geom.SimpleColor
 import com.atom.wyz.worldwind.layer.RenderableLayer
-import com.atom.wyz.worldwind.render.Label
-import com.atom.wyz.worldwind.render.Placemark
+import com.atom.wyz.worldwind.layer.render.Placemark
+import com.atom.wyz.worldwind.layer.render.attribute.TextAttributes
+import com.atom.wyz.worldwind.layer.render.shape.Label
 
 class LabelsFragment : BasicGlobeActivity() {
 
@@ -22,30 +22,34 @@ class LabelsFragment : BasicGlobeActivity() {
         wwd.layers.addLayer(layer)
 
         val sanNicolas = Label(
-            Position(33.262, -119.538, 0.0),
+            Position(33.262, -119.538, 5000.0),
             "San Nicolas"
         )
         layer.addRenderable(sanNicolas)
 
         val parkAttributes: TextAttributes = TextAttributes()
             .apply {
-            this.typeface = (Typeface.create("serif", Typeface.BOLD_ITALIC))
-            this.textColor = SimpleColor(
-                1f,
-                1f,
-                0f,
-                0.5f
-            ) // yellow, opaque
-            this.textSize = (50f) // default size is 24
-        }
+                this.typeface = (Typeface.create("serif", Typeface.BOLD_ITALIC))
+                this.textColor.set(
+                    SimpleColor(
+                        1f,
+                        1f,
+                        0f,
+                        0.5f
+                    )
+                )
+                // yellow, opaque
+                this.textSize = (50f) // default size is 24
+                this.textOffset.set(Offset.centerLeft())
+            }
         val island = Label(
-            Position(34.005, -119.392, 0.0),
+            Position(34.005, -119.392, 100000.0),
             "Anacapa Island", parkAttributes
         )
         layer.addRenderable(island)
 
 
-        val pos = Position(34.2, -119.5, 0.0)
+        val pos = Position(34.2, -119.5, 100000.0)
         val northEast = Offset(
             WorldWind.OFFSET_PIXELS, -40.0,  // move left-edge right
             WorldWind.OFFSET_PIXELS, -40.0
@@ -89,8 +93,12 @@ class LabelsFragment : BasicGlobeActivity() {
         layer.addRenderable(label3)
         layer.addRenderable(label4)
         layer.addRenderable(label5)
-        layer.addRenderable(Placemark.createSimple(pos,
-            SimpleColor(Color.YELLOW), 10))
+        layer.addRenderable(
+            Placemark.createSimple(
+                pos,
+                SimpleColor(Color.YELLOW), 10
+            )
+        )
 
 
         val lookAt: LookAt = LookAt().set(

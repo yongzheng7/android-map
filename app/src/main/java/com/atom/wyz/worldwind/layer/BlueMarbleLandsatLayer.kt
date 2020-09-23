@@ -1,13 +1,13 @@
 package com.atom.wyz.worldwind.layer
 
 import com.atom.wyz.worldwind.WorldWind
+import com.atom.wyz.worldwind.core.tile.Tile
+import com.atom.wyz.worldwind.core.tile.TileFactory
 import com.atom.wyz.worldwind.geom.Sector
-import com.atom.wyz.worldwind.tile.Tile
-import com.atom.wyz.worldwind.tile.TileFactory
+import com.atom.wyz.worldwind.layer.render.ImageOptions
+import com.atom.wyz.worldwind.layer.render.TiledSurfaceImage
 import com.atom.wyz.worldwind.ogc.WmsLayerConfig
 import com.atom.wyz.worldwind.ogc.WmsTileFactory
-import com.atom.wyz.worldwind.render.ImageOptions
-import com.atom.wyz.worldwind.render.TiledSurfaceImage
 import com.atom.wyz.worldwind.util.Level
 import com.atom.wyz.worldwind.util.LevelSet
 import com.atom.wyz.worldwind.util.LevelSetConfig
@@ -55,10 +55,13 @@ class BlueMarbleLandsatLayer : RenderableLayer,
         levelsConfig.numLevels = levelsConfig.numLevelsForResolution(radiansPerPixel)
 
         this.pickEnabled = (false)
-        val surfaceImage = TiledSurfaceImage()
+        val surfaceImage =
+            TiledSurfaceImage()
         surfaceImage.levelSet = (LevelSet(levelsConfig))
         surfaceImage.tileFactory = (this)
-        surfaceImage.imageOptions = (ImageOptions(WorldWind.RGB_565)) // reduce memory usage by using a 16-bit configuration with no alpha
+        surfaceImage.imageOptions = (ImageOptions(
+            WorldWind.RGB_565
+        )) // reduce memory usage by using a 16-bit configuration with no alpha
         this.addRenderable(surfaceImage)
 
     }

@@ -2,7 +2,7 @@ package com.atom.wyz.worldwind.ogc.gpkg
 
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
-import com.atom.wyz.worldwind.render.ImageSource
+import com.atom.wyz.worldwind.layer.render.ImageSource
 import com.atom.wyz.worldwind.util.Logger
 
 class GpkgBitmapFactory : ImageSource.BitmapFactory {

@@ -2,10 +2,10 @@ package com.atom.wyz.worldwind.layer
 
 import com.atom.wyz.worldwind.WorldWind
 import com.atom.wyz.worldwind.geom.Sector
+import com.atom.wyz.worldwind.layer.render.ImageOptions
+import com.atom.wyz.worldwind.layer.render.TiledSurfaceImage
 import com.atom.wyz.worldwind.ogc.WmsLayer
 import com.atom.wyz.worldwind.ogc.WmsLayerConfig
-import com.atom.wyz.worldwind.render.ImageOptions
-import com.atom.wyz.worldwind.render.TiledSurfaceImage
 
 class BlueMarbleLayer : WmsLayer {
 
@@ -20,6 +20,8 @@ class BlueMarbleLayer : WmsLayer {
         config.transparent = false // the BlueMarble layer is opaque
         setConfiguration(Sector().setFullSphere(), 500.0, config)
         val surfaceImage = getRenderable(0) as TiledSurfaceImage?
-        surfaceImage?.imageOptions = (ImageOptions(WorldWind.RGB_565)) // exploit opaque imagery to reduce memory usage
+        surfaceImage?.imageOptions = (ImageOptions(
+            WorldWind.RGB_565
+        )) // exploit opaque imagery to reduce memory usage
     }
 }

@@ -15,15 +15,15 @@ import android.widget.Toast
 import androidx.annotation.DrawableRes
 import com.atom.wyz.worldwind.controller.BasicWorldWindowController
 import com.atom.wyz.worldwind.R
-import com.atom.wyz.worldwind.context.RenderContext
+import com.atom.wyz.worldwind.layer.render.RenderContext
 import com.atom.wyz.worldwind.WorldWind
 import com.atom.wyz.worldwind.geom.Position
 import com.atom.wyz.worldwind.layer.RenderableLayer
-import com.atom.wyz.worldwind.render.ImageSource
-import com.atom.wyz.worldwind.render.Placemark
-import com.atom.wyz.worldwind.render.Renderable
-import com.atom.wyz.worldwind.shape.Highlightable
-import com.atom.wyz.worldwind.attribute.PlacemarkAttributes
+import com.atom.wyz.worldwind.layer.render.ImageSource
+import com.atom.wyz.worldwind.layer.render.Placemark
+import com.atom.wyz.worldwind.layer.render.Renderable
+import com.atom.wyz.worldwind.layer.render.shape.Highlightable
+import com.atom.wyz.worldwind.layer.render.attribute.PlacemarkAttributes
 import com.atom.wyz.worldwind.util.Logger
 import com.atom.wyz.worldwind.util.WWUtil
 import java.io.BufferedReader
@@ -90,7 +90,8 @@ class PlacemarksDemoActivity : BasicWorldWindActivity() {
             protected const val LEVEL_5 = 5
 
             protected var defaultAttributes: PlacemarkAttributes =
-                PlacemarkAttributes().apply {
+                PlacemarkAttributes()
+                    .apply {
                     this.imageScale = 15.0
                     this.minimumImageScale = 5.0
                 }
@@ -151,7 +152,8 @@ class PlacemarksDemoActivity : BasicWorldWindActivity() {
                 resources: Resources?, @DrawableRes resourceId: Int,
                 scale: Double
             ): PlacemarkAttributes? {
-                return PlacemarkAttributes().apply {
+                return PlacemarkAttributes()
+                    .apply {
                     this.imageSource = ImageSource.fromResource(resourceId)
                     this.imageScale = scale
                     this.minimumImageScale = 0.5
@@ -514,7 +516,11 @@ class PlacemarksDemoActivity : BasicWorldWindActivity() {
         private fun createPlaceIcons() {
             publishProgress("Creating place icons...")
             for (place in places) {
-                val placemark = Placemark(place.position, null, place.name)
+                val placemark = Placemark(
+                    place.position,
+                    null,
+                    place.name
+                )
                 placemark.levelOfDetailSelector = (PlaceLevelOfDetailSelector(getResources(), place))
                 placemark.eyeDistanceScaling = (true)
                 placemark.eyeDistanceScalingThreshold = (PlaceLevelOfDetailSelector.LEVEL_1_DISTANCE.toDouble())

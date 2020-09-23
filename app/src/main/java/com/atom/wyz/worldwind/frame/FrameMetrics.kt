@@ -1,7 +1,7 @@
 package com.atom.wyz.worldwind.frame
 
-import com.atom.wyz.worldwind.context.DrawContext
-import com.atom.wyz.worldwind.context.RenderContext
+import com.atom.wyz.worldwind.layer.draw.DrawContext
+import com.atom.wyz.worldwind.layer.render.RenderContext
 import com.atom.wyz.worldwind.util.LruMemoryCache
 import java.util.*
 

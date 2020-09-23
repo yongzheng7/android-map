@@ -1,15 +1,15 @@
 package com.atom.wyz.worldwind.globe
 
 import android.opengl.GLES20
-import com.atom.wyz.worldwind.context.RenderContext
-import com.atom.wyz.worldwind.draw.BasicDrawableTerrain
+import com.atom.wyz.worldwind.layer.render.RenderContext
+import com.atom.wyz.worldwind.layer.draw.BasicDrawableTerrain
 import com.atom.wyz.worldwind.geom.Range
 import com.atom.wyz.worldwind.geom.Sector
 import com.atom.wyz.worldwind.geom.Vec3
-import com.atom.wyz.worldwind.shader.BufferObject
-import com.atom.wyz.worldwind.tile.TerrainTile
-import com.atom.wyz.worldwind.tile.Tile
-import com.atom.wyz.worldwind.tile.TileFactory
+import com.atom.wyz.worldwind.core.shader.BufferObject
+import com.atom.wyz.worldwind.core.tile.TerrainTile
+import com.atom.wyz.worldwind.core.tile.Tile
+import com.atom.wyz.worldwind.core.tile.TileFactory
 import com.atom.wyz.worldwind.util.Level
 import com.atom.wyz.worldwind.util.LevelSet
 import com.atom.wyz.worldwind.util.Logger
@@ -19,7 +19,8 @@ import java.nio.ByteBuffer
 import java.nio.ByteOrder
 import java.util.*
 
-class BasicTessellator : Tessellator, TileFactory {
+class BasicTessellator : Tessellator,
+    TileFactory {
 
     var levelSet: LevelSet = LevelSet(Sector().setFullSphere(), 90.0, 20, 32, 32)
         set(value) {
@@ -178,7 +179,8 @@ class BasicTessellator : Tessellator, TileFactory {
         this.prepareTile(rc, tile)
         currentTerrain.addTile(tile) //只添加最后等级的图块 或者 无需再次细分的图块
 
-        val pool: Pool<BasicDrawableTerrain> = rc.getDrawablePool(BasicDrawableTerrain::class.java)
+        val pool: Pool<BasicDrawableTerrain> = rc.getDrawablePool(
+            BasicDrawableTerrain::class.java)
         val drawable: BasicDrawableTerrain = BasicDrawableTerrain.obtain(pool)
         this.prepareDrawableTerrain(rc, tile, drawable)
         rc.offerDrawableTerrain(drawable , tile.distanceToCamera)

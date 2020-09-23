@@ -1,11 +1,11 @@
 package com.atom.wyz.worldwind.frame
 
-import com.atom.wyz.worldwind.draw.DrawableQueue
+import com.atom.wyz.worldwind.layer.draw.DrawableQueue
 import com.atom.wyz.worldwind.geom.Line
 import com.atom.wyz.worldwind.geom.Matrix4
 import com.atom.wyz.worldwind.geom.Vec2
 import com.atom.wyz.worldwind.geom.Viewport
-import com.atom.wyz.worldwind.pick.PickedObjectList
+import com.atom.wyz.worldwind.layer.render.pick.PickedObjectList
 import com.atom.wyz.worldwind.util.pool.Pool
 import java.util.concurrent.locks.Lock
 import java.util.concurrent.locks.ReentrantLock
@@ -26,9 +26,11 @@ class Frame {
 
     val infiniteProjection = Matrix4()
 
-    val drawableQueue: DrawableQueue = DrawableQueue()
+    val drawableQueue: DrawableQueue =
+        DrawableQueue()
 
-    val drawableTerrain: DrawableQueue = DrawableQueue()
+    val drawableTerrain: DrawableQueue =
+        DrawableQueue()
 
     var pickedObjects: PickedObjectList? = null
 

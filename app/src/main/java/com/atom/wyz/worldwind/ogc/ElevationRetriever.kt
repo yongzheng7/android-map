@@ -2,7 +2,7 @@ package com.atom.wyz.worldwind.ogc
 
 import com.atom.wyz.worldwind.formats.tiff.Subfile
 import com.atom.wyz.worldwind.formats.tiff.Tiff
-import com.atom.wyz.worldwind.render.ImageSource
+import com.atom.wyz.worldwind.layer.render.ImageSource
 import com.atom.wyz.worldwind.util.Logger
 import com.atom.wyz.worldwind.util.Retriever
 import com.atom.wyz.worldwind.util.WWUtil

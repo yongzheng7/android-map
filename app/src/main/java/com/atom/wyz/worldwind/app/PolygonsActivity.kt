@@ -3,11 +3,11 @@ package com.atom.wyz.worldwind.app
 import android.annotation.SuppressLint
 import android.os.Bundle
 import com.atom.wyz.worldwind.WorldWind
-import com.atom.wyz.worldwind.attribute.ShapeAttributes
+import com.atom.wyz.worldwind.layer.render.attribute.ShapeAttributes
 import com.atom.wyz.worldwind.geom.Position
 import com.atom.wyz.worldwind.geom.SimpleColor
 import com.atom.wyz.worldwind.layer.RenderableLayer
-import com.atom.wyz.worldwind.shape.Polygon
+import com.atom.wyz.worldwind.layer.render.shape.Polygon
 import java.util.*
 
 @SuppressLint("Registered")
@@ -64,11 +64,13 @@ class PolygonsActivity :BasicWorldWindActivity () {
             Position.fromDegrees(25.0, -90.0, 7.0e5),
             Position.fromDegrees(20.0, -95.0, 5.0e5)
         )
-        val attrs = ShapeAttributes()
+        val attrs =
+            ShapeAttributes()
         attrs.drawVerticals  =(true) // display the extruded verticals
         attrs.interiorColor = (SimpleColor(1f, 1f, 1f, 0.5f)) // 50% transparent white
         attrs.outlineWidth = (3f)
-        poly = Polygon(positions, attrs)
+        poly =
+            Polygon(positions, attrs)
         poly.extrude = (true) // extrude the polygon from the ground to each polygon position's altitude
         layer.addRenderable(poly)
         // Create a polygon with an inner hole by specifying multiple polygon boundaries

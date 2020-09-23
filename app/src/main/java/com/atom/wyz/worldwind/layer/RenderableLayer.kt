@@ -1,7 +1,7 @@
 package com.atom.wyz.worldwind.layer
 
-import com.atom.wyz.worldwind.context.RenderContext
-import com.atom.wyz.worldwind.render.Renderable
+import com.atom.wyz.worldwind.layer.render.RenderContext
+import com.atom.wyz.worldwind.layer.render.Renderable
 import com.atom.wyz.worldwind.util.Logger
 
 open class RenderableLayer(displayName: String) : AbstractLayer(displayName), Iterable<Renderable> {

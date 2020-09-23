@@ -10,8 +10,8 @@ import com.atom.wyz.worldwind.geom.Sector
 import com.atom.wyz.worldwind.layer.CartesianLayer
 import com.atom.wyz.worldwind.layer.RenderableLayer
 import com.atom.wyz.worldwind.layer.ShowTessellationLayer
-import com.atom.wyz.worldwind.render.ImageSource
-import com.atom.wyz.worldwind.render.SurfaceImage
+import com.atom.wyz.worldwind.layer.render.ImageSource
+import com.atom.wyz.worldwind.layer.render.SurfaceImage
 import com.atom.wyz.worldwind.util.Logger
 import java.lang.String
 import java.util.*
@@ -80,7 +80,12 @@ class TextureStressTestActivity : BasicWorldWindActivity(), Handler.Callback {
             }
         })
         // Add the surface image to this test's layer.
-        layer.addRenderable(SurfaceImage(Sector(sector), imageSource))
+        layer.addRenderable(
+            SurfaceImage(
+                Sector(sector),
+                imageSource
+            )
+        )
         getWorldWindow().requestRedraw()
         // Advance to the next surface image's location.
         if (sector.maxLongitude < firstSector.minLongitude + firstSector.deltaLongitude() * 20) {

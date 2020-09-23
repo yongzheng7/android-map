@@ -13,13 +13,13 @@ import com.atom.wyz.worldwind.controller.BasicWorldWindowController
 import com.atom.wyz.worldwind.geom.*
 import com.atom.wyz.worldwind.globe.Globe
 import com.atom.wyz.worldwind.layer.RenderableLayer
-import com.atom.wyz.worldwind.pick.PickedObject
-import com.atom.wyz.worldwind.pick.PickedObjectList
-import com.atom.wyz.worldwind.render.ImageSource
-import com.atom.wyz.worldwind.render.Placemark
-import com.atom.wyz.worldwind.render.Renderable
-import com.atom.wyz.worldwind.render.SurfaceImage
-import com.atom.wyz.worldwind.shape.Movable
+import com.atom.wyz.worldwind.layer.render.pick.PickedObject
+import com.atom.wyz.worldwind.layer.render.pick.PickedObjectList
+import com.atom.wyz.worldwind.layer.render.ImageSource
+import com.atom.wyz.worldwind.layer.render.Placemark
+import com.atom.wyz.worldwind.layer.render.Renderable
+import com.atom.wyz.worldwind.layer.render.SurfaceImage
+import com.atom.wyz.worldwind.layer.render.shape.Movable
 import java.util.*
 
 class PlacemarksDraggerActivity : BasicWorldWindActivity() {
@@ -227,7 +227,8 @@ class PlacemarksDraggerActivity : BasicWorldWindActivity() {
     }
 
     class MovableSurfaceImage(sector: Sector, imageSource: ImageSource) :
-        SurfaceImage(sector, imageSource), Movable {
+        SurfaceImage(sector, imageSource),
+        Movable {
 
         override fun getReferencePosition(): Position {
             val sector: Sector = super.sector

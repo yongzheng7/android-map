@@ -6,14 +6,14 @@ import android.os.Bundle
 import android.os.Handler
 import com.atom.wyz.worldwind.R
 import com.atom.wyz.worldwind.WorldWind
-import com.atom.wyz.worldwind.attribute.PlacemarkAttributes
+import com.atom.wyz.worldwind.layer.render.attribute.PlacemarkAttributes
 import com.atom.wyz.worldwind.geom.LookAt
 import com.atom.wyz.worldwind.geom.Offset
 import com.atom.wyz.worldwind.geom.Position
 import com.atom.wyz.worldwind.geom.SimpleColor
 import com.atom.wyz.worldwind.layer.RenderableLayer
-import com.atom.wyz.worldwind.render.ImageSource
-import com.atom.wyz.worldwind.render.Placemark
+import com.atom.wyz.worldwind.layer.render.ImageSource
+import com.atom.wyz.worldwind.layer.render.Placemark
 
 class Placemarks2Activity : BasicWorldWindActivity() {
 
@@ -33,23 +33,39 @@ class Placemarks2Activity : BasicWorldWindActivity() {
         val ventura = Placemark.createSimple(Position.fromDegrees(34.281, -119.293, 0.0), SimpleColor(Color.CYAN), 20)
 
 
-        val airplane = Placemark(Position.fromDegrees(34.260, -119.2, 5000.0), PlacemarkAttributes.withImageAndLeaderLine(ImageSource.fromResource(R.drawable.air_fixwing)).apply {
-            this.imageScale = 1.5
-        })
+        val airplane = Placemark(
+            Position.fromDegrees(
+                34.260,
+                -119.2,
+                5000.0
+            ),
+            PlacemarkAttributes.withImageAndLeaderLine(
+                ImageSource.fromResource(R.drawable.air_fixwing)
+            ).apply {
+                this.imageScale = 1.5
+            })
 
 
         val airport = Placemark(
-                Position.fromDegrees(34.200, -119.208, 0.0),
-                PlacemarkAttributes.withImageAndLabel(ImageSource.fromResource(R.drawable.airport_terminal)).apply {
-                    this.imageOffset = (Offset.bottomCenter())
-                    this.imageScale = 2.0
-                },
-                "Oxnard Airport")
+            Position.fromDegrees(34.200, -119.208, 0.0),
+            PlacemarkAttributes.withImageAndLabel(
+                ImageSource.fromResource(R.drawable.airport_terminal)
+            ).apply {
+                this.imageOffset = (Offset.bottomCenter())
+                this.imageScale = 2.0
+            },
+            "Oxnard Airport"
+        )
 
         val wildfire = Placemark(
-                Position.fromDegrees(34.300, -119.25, 0.0),
-                PlacemarkAttributes.withImageAndLabel(ImageSource.fromBitmap( BitmapFactory.decodeResource(resources, R.drawable.ehipcc))).apply { this.imageOffset = Offset.bottomCenter() },
-                "Fire")
+            Position.fromDegrees(34.300, -119.25, 0.0),
+            PlacemarkAttributes.withImageAndLabel(
+                ImageSource.fromBitmap(
+                    BitmapFactory.decodeResource(resources, R.drawable.ehipcc)
+                )
+            ).apply { this.imageOffset = Offset.bottomCenter() },
+            "Fire"
+        )
 
         placemarksLayer.addRenderable(ventura)
         placemarksLayer.addRenderable(airport)

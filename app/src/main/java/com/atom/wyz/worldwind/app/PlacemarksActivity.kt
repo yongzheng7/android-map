@@ -8,9 +8,9 @@ import com.atom.wyz.worldwind.geom.Position
 import com.atom.wyz.worldwind.layer.LayerList
 import com.atom.wyz.worldwind.layer.RenderableLayer
 import com.atom.wyz.worldwind.layer.ShowTessellationLayer
-import com.atom.wyz.worldwind.render.ImageSource
-import com.atom.wyz.worldwind.render.Placemark
-import com.atom.wyz.worldwind.attribute.PlacemarkAttributes
+import com.atom.wyz.worldwind.layer.render.ImageSource
+import com.atom.wyz.worldwind.layer.render.Placemark
+import com.atom.wyz.worldwind.layer.render.attribute.PlacemarkAttributes
 import java.util.*
 
 class PlacemarksActivity : BasicWorldWindActivity() , Runnable {
@@ -32,10 +32,38 @@ class PlacemarksActivity : BasicWorldWindActivity() , Runnable {
         getWorldWindow().layers.addLayer(placemarksLayer)
 
         // Create some placemarks at a known locations
-        val origin: Placemark = Placemark(Position.fromDegrees(0.0, 0.0, 0.0))
-        val northPole: Placemark = Placemark(Position.fromDegrees(90.0, 0.0, 0.0))
-        val southPole: Placemark = Placemark(Position.fromDegrees(-90.0, 0.0, 0.0))
-        val antiMeridian: Placemark = Placemark(Position.fromDegrees(0.0, 180.0, 0.0))
+        val origin: Placemark =
+            Placemark(
+                Position.fromDegrees(
+                    0.0,
+                    0.0,
+                    0.0
+                )
+            )
+        val northPole: Placemark =
+            Placemark(
+                Position.fromDegrees(
+                    90.0,
+                    0.0,
+                    0.0
+                )
+            )
+        val southPole: Placemark =
+            Placemark(
+                Position.fromDegrees(
+                    -90.0,
+                    0.0,
+                    0.0
+                )
+            )
+        val antiMeridian: Placemark =
+            Placemark(
+                Position.fromDegrees(
+                    0.0,
+                    180.0,
+                    0.0
+                )
+            )
 
         origin.attributes.imageSource = (ImageSource.fromResource(R.drawable.air_fixwing))
         northPole.attributes.imageSource = (ImageSource.fromResource(R.drawable.airplane))
@@ -101,9 +129,13 @@ class PlacemarksActivity : BasicWorldWindActivity() , Runnable {
             val lat = Math.toDegrees(Math.asin(random.nextDouble())) * if (random.nextBoolean()) 1 else -1
             val lon = 180.0 - random.nextDouble() * 360
             val pos: Position = Position.fromDegrees(lat, lon, 0.0)
-            val placemark: Placemark = Placemark(pos,
-                PlacemarkAttributes(attributes)
-            )
+            val placemark: Placemark =
+                Placemark(
+                    pos,
+                    PlacemarkAttributes(
+                        attributes
+                    )
+                )
             placemark.eyeDistanceScaling = (true)
             placemarksLayer.addRenderable(placemark)
         }

@@ -2,11 +2,11 @@ package com.atom.wyz.worldwind.app
 
 import android.os.Bundle
 import com.atom.wyz.worldwind.WorldWind
-import com.atom.wyz.worldwind.attribute.ShapeAttributes
+import com.atom.wyz.worldwind.layer.render.attribute.ShapeAttributes
 import com.atom.wyz.worldwind.geom.Position
 import com.atom.wyz.worldwind.geom.SimpleColor
 import com.atom.wyz.worldwind.layer.RenderableLayer
-import com.atom.wyz.worldwind.shape.Path
+import com.atom.wyz.worldwind.layer.render.shape.Path
 import java.util.*
 
 class PathsActivity : BasicWorldWindActivity() {
@@ -54,7 +54,8 @@ class PathsActivity : BasicWorldWindActivity() {
             Position.fromDegrees(0.0, -100.0, 1e6),
             Position.fromDegrees(20.0, -40.0, 1e5)
         )
-        val attrs = ShapeAttributes()
+        val attrs =
+            ShapeAttributes()
         attrs.drawVerticals = (true)
         attrs.interiorColor = (SimpleColor(
             1f,

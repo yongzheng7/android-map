@@ -3,12 +3,12 @@ package com.atom.wyz.worldwind.layer
 import android.graphics.Color
 import android.opengl.GLES20
 import com.atom.wyz.worldwind.WorldWind
-import com.atom.wyz.worldwind.context.RenderContext
-import com.atom.wyz.worldwind.draw.DrawableCartesian
+import com.atom.wyz.worldwind.core.shader.BufferObject
+import com.atom.wyz.worldwind.core.shader.CartesianProgram
 import com.atom.wyz.worldwind.geom.SimpleColor
 import com.atom.wyz.worldwind.geom.Vec3
-import com.atom.wyz.worldwind.shader.BufferObject
-import com.atom.wyz.worldwind.shader.CartesianProgram
+import com.atom.wyz.worldwind.layer.draw.DrawableCartesian
+import com.atom.wyz.worldwind.layer.render.RenderContext
 import com.atom.wyz.worldwind.util.pool.Pool
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
@@ -45,7 +45,8 @@ class CartesianLayer : AbstractLayer("CartesianLayer") {
             ) as CartesianProgram
         }
 
-        val pool: Pool<DrawableCartesian> = rc.getDrawablePool(DrawableCartesian::class.java)
+        val pool: Pool<DrawableCartesian> = rc.getDrawablePool(
+            DrawableCartesian::class.java)
         var drawable = DrawableCartesian.obtain(pool).set(program, color, true)
         // 笛卡尔坐标系
         drawable.vertexPoints = rc.getBufferObject(VERTEX_POINTS_KEY)

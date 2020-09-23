@@ -2,7 +2,7 @@ package com.atom.wyz.worldwind.ogc
 
 import com.atom.wyz.worldwind.geom.Sector
 import com.atom.wyz.worldwind.geom.TileMatrix
-import com.atom.wyz.worldwind.render.ImageSource
+import com.atom.wyz.worldwind.layer.render.ImageSource
 import java.util.*
 
 class Wcs201TileFactory(

@@ -11,9 +11,9 @@ import com.atom.wyz.worldwind.geom.Position
 import com.atom.wyz.worldwind.layer.LayerList
 import com.atom.wyz.worldwind.layer.RenderableLayer
 import com.atom.wyz.worldwind.layer.ShowTessellationLayer
-import com.atom.wyz.worldwind.render.ImageSource
-import com.atom.wyz.worldwind.render.Placemark
-import com.atom.wyz.worldwind.attribute.PlacemarkAttributes
+import com.atom.wyz.worldwind.layer.render.ImageSource
+import com.atom.wyz.worldwind.layer.render.Placemark
+import com.atom.wyz.worldwind.layer.render.attribute.PlacemarkAttributes
 import java.util.*
 
 @SuppressLint("Registered")
@@ -45,27 +45,43 @@ class PlacemarksStressTestActivity : BasicWorldWindActivity() , FrameCallback {
         getWorldWindow().layers.addLayer(placemarksLayer)
 
         // Create some placemarks at a known locations
-        var withImageAndLabel = PlacemarkAttributes.withImageAndLabel(ImageSource.fromResource(R.drawable.air_fixwing))
+        var withImageAndLabel = PlacemarkAttributes.withImageAndLabel(
+            ImageSource.fromResource(R.drawable.air_fixwing))
         withImageAndLabel.imageOffset = Offset.center()
-        val origin: Placemark = Placemark(Position.fromDegrees(0.0, 0.0, 1e5),
+        val origin: Placemark =
+            Placemark(
+                Position.fromDegrees(0.0, 0.0, 1e5),
                 withImageAndLabel,
-                "Origin")
-        withImageAndLabel = PlacemarkAttributes.withImageAndLabelLeaderLine(ImageSource.fromResource(R.drawable.air_fixwing))
+                "Origin"
+            )
+        withImageAndLabel = PlacemarkAttributes.withImageAndLabelLeaderLine(
+            ImageSource.fromResource(R.drawable.air_fixwing))
         withImageAndLabel.imageOffset = Offset.bottomCenter()
-        val northPole: Placemark = Placemark(Position.fromDegrees(90.0, 0.0, 1e5),
+        val northPole: Placemark =
+            Placemark(
+                Position.fromDegrees(90.0, 0.0, 1e5),
                 withImageAndLabel,
-                "North Pole")
-        withImageAndLabel = PlacemarkAttributes.withImageAndLabel(ImageSource.fromResource(R.drawable.crosshairs))
+                "North Pole"
+            )
+        withImageAndLabel = PlacemarkAttributes.withImageAndLabel(
+            ImageSource.fromResource(R.drawable.crosshairs))
         withImageAndLabel.imageOffset = Offset.bottomLeft()
-        val southPole: Placemark = Placemark(Position.fromDegrees(-90.0, 0.0, 0.0),
+        val southPole: Placemark =
+            Placemark(
+                Position.fromDegrees(-90.0, 0.0, 0.0),
                 withImageAndLabel,
-                "South Pole")
-        withImageAndLabel =  PlacemarkAttributes.withImageAndLabel(ImageSource.fromResource(R.drawable.ehipcc))
+                "South Pole"
+            )
+        withImageAndLabel =  PlacemarkAttributes.withImageAndLabel(
+            ImageSource.fromResource(R.drawable.ehipcc))
         withImageAndLabel.imageOffset = Offset.bottomRight()
 
-        val antiMeridian: Placemark = Placemark(Position.fromDegrees(0.0, 180.0, 0.0),
+        val antiMeridian: Placemark =
+            Placemark(
+                Position.fromDegrees(0.0, 180.0, 0.0),
                 withImageAndLabel,
-                "Anti-meridian")
+                "Anti-meridian"
+            )
 
         placemarksLayer.addRenderable(origin)
         placemarksLayer.addRenderable(northPole)
@@ -78,16 +94,21 @@ class PlacemarksStressTestActivity : BasicWorldWindActivity() , FrameCallback {
         Placemark.DEFAULT_EYE_DISTANCE_SCALING_THRESHOLD = 1e7
         val random = Random(123)
         
-        val attributes: PlacemarkAttributes = PlacemarkAttributes.withImage(ImageSource.fromResource(R.drawable.ic_menu_home))
+        val attributes: PlacemarkAttributes = PlacemarkAttributes.withImage(
+            ImageSource.fromResource(R.drawable.ic_menu_home))
         attributes.imageOffset  = Offset.center()
 
         for (i in 0 until NUM_PLACEMARKS) {
             val lat = Math.toDegrees(Math.asin(random.nextDouble())) * if (random.nextBoolean()) 1 else -1
             val lon = 180.0 - random.nextDouble() * 360
             val pos: Position = Position.fromDegrees(lat, lon, 5000.0)
-            val placemark: Placemark = Placemark(pos,
-                PlacemarkAttributes(attributes)
-            )
+            val placemark: Placemark =
+                Placemark(
+                    pos,
+                    PlacemarkAttributes(
+                        attributes
+                    )
+                )
             placemark.eyeDistanceScaling = true
             placemark.displayName = placemark.position.toString()
             placemarksLayer.addRenderable(placemark)

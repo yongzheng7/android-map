@@ -2,17 +2,18 @@ package com.atom.wyz.worldwind.layer
 
 import android.opengl.GLES20
 import com.atom.wyz.worldwind.R
-import com.atom.wyz.worldwind.context.RenderContext
+import com.atom.wyz.worldwind.layer.render.RenderContext
 import com.atom.wyz.worldwind.WorldWind
-import com.atom.wyz.worldwind.draw.DrawableGroundAtmosphere
-import com.atom.wyz.worldwind.draw.DrawableSkyAtmosphere
+import com.atom.wyz.worldwind.layer.draw.DrawableGroundAtmosphere
+import com.atom.wyz.worldwind.layer.draw.DrawableSkyAtmosphere
 import com.atom.wyz.worldwind.geom.Location
 import com.atom.wyz.worldwind.geom.Sector
 import com.atom.wyz.worldwind.geom.Vec3
-import com.atom.wyz.worldwind.render.*
-import com.atom.wyz.worldwind.shader.BufferObject
-import com.atom.wyz.worldwind.shader.GroundProgram
-import com.atom.wyz.worldwind.shader.SkyProgram
+import com.atom.wyz.worldwind.layer.render.ImageOptions
+import com.atom.wyz.worldwind.layer.render.ImageSource
+import com.atom.wyz.worldwind.core.shader.BufferObject
+import com.atom.wyz.worldwind.core.shader.GroundProgram
+import com.atom.wyz.worldwind.core.shader.SkyProgram
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
 import java.util.*
@@ -38,7 +39,8 @@ class AtmosphereLayer : AbstractLayer {
     constructor() : super("Atmosphere") {
         this.pickEnabled = false
         nightImageSource = ImageSource.fromResource(R.drawable.gov_nasa_worldwind_night)
-        nightImageOptions = ImageOptions(WorldWind.RGB_565)
+        nightImageOptions =
+            ImageOptions(WorldWind.RGB_565)
     }
 
     override fun doRender(rc: RenderContext) {
@@ -70,7 +72,8 @@ class AtmosphereLayer : AbstractLayer {
             }
         } ?: return
 
-        val drawable = DrawableGroundAtmosphere.obtain(rc.getDrawablePool(DrawableGroundAtmosphere::class.java))
+        val drawable = DrawableGroundAtmosphere.obtain(rc.getDrawablePool(
+            DrawableGroundAtmosphere::class.java))
 
         drawable.program = rc.getProgram(GroundProgram.KEY) as GroundProgram?
         if (drawable.program == null) {
@@ -95,7 +98,8 @@ class AtmosphereLayer : AbstractLayer {
     }
 
     protected fun renderSky(rc: RenderContext) {
-        val drawable = DrawableSkyAtmosphere.obtain(rc.getDrawablePool(DrawableSkyAtmosphere::class.java))
+        val drawable = DrawableSkyAtmosphere.obtain(rc.getDrawablePool(
+            DrawableSkyAtmosphere::class.java))
         val size = 128
         drawable.program = rc.getProgram(SkyProgram.KEY) as SkyProgram?
         if (drawable.program == null) {

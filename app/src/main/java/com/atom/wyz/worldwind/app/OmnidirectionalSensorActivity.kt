@@ -3,7 +3,7 @@ package com.atom.wyz.worldwind.app
 import com.atom.wyz.worldwind.R
 import com.atom.wyz.worldwind.WorldWind
 import com.atom.wyz.worldwind.WorldWindow
-import com.atom.wyz.worldwind.attribute.ShapeAttributes
+import com.atom.wyz.worldwind.layer.render.attribute.ShapeAttributes
 import com.atom.wyz.worldwind.geom.LookAt
 import com.atom.wyz.worldwind.geom.Position
 import com.atom.wyz.worldwind.geom.Sector
@@ -12,9 +12,9 @@ import com.atom.wyz.worldwind.layer.CartesianLayer
 import com.atom.wyz.worldwind.layer.RenderableLayer
 import com.atom.wyz.worldwind.layer.ShowTessellationLayer
 import com.atom.wyz.worldwind.ogc.Wcs100ElevationCoverage
-import com.atom.wyz.worldwind.render.ImageSource
-import com.atom.wyz.worldwind.render.OmnidirectionalSightline
-import com.atom.wyz.worldwind.render.Placemark
+import com.atom.wyz.worldwind.layer.render.ImageSource
+import com.atom.wyz.worldwind.layer.render.OmnidirectionalSightline
+import com.atom.wyz.worldwind.layer.render.Placemark
 import com.atom.wyz.worldwind.util.Logger
 
 class OmnidirectionalSensorActivity : BasicGlobeActivity() {
@@ -60,10 +60,11 @@ class OmnidirectionalSensorActivity : BasicGlobeActivity() {
             0.8f
         ))
         // Create the sensor
-        val sensor = OmnidirectionalSightline(
-            position,
-            10000f
-        )
+        val sensor =
+            OmnidirectionalSightline(
+                position,
+                10000f
+            )
         // Add the attributes
         sensor.attributes = (visibleAttributes)
         sensor.occludeAttributes = (occludedAttributes)

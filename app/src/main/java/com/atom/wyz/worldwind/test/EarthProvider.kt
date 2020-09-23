@@ -11,8 +11,8 @@ import android.view.View
 import com.atom.wyz.worldwind.App
 import com.atom.wyz.worldwind.WorldHelper
 import com.atom.wyz.worldwind.WorldWind
-import com.atom.wyz.worldwind.context.DrawContext
-import com.atom.wyz.worldwind.context.RenderContext
+import com.atom.wyz.worldwind.layer.draw.DrawContext
+import com.atom.wyz.worldwind.layer.render.RenderContext
 import com.atom.wyz.worldwind.controller.BasicWorldWindowController
 import com.atom.wyz.worldwind.controller.WorldWindowController
 import com.atom.wyz.worldwind.test.bean.TextureBean
@@ -28,7 +28,7 @@ import com.atom.wyz.worldwind.globe.Tessellator
 import com.atom.wyz.worldwind.layer.LayerList
 import com.atom.wyz.worldwind.navigator.Navigator
 import com.atom.wyz.worldwind.navigator.NavigatorEventSupport
-import com.atom.wyz.worldwind.pick.PickedObjectList
+import com.atom.wyz.worldwind.layer.render.pick.PickedObjectList
 import com.atom.wyz.worldwind.util.Logger
 import com.atom.wyz.worldwind.util.MessageListener
 import com.atom.wyz.worldwind.util.RenderResourceCache
@@ -266,7 +266,8 @@ open class EarthProvider : ITextureProvider<TextureBean>, MessageListener,
 
     fun pickShapesInRect(x: Float, y: Float, width: Float, height: Float): PickedObjectList {
         // Allocate a list in which to collect and return the picked objects.
-        val pickedObjects = PickedObjectList()
+        val pickedObjects =
+            PickedObjectList()
         // Nothing can be picked if the World Window's OpenGL thread is paused.
         if (isPaused) {
             return pickedObjects
@@ -292,7 +293,8 @@ open class EarthProvider : ITextureProvider<TextureBean>, MessageListener,
 
     // 绘制相关
     fun pick(x: Float, y: Float): PickedObjectList {
-        val pickedObjects = PickedObjectList()
+        val pickedObjects =
+            PickedObjectList()
 
         // Nothing can be picked if this World Window's OpenGL thread is paused.
         if (isPaused) {
