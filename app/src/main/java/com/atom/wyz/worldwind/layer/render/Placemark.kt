@@ -1,6 +1,5 @@
 package com.atom.wyz.worldwind.layer.render
 
-import android.util.Log
 import com.atom.wyz.worldwind.WorldWind
 import com.atom.wyz.worldwind.core.shader.BasicProgram
 import com.atom.wyz.worldwind.core.shader.GpuTexture

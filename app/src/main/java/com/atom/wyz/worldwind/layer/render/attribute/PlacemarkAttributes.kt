@@ -65,7 +65,7 @@ class PlacemarkAttributes {
 
     constructor() {
         imageColor = SimpleColor(1f, 1f, 1f, 1f)
-        imageOffset = Offset(Offset.bottomCenter())
+        imageOffset = Offset(Offset.centerLeft())
         imageScale = 1.0
         imageSource = null
         drawLeader = false
