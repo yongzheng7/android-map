@@ -39,7 +39,7 @@ open class Placemark : AbstractRenderable,
             )
         }
 
-        fun createSimpleImage(position: Position, imageSource: ImageSource?): Placemark {
+        fun createSimpleImage(position: Position, imageSource: ImageSource): Placemark {
             return Placemark(
                 position,
                 PlacemarkAttributes.withImage(
@@ -50,7 +50,7 @@ open class Placemark : AbstractRenderable,
 
         fun createSimpleImageAndLabel(
             position: Position,
-            imageSource: ImageSource?,
+            imageSource: ImageSource,
             label: String
         ): Placemark {
             return Placemark(
@@ -79,8 +79,10 @@ open class Placemark : AbstractRenderable,
     var levelOfDetailSelector: LevelOfDetailSelector? = null
 
     var attributes: PlacemarkAttributes
+
     var highlightAttributes: PlacemarkAttributes? = null
-    var activeAttributes: PlacemarkAttributes? = null
+
+    private  var activeAttributes: PlacemarkAttributes ? = null
 
     var eyeDistanceScaling: Boolean
     var eyeDistanceScalingThreshold: Double

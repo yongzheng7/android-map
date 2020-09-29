@@ -8,8 +8,8 @@ import com.atom.wyz.worldwind.R
 import com.atom.wyz.worldwind.WorldWind
 import com.atom.wyz.worldwind.geom.Position
 import com.atom.wyz.worldwind.layer.RenderableLayer
-import com.atom.wyz.worldwind.layer.render.shape.Path
 import com.atom.wyz.worldwind.layer.render.attribute.ShapeAttributes
+import com.atom.wyz.worldwind.layer.render.shape.Path
 import com.atom.wyz.worldwind.util.Logger
 import com.atom.wyz.worldwind.util.WWUtil
 import kotlinx.coroutines.GlobalScope
@@ -145,7 +145,7 @@ class PathsExampleActivity : BasicGlobeActivity()  , Handler.Callback  {
 
     protected fun populateFlightPaths() {
         val attrs =
-            ShapeAttributes()
+            ShapeAttributes.defaults()
         attrs.interiorColor.set(0.8f, 0.8f, 1.0f, 0.8f)
         attrs.outlineColor.set(0.0f, 0.0f,  0.0f, 1.0f)
         val dept = airportIkoIndex["KSEA"]

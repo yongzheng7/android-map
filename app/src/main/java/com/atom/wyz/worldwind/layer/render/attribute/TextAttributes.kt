@@ -6,27 +6,34 @@ import com.atom.wyz.worldwind.geom.SimpleColor
 
 class TextAttributes {
 
+    companion object {
+        private val attributes: TextAttributes = TextAttributes()
+        fun defaults(attr: TextAttributes = attributes): TextAttributes {
+            return TextAttributes(attr)
+        }
+    }
+
     var textColor: SimpleColor
 
     var textOffset: Offset
 
-    var textSize = 0f
+    var textSize: Float
 
     var typeface: Typeface?
 
-    var enableOutline = false
+    var enableOutline: Boolean
 
-    var enableDepthTest = false
+    var enableDepthTest: Boolean
 
-    var outlineWidth = 0f
+    var outlineWidth: Float
 
     var outlineColor: SimpleColor
 
-    var drawLeader = false
+    var drawLeader: Boolean
 
     var leaderAttributes: ShapeAttributes
 
-    constructor() {
+    private constructor() {
         textColor = SimpleColor(1f, 1f, 1f, 1f)
         outlineColor = SimpleColor(0f, 0f, 0f, 1f)
         textOffset = Offset.bottomCenter()
@@ -36,10 +43,10 @@ class TextAttributes {
         enableDepthTest = true
         outlineWidth = 3f
         drawLeader = true
-        leaderAttributes = ShapeAttributes()
+        leaderAttributes = ShapeAttributes.defaults()
     }
 
-    constructor(attributes: TextAttributes) {
+    private constructor(attributes: TextAttributes) {
         textColor = SimpleColor(attributes.textColor)
         outlineColor = SimpleColor(attributes.outlineColor)
         textOffset = Offset(attributes.textOffset)
@@ -49,7 +56,7 @@ class TextAttributes {
         enableDepthTest = attributes.enableDepthTest
         outlineWidth = attributes.outlineWidth
         drawLeader = attributes.drawLeader
-        leaderAttributes = ShapeAttributes(attributes.leaderAttributes)
+        leaderAttributes = ShapeAttributes.defaults(attributes.leaderAttributes)
     }
 
     fun set(attributes: TextAttributes): TextAttributes {
@@ -62,7 +69,7 @@ class TextAttributes {
         enableDepthTest = attributes.enableDepthTest
         outlineWidth = attributes.outlineWidth
         drawLeader = attributes.drawLeader
-        leaderAttributes = ShapeAttributes(attributes.leaderAttributes)
+        leaderAttributes = ShapeAttributes.defaults(attributes.leaderAttributes)
         return this
     }
 

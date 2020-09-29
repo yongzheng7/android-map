@@ -1,32 +1,44 @@
 package com.atom.wyz.worldwind.layer.render.attribute
 
 import android.graphics.Color
+import com.atom.wyz.worldwind.geom.Offset
 import com.atom.wyz.worldwind.geom.SimpleColor
 import com.atom.wyz.worldwind.layer.render.ImageSource
 
 class ShapeAttributes {
 
-    var drawInterior = false
+    companion object {
+        private val attributes: ShapeAttributes = ShapeAttributes()
 
-    var drawOutline = false
+        fun defaults(attr: ShapeAttributes = attributes): ShapeAttributes {
+            return ShapeAttributes(attr)
+        }
+    }
+
+    var drawInterior: Boolean
+
+    var drawOutline: Boolean
 
     var interiorColor: SimpleColor
 
     var outlineColor: SimpleColor
 
-    var outlineWidth = 0f
+    var outlineWidth: Float = 0f
 
     var interiorImageSource: ImageSource? = null
 
     var outlineImageSource: ImageSource? = null
 
-    var depthTest = false
+    var depthTest: Boolean
+
     /**
      * 向下拉伸的线
      */
-    var drawVerticals = false
+    var drawVerticals: Boolean
 
-    constructor() {
+    var imageOffset: Offset
+
+    private constructor() {
         drawInterior = true
         drawOutline = true
         interiorColor = SimpleColor(Color.WHITE)
@@ -36,9 +48,10 @@ class ShapeAttributes {
         outlineImageSource = null
         depthTest = true
         drawVerticals = false
+        imageOffset = Offset(Offset.centerLeft())
     }
 
-    constructor(attributes: ShapeAttributes) {
+    private constructor(attributes: ShapeAttributes) {
         drawInterior = attributes.drawInterior
         drawOutline = attributes.drawOutline
         interiorColor = SimpleColor(
@@ -52,6 +65,7 @@ class ShapeAttributes {
         outlineImageSource = attributes.outlineImageSource
         depthTest = attributes.depthTest
         drawVerticals = attributes.drawVerticals
+        imageOffset = attributes.imageOffset
     }
 
     fun set(attributes: ShapeAttributes): ShapeAttributes {
@@ -64,6 +78,7 @@ class ShapeAttributes {
         outlineImageSource = attributes.outlineImageSource
         depthTest = attributes.depthTest
         drawVerticals = attributes.drawVerticals
+        imageOffset = attributes.imageOffset
         return this
     }
 
@@ -75,22 +90,23 @@ class ShapeAttributes {
             return false
         }
         val that = other as ShapeAttributes
-        return (drawInterior == that.drawInterior && drawOutline == that.drawOutline && drawVerticals == that.drawVerticals && depthTest == that.depthTest && interiorColor.equals(
-            that.interiorColor
-        )
-                && outlineColor == that.outlineColor
-                && outlineWidth == that.outlineWidth && (if (interiorImageSource == null) that.interiorImageSource == null else interiorImageSource!!.equals(
-            that.interiorImageSource
-        ))
-                && if (outlineImageSource == null) that.outlineImageSource == null else outlineImageSource!!.equals(
-            that.outlineImageSource
-        ))
+        return (drawInterior == that.drawInterior &&
+                drawOutline == that.drawOutline &&
+                drawVerticals == that.drawVerticals &&
+                depthTest == that.depthTest &&
+                interiorColor == that.interiorColor &&
+                outlineColor == that.outlineColor &&
+                outlineWidth == that.outlineWidth &&
+                imageOffset == that.imageOffset &&
+                (if (interiorImageSource == null) that.interiorImageSource == null else interiorImageSource!! == that.interiorImageSource)
+                && if (outlineImageSource == null) that.outlineImageSource == null else outlineImageSource!! == that.outlineImageSource)
     }
 
     override fun hashCode(): Int {
         var result: Int = if (drawInterior) 1 else 0
         result = 31 * result + if (drawOutline) 1 else 0
         result = 31 * result + if (depthTest) 1 else 0
+        result = 31 * result + imageOffset.hashCode()
         result = 31 * result + if (drawVerticals) 1 else 0
         result = 31 * result + interiorColor.hashCode()
         result = 31 * result + outlineColor.hashCode()

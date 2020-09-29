@@ -7,13 +7,13 @@ import android.graphics.Bitmap
 import android.opengl.GLES20
 import android.os.Handler
 import android.os.Message
-import com.atom.wyz.worldwind.layer.draw.DrawContext
 import com.atom.wyz.worldwind.WorldWind
+import com.atom.wyz.worldwind.core.shader.GpuTexture
+import com.atom.wyz.worldwind.core.shader.RenderResource
+import com.atom.wyz.worldwind.layer.draw.DrawContext
 import com.atom.wyz.worldwind.layer.render.ImageOptions
 import com.atom.wyz.worldwind.layer.render.ImageRetriever
 import com.atom.wyz.worldwind.layer.render.ImageSource
-import com.atom.wyz.worldwind.core.shader.GpuTexture
-import com.atom.wyz.worldwind.core.shader.RenderResource
 import java.net.SocketTimeoutException
 import java.util.*
 import java.util.concurrent.ConcurrentLinkedQueue
@@ -54,16 +54,17 @@ class RenderResourceCache
             field = value
             (imageRetriever as ImageRetriever).resources = value
         }
+
     // 回收队列
-    protected var evictionQueue: Queue<RenderResource>
+    private val evictionQueue: Queue<RenderResource>
 
-    protected var imageRetriever: Retriever<ImageSource, ImageOptions, Bitmap>
+    private val imageRetriever: Retriever<ImageSource, ImageOptions, Bitmap>
 
-    protected var urlImageRetriever: Retriever<ImageSource, ImageOptions, Bitmap>
+    private val urlImageRetriever: Retriever<ImageSource, ImageOptions, Bitmap>
 
-    protected var imageRetrieverCache: LruMemoryCache<ImageSource, Bitmap>
+    private val imageRetrieverCache: LruMemoryCache<ImageSource, Bitmap>
 
-    protected var handler: Handler
+    private val handler: Handler
 
     constructor(capacity: Int, lowWater: Int) : super(capacity, lowWater)
     constructor(capacity: Int) : super(capacity)
@@ -90,7 +91,12 @@ class RenderResourceCache
         usedCapacity = 0
     }
 
-    override fun entryRemoved(key: Any, oldValue: RenderResource, newValue: RenderResource?, evicted: Boolean) {
+    override fun entryRemoved(
+        key: Any,
+        oldValue: RenderResource,
+        newValue: RenderResource?,
+        evicted: Boolean
+    ) {
         evictionQueue.offer(oldValue)
     }
 
@@ -99,13 +105,8 @@ class RenderResourceCache
         while (evictionQueue.poll().also { evicted = it } != null) {
             try {
                 evicted?.release(dc)
-                if (Logger.isLoggable(Logger.DEBUG)) {
-                    Logger.log(Logger.DEBUG, "Released render resource \'$evicted\'")
-                }
             } catch (ignored: Exception) {
-                if (Logger.isLoggable(Logger.DEBUG)) {
-                    Logger.log(Logger.DEBUG, "Exception releasing render resource \'$evicted\'", ignored)
-                }
+
             }
         }
     }
@@ -116,7 +117,7 @@ class RenderResourceCache
             put(imageSource, texture, texture.textureByteCount)
             return texture
         }
-        imageRetrieverCache.remove(imageSource) ?.let {
+        imageRetrieverCache.remove(imageSource)?.let {
             val texture = this.createTexture(imageSource, imageOptions, it);
             put(imageSource, texture, texture.textureByteCount)
             return texture
@@ -129,7 +130,11 @@ class RenderResourceCache
         return null
     }
 
-    protected fun createTexture(imageSource: ImageSource, options: ImageOptions?, bitmap: Bitmap?): GpuTexture {
+    protected fun createTexture(
+        imageSource: ImageSource,
+        options: ImageOptions?,
+        bitmap: Bitmap?
+    ): GpuTexture {
         val texture = GpuTexture(bitmap)
         if (options != null && options.resamplingMode == WorldWind.NEAREST_NEIGHBOR) {
             texture.setTexParameter(GLES20.GL_TEXTURE_MIN_FILTER, GLES20.GL_NEAREST)
@@ -148,10 +153,9 @@ class RenderResourceCache
         options: ImageOptions?,
         value: Bitmap
     ) {
-        Logger.log(Logger.ERROR, "Image retrieval Succeeded ----")
         imageRetrieverCache.put(key, value, value.byteCount)
-        Logger.log(Logger.ERROR, "Image retrieval Succeeded ----1----")
         WorldWind.requestRedraw()
+        Logger.logMessage(Logger.ERROR, "RenderResourceCache" , "retrievalSucceeded" ,"Image retrieval Success \'$key\'")
         if (!handler.hasMessages(TRIM_STALE_RETRIEVALS)) {
             handler.sendEmptyMessageDelayed(
                 TRIM_STALE_RETRIEVALS,
@@ -166,16 +170,20 @@ class RenderResourceCache
         ex: Throwable?
     ) {
         if (ex is SocketTimeoutException) {
-            Logger.log(Logger.ERROR, "Image retrieval Socket timeout retrieving image \'$key\'")
+            Logger.logMessage(Logger.ERROR, "RenderResourceCache" , "retrievalFailed" , "Image retrieval Socket timeout retrieving image \'$key\' \n $ex \n")
         } else if (ex != null) {
-            Logger.log(Logger.ERROR, "Image retrieval failed with exception \'$key\'")
+            Logger.logMessage(Logger.ERROR, "RenderResourceCache" , "retrievalFailed" , "Image retrieval failed with exception \'$key\'  \n  $ex \n")
         } else {
-            Logger.log(Logger.ERROR, "Image retrieval failed \'$key\'")
+            Logger.logMessage(Logger.ERROR, "RenderResourceCache" , "retrievalFailed" , "Image retrieval failed \'$key\'  \n  $ex \n")
         }
     }
 
-    override fun retrievalRejected(retriever: Retriever<ImageSource, ImageOptions, Bitmap>, key: ImageSource, smg : String) {
-        Logger.log(Logger.ERROR, "Image retrieval rejected \'$key\'  $smg")
+    override fun retrievalRejected(
+        retriever: Retriever<ImageSource, ImageOptions, Bitmap>,
+        key: ImageSource,
+        msg: String
+    ) {
+        Logger.logMessage(Logger.ERROR, "RenderResourceCache" , "retrievalRejected" ,"Image retrieval rejected \'$key\'  $msg")
     }
 
     override fun handleMessage(msg: Message): Boolean {

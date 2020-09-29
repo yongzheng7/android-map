@@ -10,17 +10,17 @@ import android.view.GestureDetector
 import android.view.MotionEvent
 import android.widget.Toast
 import androidx.fragment.app.DialogFragment
-import com.atom.wyz.worldwind.controller.BasicWorldWindowController
 import com.atom.wyz.worldwind.R
 import com.atom.wyz.worldwind.WorldWind
 import com.atom.wyz.worldwind.WorldWindow
+import com.atom.wyz.worldwind.controller.BasicWorldWindowController
 import com.atom.wyz.worldwind.geom.*
 import com.atom.wyz.worldwind.layer.RenderableLayer
 import com.atom.wyz.worldwind.layer.render.ImageSource
 import com.atom.wyz.worldwind.layer.render.Placemark
 import com.atom.wyz.worldwind.layer.render.Renderable
-import com.atom.wyz.worldwind.layer.render.shape.Highlightable
 import com.atom.wyz.worldwind.layer.render.attribute.PlacemarkAttributes
+import com.atom.wyz.worldwind.layer.render.shape.Highlightable
 import java.util.*
 
 /**
@@ -97,7 +97,7 @@ class PlacemarksSelectDragActivity : BasicWorldWindActivity() {
                 this.leaderAttributes?.outlineWidth = 4f
             }
             placemark.highlightAttributes = (
-                    PlacemarkAttributes(
+                    PlacemarkAttributes.defaults(
                         placemark.attributes
                     )
                         .apply {
@@ -128,7 +128,7 @@ class PlacemarksSelectDragActivity : BasicWorldWindActivity() {
                 this.imageOffset = (Offset.bottomCenter())
                 this.imageScale = NORMAL_IMAGE_SCALE
             }
-            placemark.highlightAttributes = PlacemarkAttributes(
+            placemark.highlightAttributes = PlacemarkAttributes.defaults(
                 placemark.attributes
             ).apply {
                 this.imageScale = HIGHLIGHTED_IMAGE_SCALE

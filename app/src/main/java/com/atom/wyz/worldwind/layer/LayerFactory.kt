@@ -4,7 +4,9 @@ import android.net.Uri
 import android.os.Handler
 import android.os.Looper
 import com.atom.wyz.worldwind.WorldWind
+import com.atom.wyz.worldwind.core.tile.TileFactory
 import com.atom.wyz.worldwind.geom.Sector
+import com.atom.wyz.worldwind.layer.render.TiledSurfaceImage
 import com.atom.wyz.worldwind.ogc.WmsLayerConfig
 import com.atom.wyz.worldwind.ogc.WmsTileFactory
 import com.atom.wyz.worldwind.ogc.WmtsTileFactory
@@ -17,8 +19,6 @@ import com.atom.wyz.worldwind.ogc.wms.WmsCapabilities
 import com.atom.wyz.worldwind.ogc.wms.WmsLayer
 import com.atom.wyz.worldwind.ogc.wtms.WmtsCapabilities
 import com.atom.wyz.worldwind.ogc.wtms.WmtsLayer
-import com.atom.wyz.worldwind.layer.render.TiledSurfaceImage
-import com.atom.wyz.worldwind.core.tile.TileFactory
 import com.atom.wyz.worldwind.util.LevelSet
 import com.atom.wyz.worldwind.util.LevelSetConfig
 import com.atom.wyz.worldwind.util.Logger
@@ -201,18 +201,31 @@ open class LayerFactory() {
         layerIdentifier: String,
         callback: Callback
     ): Layer {
-        require(!(layerIdentifier.isEmpty())) {
-            Logger.logMessage(
-                Logger.ERROR,
-                "LayerFactory",
-                "createFromWms",
-                "missingLayerNames"
-            )
-        }
-
         // Create a layer in which to asynchronously populate with renderables for the GeoPackage contents.
         val layer = RenderableLayer()
         // Disable picking for the layer; terrain surface picking is performed automatically by WorldWindow.
+        layer.pickEnabled = (false)
+        val task = WmtsAsyncTask(
+            this,
+            serviceAddress,
+            layerIdentifier,
+            layer,
+            callback
+        )
+        try {
+            WorldWind.taskService.execute(task)
+        } catch (logged: RejectedExecutionException) { // singleton task service is full; this should never happen but we check anyway
+            callback.creationFailed(this, layer, logged)
+        }
+        return layer
+    }
+
+    open fun createFromTiamditu(
+        serviceAddress: String,
+        layerIdentifier: String,
+        callback: Callback
+    ): Layer {
+        val layer = RenderableLayer()
         layer.pickEnabled = (false)
         val task = WmtsAsyncTask(
             this,
@@ -237,7 +250,7 @@ open class LayerFactory() {
         callback: Callback
     ) {
         // Parse and read the WMTS Capabilities document at the provided service address
-        val wmtsCapabilities: WmtsCapabilities = this.retrieveWmtsCapabilities(serviceAddress)
+        val wmtsCapabilities = this.retrieveWmtsCapabilities(serviceAddress)
         val wmtsLayer: WmtsLayer = wmtsCapabilities.getLayer(layerIdentifier)
             ?: throw java.lang.RuntimeException(
                 Logger.makeMessage(
@@ -356,8 +369,7 @@ open class LayerFactory() {
         val finalLayer = layer as RenderableLayer
         try {
             // Determine if there is a TileMatrixSet which matches our Coordinate System compatibility and tiling scheme
-            val compatibleTileMatrixSets: List<String> =
-                this.determineCoordSysCompatibleTileMatrixSets(wmtsLayer)
+            val compatibleTileMatrixSets: List<String> = this.determineCoordSysCompatibleTileMatrixSets(wmtsLayer)
             if (compatibleTileMatrixSets.isEmpty()) {
                 throw java.lang.RuntimeException(
                     Logger.makeMessage(
@@ -398,8 +410,7 @@ open class LayerFactory() {
                         )
                     )
             val levelSet: LevelSet = this.createWmtsLevelSet(wmtsLayer, compatibleTileMatrixSet)
-            val surfaceImage =
-                TiledSurfaceImage()
+            val surfaceImage = TiledSurfaceImage()
             surfaceImage.tileFactory = (tileFactory)
             surfaceImage.levelSet = (levelSet)
 

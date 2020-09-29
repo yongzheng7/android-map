@@ -6,20 +6,20 @@ import android.util.Log
 import android.view.GestureDetector
 import android.view.GestureDetector.SimpleOnGestureListener
 import android.view.MotionEvent
-import com.atom.wyz.worldwind.controller.BasicWorldWindowController
 import com.atom.wyz.worldwind.R
 import com.atom.wyz.worldwind.WorldWind
 import com.atom.wyz.worldwind.WorldWindow
+import com.atom.wyz.worldwind.controller.BasicWorldWindowController
 import com.atom.wyz.worldwind.geom.*
 import com.atom.wyz.worldwind.globe.Globe
 import com.atom.wyz.worldwind.layer.RenderableLayer
 import com.atom.wyz.worldwind.layer.ShowTessellationLayer
-import com.atom.wyz.worldwind.ogc.Wcs100ElevationCoverage
-import com.atom.wyz.worldwind.layer.render.pick.PickedObjectList
 import com.atom.wyz.worldwind.layer.render.ImageSource
-import com.atom.wyz.worldwind.layer.render.Placemark
 import com.atom.wyz.worldwind.layer.render.OmnidirectionalSightline
+import com.atom.wyz.worldwind.layer.render.Placemark
 import com.atom.wyz.worldwind.layer.render.attribute.ShapeAttributes
+import com.atom.wyz.worldwind.layer.render.pick.PickedObjectList
+import com.atom.wyz.worldwind.ogc.Wcs100ElevationCoverage
 
 class OmnidirectionalSensor2Activity : BasicWorldWindActivity()  {
     /**
@@ -60,7 +60,7 @@ class OmnidirectionalSensor2Activity : BasicWorldWindActivity()  {
 
         // Initialize attributes for the OmnidirectionalSensor
         val viewableRegions =
-            ShapeAttributes()
+            ShapeAttributes.defaults()
         viewableRegions.interiorColor= (SimpleColor(
             0f,
             1f,
@@ -68,7 +68,7 @@ class OmnidirectionalSensor2Activity : BasicWorldWindActivity()  {
             1f
         ))
         val blockedRegions =
-            ShapeAttributes()
+            ShapeAttributes.defaults()
         blockedRegions.interiorColor = (SimpleColor(
             0.1f,
             0.1f,

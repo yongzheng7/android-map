@@ -13,8 +13,6 @@ import android.view.Choreographer
 import android.view.Choreographer.FrameCallback
 import android.view.MotionEvent
 import android.view.SurfaceHolder
-import com.atom.wyz.worldwind.layer.draw.DrawContext
-import com.atom.wyz.worldwind.layer.render.RenderContext
 import com.atom.wyz.worldwind.controller.BasicWorldWindowController
 import com.atom.wyz.worldwind.controller.WorldWindowController
 import com.atom.wyz.worldwind.frame.BasicFrameController
@@ -27,10 +25,12 @@ import com.atom.wyz.worldwind.globe.Globe
 import com.atom.wyz.worldwind.globe.ProjectionWgs84
 import com.atom.wyz.worldwind.globe.Tessellator
 import com.atom.wyz.worldwind.layer.LayerList
+import com.atom.wyz.worldwind.layer.draw.DrawContext
+import com.atom.wyz.worldwind.layer.render.RenderContext
+import com.atom.wyz.worldwind.layer.render.pick.PickedObjectList
 import com.atom.wyz.worldwind.navigator.Navigator
 import com.atom.wyz.worldwind.navigator.NavigatorEventSupport
 import com.atom.wyz.worldwind.navigator.NavigatorListener
-import com.atom.wyz.worldwind.layer.render.pick.PickedObjectList
 import com.atom.wyz.worldwind.util.Logger
 import com.atom.wyz.worldwind.util.MessageListener
 import com.atom.wyz.worldwind.util.RenderResourceCache
@@ -41,6 +41,7 @@ import java.util.concurrent.ConcurrentLinkedQueue
 import java.util.concurrent.TimeUnit
 import javax.microedition.khronos.egl.EGLConfig
 import javax.microedition.khronos.opengles.GL10
+import kotlin.math.roundToInt
 
 class WorldWindow : GLSurfaceView , GLSurfaceView.Renderer , MessageListener , FrameCallback , WorldHelper{
 
@@ -195,7 +196,6 @@ class WorldWindow : GLSurfaceView , GLSurfaceView.Renderer , MessageListener , F
         // Reset this WorldWindow's internal state.
         reset()
     }
-
 
     @SuppressLint("ClickableViewAccessibility")
     override fun onTouchEvent(event: MotionEvent): Boolean {
@@ -559,17 +559,15 @@ class WorldWindow : GLSurfaceView , GLSurfaceView.Renderer , MessageListener , F
         x: Float,
         y: Float
     ): PickedObjectList {
-        val pickedObjects =
-            PickedObjectList()
-
+        val pickedObjects = PickedObjectList()
         // Nothing can be picked if this World Window's OpenGL thread is paused.
         if (isPaused) {
             return pickedObjects
         }
         // Compute the pick point in OpenGL screen coordinates, rounding to the nearest whole pixel. Nothing can be picked
+        val px = x.roundToInt()
+        val py = (this.height - y).roundToInt()
         // if pick point is outside the World Window's viewport.
-        val px = Math.round(x)
-        val py = Math.round(this.height - y)
         // Nothing can be picked if the pick point is outside of the World Window's viewport.
         if (!viewport.contains(px, py)) {
             return pickedObjects
@@ -641,14 +639,17 @@ class WorldWindow : GLSurfaceView , GLSurfaceView.Renderer , MessageListener , F
         result: Line
     ): Boolean {
         // Convert from Android screen coordinates to OpenGL screen coordinates by inverting the Y axis.
+        // 通过反转Y轴将Android屏幕坐标转换为OpenGL屏幕坐标。
         val sx = x.toDouble()
         val sy = this.height - y.toDouble()
         // Compute the inverse modelview-projection matrix corresponding to the World Window's current Navigator state.
+        // 计算与“世界窗口”当前导航器状态相对应的反模型视图-投影矩阵。
         computeViewingTransform(scratchProjection, scratchModelview)
         scratchProjection.multiplyByMatrix(scratchModelview).invert()
         // Transform the screen point to Cartesian coordinates at the near and far clip planes, store the result in the
         // ray's origin and direction, respectively. Complete the ray direction by subtracting the near point from the
         // far point and normalizing.
+        //将屏幕点转换为近和远剪切平面上的笛卡尔坐标，并将结果分别存储在射线的原点和方向上。 通过从远点减去近点并进行归一化来完成射线方向。
         if (scratchProjection.unProject(
                 sx,
                 sy,

@@ -13,10 +13,41 @@ class MenuActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_menu)
     }
-
+    fun showOrHide(res : Int){
+        val view = findViewById<View>(res)
+        if(view.isShown){
+            view.visibility = View.GONE
+        }else{
+            view.visibility = View.VISIBLE
+        }
+    }
 
     fun menuButton(view: View) {
         when (view.id) {
+            R.id.basic_button -> {
+                showOrHide(R.id.basic_layout)
+            }
+            R.id.math_button -> {
+                showOrHide(R.id.math_layout)
+            }
+            R.id.pick_button -> {
+                showOrHide(R.id.pick_layout)
+            }
+            R.id.shape_button -> {
+                showOrHide(R.id.shape_layout)
+            }
+            R.id.dynamic_button -> {
+                showOrHide(R.id.dynamic_layout)
+            }
+            R.id.auth_button -> {
+                showOrHide(R.id.auth_layout)
+            }
+            R.id.size_change_button -> {
+                showOrHide(R.id.size_change_layout)
+            }
+            R.id.look_button -> {
+                showOrHide(R.id.look_layout)
+            }
             R.id.omnidirectionalSensor2_Activity -> {
                 startActivity(Intent(this, OmnidirectionalSensor2Activity::class.java))
             }
@@ -124,6 +155,9 @@ class MenuActivity : AppCompatActivity() {
             }
             R.id.ellipse_Fragment -> {
                 startActivity(Intent(this, EllipseFragment::class.java))
+            }
+            R.id.tianditu_Activity -> {
+                startActivity(Intent(this, TiandituLayerActivity::class.java))
             }
         }
     }

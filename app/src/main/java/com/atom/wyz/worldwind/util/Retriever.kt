@@ -30,35 +30,10 @@ abstract class Retriever<K, O, V>(maxSimultaneousRetrievals: Int) {
     protected abstract fun retrieveAsync(key: K, options: O?, callback: Callback<K, O, V>)
 
     protected open fun recycleAsyncTask(instance: AsyncTask<K, O, V>) {
-        Logger.log(
-            Logger.ERROR,
-            "recycleAsyncTask    recycle  start------------ ${Thread.currentThread().id}"
-        )
         synchronized(lock) {
-            Logger.log(
-                Logger.ERROR,
-                "recycleAsyncTask    synchronized 1  ${Thread.currentThread().id}  Set.size > ${asyncTaskSet.size}  Pool.size > ${asyncTaskPool.size()}  ${(instance.key.toString())}"
-            )
             asyncTaskSet.remove(instance.key)
-            Logger.log(Logger.ERROR, "recycleAsyncTask    synchronized 1.1  $asyncTaskSet")
-            Logger.log(
-                Logger.ERROR,
-                "recycleAsyncTask    synchronized 2  ${Thread.currentThread().id}  Set.size > ${asyncTaskSet.size} "
-            )
             asyncTaskPool.release(instance.reset())
-            Logger.log(
-                Logger.ERROR,
-                "recycleAsyncTask    synchronized 3  ${Thread.currentThread().id}  Pool.size > ${asyncTaskPool.size()} "
-            )
         }
-        Logger.log(
-            Logger.ERROR,
-            "recycleAsyncTask    recycle  end  ------------  ${Thread.currentThread().id}"
-        )
-        Logger.log(
-            Logger.ERROR,
-            "obtainAsyncTask  4  add taskService  end   size>" + asyncTaskSet.size
-        )
     }
 
     /**
@@ -69,20 +44,11 @@ abstract class Retriever<K, O, V>(maxSimultaneousRetrievals: Int) {
         options: O?,
         callback: Callback<K, O, V>
     ): AsyncTask<K, O, V>? {
-        Logger.log(
-            Logger.ERROR,
-            "obtainAsyncTask  ---------------------------------------------------"
-        )
         synchronized(lock) {
             if (asyncTaskSet.size >= maxAsyncTasks || asyncTaskSet.contains(key)) {
                 return null
             }
-            Logger.log(
-                Logger.ERROR,
-                "obtainAsyncTask  1  add asyncTaskSet " + asyncTaskSet.size + "--" + key.toString()
-            )
             asyncTaskSet.add(key)
-            Logger.log(Logger.ERROR, "obtainAsyncTask  2  add asyncTaskSet " + asyncTaskSet.size)
             return asyncTaskPool.acquire()?.set(this, key, options, callback)
                 ?: let { AsyncTask<K, O, V>().set(this, key, options, callback) }
         }
@@ -98,18 +64,9 @@ abstract class Retriever<K, O, V>(maxSimultaneousRetrievals: Int) {
     fun retrieve(key: K, options: O?, callback: Callback<K, O, V>) {
         obtainAsyncTask(key, options, callback)?.let {
             try {
-                Logger.log(
-                    Logger.ERROR,
-                    "obtainAsyncTask  3  add taskService  start size>" + asyncTaskSet.size
-                )
                 WorldWind.taskService.execute(it)
             } catch (ignored: Exception) {
-                Logger.log(Logger.ERROR, "obtainAsyncTask  5  add taskService  Exception ")
                 recycleAsyncTask(it)
-                Logger.log(
-                    Logger.ERROR,
-                    "obtainAsyncTask  6  add taskService  Exception recycleAsyncTask end "
-                )
                 callback.retrievalRejected(
                     this,
                     key,
@@ -155,61 +112,16 @@ abstract class Retriever<K, O, V>(maxSimultaneousRetrievals: Int) {
         }
 
         override fun run() {
-            Logger.log(
-                Logger.ERROR,
-                "obtainAsyncTask  3  add taskService  start 1 > ${Thread.currentThread().id}"
-            )
-            run(this.retriever, this.key, this.callback)
             try {
-                Logger.log(
-                    Logger.ERROR,
-                    "retrieveAsync    start --------------${Thread.currentThread().name}-${Thread.currentThread().id}"
-                )
                 run(this.retriever, this.key, this.callback, { r, k, c ->
-                    Logger.log(
-                        Logger.ERROR,
-                        "obtainAsyncTask  3  add taskService  start 2 > ${Thread.currentThread().id}"
-                    )
                     r.retrieveAsync(k, options, c)
                 })
-                Logger.log(
-                    Logger.ERROR,
-                    "obtainAsyncTask  3  add taskService  start 3 > ${Thread.currentThread().id}"
-                )
-                Logger.log(
-                    Logger.ERROR,
-                    "retrieveAsync    end   ---------------${Thread.currentThread().name}-${Thread.currentThread().id}"
-                )
             } catch (ex: Throwable) {
-                Logger.log(
-                    Logger.ERROR,
-                    "obtainAsyncTask  3  add taskService  start 31 > ${Thread.currentThread().id }   ${ex.localizedMessage}"
-                )
-                Logger.log(
-                    Logger.ERROR,
-                    "retrieveAsync    Throwable  ----------${Thread.currentThread().name}-${Thread.currentThread().id}"
-                )
                 run(this.retriever, this.key, this.callback, { r, k, c ->
                     c.retrievalFailed(r, k, ex)
                 })
             } finally {
-                Logger.log(
-                    Logger.ERROR,
-                    "obtainAsyncTask  3  add taskService  start 4 > ${Thread.currentThread().id}"
-                )
-                Logger.log(
-                    Logger.ERROR,
-                    "retrieveAsync    recycle  -----A------${Thread.currentThread().name}-${Thread.currentThread().id}"
-                )
                 this.retriever?.recycleAsyncTask(this)
-                Logger.log(
-                    Logger.ERROR,
-                    "obtainAsyncTask  3  add taskService  start 5 > ${Thread.currentThread().id}"
-                )
-                Logger.log(
-                    Logger.ERROR,
-                    "retrieveAsync    recycle  -----A1-----${Thread.currentThread().name}-${Thread.currentThread().id}"
-                )
             }
         }
 
@@ -230,7 +142,6 @@ abstract class Retriever<K, O, V>(maxSimultaneousRetrievals: Int) {
             if (callback == null) {
                 str.append("callback == null ")
             }
-            Logger.log(Logger.ERROR, "obtainAsyncTask  3  add taskService  start 1.1 > $str")
         }
     }
 }

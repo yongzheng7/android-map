@@ -3,10 +3,10 @@ package com.atom.wyz.worldwind.app
 import android.annotation.SuppressLint
 import android.os.Bundle
 import com.atom.wyz.worldwind.WorldWind
-import com.atom.wyz.worldwind.layer.render.attribute.ShapeAttributes
 import com.atom.wyz.worldwind.geom.Position
 import com.atom.wyz.worldwind.geom.SimpleColor
 import com.atom.wyz.worldwind.layer.RenderableLayer
+import com.atom.wyz.worldwind.layer.render.attribute.ShapeAttributes
 import com.atom.wyz.worldwind.layer.render.shape.Polygon
 import java.util.*
 
@@ -65,7 +65,7 @@ class PolygonsActivity :BasicWorldWindActivity () {
             Position.fromDegrees(20.0, -95.0, 5.0e5)
         )
         val attrs =
-            ShapeAttributes()
+            ShapeAttributes.defaults()
         attrs.drawVerticals  =(true) // display the extruded verticals
         attrs.interiorColor = (SimpleColor(1f, 1f, 1f, 0.5f)) // 50% transparent white
         attrs.outlineWidth = (3f)

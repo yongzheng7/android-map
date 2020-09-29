@@ -120,7 +120,7 @@ class PlacemarksActivity : BasicWorldWindActivity() , Runnable {
         // Create pushpins anchored at the "pinpoints" with eye distance scaling
 
         val attributes: PlacemarkAttributes =
-            PlacemarkAttributes()
+            PlacemarkAttributes.defaults()
         attributes.imageOffset = (Offset.center())
         attributes.imageSource = ImageSource.fromResource(R.drawable.crosshairs)
         attributes.imageScale = (1.0)
@@ -132,7 +132,7 @@ class PlacemarksActivity : BasicWorldWindActivity() , Runnable {
             val placemark: Placemark =
                 Placemark(
                     pos,
-                    PlacemarkAttributes(
+                    PlacemarkAttributes.defaults(
                         attributes
                     )
                 )

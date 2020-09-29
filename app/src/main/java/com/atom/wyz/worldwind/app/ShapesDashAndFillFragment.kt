@@ -3,10 +3,10 @@ package com.atom.wyz.worldwind.app
 import com.atom.wyz.worldwind.R
 import com.atom.wyz.worldwind.WorldWind
 import com.atom.wyz.worldwind.WorldWindow
-import com.atom.wyz.worldwind.layer.render.attribute.ShapeAttributes
 import com.atom.wyz.worldwind.geom.Position
 import com.atom.wyz.worldwind.layer.RenderableLayer
 import com.atom.wyz.worldwind.layer.render.ImageSource
+import com.atom.wyz.worldwind.layer.render.attribute.ShapeAttributes
 import com.atom.wyz.worldwind.layer.render.shape.Ellipse
 import com.atom.wyz.worldwind.layer.render.shape.Path
 import com.atom.wyz.worldwind.layer.render.shape.Polygon
@@ -24,7 +24,7 @@ class ShapesDashAndFillFragment : BasicGlobeActivity() {
         // Thicken all lines used in the tutorial.
 
         val thickenLine =
-            ShapeAttributes()
+            ShapeAttributes.defaults()
         thickenLine.outlineWidth = (4f)
 
         var positions = Arrays.asList(
@@ -35,7 +35,7 @@ class ShapesDashAndFillFragment : BasicGlobeActivity() {
         var path = Path(positions)
 
         var sa =
-            ShapeAttributes(
+            ShapeAttributes.defaults(
                 thickenLine
             )
         sa.outlineImageSource = (
@@ -48,13 +48,13 @@ class ShapesDashAndFillFragment : BasicGlobeActivity() {
         layer.addRenderable(path)
 
         // Modify the factor of the pattern for comparison to first path. Only the factor is modified, not the pattern.
-        positions = Arrays.asList(
+        positions = listOf(
             Position.fromDegrees(60.0, -90.0, 5e4),
             Position.fromDegrees(30.0, -110.0, 5e4),
             Position.fromDegrees(0.0, -90.0, 5e4)
         )
         path = Path(positions)
-        sa = ShapeAttributes(
+        sa = ShapeAttributes.defaults(
             thickenLine
         )
         sa.outlineImageSource = (
@@ -67,13 +67,13 @@ class ShapesDashAndFillFragment : BasicGlobeActivity() {
         layer.addRenderable(path)
 
         // Create a path conforming to the terrain with a different pattern from the first two Paths.
-        positions = Arrays.asList(
+        positions = listOf(
             Position.fromDegrees(60.0, -80.0, 0.0),
             Position.fromDegrees(30.0, -100.0, 0.0),
             Position.fromDegrees(0.0, -80.0, 0.0)
         )
         path = Path(positions)
-        sa = ShapeAttributes(
+        sa = ShapeAttributes.defaults(
             thickenLine
         )
         sa.outlineImageSource = (
@@ -97,7 +97,7 @@ class ShapesDashAndFillFragment : BasicGlobeActivity() {
                 1e5
             ), 1.5e6, 800e3
         )
-        sa = ShapeAttributes(
+        sa = ShapeAttributes.defaults(
             thickenLine
         )
         sa.interiorImageSource = (ImageSource.fromResource(R.drawable.nasa_logo))
@@ -105,7 +105,7 @@ class ShapesDashAndFillFragment : BasicGlobeActivity() {
         layer.addRenderable(ellipse)
         // Create a surface polygon using an image as a repeating fill pattern and a dash pattern for the outline
         // of the polygon.
-        positions = Arrays.asList(
+        positions = listOf(
             Position.fromDegrees(25.0, -85.0, 0.0),
             Position.fromDegrees(10.0, -80.0, 0.0),
             Position.fromDegrees(10.0, -60.0, 0.0),
@@ -113,7 +113,7 @@ class ShapesDashAndFillFragment : BasicGlobeActivity() {
         )
         val polygon =
             Polygon(positions)
-        sa = ShapeAttributes(
+        sa = ShapeAttributes.defaults(
             thickenLine
         )
         sa.interiorImageSource = (ImageSource.fromResource(R.drawable.nasa_logo))

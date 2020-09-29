@@ -20,8 +20,7 @@ class CartesianLayer : AbstractLayer("CartesianLayer") {
         private val TRI_STRIP_ELEMENTS_KEY = CartesianLayer::class.java.name + ".triStripElements"
 
         private val VERTEX_POINTS_F_KEY = CartesianLayer::class.java.name + ".vertexPoints.f"
-        private val TRI_STRIP_ELEMENTS_F_KEY =
-            CartesianLayer::class.java.name + ".triStripElements.f"
+        private val TRI_STRIP_ELEMENTS_F_KEY = CartesianLayer::class.java.name + ".triStripElements.f"
     }
 
     init {

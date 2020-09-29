@@ -35,23 +35,16 @@ import java.util.*
 
 // TODO
 class PlacemarksDemoActivity : BasicWorldWindActivity() {
-    // A component for displaying the status of this activity
     protected var statusText: TextView? = null
-
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         // Add a TextView on top of the globe to convey the status of this activity
-        // Add a TextView on top of the globe to convey the status of this activity
         statusText = TextView(this)
-        statusText!!.setTextColor(Color.YELLOW)
-        val globeLayout = findViewById(R.id.globe) as FrameLayout
+        statusText?.setTextColor(Color.YELLOW)
+        val globeLayout = findViewById<FrameLayout>(R.id.globe)
         globeLayout.addView(statusText)
-
-        // Override the World Window's built-in navigation behavior by adding picking support.
-        // Override the World Window's built-in navigation behavior by adding picking support.
-        getWorldWindow().worldWindowController = (PickController())
-
+        getWorldWindow().worldWindowController = PickController()
         CreatePlacesTask().execute()
     }
 
@@ -89,20 +82,12 @@ class PlacemarksDemoActivity : BasicWorldWindActivity() {
 
             protected const val LEVEL_5 = 5
 
-            protected var defaultAttributes: PlacemarkAttributes =
-                PlacemarkAttributes()
-                    .apply {
-                    this.imageScale = 15.0
-                    this.minimumImageScale = 5.0
-                }
-
             protected var iconCache: HashMap<String, WeakReference<PlacemarkAttributes>> =
                 HashMap<String, WeakReference<PlacemarkAttributes>>()
 
-            protected fun getPlacemarkAttributes(
-                resources: Resources,
+            private fun getPlacemarkAttributes(
                 place: Place
-            ): PlacemarkAttributes? {
+            ): PlacemarkAttributes {
                 var resourceId: Int
                 var scale: Double
                 if (place.population > LEVEL_0_POPULATION) {
@@ -132,15 +117,14 @@ class PlacemarksDemoActivity : BasicWorldWindActivity() {
                     scale *= 1.79
                 }
                 // Generate a cache key for this symbol
-                val iconKey = "$resources-$resourceId-$scale"
+                val iconKey = "$resourceId-$scale"
                 // Look for an attribute bundle in our cache and determine if the cached reference is valid
-                val reference =
-                    iconCache[iconKey]
+                val reference = iconCache[iconKey]
                 var placemarkAttributes = reference?.get()
                 // Create the attributes if they haven't been created yet or if they've been released
                 if (placemarkAttributes == null) { // Create the attributes bundle and add it to the cache.
                     // The actual bitmap will be lazily (re)created using a factory.
-                    placemarkAttributes = createPlacemarkAttributes(resources, resourceId, scale)
+                    placemarkAttributes = createPlacemarkAttributes(resourceId, scale)
                     requireNotNull(placemarkAttributes) { "Cannot generate a icon for: $iconKey" }
                     // Add a weak reference to the attribute bundle to our cache
                     iconCache[iconKey] = WeakReference(placemarkAttributes)
@@ -148,20 +132,17 @@ class PlacemarksDemoActivity : BasicWorldWindActivity() {
                 return placemarkAttributes
             }
 
-            protected fun createPlacemarkAttributes(
-                resources: Resources?, @DrawableRes resourceId: Int,
+            private fun createPlacemarkAttributes(
+                @DrawableRes resourceId: Int,
                 scale: Double
             ): PlacemarkAttributes? {
-                return PlacemarkAttributes()
-                    .apply {
+                return PlacemarkAttributes.defaults().apply {
                     this.imageSource = ImageSource.fromResource(resourceId)
                     this.imageScale = scale
                     this.minimumImageScale = 0.5
                 }
             }
         }
-
-        protected val resources: Resources
 
         protected val place: Place
 
@@ -172,14 +153,16 @@ class PlacemarksDemoActivity : BasicWorldWindActivity() {
         protected var attributes: PlacemarkAttributes? = null
 
         constructor(
-            resources: Resources,
             place: Place
         ) {
-            this.resources = resources
             this.place = place
         }
 
-        override fun selectLevelOfDetail(rc: RenderContext, placemark: Placemark?, cameraDistance: Double) {
+        override fun selectLevelOfDetail(
+            rc: RenderContext,
+            placemark: Placemark?,
+            cameraDistance: Double
+        ) {
             val highlighted = placemark!!.highlighted
             val highlightChanged = lastHighlightState != highlighted
 
@@ -188,7 +171,7 @@ class PlacemarksDemoActivity : BasicWorldWindActivity() {
             if (cameraDistance > LEVEL_0_DISTANCE) {
                 if (lastLevelOfDetail != LEVEL_0 || highlightChanged) {
                     if (place.population > LEVEL_0_POPULATION || place.isCapital()) {
-                        attributes = getPlacemarkAttributes(resources, place)
+                        attributes = getPlacemarkAttributes(place)
                     } else {
                         attributes = null
                     }
@@ -197,7 +180,7 @@ class PlacemarksDemoActivity : BasicWorldWindActivity() {
             } else if (cameraDistance > LEVEL_1_DISTANCE) {
                 if (lastLevelOfDetail != LEVEL_1 || highlightChanged) {
                     if (place.population > LEVEL_1_POPULATION || place.isCapital()) {
-                        attributes = getPlacemarkAttributes(resources, place)
+                        attributes = getPlacemarkAttributes(place)
                     } else {
                         attributes = null
                     }
@@ -206,7 +189,7 @@ class PlacemarksDemoActivity : BasicWorldWindActivity() {
             } else if (cameraDistance > LEVEL_2_DISTANCE) {
                 if (lastLevelOfDetail != LEVEL_2 || highlightChanged) {
                     if (place.population > LEVEL_2_POPULATION || place.isCapital()) {
-                        attributes = getPlacemarkAttributes(resources, place)
+                        attributes = getPlacemarkAttributes(place)
                     } else {
                         attributes = null
                     }
@@ -215,7 +198,7 @@ class PlacemarksDemoActivity : BasicWorldWindActivity() {
             } else if (cameraDistance > LEVEL_3_DISTANCE) {
                 if (lastLevelOfDetail != LEVEL_3 || highlightChanged) {
                     if (place.population > LEVEL_3_POPULATION || place.isCapital()) {
-                        attributes = getPlacemarkAttributes(resources, place)
+                        attributes = getPlacemarkAttributes(place)
                     } else {
                         attributes = null
                     }
@@ -224,7 +207,7 @@ class PlacemarksDemoActivity : BasicWorldWindActivity() {
             } else if (cameraDistance > LEVEL_4_DISTANCE) {
                 if (lastLevelOfDetail != LEVEL_4 || highlightChanged) {
                     if (place.population > LEVEL_4_POPULATION || place.isCapital()) {
-                        attributes = getPlacemarkAttributes(resources, place)
+                        attributes = getPlacemarkAttributes(place)
                     } else {
                         attributes = null
                     }
@@ -232,24 +215,22 @@ class PlacemarksDemoActivity : BasicWorldWindActivity() {
                 }
             } else {
                 if (lastLevelOfDetail != LEVEL_5 || highlightChanged) {
-                    attributes = getPlacemarkAttributes(resources, place)
+                    attributes = getPlacemarkAttributes( place)
                     lastLevelOfDetail = LEVEL_5
                 }
             }
 
             if (highlightChanged) { // Use a distinct set attributes when highlighted, otherwise used the shared attributes
                 if (highlighted) { // Create a copy of the shared attributes bundle and increase the scale
-                    attributes ?.let{
-                        attributes = PlacemarkAttributes(
-                            it
-                        ).apply { this.imageScale = (it.imageScale * 2.0) }
+                    attributes?.let {
+                        attributes = PlacemarkAttributes.defaults((it)).apply { this.imageScale = (it.imageScale * 2.0) }
                     }
                 }
             }
             lastHighlightState = highlighted
 
             // Update the placemark's attributes bundle
-            attributes ?.let {  placemark.attributes = it }
+            attributes?.let { placemark.attributes = it }
         }
 
     }
@@ -271,7 +252,8 @@ class PlacemarksDemoActivity : BasicWorldWindActivity() {
 
             protected fun defaultAndroidBitmapFactoryOptions(): BitmapFactory.Options? {
                 val options = BitmapFactory.Options()
-                options.inScaled = false // suppress default image scaling; load the image in its native dimensions
+                options.inScaled =
+                    false // suppress default image scaling; load the image in its native dimensions
                 return options
             }
         }
@@ -313,13 +295,13 @@ class PlacemarksDemoActivity : BasicWorldWindActivity() {
 
     class Place {
         companion object {
-            const val PLACE = "Populated Place"
+            const val PLACE = "Populated Place" // 人口稠密的地方
 
-            const val COUNTY_SEAT = "County Seat"
+            const val COUNTY_SEAT = "County Seat" // 县城
 
-            const val STATE_CAPITAL = "State Capital"
+            const val STATE_CAPITAL = "State Capital" //州首都
 
-            const val NATIONAL_CAPITAL = "National Capital"
+            const val NATIONAL_CAPITAL = "National Capital" // 国家首都
         }
 
         val position: Position
@@ -339,8 +321,6 @@ class PlacemarksDemoActivity : BasicWorldWindActivity() {
             this.position = position
             this.name = name
             this.population = population
-            // FEATURE2 may contain  multiple types; "-999" is used for a regular populated place
-            // Here we extract the most important type
             if (feature2.contains(NATIONAL_CAPITAL)) {
                 type = NATIONAL_CAPITAL
             } else if (feature2.contains(STATE_CAPITAL)) {
@@ -368,10 +348,10 @@ class PlacemarksDemoActivity : BasicWorldWindActivity() {
     }
 
     inner class PickController : BasicWorldWindowController() {
-        protected var pickedObject // last picked object from onDown events
+        protected var pickedObject //onDown事件中最后选择的对象
                 : Any? = null
 
-        protected var selectedObject // last "selected" object from single tap
+        protected var selectedObject // 单击一次最后的“选定”对象
                 : Any? = null
 
         protected var pickGestureDetector =
@@ -387,7 +367,7 @@ class PlacemarksDemoActivity : BasicWorldWindActivity() {
                 }
             })
 
-        override fun onTouchEvent(event: MotionEvent): Boolean { // Allow pick listener to process the event first.
+        override fun onTouchEvent(event: MotionEvent): Boolean {
             val consumed = pickGestureDetector.onTouchEvent(event)
             return if (!consumed) {
                 super.onTouchEvent(event)
@@ -397,7 +377,8 @@ class PlacemarksDemoActivity : BasicWorldWindActivity() {
         /**
          * Performs a pick at the tap location.
          */
-        fun pick(event: MotionEvent) { // Forget our last picked object
+        fun pick(event: MotionEvent) {
+            // Forget our last picked object
             pickedObject = null
             // Perform a new pick at the screen x, y
             val pickList = getWorldWindow().pick(event.x, event.y)
@@ -424,7 +405,7 @@ class PlacemarksDemoActivity : BasicWorldWindActivity() {
                 if (isNewSelection && pickedObject is Renderable) {
                     Toast.makeText(
                         applicationContext,
-                        (pickedObject as Renderable).displayName ,
+                        (pickedObject as Renderable).displayName,
                         Toast.LENGTH_SHORT
                     ).show()
                 }
@@ -444,18 +425,19 @@ class PlacemarksDemoActivity : BasicWorldWindActivity() {
         private val places = ArrayList<Place>()
         private val placeLayer: RenderableLayer = RenderableLayer()
         private var numPlacesCreated = 0
+
         /**
          * Loads the ntad_place database and creates the placemarks on a background thread. The [RenderableLayer]
          * objects for the place icons have not been attached to the WorldWind at this stage, so its safe to perform
          * this operation on a background thread.  The layers will be added to the WorldWindow in onPostExecute.
          */
-         override fun doInBackground(vararg notUsed: Void?): Void? {
+        override fun doInBackground(vararg notUsed: Void?): Void? {
             loadPlacesDatabase()
             createPlaceIcons()
             return null
         }
 
-         override fun onProgressUpdate(vararg values: String?) {
+        override fun onProgressUpdate(vararg values: String?) {
             super.onProgressUpdate(*values)
             statusText?.setText(values[0])
         }
@@ -518,12 +500,14 @@ class PlacemarksDemoActivity : BasicWorldWindActivity() {
             for (place in places) {
                 val placemark = Placemark(
                     place.position,
-                    PlacemarkAttributes(),
+                    PlacemarkAttributes.defaults(),
                     place.name
                 )
-                placemark.levelOfDetailSelector = (PlaceLevelOfDetailSelector(getResources(), place))
+                placemark.levelOfDetailSelector =
+                    (PlaceLevelOfDetailSelector( place))
                 placemark.eyeDistanceScaling = (true)
-                placemark.eyeDistanceScalingThreshold = (PlaceLevelOfDetailSelector.LEVEL_1_DISTANCE.toDouble())
+                placemark.eyeDistanceScalingThreshold =
+                    (PlaceLevelOfDetailSelector.LEVEL_1_DISTANCE.toDouble())
                 placemark.altitudeMode = (WorldWind.CLAMP_TO_GROUND)
                 placeLayer.addRenderable(placemark)
                 numPlacesCreated++

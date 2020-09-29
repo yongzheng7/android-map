@@ -7,78 +7,73 @@ import com.atom.wyz.worldwind.layer.render.ImageSource
 class PlacemarkAttributes {
 
     companion object {
-        fun defaults(): PlacemarkAttributes {
-            return PlacemarkAttributes()
+        private val attributes: PlacemarkAttributes = PlacemarkAttributes()
+        fun defaults(attr: PlacemarkAttributes = attributes): PlacemarkAttributes {
+            return PlacemarkAttributes(attr)
         }
 
-        fun withImage(imageSource: ImageSource?): PlacemarkAttributes {
-            val placemarkAttributes =
-                PlacemarkAttributes()
-            placemarkAttributes.imageSource = imageSource
-            return placemarkAttributes
+        fun withImage(imageSource: ImageSource): PlacemarkAttributes {
+            return defaults().apply {
+                this.imageSource = imageSource
+            }
         }
 
-        fun withImageAndLabel(imageSource: ImageSource?): PlacemarkAttributes {
-            val placemarkAttributes =
-                PlacemarkAttributes()
-            placemarkAttributes.imageSource = imageSource
-            placemarkAttributes.labelAttributes =
-                TextAttributes()
-            return placemarkAttributes
+        fun withImageAndLabel(imageSource: ImageSource): PlacemarkAttributes {
+            return defaults().apply {
+                this.imageSource = imageSource
+                this.drawLabel = true
+            }
         }
 
         fun withImageAndLeaderLine(imageSource: ImageSource?): PlacemarkAttributes {
-            val placemarkAttributes =
-                PlacemarkAttributes()
-            placemarkAttributes.imageSource = imageSource
-            placemarkAttributes.leaderAttributes =
-                ShapeAttributes()
-            placemarkAttributes.drawLeader = true;
-            return placemarkAttributes
+            return defaults().apply {
+                this.imageSource = imageSource
+                this.drawLeader = true
+            }
         }
 
         fun withImageAndLabelLeaderLine(imageSource: ImageSource): PlacemarkAttributes {
-            val placemarkAttributes =
-                PlacemarkAttributes()
-            placemarkAttributes.imageSource = imageSource
-            placemarkAttributes.labelAttributes =
-                TextAttributes()
-            placemarkAttributes.leaderAttributes =
-                ShapeAttributes()
-            placemarkAttributes.drawLeader = true
-            return placemarkAttributes
+            return defaults().apply {
+                this.imageSource = imageSource
+                this.drawLeader = true
+                this.drawLabel = true
+            }
         }
     }
 
     var imageSource: ImageSource? = null
     var imageColor: SimpleColor
     var imageOffset: Offset
-    var imageScale = 0.0
+    var imageScale: Double = 0.0
 
-    var drawLabel = false
+    var drawLabel: Boolean
     var labelAttributes: TextAttributes
-    var drawLeader = false
+    var drawLeader: Boolean
     var leaderAttributes: ShapeAttributes
 
-    var minimumImageScale = 0.0
-    var depthTest = false
+    var minimumImageScale: Double = 0.0
+    var depthTest: Boolean
 
-    constructor() {
+    private constructor() {
         imageColor = SimpleColor(1f, 1f, 1f, 1f)
-        imageOffset = Offset(Offset.centerLeft())
         imageScale = 1.0
         imageSource = null
         drawLeader = false
-        drawLabel = true
+        drawLabel = false
         depthTest = true
-        labelAttributes = TextAttributes().apply {
-            this.drawLeader = false
+        imageOffset = Offset(Offset.center())
+        leaderAttributes = ShapeAttributes.defaults()
+        labelAttributes = TextAttributes.defaults().apply {
             this.textOffset = Offset.negate(imageOffset)
         }
-        leaderAttributes = ShapeAttributes()
     }
 
-    constructor(attributes: PlacemarkAttributes) {
+    fun imageOffset(offset: Offset) {
+        imageOffset.set(offset)
+        labelAttributes.textOffset = Offset.negate(offset)
+    }
+
+    private constructor(attributes: PlacemarkAttributes) {
         imageColor = SimpleColor(attributes.imageColor)
         imageOffset = Offset(attributes.imageOffset)
         imageScale = attributes.imageScale
@@ -87,8 +82,8 @@ class PlacemarkAttributes {
         depthTest = attributes.depthTest
         drawLeader = attributes.drawLeader
         drawLabel = attributes.drawLabel
-        labelAttributes = TextAttributes(attributes.labelAttributes)
-        leaderAttributes = ShapeAttributes(attributes.leaderAttributes)
+        labelAttributes = TextAttributes.defaults(attributes.labelAttributes)
+        leaderAttributes = ShapeAttributes.defaults(attributes.leaderAttributes)
 
     }
 
@@ -101,8 +96,8 @@ class PlacemarkAttributes {
         minimumImageScale = attributes.minimumImageScale
         drawLeader = attributes.drawLeader
         drawLabel = attributes.drawLabel
-        labelAttributes = TextAttributes(attributes.labelAttributes)
-        leaderAttributes = ShapeAttributes(attributes.leaderAttributes)
+        labelAttributes = TextAttributes.defaults(attributes.labelAttributes)
+        leaderAttributes = ShapeAttributes.defaults(attributes.leaderAttributes)
         return this
     }
 

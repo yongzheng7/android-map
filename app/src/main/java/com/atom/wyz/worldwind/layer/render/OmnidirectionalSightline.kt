@@ -1,15 +1,15 @@
 package com.atom.wyz.worldwind.layer.render
 
 import com.atom.wyz.worldwind.WorldWind
-import com.atom.wyz.worldwind.layer.render.attribute.ShapeAttributes
-import com.atom.wyz.worldwind.layer.draw.DrawableSightline
+import com.atom.wyz.worldwind.core.shader.SensorProgram
 import com.atom.wyz.worldwind.geom.BoundingSphere
 import com.atom.wyz.worldwind.geom.Position
-import com.atom.wyz.worldwind.geom.Vec3
 import com.atom.wyz.worldwind.geom.SimpleColor
+import com.atom.wyz.worldwind.geom.Vec3
 import com.atom.wyz.worldwind.globe.Globe
+import com.atom.wyz.worldwind.layer.draw.DrawableSightline
+import com.atom.wyz.worldwind.layer.render.attribute.ShapeAttributes
 import com.atom.wyz.worldwind.layer.render.pick.PickedObject
-import com.atom.wyz.worldwind.core.shader.SensorProgram
 import com.atom.wyz.worldwind.layer.render.shape.Attributable
 import com.atom.wyz.worldwind.layer.render.shape.Highlightable
 import com.atom.wyz.worldwind.layer.render.shape.Movable
@@ -54,9 +54,9 @@ class OmnidirectionalSightline : AbstractRenderable,
         this.position.set(position)
         this.range = range
         attributes =
-            ShapeAttributes()
+            ShapeAttributes.defaults()
         occludeAttributes =
-            ShapeAttributes()
+            ShapeAttributes.defaults()
         occludeAttributes.interiorColor = (SimpleColor(1f, 0f, 0f, 1f)) // red
     }
 
@@ -65,7 +65,7 @@ class OmnidirectionalSightline : AbstractRenderable,
         this.range = range
         this.attributes = attributes
         occludeAttributes =
-            ShapeAttributes()
+            ShapeAttributes.defaults()
         occludeAttributes.interiorColor = (SimpleColor(1f, 0f, 0f, 1f)) // red
     }
 

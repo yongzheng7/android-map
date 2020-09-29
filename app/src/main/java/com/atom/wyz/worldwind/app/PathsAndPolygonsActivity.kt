@@ -9,16 +9,16 @@ import android.view.MotionEvent
 import android.widget.Toast
 import com.atom.wyz.worldwind.R
 import com.atom.wyz.worldwind.WorldWind
-import com.atom.wyz.worldwind.layer.render.attribute.ShapeAttributes
-import com.atom.wyz.worldwind.layer.render.attribute.TextAttributes
 import com.atom.wyz.worldwind.controller.BasicWorldWindowController
 import com.atom.wyz.worldwind.geom.Offset
 import com.atom.wyz.worldwind.geom.Position
 import com.atom.wyz.worldwind.geom.SimpleColor
 import com.atom.wyz.worldwind.layer.RenderableLayer
-import com.atom.wyz.worldwind.layer.render.shape.Label
 import com.atom.wyz.worldwind.layer.render.Renderable
+import com.atom.wyz.worldwind.layer.render.attribute.ShapeAttributes
+import com.atom.wyz.worldwind.layer.render.attribute.TextAttributes
 import com.atom.wyz.worldwind.layer.render.shape.Highlightable
+import com.atom.wyz.worldwind.layer.render.shape.Label
 import com.atom.wyz.worldwind.layer.render.shape.Path
 import com.atom.wyz.worldwind.layer.render.shape.Polygon
 import com.atom.wyz.worldwind.util.Logger
@@ -78,7 +78,7 @@ class PathsAndPolygonsActivity : BasicWorldWindActivity() {
         }
 
         private fun loadPlaceNames() { // Define the text attributes used for places
-            val placeAttrs: TextAttributes = TextAttributes()
+            val placeAttrs: TextAttributes = TextAttributes.defaults()
                 .apply {
                 this.typeface= (Typeface.DEFAULT_BOLD) // Override the normal Typeface
                 this.textSize = (28f) // default size is 24
@@ -86,7 +86,7 @@ class PathsAndPolygonsActivity : BasicWorldWindActivity() {
             }
 
             // Define the text attribute used for lakes
-            val lakeAttrs: TextAttributes = TextAttributes()
+            val lakeAttrs: TextAttributes = TextAttributes.defaults()
                 .apply {
                 this.typeface = (Typeface.create("serif", Typeface.BOLD_ITALIC))
                 this.textSize = (32f) // default size is 24
@@ -135,11 +135,11 @@ class PathsAndPolygonsActivity : BasicWorldWindActivity() {
          */
         private fun loadHighways() {
             val attrs =
-                ShapeAttributes()
+                ShapeAttributes.defaults()
             attrs.outlineColor.set(1.0f, 1.0f, 0.0f, 1.0f)
             attrs.outlineWidth= (3f)
             val highlightAttrs =
-                ShapeAttributes()
+                ShapeAttributes.defaults()
             highlightAttrs.outlineColor.set(1.0f, 0.0f, 0.0f, 1.0f)
             highlightAttrs.outlineWidth = (7f)
             var reader: BufferedReader? = null
@@ -194,12 +194,12 @@ class PathsAndPolygonsActivity : BasicWorldWindActivity() {
          */
         private fun loadCountriesFile() {
             val commonAttrs =
-                ShapeAttributes()
+                ShapeAttributes.defaults()
             commonAttrs.interiorColor.set(1.0f, 1.0f, 0.0f, 0.5f)
             commonAttrs.outlineColor.set(0.0f, 0.0f, 0.0f, 1.0f)
             commonAttrs.outlineWidth = (3f)
             val highlightAttrs =
-                ShapeAttributes()
+                ShapeAttributes.defaults()
             highlightAttrs.interiorColor.set(1.0f, 1.0f, 1.0f, 0.5f)
             highlightAttrs.outlineColor.set(1.0f, 1.0f, 1.0f, 1.0f)
             highlightAttrs.outlineWidth = (5f)
@@ -232,7 +232,7 @@ class PathsAndPolygonsActivity : BasicWorldWindActivity() {
                     polygon.followTerrain =
                         (true) // essential for preventing long segments from intercepting ellipsoid.
                     polygon.displayName = (fields[1])
-                    polygon.attributes = (ShapeAttributes(
+                    polygon.attributes = (ShapeAttributes.defaults(
                         commonAttrs
                     ))
                     polygon.attributes!!.interiorColor =

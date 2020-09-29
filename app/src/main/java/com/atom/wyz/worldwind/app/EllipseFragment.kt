@@ -2,10 +2,10 @@ package com.atom.wyz.worldwind.app
 
 import com.atom.wyz.worldwind.WorldWind
 import com.atom.wyz.worldwind.WorldWindow
-import com.atom.wyz.worldwind.layer.render.attribute.ShapeAttributes
 import com.atom.wyz.worldwind.geom.Position
 import com.atom.wyz.worldwind.geom.SimpleColor
 import com.atom.wyz.worldwind.layer.RenderableLayer
+import com.atom.wyz.worldwind.layer.render.attribute.ShapeAttributes
 import com.atom.wyz.worldwind.layer.render.shape.Ellipse
 
 class EllipseFragment : BasicGlobeActivity() {
@@ -37,11 +37,8 @@ class EllipseFragment : BasicGlobeActivity() {
         tutorialLayer.addRenderable(ellipse)
 
 
-        var attrs =
-            ShapeAttributes()
+        var attrs = ShapeAttributes.defaults()
         attrs.interiorColor = (SimpleColor(1f, 1f, 1f, 0.5f)) // 50% transparent white
-
-
         attrs.drawVerticals = (true)
         ellipse = Ellipse(
             Position(
@@ -54,7 +51,7 @@ class EllipseFragment : BasicGlobeActivity() {
         tutorialLayer.addRenderable(ellipse)
 
 
-        attrs = ShapeAttributes()
+        attrs = ShapeAttributes.defaults()
         attrs.interiorColor = (SimpleColor(
             1f,
             1f,

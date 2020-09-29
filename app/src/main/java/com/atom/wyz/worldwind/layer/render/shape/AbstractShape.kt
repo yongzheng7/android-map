@@ -1,15 +1,15 @@
 package com.atom.wyz.worldwind.layer.render.shape
 
 import com.atom.wyz.worldwind.WorldWind
-import com.atom.wyz.worldwind.layer.render.RenderContext
-import com.atom.wyz.worldwind.geom.*
-import com.atom.wyz.worldwind.layer.render.pick.PickedObject
-import com.atom.wyz.worldwind.layer.render.AbstractRenderable
-import com.atom.wyz.worldwind.layer.render.attribute.ShapeAttributes
 import com.atom.wyz.worldwind.core.shader.GpuTexture
+import com.atom.wyz.worldwind.geom.*
+import com.atom.wyz.worldwind.layer.render.AbstractRenderable
+import com.atom.wyz.worldwind.layer.render.RenderContext
+import com.atom.wyz.worldwind.layer.render.attribute.ShapeAttributes
+import com.atom.wyz.worldwind.layer.render.pick.PickedObject
 import com.atom.wyz.worldwind.util.WWMath
 
-abstract class AbstractShape(attributes: ShapeAttributes = ShapeAttributes())
+abstract class AbstractShape(attributes: ShapeAttributes = ShapeAttributes.defaults())
     : AbstractRenderable("AbstractShape"),
     Attributable,
     Highlightable {

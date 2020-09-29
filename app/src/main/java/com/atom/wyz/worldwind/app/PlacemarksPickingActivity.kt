@@ -3,18 +3,18 @@ package com.atom.wyz.worldwind.app
 import android.os.Bundle
 import android.view.GestureDetector
 import android.view.MotionEvent
-import com.atom.wyz.worldwind.controller.BasicWorldWindowController
 import com.atom.wyz.worldwind.R
 import com.atom.wyz.worldwind.WorldWind
 import com.atom.wyz.worldwind.WorldWindow
+import com.atom.wyz.worldwind.controller.BasicWorldWindowController
 import com.atom.wyz.worldwind.geom.LookAt
 import com.atom.wyz.worldwind.geom.Offset
 import com.atom.wyz.worldwind.geom.Position
 import com.atom.wyz.worldwind.layer.RenderableLayer
 import com.atom.wyz.worldwind.layer.render.ImageSource
 import com.atom.wyz.worldwind.layer.render.Placemark
-import com.atom.wyz.worldwind.layer.render.shape.Highlightable
 import com.atom.wyz.worldwind.layer.render.attribute.PlacemarkAttributes
+import com.atom.wyz.worldwind.layer.render.shape.Highlightable
 
 class PlacemarksPickingActivity : BasicWorldWindActivity() {
 
@@ -28,7 +28,7 @@ class PlacemarksPickingActivity : BasicWorldWindActivity() {
                 this.attributes.imageOffset = Offset.bottomCenter()
                 this.attributes.imageScale = NORMAL_IMAGE_SCALE
                 this.attributes.drawLeader = true
-                this.highlightAttributes = PlacemarkAttributes(
+                this.highlightAttributes = PlacemarkAttributes.defaults(
                     this.attributes
                 ).apply {
                     this.imageScale = HIGHLIGHTED_IMAGE_SCALE
@@ -41,7 +41,7 @@ class PlacemarksPickingActivity : BasicWorldWindActivity() {
                 .apply {
                     this.attributes.imageOffset = Offset.bottomCenter()
                     this.attributes.imageScale = NORMAL_IMAGE_SCALE
-                    this.highlightAttributes = PlacemarkAttributes(
+                    this.highlightAttributes = PlacemarkAttributes.defaults(
                         this.attributes
                     ).apply {
                         this.imageScale = HIGHLIGHTED_IMAGE_SCALE

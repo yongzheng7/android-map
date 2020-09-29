@@ -27,7 +27,7 @@ class LabelsFragment : BasicGlobeActivity() {
         )
         layer.addRenderable(sanNicolas)
 
-        val parkAttributes: TextAttributes = TextAttributes()
+        val parkAttributes: TextAttributes = TextAttributes.defaults()
             .apply {
                 this.typeface = (Typeface.create("serif", Typeface.BOLD_ITALIC))
                 this.textColor.set(
@@ -69,19 +69,19 @@ class LabelsFragment : BasicGlobeActivity() {
 
         val label1 = Label(pos,
             "NW: $northWest _",
-            TextAttributes()
+            TextAttributes.defaults()
                 .apply { this.textOffset = northWest })
         val label2 = Label(pos,
             "SW: $southWest ¯",
-            TextAttributes()
+            TextAttributes.defaults()
                 .apply { this.textOffset = southWest })
         val label3 = Label(pos,
             "_ NE: $northEast",
-            TextAttributes()
+            TextAttributes.defaults()
                 .apply { this.textOffset = northEast })
         val label4 = Label(pos,
             "¯ SE: $southEast",
-            TextAttributes()
+            TextAttributes.defaults()
                 .apply { this.textOffset = southEast })
         val label5 = Label(
             pos,

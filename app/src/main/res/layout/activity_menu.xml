@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-              android:orientation="vertical" android:layout_width="match_parent"
-              android:layout_height="match_parent">
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical">
 
     <ScrollView
             android:layout_width="match_parent"
@@ -9,299 +10,530 @@
 
         <LinearLayout
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"
+                android:layout_height="wrap_content"
                 android:orientation="vertical">
 
-            <Button
-                    android:id="@+id/Basic_Globe2_Activity"
-                    android:layout_width="wrap_content"
+            <LinearLayout
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:onClick="menuButton"
-                    android:text="Basic_Globe2_Activity"
-                    android:textAllCaps="false" />
-            <Button
-                    android:id="@+id/background_draw_Activity"
-                    android:layout_width="wrap_content"
+                    android:orientation="vertical">
+
+                <TextView
+                        android:id="@+id/basic_button"
+                        android:layout_width="match_parent"
+                        android:layout_height="30dp"
+                        android:gravity="center_vertical"
+                        android:paddingLeft="20dp"
+                        android:text="基础的地球仪"
+                        android:textColor="#FF000000"
+                        android:onClick="menuButton" />
+
+                <LinearLayout
+                        android:id="@+id/basic_layout"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:visibility="gone"
+                        android:layout_marginStart="20dp">
+
+                    <Button
+                            android:id="@+id/Basic_Globe2_Activity"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:onClick="menuButton"
+                            android:text="Basic_Globe2_Activity"
+                            android:textAllCaps="false" />
+
+                    <Button
+                            android:id="@+id/background_draw_Activity"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:onClick="menuButton"
+                            android:text="background_draw_Activity"
+                            android:textAllCaps="false" />
+
+                    <Button
+                            android:id="@+id/turse_BasicGlobeActivity"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:onClick="menuButton"
+                            android:text="turse_BasicGlobe_Activity"
+                            android:textAllCaps="false" />
+
+                    <Button
+                            android:id="@+id/day_light_activity"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:onClick="menuButton"
+                            android:text="day_light_activity"
+                            android:textAllCaps="false" />
+
+
+                    <Button
+                            android:id="@+id/surface_image_activity"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:onClick="menuButton"
+                            android:text="surface_image_activity"
+                            android:textAllCaps="false" />
+
+
+                    <Button
+                            android:id="@+id/base_activity"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:onClick="menuButton"
+                            android:text="base_activity"
+                            android:textAllCaps="false" />
+
+                    <Button
+                            android:id="@+id/basic_performance_avtivity"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:onClick="menuButton"
+                            android:text="basic_performance_avtivity"
+                            android:textAllCaps="false" />
+
+                </LinearLayout>
+
+            </LinearLayout>
+
+            <LinearLayout
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:onClick="menuButton"
-                    android:text="background_draw_Activity"
-                    android:textAllCaps="false" />
-            <Button
-                    android:id="@+id/cartesian_Activity"
-                    android:layout_width="wrap_content"
+                    android:orientation="vertical">
+
+                <TextView
+                        android:id="@+id/math_button"
+                        android:layout_width="match_parent"
+                        android:layout_height="30dp"
+                        android:gravity="center_vertical"
+                        android:paddingLeft="20dp"
+                        android:text="数学及其矩阵"
+                        android:textColor="#FF000000"
+                        android:onClick="menuButton"/>
+
+                <LinearLayout
+                        android:id="@+id/math_layout"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:visibility="gone"
+                        android:layout_marginStart="20dp">
+
+                    <Button
+                            android:id="@+id/cartesian_Activity"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:onClick="menuButton"
+                            android:text="cartesian_Activity"
+                            android:textAllCaps="false" />
+
+                    <Button
+                            android:id="@+id/basic_stress_test_activity"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:onClick="menuButton"
+                            android:text="basic_stress_test_activity"
+                            android:textAllCaps="false" />
+
+                    <Button
+                            android:id="@+id/texture_stress_activity"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:onClick="menuButton"
+                            android:text="texture_stress_activity"
+                            android:textAllCaps="false" />
+
+
+                    <Button
+                            android:id="@+id/show_tessellation_activity"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:onClick="menuButton"
+                            android:text="show_tessellation_activity"
+                            android:textAllCaps="false" />
+                </LinearLayout>
+
+            </LinearLayout>
+
+
+            <LinearLayout
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:onClick="menuButton"
-                    android:text="cartesian_Activity"
-                    android:textAllCaps="false" />
-            <Button
-                    android:id="@+id/ellipse_Fragment"
-                    android:layout_width="wrap_content"
+                    android:orientation="vertical">
+
+                <TextView
+                        android:id="@+id/pick_button"
+                        android:layout_width="match_parent"
+                        android:layout_height="30dp"
+                        android:gravity="center_vertical"
+                        android:paddingLeft="20dp"
+                        android:text="可抓取的Pick"
+                        android:textColor="#FF000000"
+                        android:onClick="menuButton" />
+
+                <LinearLayout
+                        android:id="@+id/pick_layout"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:visibility="gone"
+                        android:layout_marginStart="20dp">
+
+
+                    <Button
+                            android:id="@+id/placemark_stress_activity"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:onClick="menuButton"
+                            android:text="10000 * PlaceMark展示"
+                            android:textAllCaps="false" />
+
+                    <Button
+                            android:id="@+id/placemark_demo_activity"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:onClick="menuButton"
+                            android:text="地图上标志,随着放大缩小显示和隐藏"
+                            android:textAllCaps="false" />
+
+
+                    <Button
+                            android:id="@+id/placemark_Dragger_2_activity"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:onClick="menuButton"
+                            android:text="placemark_Dragger_2_activity全部都可直接拖动即可"
+                            android:textAllCaps="false" />
+
+                    <Button
+                            android:id="@+id/placemark_Dragger_activity"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:onClick="menuButton"
+                            android:text="placemark_Dragger_activity带有指导线的可直接拖动"
+                            android:textAllCaps="false" />
+
+                    <Button
+                            android:id="@+id/placemark_pick_activity"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:onClick="menuButton"
+                            android:text="placemark_pick_activity选中放大"
+                            android:textAllCaps="false" />
+
+                    <Button
+                            android:id="@+id/placemark_select_drag_activity"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:onClick="menuButton"
+                            android:text="placemark_select_drag_activity选中放大才可拖动"
+                            android:textAllCaps="false" />
+
+                    <Button
+                            android:id="@+id/placemark_activity"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:onClick="menuButton"
+                            android:text="placemark_activity"
+                            android:textAllCaps="false" />
+
+                    <Button
+                            android:id="@+id/placemark2_activity"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:onClick="menuButton"
+                            android:text="placemark_2_activity"
+                            android:textAllCaps="false" />
+
+                </LinearLayout>
+
+            </LinearLayout>
+
+
+            <LinearLayout
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:onClick="menuButton"
-                    android:text="ellipse_Fragment"
-                    android:textAllCaps="false" />
+                    android:orientation="vertical">
 
-            <Button
-                    android:id="@+id/omnidirectionalSensor_Activity"
-                    android:layout_width="wrap_content"
+                <TextView
+                        android:id="@+id/shape_button"
+                        android:layout_width="match_parent"
+                        android:layout_height="30dp"
+                        android:gravity="center_vertical"
+                        android:paddingLeft="20dp"
+                        android:text="基础图形[悬浮,贴覆]"
+                        android:textColor="#FF000000"
+                        android:onClick="menuButton"/>
+
+                <LinearLayout
+                        android:id="@+id/shape_layout"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:visibility="gone"
+                        android:layout_marginStart="20dp">
+
+                    <Button
+                            android:id="@+id/ellipse_Fragment"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:onClick="menuButton"
+                            android:text="ellipse_Fragment"
+                            android:textAllCaps="false" />
+
+                    <Button
+                            android:id="@+id/ShapesDashAndFillFragment"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:onClick="menuButton"
+                            android:text="Shapes_Dash_And_Fill_Fragment"
+                            android:textAllCaps="false" />
+
+                    <Button
+                            android:id="@+id/LabelsFragment"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:onClick="menuButton"
+                            android:text="Labels_Fragment"
+                            android:textAllCaps="false" />
+
+
+                    <Button
+                            android:id="@+id/pathsAndPolygonsActivity"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:onClick="menuButton"
+                            android:text="paths_And_PolygonsActivity"
+                            android:textAllCaps="false" />
+
+                    <Button
+                            android:id="@+id/polygons_Activity"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:onClick="menuButton"
+                            android:text="polygons_Activity"
+                            android:textAllCaps="false" />
+
+                    <Button
+                            android:id="@+id/paths_Activity"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:onClick="menuButton"
+                            android:text="paths_Activity"
+                            android:textAllCaps="false" />
+
+                    <Button
+                            android:id="@+id/paths_Example_Activity"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:onClick="menuButton"
+                            android:text="paths_Example_Activity"
+                            android:textAllCaps="false" />
+
+                </LinearLayout>
+
+            </LinearLayout>
+
+
+            <LinearLayout
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:onClick="menuButton"
-                    android:text="omnidirectionalSensor_Activity"
-                    android:textAllCaps="false" />
+                    android:orientation="vertical">
 
-            <Button
-                    android:id="@+id/omnidirectionalSensor2_Activity"
-                    android:layout_width="wrap_content"
+                <TextView
+                        android:id="@+id/dynamic_button"
+                        android:layout_width="match_parent"
+                        android:layout_height="30dp"
+                        android:gravity="center_vertical"
+                        android:paddingLeft="20dp"
+                        android:text="动态渲染"
+                        android:textColor="#FF000000"
+                        android:onClick="menuButton" />
+
+                <LinearLayout
+                        android:id="@+id/dynamic_layout"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:visibility="gone"
+                        android:layout_marginStart="20dp">
+
+                    <Button
+                            android:id="@+id/omnidirectionalSensor_Activity"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:onClick="menuButton"
+                            android:text="omnidirectionalSensor_Activity"
+                            android:textAllCaps="false" />
+
+                    <Button
+                            android:id="@+id/omnidirectionalSensor2_Activity"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:onClick="menuButton"
+                            android:text="omnidirectionalSensor2_Activity"
+                            android:textAllCaps="false" />
+
+                </LinearLayout>
+
+            </LinearLayout>
+
+            <LinearLayout
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:onClick="menuButton"
-                    android:text="omnidirectionalSensor2_Activity"
-                    android:textAllCaps="false" />
+                    android:orientation="vertical">
 
-            <Button
-                    android:id="@+id/Wcs_Elevation_Fragment"
-                    android:layout_width="wrap_content"
+                <TextView
+                        android:id="@+id/auth_button"
+                        android:layout_width="match_parent"
+                        android:layout_height="30dp"
+                        android:gravity="center_vertical"
+                        android:paddingLeft="20dp"
+                        android:text="图层Wms Wcms Wts 图层"
+                        android:textColor="#FF000000"
+                        android:onClick="menuButton" />
+
+                <LinearLayout
+                        android:id="@+id/auth_layout"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:visibility="gone"
+                        android:layout_marginStart="20dp">
+
+                    <Button
+                            android:id="@+id/Wcs_Elevation_Fragment"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:onClick="menuButton"
+                            android:text="Wcs_Elevation_Fragment"
+                            android:textAllCaps="false" />
+
+                    <Button
+                            android:id="@+id/wms_activity"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:onClick="menuButton"
+                            android:text="wms_activity"
+                            android:textAllCaps="false" />
+
+                    <Button
+                            android:id="@+id/wtmsLayer_Activity"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:onClick="menuButton"
+                            android:text="wtms_Layer_Activity"
+                            android:textAllCaps="false" />
+                    <Button
+                            android:id="@+id/tianditu_Activity"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:onClick="menuButton"
+                            android:text="天地图_Activity"
+                            android:textAllCaps="false" />
+                </LinearLayout>
+
+            </LinearLayout>
+
+
+            <LinearLayout
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:onClick="menuButton"
-                    android:text="Wcs_Elevation_Fragment"
-                    android:textAllCaps="false" />
+                    android:orientation="vertical">
 
-            <Button
-                    android:id="@+id/ShapesDashAndFillFragment"
-                    android:layout_width="wrap_content"
+                <TextView
+                        android:id="@+id/size_change_button"
+                        android:layout_width="match_parent"
+                        android:layout_height="30dp"
+                        android:gravity="center_vertical"
+                        android:paddingLeft="20dp"
+                        android:text="可变窗口"
+                        android:textColor="#FF000000"
+                        android:onClick="menuButton" />
+
+                <LinearLayout
+                        android:id="@+id/size_change_layout"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:visibility="gone"
+                        android:layout_marginStart="20dp">
+
+                    <Button
+                            android:id="@+id/multiGlobeActivity"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:onClick="menuButton"
+                            android:text="multiGlobe_Activity"
+                            android:textAllCaps="false" />
+
+
+                </LinearLayout>
+
+            </LinearLayout>
+
+            <LinearLayout
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:onClick="menuButton"
-                    android:text="Shapes_Dash_And_Fill_Fragment"
-                    android:textAllCaps="false" />
+                    android:orientation="vertical">
 
-            <Button
-                    android:id="@+id/LabelsFragment"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:onClick="menuButton"
-                    android:text="Labels_Fragment"
-                    android:textAllCaps="false" />
+                <TextView
+                        android:id="@+id/look_button"
+                        android:layout_width="match_parent"
+                        android:layout_height="30dp"
+                        android:gravity="center_vertical"
+                        android:paddingLeft="20dp"
+                        android:text="可变视角"
+                        android:textColor="#FF000000"
+                        android:onClick="menuButton"/>
 
-            <Button
-                    android:id="@+id/multiGlobeActivity"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:onClick="menuButton"
-                    android:text="multiGlobe_Activity"
-                    android:textAllCaps="false" />
+                <LinearLayout
+                        android:id="@+id/look_layout"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:visibility="gone"
+                        android:layout_marginStart="20dp">
 
-            <Button
-                    android:id="@+id/pathsAndPolygonsActivity"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:onClick="menuButton"
-                    android:text="paths_And_PolygonsActivity"
-                    android:textAllCaps="false" />
+                    <Button
+                            android:id="@+id/camera_activity"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:onClick="menuButton"
+                            android:text="camera_activity"
+                            android:textAllCaps="false" />
 
-            <Button
-                    android:id="@+id/polygons_Activity"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:onClick="menuButton"
-                    android:text="polygons_Activity"
-                    android:textAllCaps="false" />
+                    <Button
+                            android:id="@+id/camera_view_activity"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:onClick="menuButton"
+                            android:text="camera_view_activity"
+                            android:textAllCaps="false" />
 
-            <Button
-                    android:id="@+id/paths_Activity"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:onClick="menuButton"
-                    android:text="paths_Activity"
-                    android:textAllCaps="false" />
-
-            <Button
-                    android:id="@+id/paths_Example_Activity"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:onClick="menuButton"
-                    android:text="paths_Example_Activity"
-                    android:textAllCaps="false" />
+                    <Button
+                            android:id="@+id/lookat_view_activity"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:onClick="menuButton"
+                            android:text="lookat_view_activity"
+                            android:textAllCaps="false" />
 
 
+                    <Button
+                            android:id="@+id/navigator_event_activity"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:onClick="menuButton"
+                            android:text="navigator_event_activity"
+                            android:textAllCaps="false" />
 
+                </LinearLayout>
 
-            <Button
-                    android:id="@+id/placemark_demo_activity"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:onClick="menuButton"
-                    android:text="placemark_demo_activity美国地图上小心心"
-                    android:textAllCaps="false" />
+            </LinearLayout>
 
-
-            <Button
-                    android:id="@+id/placemark_Dragger_2_activity"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:onClick="menuButton"
-                    android:text="placemark_Dragger_2_activity全部都可直接拖动即可"
-                    android:textAllCaps="false" />
-
-            <Button
-                    android:id="@+id/placemark_Dragger_activity"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:onClick="menuButton"
-                    android:text="placemark_Dragger_activity带有指导线的可直接拖动"
-                    android:textAllCaps="false" />
-
-            <Button
-                    android:id="@+id/basic_stress_test_activity"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:onClick="menuButton"
-                    android:text="basic_stress_test_activity"
-                    android:textAllCaps="false" />
-
-            <Button
-                    android:id="@+id/placemark_pick_activity"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:onClick="menuButton"
-                    android:text="placemark_pick_activity选中放大"
-                    android:textAllCaps="false" />
-
-            <Button
-                    android:id="@+id/placemark_select_drag_activity"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:onClick="menuButton"
-                    android:text="placemark_select_drag_activity选中放大才可拖动"
-                    android:textAllCaps="false" />
-            <Button
-                    android:id="@+id/placemark_activity"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:onClick="menuButton"
-                    android:text="placemark_activity"
-                    android:textAllCaps="false" />
-
-            <Button
-                    android:id="@+id/placemark2_activity"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:onClick="menuButton"
-                    android:text="placemark_2_activity"
-                    android:textAllCaps="false" />
-
-            <Button
-                    android:id="@+id/turse_BasicGlobeActivity"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:onClick="menuButton"
-                    android:text="turse_BasicGlobe_Activity"
-                    android:textAllCaps="false" />
-
-            <Button
-                    android:id="@+id/texture_stress_activity"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:onClick="menuButton"
-                    android:text="texture_stress_activity"
-                    android:textAllCaps="false" />
-
-
-            <Button
-                    android:id="@+id/base_activity"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:onClick="menuButton"
-                    android:text="base_activity"
-                    android:textAllCaps="false" />
-
-            <Button
-                    android:id="@+id/camera_activity"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:onClick="menuButton"
-                    android:text="camera_activity"
-                    android:textAllCaps="false" />
-
-            <Button
-                    android:id="@+id/camera_view_activity"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:onClick="menuButton"
-                    android:text="camera_view_activity"
-                    android:textAllCaps="false" />
-
-            <Button
-                    android:id="@+id/lookat_view_activity"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:onClick="menuButton"
-                    android:text="lookat_view_activity"
-                    android:textAllCaps="false" />
-
-            <Button
-                    android:id="@+id/day_light_activity"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:onClick="menuButton"
-                    android:text="day_light_activity"
-                    android:textAllCaps="false" />
-
-            <Button
-                    android:id="@+id/show_tessellation_activity"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:onClick="menuButton"
-                    android:text="show_tessellation_activity"
-                    android:textAllCaps="false" />
-
-            <Button
-                    android:id="@+id/surface_image_activity"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:onClick="menuButton"
-                    android:text="surface_image_activity"
-                    android:textAllCaps="false" />
-
-            <Button
-                    android:id="@+id/wms_activity"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:onClick="menuButton"
-                    android:text="wms_activity"
-                    android:textAllCaps="false" />
-
-            <Button
-                    android:id="@+id/wtmsLayer_Activity"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:onClick="menuButton"
-                    android:text="wtms_Layer_Activity"
-                    android:textAllCaps="false" />
-
-
-
-            <Button
-                    android:id="@+id/placemark_stress_activity"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:onClick="menuButton"
-                    android:text="placemark_stress_activity"
-                    android:textAllCaps="false" />
-
-            <Button
-                    android:id="@+id/basic_performance_avtivity"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:onClick="menuButton"
-                    android:text="basic_performance_avtivity"
-                    android:textAllCaps="false" />
-
-            <Button
-                    android:id="@+id/navigator_event_activity"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:onClick="menuButton"
-                    android:text="navigator_event_activity"
-                    android:textAllCaps="false" />
 
         </LinearLayout>
     </ScrollView>

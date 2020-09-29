@@ -148,19 +148,9 @@ class ImageSource {
         }
 
 
-        fun fromBitmapFactory(factory: BitmapFactory?): ImageSource {
-            requireNotNull(factory) {
-                Logger.logMessage(
-                    Logger.ERROR,
-                    "ImageSource",
-                    "fromBitmapFactory",
-                    "missingFactory"
-                )
-            }
-
+        fun fromBitmapFactory(factory: BitmapFactory): ImageSource {
             val imageSource = ImageSource()
-            imageSource.type =
-                TYPE_BITMAP_FACTORY
+            imageSource.type = TYPE_BITMAP_FACTORY
             imageSource.source = factory
             return imageSource
         }

@@ -42,9 +42,9 @@ open class Label : AbstractRenderable,
     @WorldWind.OrientationMode
     var rotationMode = WorldWind.RELATIVE_TO_SCREEN
 
-    private var attributes: TextAttributes
+    var attributes: TextAttributes
 
-    private var highlightAttributes: TextAttributes? = null
+    var highlightAttributes: TextAttributes? = null
 
     private var activeAttributes: TextAttributes? = null
 
@@ -55,7 +55,7 @@ open class Label : AbstractRenderable,
     constructor(position: Position, text: String) : super(text) {
         this.position.set(position)
         this.text = text
-        attributes = TextAttributes()
+        attributes = TextAttributes.defaults()
     }
 
     constructor(position: Position, text: String, attributes: TextAttributes) : super(text) {
