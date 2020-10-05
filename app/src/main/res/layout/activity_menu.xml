@@ -426,12 +426,43 @@
                             android:onClick="menuButton"
                             android:text="wtms_Layer_Activity"
                             android:textAllCaps="false" />
+
+                    <Button
+                            android:id="@+id/google_Activity"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:onClick="menuButton"
+                            android:text="Google_影像底图_Activity"
+                            android:textAllCaps="false" />
+
                     <Button
                             android:id="@+id/tianditu_Activity"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:onClick="menuButton"
-                            android:text="天地图_Activity"
+                            android:text="天地图_影像底图_Activity"
+                            android:textAllCaps="false" />
+
+                    <Button
+                            android:id="@+id/tianditu2_Activity"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:onClick="menuButton"
+                            android:text="天地图_影像标注_Activity"
+                            android:textAllCaps="false" />
+                    <Button
+                            android:id="@+id/tianditu3_Activity"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:onClick="menuButton"
+                            android:text="天地图_矢量底图_Activity"
+                            android:textAllCaps="false" />
+                    <Button
+                            android:id="@+id/tianditu4_Activity"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:onClick="menuButton"
+                            android:text="天地图_矢量标注_Activity"
                             android:textAllCaps="false" />
                 </LinearLayout>
 

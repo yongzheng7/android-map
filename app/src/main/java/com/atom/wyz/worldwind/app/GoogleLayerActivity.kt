@@ -18,11 +18,11 @@ import com.atom.wyz.worldwind.util.LevelSetConfig
 import java.io.File
 
 /**
- * 天地图 影像底图
+ * 谷歌影像底图
  */
-open class TiandituLayerActivity : BasicGlobeActivity(), TileFactory {
+open class GoogleLayerActivity : BasicGlobeActivity(), TileFactory {
     private val key: String = "05f9d29cd248ba2fe566446ef123775c"
-    private val name: String = "img"
+    private val name: String = "y"
     override fun createWorldWindow(): WorldWindow {
         val wwd: WorldWindow = super.createWorldWindow()
         wwd.layers.clearLayers()
@@ -34,9 +34,9 @@ open class TiandituLayerActivity : BasicGlobeActivity(), TileFactory {
 
     protected open fun createRenderableLayer(): RenderableLayer {
         val renderableLayer = RenderableLayer()
-        renderableLayer.displayName = ("天地图影像底图")
+        renderableLayer.displayName = ("谷歌影像底图")
         renderableLayer.pickEnabled = (false)
-        val levelsConfig = LevelSetConfig(null, 45.0, 16, 256, 256)
+        val levelsConfig = LevelSetConfig(null, 360.0, 21, 256, 256)
         val surfaceImage = TiledSurfaceImage()
         surfaceImage.levelSet = (LevelSet(levelsConfig))
         surfaceImage.tileFactory = (this)
@@ -46,39 +46,58 @@ open class TiandituLayerActivity : BasicGlobeActivity(), TileFactory {
     }
 
     override fun createTile(sector: Sector, level: Level, row: Int, column: Int): Tile {
+        var x = column
         var y = row
-        val z = level.levelNumber + 3
-        y = (1 shl z - 1) - 1 - y
-        val tile = ImageTile(sector, level, row, column)
-        val tileUrl = tileUrl(key, name, column, y, z)
-        val cachePath: String = cachePath(name, column, y, z)
-        tile.imageSource = (ImageSource.fromUrl(tileUrl))
+        val z = level.levelNumber
+        y = (1 shl z) - 1 - y
+
+        val tile = ImageTile(getTileSector(x, y, z), level, row, column)
+        val tileUrl = tileUrl(name, x, y, z)
+        val cachePath: String = cachePath(name, x, y, z)
+        tile.imageSource = ImageSource.fromUrl(tileUrl)
         return tile
     }
 
-    private fun cachePath(layer: String, x: Int, y: Int, z: Int): String {
+    open fun getTileSector(x: Int, y: Int, z: Int): Sector {
+        val lng: Double
+        val bottomLat: Double
+        val lngWidth: Double
+        val latHeight: Double
+
+        val tilesAtThisZoom = 1 shl z
+        lngWidth = 360.0 / tilesAtThisZoom // width in degrees longitude
+        lng = -180 + x * lngWidth // left edge in degrees longitude
+        val latHeightMerc =
+            1.0 / tilesAtThisZoom // height in "normalized" mercator 0,0 top left
+        val topLatMerc =
+            y * latHeightMerc // top edge in "normalized" mercator 0,0 top left
+        val bottomLatMerc = topLatMerc + latHeightMerc
+        // convert top and bottom lat in mercator to degrees
+        // note that in fact the coordinates go from about -85 to +85 not -90 to 90!
+        bottomLat =
+            180 / Math.PI * (2 * Math.atan(Math.exp(Math.PI * (1 - 2 * bottomLatMerc))) - Math.PI / 2)
+        val topLat =
+            180 / Math.PI * (2 * Math.atan(Math.exp(Math.PI * (1 - 2 * topLatMerc))) - Math.PI / 2)
+        latHeight = topLat - bottomLat
+        return Sector(bottomLat, lng, latHeight, lngWidth)
+    }
+
+    protected open fun cachePath(layer: String, x: Int, y: Int, z: Int): String {
         return layer + File.separator + z + File.separator + y + "." + x + ".jpg"
     }
 
     private fun tileUrl(
-        key: String,
         layer: String,
         x: Int,
         y: Int,
         z: Int
     ): String {
         var url =
-            "http://t" + (Math.random() * 8).toInt() + ".tianditu.gov.cn/" + layer + "_c" + "/wmts?SERVICE=WMTS"
-        url += "&REQUEST=GetTile"
-        url += "&VERSION=1.0.0"
-        url += "&LAYER=$layer"
-        url += "&STYLE=default"
-        url += "&TILEMATRIXSET=c"
-        url += "&FORMAT=tiles"
-        url += "&TILEMATRIX=$z"
-        url += "&TILEROW=$y"
-        url += "&TILECOL=$x"
-        url += "&tk=$key"
+            "http://mt" + (Math.random() * 4).toInt() + ".google.cn/vt/lyrs=" + layer
+        url += "&x=$x"
+        url += "&y=$y"
+        url += "&z=$z"
+        url += "&s="
         return url
     }
 }

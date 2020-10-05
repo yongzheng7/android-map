@@ -159,6 +159,18 @@ class MenuActivity : AppCompatActivity() {
             R.id.tianditu_Activity -> {
                 startActivity(Intent(this, TiandituLayerActivity::class.java))
             }
+            R.id.google_Activity -> {
+                startActivity(Intent(this, GoogleLayerActivity::class.java))
+            }
+            R.id.tianditu2_Activity -> {
+                startActivity(Intent(this, Tianditu2LayerActivity::class.java))
+            }
+            R.id.tianditu3_Activity -> {
+                startActivity(Intent(this, Tianditu3LayerActivity::class.java))
+            }
+            R.id.tianditu4_Activity -> {
+                startActivity(Intent(this, Tianditu4LayerActivity::class.java))
+            }
         }
     }
 

@@ -138,6 +138,18 @@
         <activity android:name=".app.TiandituLayerActivity"
                 android:theme="@style/AppTheme">
         </activity>
+        <activity android:name=".app.Tianditu2LayerActivity"
+                android:theme="@style/AppTheme">
+        </activity>
+        <activity android:name=".app.Tianditu3LayerActivity"
+                android:theme="@style/AppTheme">
+        </activity>
+        <activity android:name=".app.Tianditu4LayerActivity"
+                android:theme="@style/AppTheme">
+        </activity>
+        <activity android:name=".app.GoogleLayerActivity"
+                android:theme="@style/AppTheme">
+        </activity>
 
     </application>
 

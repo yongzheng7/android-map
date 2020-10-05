@@ -1,5 +1,6 @@
 package com.atom.wyz.worldwind.app
 
+import android.util.Log
 import com.atom.wyz.worldwind.WorldWind
 import com.atom.wyz.worldwind.WorldWindow
 import com.atom.wyz.worldwind.core.tile.ImageTile
@@ -18,11 +19,11 @@ import com.atom.wyz.worldwind.util.LevelSetConfig
 import java.io.File
 
 /**
- * 天地图 影像底图
+ * 天地图 影像 标注
  */
-open class TiandituLayerActivity : BasicGlobeActivity(), TileFactory {
+open class Tianditu3LayerActivity : BasicGlobeActivity(), TileFactory {
     private val key: String = "05f9d29cd248ba2fe566446ef123775c"
-    private val name: String = "img"
+    private val name: String = "vec"
     override fun createWorldWindow(): WorldWindow {
         val wwd: WorldWindow = super.createWorldWindow()
         wwd.layers.clearLayers()
@@ -34,7 +35,7 @@ open class TiandituLayerActivity : BasicGlobeActivity(), TileFactory {
 
     protected open fun createRenderableLayer(): RenderableLayer {
         val renderableLayer = RenderableLayer()
-        renderableLayer.displayName = ("天地图影像底图")
+        renderableLayer.displayName = ("天地图矢量底图")
         renderableLayer.pickEnabled = (false)
         val levelsConfig = LevelSetConfig(null, 45.0, 16, 256, 256)
         val surfaceImage = TiledSurfaceImage()
@@ -79,6 +80,7 @@ open class TiandituLayerActivity : BasicGlobeActivity(), TileFactory {
         url += "&TILEROW=$y"
         url += "&TILECOL=$x"
         url += "&tk=$key"
+        Log.e("tianditu", url);
         return url
     }
 }
