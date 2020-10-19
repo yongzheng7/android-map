@@ -1,5 +1,6 @@
 package com.atom.wyz.worldwind.geom
 
+import com.atom.wyz.worldwind.geom.observer.Frustum
 import com.atom.wyz.worldwind.globe.Globe
 import java.util.*
 

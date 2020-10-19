@@ -12,7 +12,7 @@ import com.atom.wyz.worldwind.WorldWind
 import com.atom.wyz.worldwind.WorldWindow
 import com.atom.wyz.worldwind.layer.render.attribute.PlacemarkAttributes
 import com.atom.wyz.worldwind.controller.WorldWindowController
-import com.atom.wyz.worldwind.geom.Camera
+import com.atom.wyz.worldwind.geom.observer.Camera
 import com.atom.wyz.worldwind.geom.Location
 import com.atom.wyz.worldwind.geom.Position
 import com.atom.wyz.worldwind.layer.Layer
@@ -70,7 +70,8 @@ class BasicPerformanceBenchmarkActivity : BasicWorldWindActivity() {
 
     class SetCameraCommand private constructor() : Runnable {
         private var wwd: WorldWindow? = null
-        private val camera: Camera = Camera()
+        private val camera: Camera =
+            Camera()
         private operator fun set(wwd: WorldWindow?, camera: Camera?): SetCameraCommand? {
             this.wwd = wwd
             this.camera.set(camera)
@@ -102,9 +103,12 @@ class BasicPerformanceBenchmarkActivity : BasicWorldWindActivity() {
 
     class AnimateCameraCommand(wwd: WorldWindow, end: Camera, steps: Int) : Runnable {
         protected var wwd: WorldWindow
-        protected var beginCamera: Camera = Camera()
-        protected var endCamera: Camera = Camera()
-        protected var curCamera: Camera = Camera()
+        protected var beginCamera: Camera =
+            Camera()
+        protected var endCamera: Camera =
+            Camera()
+        protected var curCamera: Camera =
+            Camera()
         protected var beginPos: Position = Position()
         protected var endPos: Position = Position()
         protected var curPos: Position = Position()
@@ -160,35 +164,99 @@ class BasicPerformanceBenchmarkActivity : BasicWorldWindActivity() {
         exec.execute(SleepCommand(1000))
         exec.execute(ClearFrameMetricsCommand(wwd))
         // After a 1/2 second delay, fly to NASA Ames Research Center over 100 frames.
-        var cam = Camera(arc.latitude, arc.longitude, 10e3, WorldWind.ABSOLUTE, 0.0, 0.0, 0.0)
+        var cam = Camera(
+            arc.latitude,
+            arc.longitude,
+            10e3,
+            WorldWind.ABSOLUTE,
+            0.0,
+            0.0,
+            0.0
+        )
         exec.execute(AnimateCameraCommand(wwd, cam, 100))
         // After a 1/2 second delay, rotate the camera to look at NASA Goddard Space Flight Center over 50 frames.
         var azimuth: Double = arc.greatCircleAzimuth(gsfc)
-        cam = Camera(arc.latitude, arc.longitude, 10e3, WorldWind.ABSOLUTE, azimuth, 70.0, 0.0)
+        cam = Camera(
+            arc.latitude,
+            arc.longitude,
+            10e3,
+            WorldWind.ABSOLUTE,
+            azimuth,
+            70.0,
+            0.0
+        )
         exec.execute(SleepCommand(500))
         exec.execute(AnimateCameraCommand(wwd, cam, 50))
         // After a 1/2 second delay, fly the camera to NASA Goddard Space Flight Center over 200 frames.
         var midLoc: Location = arc.interpolateAlongPath(WorldWind.GREAT_CIRCLE, 0.5,gsfc,  Location())
         azimuth = midLoc.greatCircleAzimuth(gsfc)
         exec.execute(SleepCommand(500))
-        cam = Camera(midLoc.latitude, midLoc.longitude, 1000e3, WorldWind.ABSOLUTE, azimuth, 0.0, 0.0)
+        cam = Camera(
+            midLoc.latitude,
+            midLoc.longitude,
+            1000e3,
+            WorldWind.ABSOLUTE,
+            azimuth,
+            0.0,
+            0.0
+        )
         exec.execute(AnimateCameraCommand(wwd, cam, 100))
-        cam = Camera(gsfc.latitude, gsfc.longitude, 10e3, WorldWind.ABSOLUTE, azimuth, 70.0, 0.0)
+        cam = Camera(
+            gsfc.latitude,
+            gsfc.longitude,
+            10e3,
+            WorldWind.ABSOLUTE,
+            azimuth,
+            70.0,
+            0.0
+        )
         exec.execute(AnimateCameraCommand(wwd, cam, 100))
         // After a 1/2 second delay, rotate the camera to look at ESA Centre for Earth Observation over 50 frames.
         azimuth = gsfc.greatCircleAzimuth(esrin)
-        cam = Camera(gsfc.latitude, gsfc.longitude, 10e3, WorldWind.ABSOLUTE, azimuth, 90.0, 0.0)
+        cam = Camera(
+            gsfc.latitude,
+            gsfc.longitude,
+            10e3,
+            WorldWind.ABSOLUTE,
+            azimuth,
+            90.0,
+            0.0
+        )
         exec.execute(SleepCommand(500))
         exec.execute(AnimateCameraCommand(wwd, cam, 50))
         // After a 1/2 second delay, fly the camera to ESA Centre for Earth Observation over 200 frames.
         midLoc = gsfc.interpolateAlongPath(WorldWind.GREAT_CIRCLE, 0.5, esrin, Location())
         exec.execute(SleepCommand(500))
-        cam = Camera(midLoc.latitude, midLoc.longitude, 1000e3, WorldWind.ABSOLUTE, azimuth, 60.0, 0.0)
+        cam = Camera(
+            midLoc.latitude,
+            midLoc.longitude,
+            1000e3,
+            WorldWind.ABSOLUTE,
+            azimuth,
+            60.0,
+            0.0
+        )
         exec.execute(AnimateCameraCommand(wwd, cam, 100))
-        cam = Camera(esrin.latitude, esrin.longitude, 100e3, WorldWind.ABSOLUTE, azimuth, 30.0, 0.0)
+        cam = Camera(
+            esrin.latitude,
+            esrin.longitude,
+            100e3,
+            WorldWind.ABSOLUTE,
+            azimuth,
+            30.0,
+            0.0
+        )
         exec.execute(AnimateCameraCommand(wwd, cam, 100))
         // After a 1/2 second delay, back the camera out to look at ESA Centre for Earth Observation over 100 frames.
-        cam = Camera(esrin.latitude, esrin.longitude, 2000e3, WorldWind.ABSOLUTE, 0.0, 0.0, 0.0)
+        cam = Camera(
+            esrin.latitude,
+            esrin.longitude,
+            2000e3,
+            WorldWind.ABSOLUTE,
+            0.0,
+            0.0,
+            0.0
+        )
         exec.execute(SleepCommand(500))
         exec.execute(AnimateCameraCommand(wwd, cam, 100))
         // After a 1 second delay, log the frame statistics associated with this test.

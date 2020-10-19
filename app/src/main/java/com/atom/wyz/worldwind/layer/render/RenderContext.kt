@@ -7,6 +7,8 @@ import com.atom.wyz.worldwind.core.shader.BufferObject
 import com.atom.wyz.worldwind.core.shader.GpuProgram
 import com.atom.wyz.worldwind.core.shader.GpuTexture
 import com.atom.wyz.worldwind.geom.*
+import com.atom.wyz.worldwind.geom.observer.Camera
+import com.atom.wyz.worldwind.geom.observer.Frustum
 import com.atom.wyz.worldwind.globe.Globe
 import com.atom.wyz.worldwind.globe.Terrain
 import com.atom.wyz.worldwind.globe.Tessellator
@@ -68,7 +70,8 @@ open class RenderContext {
 
     var modelviewProjection: Matrix4 = Matrix4()
 
-    var frustum: Frustum = Frustum()
+    var frustum: Frustum =
+        Frustum()
 
     var renderResourceCache: RenderResourceCache? = null
 

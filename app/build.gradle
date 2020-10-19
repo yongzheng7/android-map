@@ -63,4 +63,5 @@ dependencies {
     testImplementation 'junit:junit:4.12'
     implementation 'com.squareup.okhttp3:okhttp:3.10.0'
 
+    implementation project(':map')
 }

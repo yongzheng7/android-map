@@ -67,8 +67,7 @@ open class TiandituLayerActivity : BasicGlobeActivity(), TileFactory {
         y: Int,
         z: Int
     ): String {
-        var url =
-            "http://t" + (Math.random() * 8).toInt() + ".tianditu.gov.cn/" + layer + "_c" + "/wmts?SERVICE=WMTS"
+        var url = "http://t" + (Math.random() * 8).toInt() + ".tianditu.gov.cn/" + layer + "_c" + "/wmts?SERVICE=WMTS"
         url += "&REQUEST=GetTile"
         url += "&VERSION=1.0.0"
         url += "&LAYER=$layer"

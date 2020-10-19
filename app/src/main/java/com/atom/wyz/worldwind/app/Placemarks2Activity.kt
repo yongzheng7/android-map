@@ -6,7 +6,7 @@ import android.os.Bundle
 import android.os.Handler
 import com.atom.wyz.worldwind.R
 import com.atom.wyz.worldwind.WorldWind
-import com.atom.wyz.worldwind.geom.LookAt
+import com.atom.wyz.worldwind.geom.observer.LookAt
 import com.atom.wyz.worldwind.geom.Offset
 import com.atom.wyz.worldwind.geom.Position
 import com.atom.wyz.worldwind.geom.SimpleColor
@@ -73,7 +73,8 @@ class Placemarks2Activity : BasicWorldWindActivity() {
         placemarksLayer.addRenderable(wildfire)
 
         val pos: Position? = airport.position
-        val lookAt: LookAt = LookAt().set(pos!!.latitude, pos.longitude, pos.altitude, WorldWind.ABSOLUTE,
+        val lookAt: LookAt = LookAt()
+            .set(pos!!.latitude, pos.longitude, pos.altitude, WorldWind.ABSOLUTE,
                 1e5 /*range*/, 0.0, 80.0, 0.0)
         getWorldWindow().navigator.setAsLookAt(getWorldWindow().globe, lookAt)
 

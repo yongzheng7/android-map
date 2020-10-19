@@ -4,7 +4,7 @@ import android.view.MotionEvent
 import com.atom.wyz.worldwind.WorldHelper
 import com.atom.wyz.worldwind.WorldWind
 import com.atom.wyz.worldwind.geom.Location
-import com.atom.wyz.worldwind.geom.LookAt
+import com.atom.wyz.worldwind.geom.observer.LookAt
 import com.atom.wyz.worldwind.gesture.*
 import com.atom.wyz.worldwind.util.WWMath
 import java.util.*
@@ -20,9 +20,11 @@ open class BasicWorldWindowController : WorldWindowController, GestureListener {
 
     protected var lastRotation = 0f
 
-    protected var lookAt: LookAt = LookAt()
+    protected var lookAt: LookAt =
+        LookAt()
 
-    protected var beginLookAt: LookAt = LookAt()
+    protected var beginLookAt: LookAt =
+        LookAt()
 
     protected var activeGestures = 0
 

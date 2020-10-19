@@ -3,7 +3,7 @@ package com.atom.wyz.worldwind.app
 import com.atom.wyz.worldwind.R
 import com.atom.wyz.worldwind.WorldWind
 import com.atom.wyz.worldwind.WorldWindow
-import com.atom.wyz.worldwind.geom.LookAt
+import com.atom.wyz.worldwind.geom.observer.LookAt
 import com.atom.wyz.worldwind.geom.Position
 import com.atom.wyz.worldwind.geom.Sector
 import com.atom.wyz.worldwind.geom.SimpleColor
@@ -89,7 +89,8 @@ class OmnidirectionalSensorActivity : BasicGlobeActivity() {
     }
 
     protected fun positionView(wwd: WorldWindow) {
-        val lookAt: LookAt = LookAt().set(
+        val lookAt: LookAt = LookAt()
+            .set(
             46.230,
             -122.190,
             500.0,

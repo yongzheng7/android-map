@@ -2,7 +2,7 @@ package com.atom.wyz.worldwind.app
 
 import android.os.Bundle
 import com.atom.wyz.worldwind.WorldWind
-import com.atom.wyz.worldwind.geom.LookAt
+import com.atom.wyz.worldwind.geom.observer.LookAt
 import com.atom.wyz.worldwind.geom.Position
 import com.atom.wyz.worldwind.globe.Globe
 
@@ -26,7 +26,8 @@ class LookAtViewActivity : BasicWorldWindActivity() {
         val tilt = Math.toDegrees(Math.atan(distance / aircraft.altitude))
 
 
-        val lookAt: LookAt = LookAt()
+        val lookAt: LookAt =
+            LookAt()
         lookAt.set(airport.latitude, airport.longitude, airport.altitude, WorldWind.ABSOLUTE, range, heading, tilt, 0.0)
         getWorldWindow().navigator.setAsLookAt(globe, lookAt)
     }

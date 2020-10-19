@@ -15,6 +15,7 @@ import com.atom.wyz.worldwind.WorldWind
 import com.atom.wyz.worldwind.WorldWindow
 import com.atom.wyz.worldwind.controller.BasicWorldWindowController
 import com.atom.wyz.worldwind.geom.*
+import com.atom.wyz.worldwind.geom.observer.LookAt
 import com.atom.wyz.worldwind.layer.RenderableLayer
 import com.atom.wyz.worldwind.layer.render.ImageSource
 import com.atom.wyz.worldwind.layer.render.Placemark
@@ -248,7 +249,8 @@ class PlacemarksSelectDragActivity : BasicWorldWindActivity() {
         this.controller = SelectDragNavigateController()
         wwd.worldWindowController = controller!!
 
-        val lookAt: LookAt = LookAt().set(
+        val lookAt: LookAt = LookAt()
+            .set(
             34.150, -119.150, 0.0, WorldWind.ABSOLUTE,
             2e4, 0.0, 45.0, 0.0
         )

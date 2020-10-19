@@ -3,7 +3,7 @@ package com.atom.wyz.worldwind.app
 import android.util.Log
 import com.atom.wyz.worldwind.WorldWind
 import com.atom.wyz.worldwind.WorldWindow
-import com.atom.wyz.worldwind.geom.Camera
+import com.atom.wyz.worldwind.geom.observer.Camera
 import com.atom.wyz.worldwind.geom.Position
 import com.atom.wyz.worldwind.geom.Sector
 import com.atom.wyz.worldwind.globe.Globe

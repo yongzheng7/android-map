@@ -2,7 +2,7 @@ package com.atom.wyz.worldwind.app
 
 import android.os.Bundle
 import com.atom.wyz.worldwind.WorldWind
-import com.atom.wyz.worldwind.geom.Camera
+import com.atom.wyz.worldwind.geom.observer.Camera
 import com.atom.wyz.worldwind.geom.Position
 import com.atom.wyz.worldwind.globe.Globe
 
@@ -22,7 +22,8 @@ class CameraViewActivity : BasicWorldWindActivity() {
         val distance: Double = distanceRadians * globe.getRadiusAt(aircraft.latitude, aircraft.longitude)
         val tilt = Math.toDegrees(Math.atan(distance / aircraft.altitude))
 
-        val camera: Camera = Camera()
+        val camera: Camera =
+            Camera()
 
         camera.set(aircraft.latitude, aircraft.longitude, aircraft.altitude, WorldWind.ABSOLUTE, heading, tilt, 0.0) // No roll
 

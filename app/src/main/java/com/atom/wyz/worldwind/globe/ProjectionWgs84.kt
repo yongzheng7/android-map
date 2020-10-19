@@ -7,7 +7,7 @@ import com.atom.wyz.worldwind.util.Logger
  * GPS
  * 经纬度转笛卡尔坐标系的投影
  */
-class ProjectionWgs84() : GeographicProjection {
+class ProjectionWgs84 : GeographicProjection {
 
     val scratchPos: Position = Position()
 

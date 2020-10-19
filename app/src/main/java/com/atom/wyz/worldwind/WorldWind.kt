@@ -1,7 +1,7 @@
 package com.atom.wyz.worldwind
 
 import androidx.annotation.IntDef
-import com.atom.wyz.worldwind.geom.Ellipsoid
+import com.atom.wyz.worldwind.globe.Ellipsoid
 import com.atom.wyz.worldwind.util.MessageService
 import com.atom.wyz.worldwind.util.TaskService
 
@@ -218,7 +218,11 @@ class WorldWind {
          * configured according to the WGS 84 reference system (aka WGS 1984, EPSG:4326). WGS 84 reference values taken from
          * [](http://earth-info.nga.mil/GandG/publications/NGA_STND_0036_1_0_0_WGS84/NGA.STND.0036_1.0.0_WGS84.pdf).
          */
-        val WGS84_ELLIPSOID: Ellipsoid = Ellipsoid(WGS84_SEMI_MAJOR_AXIS, WGS84_INVERSE_FLATTENING)
+        val WGS84_ELLIPSOID: Ellipsoid =
+            Ellipsoid(
+                WGS84_SEMI_MAJOR_AXIS,
+                WGS84_INVERSE_FLATTENING
+            )
 
 
         ////////////////////////////////////////////////////////////////////////////////////////////

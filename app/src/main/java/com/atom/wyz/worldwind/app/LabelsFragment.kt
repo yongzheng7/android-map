@@ -4,7 +4,7 @@ import android.graphics.Color
 import android.graphics.Typeface
 import com.atom.wyz.worldwind.WorldWind
 import com.atom.wyz.worldwind.WorldWindow
-import com.atom.wyz.worldwind.geom.LookAt
+import com.atom.wyz.worldwind.geom.observer.LookAt
 import com.atom.wyz.worldwind.geom.Offset
 import com.atom.wyz.worldwind.geom.Position
 import com.atom.wyz.worldwind.geom.SimpleColor
@@ -101,7 +101,8 @@ class LabelsFragment : BasicGlobeActivity() {
         )
 
 
-        val lookAt: LookAt = LookAt().set(
+        val lookAt: LookAt = LookAt()
+            .set(
             pos.latitude, pos.longitude, pos.altitude, WorldWind.ABSOLUTE,
             1e5 /*range*/, 0.0 /*heading*/, 0.0 /*tilt*/, 0.0 /*roll*/
         )

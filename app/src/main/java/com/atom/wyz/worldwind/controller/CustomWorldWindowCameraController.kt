@@ -1,7 +1,7 @@
 package com.atom.wyz.worldwind.controller
 
 import com.atom.wyz.worldwind.WorldWind
-import com.atom.wyz.worldwind.geom.Camera
+import com.atom.wyz.worldwind.geom.observer.Camera
 import com.atom.wyz.worldwind.geom.Location
 import com.atom.wyz.worldwind.gesture.GestureRecognizer
 import com.atom.wyz.worldwind.gesture.PinchRecognizer
@@ -10,9 +10,11 @@ import com.atom.wyz.worldwind.util.WWMath
 
 open class CustomWorldWindowCameraController : BasicWorldWindowController() {
 
-    protected var camera: Camera = Camera()
+    protected var camera: Camera =
+        Camera()
 
-    protected var beginCamera: Camera = Camera()
+    protected var beginCamera: Camera =
+        Camera()
 
     override fun handlePan(recognizer: GestureRecognizer) {
         val wwd = this.world ?: return

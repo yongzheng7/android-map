@@ -1,5 +1,6 @@
 package com.atom.wyz.worldwind.geom
 
+import com.atom.wyz.worldwind.geom.observer.Frustum
 import com.atom.wyz.worldwind.util.Logger
 
 class BoundingSphere {

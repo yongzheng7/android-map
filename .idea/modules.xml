@@ -4,6 +4,7 @@
     <modules>
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/OpenWorld.iml" filepath="$PROJECT_DIR$/.idea/modules/OpenWorld.iml" group="OpenWorld" />
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" group="OpenWorld/app" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/map/map.iml" filepath="$PROJECT_DIR$/.idea/modules/map/map.iml" group="OpenWorld/map" />
     </modules>
   </component>
 </project>

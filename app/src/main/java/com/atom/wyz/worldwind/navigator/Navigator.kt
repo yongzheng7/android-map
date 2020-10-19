@@ -2,6 +2,8 @@ package com.atom.wyz.worldwind.navigator
 
 import com.atom.wyz.worldwind.WorldWind
 import com.atom.wyz.worldwind.geom.*
+import com.atom.wyz.worldwind.geom.observer.Camera
+import com.atom.wyz.worldwind.geom.observer.LookAt
 import com.atom.wyz.worldwind.globe.Globe
 
 /**
@@ -10,7 +12,8 @@ import com.atom.wyz.worldwind.globe.Globe
  */
 class Navigator {
 
-    var scratchCamera: Camera = Camera()
+    var scratchCamera: Camera =
+        Camera()
 
     var latitude = 0.0
 

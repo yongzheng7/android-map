@@ -9,7 +9,8 @@ class Globe {
     /**
      * The globe's reference ellipsoid defining the globe's equatorial radius and polar radius.
      */
-    var ellipsoid: Ellipsoid = Ellipsoid()
+    var ellipsoid: Ellipsoid =
+        Ellipsoid()
     set(value) {
         field.set(value)
     }

@@ -3,7 +3,7 @@ package com.atom.wyz.worldwind.core.tile
 import android.util.DisplayMetrics
 import com.atom.wyz.worldwind.WorldWind
 import com.atom.wyz.worldwind.geom.BoundingBox
-import com.atom.wyz.worldwind.geom.Frustum
+import com.atom.wyz.worldwind.geom.observer.Frustum
 import com.atom.wyz.worldwind.geom.Sector
 import com.atom.wyz.worldwind.geom.Vec3
 import com.atom.wyz.worldwind.layer.render.RenderContext

@@ -7,7 +7,7 @@ import androidx.appcompat.app.AppCompatActivity
 import com.atom.wyz.worldwind.R
 import com.atom.wyz.worldwind.WorldWind
 import com.atom.wyz.worldwind.WorldWindow
-import com.atom.wyz.worldwind.geom.Camera
+import com.atom.wyz.worldwind.geom.observer.Camera
 import com.atom.wyz.worldwind.layer.AtmosphereLayer
 import com.atom.wyz.worldwind.layer.BackgroundLayer
 import com.atom.wyz.worldwind.layer.BlueMarbleLandsatLayer
@@ -57,7 +57,9 @@ open class BasicWorldWindActivity : AppCompatActivity() {
 
     protected open fun saveNavigatorState(savedInstanceState: Bundle) {
         val wwd = getWorldWindow()
-        val camera = wwd.navigator.getAsCamera(wwd.globe, Camera())
+        val camera = wwd.navigator.getAsCamera(wwd.globe,
+            Camera()
+        )
         // Write the camera data
         savedInstanceState.putDouble(CAMERA_LATITUDE, camera.latitude)
         savedInstanceState.putDouble(CAMERA_LONGITUDE, camera.longitude)
@@ -83,7 +85,15 @@ open class BasicWorldWindActivity : AppCompatActivity() {
         @WorldWind.AltitudeMode val altMode =
             savedInstanceState.getInt(CAMERA_ALTITUDE_MODE)
         // Restore the camera state.
-        val camera = Camera(lat, lon, alt, altMode, heading, tilt, roll)
+        val camera = Camera(
+            lat,
+            lon,
+            alt,
+            altMode,
+            heading,
+            tilt,
+            roll
+        )
         wwd.navigator.setAsCamera(wwd.globe, camera)
     }
 

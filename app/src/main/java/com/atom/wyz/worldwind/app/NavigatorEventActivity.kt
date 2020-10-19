@@ -15,9 +15,9 @@ import android.widget.TextView
 import com.atom.wyz.worldwind.R
 import com.atom.wyz.worldwind.WorldHelper
 import com.atom.wyz.worldwind.WorldWind
-import com.atom.wyz.worldwind.geom.Camera
+import com.atom.wyz.worldwind.geom.observer.Camera
 import com.atom.wyz.worldwind.geom.Location
-import com.atom.wyz.worldwind.geom.LookAt
+import com.atom.wyz.worldwind.geom.observer.LookAt
 import com.atom.wyz.worldwind.navigator.Navigator
 import com.atom.wyz.worldwind.navigator.NavigatorEvent
 import com.atom.wyz.worldwind.navigator.NavigatorListener
@@ -30,9 +30,11 @@ class NavigatorEventActivity : BasicWorldWindActivity() , FrameCallback {
 
     protected var altView: TextView? = null
 
-    private val lookAt: LookAt = LookAt()
+    private val lookAt: LookAt =
+        LookAt()
 
-    private val camera: Camera = Camera()
+    private val camera: Camera =
+        Camera()
 
     protected var crosshairs: ImageView? = null
 

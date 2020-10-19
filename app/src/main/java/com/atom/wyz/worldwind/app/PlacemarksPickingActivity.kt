@@ -7,7 +7,7 @@ import com.atom.wyz.worldwind.R
 import com.atom.wyz.worldwind.WorldWind
 import com.atom.wyz.worldwind.WorldWindow
 import com.atom.wyz.worldwind.controller.BasicWorldWindowController
-import com.atom.wyz.worldwind.geom.LookAt
+import com.atom.wyz.worldwind.geom.observer.LookAt
 import com.atom.wyz.worldwind.geom.Offset
 import com.atom.wyz.worldwind.geom.Position
 import com.atom.wyz.worldwind.layer.RenderableLayer
@@ -78,7 +78,8 @@ class PlacemarksPickingActivity : BasicWorldWindActivity() {
         )
         layer.addRenderable(createAircraftPlacemark(Position.fromDegrees(34.15, -119.15, 2000.0)))
         // And finally, for this demo, position the viewer to look at the aircraft
-        val lookAt: LookAt = LookAt().set(
+        val lookAt: LookAt = LookAt()
+            .set(
             34.15, -119.15, 0.0, WorldWind.ABSOLUTE,
             2e4 /*range*/, 0.0 /*heading*/, 45.0 /*tilt*/, 0.0 /*roll*/
         )
