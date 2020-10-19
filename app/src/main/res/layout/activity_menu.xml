@@ -37,22 +37,6 @@
                         android:layout_marginStart="20dp">
 
                     <Button
-                            android:id="@+id/Basic_Globe2_Activity"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:onClick="menuButton"
-                            android:text="Basic_Globe2_Activity"
-                            android:textAllCaps="false" />
-
-                    <Button
-                            android:id="@+id/background_draw_Activity"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:onClick="menuButton"
-                            android:text="background_draw_Activity"
-                            android:textAllCaps="false" />
-
-                    <Button
                             android:id="@+id/turse_BasicGlobeActivity"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
