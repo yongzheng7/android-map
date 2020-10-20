@@ -140,8 +140,6 @@ open class TiledSurfaceImage :
         if (texture == null) {
             texture = rc.retrieveTexture(imageSource, imageOptions) // puts retrieved textures in the cache
         }
-
-
         if (texture != null) { // use the tile's own texture
             val pool: Pool<DrawableSurfaceTexture> =
                 rc.getDrawablePool(DrawableSurfaceTexture::class.java)

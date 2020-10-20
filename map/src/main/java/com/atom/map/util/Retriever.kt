@@ -61,7 +61,11 @@ abstract class Retriever<K, O, V>(maxSimultaneousRetrievals: Int) {
         synchronized(lock) { return asyncTaskSet.contains(key) }
     }
 
-    fun retrieve(key: K, options: O?, callback: Callback<K, O, V>) {
+    fun retrieve(
+        key: K,
+        options: O?,
+        callback: Callback<K, O, V>
+    ) {
         obtainAsyncTask(key, options, callback)?.let {
             try {
                 WorldWind.taskService.execute(it)
@@ -80,6 +84,36 @@ abstract class Retriever<K, O, V>(maxSimultaneousRetrievals: Int) {
                 "obtain this key or ${asyncTaskSet.size} >= ${maxAsyncTasks}"
             )
         }
+    }
+
+    open fun retrieve(
+        key: K,
+        options: O?,
+        callback: Callback<K, O, V>,
+        id: Int
+    ) {
+        // TODO 有优先级的 交给子类实现
+        retrieve(key , options , callback)
+    }
+
+
+    protected class Priority {
+        private val id: Int
+        private val task: AsyncTask<*, *, *>
+
+        constructor(id: Int, task: AsyncTask<*, *, *>) {
+            this.id = id
+            this.task = task
+        }
+
+        fun id(): Int {
+            return id
+        }
+
+        fun task(): AsyncTask<*, *, *> {
+            return task
+        }
+
     }
 
     /**

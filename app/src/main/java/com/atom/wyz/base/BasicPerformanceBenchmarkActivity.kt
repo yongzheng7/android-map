@@ -260,6 +260,7 @@ class BasicPerformanceBenchmarkActivity : BasicWorldWindActivity() {
             70.0,
             0.0
         )
+
         exec.execute(
             AnimateCameraTask(
                 getWorldWindow(),

@@ -160,8 +160,7 @@ class ImageSource {
     protected var source: Any? = null
 
     @ImageType
-    protected var type =
-        TYPE_UNRECOGNIZED
+    protected var type = TYPE_UNRECOGNIZED
 
     override fun equals(other: Any?): Boolean {
         if (this === other) {

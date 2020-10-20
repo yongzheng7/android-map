@@ -130,6 +130,29 @@ class RenderResourceCache
         return null
     }
 
+    fun retrieveTexture(
+        imageSource: ImageSource,
+        imageOptions: ImageOptions?,
+        id: Int
+    ): GpuTexture? {
+        if (imageSource.isBitmap()) {
+            val texture = this.createTexture(imageSource, imageOptions, imageSource.asBitmap());
+            put(imageSource, texture, texture.textureByteCount)
+            return texture
+        }
+        imageRetrieverCache.remove(imageSource)?.let {
+            val texture = this.createTexture(imageSource, imageOptions, it);
+            put(imageSource, texture, texture.textureByteCount)
+            return texture
+        }
+        if (imageSource.isUrl()) {
+            urlImageRetriever.retrieve(imageSource, imageOptions, this, id)
+        } else {
+            imageRetriever.retrieve(imageSource, imageOptions, this, id)
+        }
+        return null
+    }
+
     protected fun createTexture(
         imageSource: ImageSource,
         options: ImageOptions?,
@@ -155,7 +178,12 @@ class RenderResourceCache
     ) {
         imageRetrieverCache.put(key, value, value.byteCount)
         WorldWind.requestRedraw()
-        Logger.logMessage(Logger.ERROR, "RenderResourceCache" , "retrievalSucceeded" ,"Image retrieval Success \'$key\'")
+        Logger.logMessage(
+            Logger.ERROR,
+            "RenderResourceCache",
+            "retrievalSucceeded",
+            "Image retrieval Success \'$key\'"
+        )
         if (!handler.hasMessages(TRIM_STALE_RETRIEVALS)) {
             handler.sendEmptyMessageDelayed(
                 TRIM_STALE_RETRIEVALS,
@@ -170,11 +198,26 @@ class RenderResourceCache
         ex: Throwable?
     ) {
         if (ex is SocketTimeoutException) {
-            Logger.logMessage(Logger.ERROR, "RenderResourceCache" , "retrievalFailed" , "Image retrieval Socket timeout retrieving image \'$key\' \n $ex \n")
+            Logger.logMessage(
+                Logger.ERROR,
+                "RenderResourceCache",
+                "retrievalFailed",
+                "Image retrieval Socket timeout retrieving image \'$key\' \n $ex \n"
+            )
         } else if (ex != null) {
-            Logger.logMessage(Logger.ERROR, "RenderResourceCache" , "retrievalFailed" , "Image retrieval failed with exception \'$key\'  \n  $ex \n")
+            Logger.logMessage(
+                Logger.ERROR,
+                "RenderResourceCache",
+                "retrievalFailed",
+                "Image retrieval failed with exception \'$key\'  \n  $ex \n"
+            )
         } else {
-            Logger.logMessage(Logger.ERROR, "RenderResourceCache" , "retrievalFailed" , "Image retrieval failed \'$key\'  \n  $ex \n")
+            Logger.logMessage(
+                Logger.ERROR,
+                "RenderResourceCache",
+                "retrievalFailed",
+                "Image retrieval failed \'$key\'  \n  $ex \n"
+            )
         }
     }
 
@@ -183,7 +226,12 @@ class RenderResourceCache
         key: ImageSource,
         msg: String
     ) {
-        Logger.logMessage(Logger.ERROR, "RenderResourceCache" , "retrievalRejected" ,"Image retrieval rejected \'$key\'  $msg")
+        Logger.logMessage(
+            Logger.ERROR,
+            "RenderResourceCache",
+            "retrievalRejected",
+            "Image retrieval rejected \'$key\'  $msg"
+        )
     }
 
     override fun handleMessage(msg: Message): Boolean {

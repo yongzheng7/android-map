@@ -3,9 +3,9 @@ package com.atom.map.core.tile
 import android.util.DisplayMetrics
 import com.atom.map.WorldWind
 import com.atom.map.geom.BoundingBox
-import com.atom.map.geom.observer.Frustum
 import com.atom.map.geom.Sector
 import com.atom.map.geom.Vec3
+import com.atom.map.geom.observer.Frustum
 import com.atom.map.layer.render.RenderContext
 import com.atom.map.util.Level
 import com.atom.map.util.Logger
@@ -143,32 +143,23 @@ open class Tile {
     var nearestPoint: Vec3 = Vec3()
 
     constructor(sector: Sector, level: Level, row: Int, column: Int) {
-         this.sector = sector
+        this.sector = sector
         this.level = level
         this.row = row
         this.column = column
         this.tileKey = level.levelNumber.toString() + "." + row + "." + column
-        this.texelSizeFactor = Math.toRadians(level.tileDelta / level.tileWidth) * Math.cos(Math.toRadians(sector.centroidLatitude()))
+        this.texelSizeFactor =
+            Math.toRadians(level.tileDelta / level.tileWidth) * Math.cos(Math.toRadians(sector.centroidLatitude()))
     }
 
     /**
      * 指示此图块是否与指定的视锥相交。
      */
-    open fun intersectsFrustum(rc: RenderContext, frustum: Frustum?): Boolean {
-        if (frustum == null) {
-            throw java.lang.IllegalArgumentException(
-                Logger.logMessage(Logger.ERROR, "Tile", "intersectsFrustum", "missingFrustum")
-            )
-        }
+    open fun intersectsFrustum(rc: RenderContext, frustum: Frustum): Boolean {
         return this.getExtent(rc).intersectsFrustum(frustum);
     }
 
-    open fun intersectsSector(sector: Sector?): Boolean {
-        if (sector == null) {
-            throw java.lang.IllegalArgumentException(
-                Logger.logMessage(Logger.ERROR, "Tile", "intersectsSector", "missingSector")
-            )
-        }
+    open fun intersectsSector(sector: Sector): Boolean {
         return this.sector.intersects(sector)
     }
 
@@ -318,7 +309,8 @@ open class Tile {
 
     protected open fun distanceToCamera(rc: RenderContext): Double {
         // determine the nearest latitude
-        val nearestLat: Double = WWMath.clamp(rc.camera.latitude, sector.minLatitude, sector.maxLatitude)
+        val nearestLat: Double =
+            WWMath.clamp(rc.camera.latitude, sector.minLatitude, sector.maxLatitude)
         // determine the nearest longitude and account for the antimeridian discontinuity
         val nearestLon: Double
         val lonDifference = rc.camera.longitude - sector.centroidLongitude()

@@ -292,6 +292,14 @@ open class RenderContext {
         return renderResourceCache?.retrieveTexture(imageSource, imageOptions)
     }
 
+    open fun retrieveTexture(
+        imageSource: ImageSource,
+        imageOptions: ImageOptions?,
+        id: Int
+    ): GpuTexture? {
+        return renderResourceCache?.retrieveTexture(imageSource, imageOptions, id)
+    }
+
     open fun offerDrawable(drawable: Drawable, groupId: Int, depth: Double) {
         drawableQueue?.offerDrawable(drawable, groupId, depth)
     }
@@ -381,7 +389,7 @@ open class RenderContext {
         textRenderer.enableOutline = (attributes.enableOutline)
         textRenderer.outlineColor = (attributes.outlineColor)
         textRenderer.outlineWidth = (attributes.outlineWidth)
-        return  textRenderer.renderText(text).also {
+        return textRenderer.renderText(text).also {
             renderResourceCache?.put(key, it, it.textureByteCount)
         }
     }
