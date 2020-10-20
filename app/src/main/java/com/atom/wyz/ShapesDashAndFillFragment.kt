@@ -9,6 +9,7 @@ import com.atom.map.layer.render.attribute.ShapeAttributes
 import com.atom.map.layer.render.shape.Ellipse
 import com.atom.map.layer.render.shape.Path
 import com.atom.map.layer.render.shape.Polygon
+import com.atom.wyz.base.BasicGlobeActivity
 import com.atom.wyz.worldwind.R
 import java.util.*
 

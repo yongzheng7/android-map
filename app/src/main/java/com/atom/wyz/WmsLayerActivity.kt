@@ -5,6 +5,7 @@ import com.atom.map.WorldWindow
 import com.atom.map.layer.Layer
 import com.atom.map.layer.LayerFactory
 import com.atom.map.layer.ShowTessellationLayer
+import com.atom.wyz.base.BasicGlobeActivity
 
 class WmsLayerActivity : BasicGlobeActivity() {
     override fun createWorldWindow(): WorldWindow {

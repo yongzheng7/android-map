@@ -16,7 +16,7 @@ class PathsActivity : BasicWorldWindActivity() {
         // Create a layer to display the tutorial paths.
         //wwd.layers.clearLayers()
         val layer = RenderableLayer()
-        wwd.layers.addLayer(layer)
+        getWorldWindow().layers.addLayer(layer)
 
         // line  1
         var positions = Arrays.asList(

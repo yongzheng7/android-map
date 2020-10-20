@@ -18,7 +18,7 @@ class PolygonsActivity : BasicWorldWindActivity() {
 
         // Create a layer to display the tutorial polygons.
         val layer = RenderableLayer()
-        wwd.layers.addLayer(layer)
+        getWorldWindow().layers.addLayer(layer)
         var positions: List<Position> = Arrays.asList(
             Position.fromDegrees(40.0, -135.0, 5.0e5),
             Position.fromDegrees(45.0, -140.0, 7.0e5),

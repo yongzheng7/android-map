@@ -10,6 +10,7 @@ import com.atom.map.globe.Globe
 import com.atom.map.layer.CartesianLayer
 import com.atom.map.layer.ShowTessellationLayer
 import com.atom.map.ogc.Wcs100ElevationCoverage
+import com.atom.wyz.base.BasicGlobeActivity
 
 class WcsElevationFragment : BasicGlobeActivity() {
     override fun createWorldWindow(): WorldWindow {

@@ -1,7 +1,6 @@
 package com.atom.map.geom.observer
 
 import com.atom.map.WorldWind
-import com.atom.map.util.Logger
 
 class Camera {
 
@@ -44,11 +43,7 @@ class Camera {
         this.roll = roll
     }
 
-    fun Camera(camera: Camera?) {
-        if (camera == null) {
-            throw IllegalArgumentException(
-                    Logger.logMessage(Logger.ERROR, "Camera", "constructor", "missingCamera"))
-        }
+    constructor(camera: Camera) {
         latitude = camera.latitude
         longitude = camera.longitude
         altitude = camera.altitude
@@ -70,10 +65,7 @@ class Camera {
         return this
     }
 
-    fun set(camera: Camera?): Camera {
-        if (camera == null) {
-            throw IllegalArgumentException(Logger.logMessage(Logger.ERROR, "Camera", "set", "missingCamera"))
-        }
+    fun set(camera: Camera): Camera {
         latitude = camera.latitude
         longitude = camera.longitude
         altitude = camera.altitude
@@ -100,15 +92,12 @@ class Camera {
         if (this === other) return true
         if (other == null || javaClass != other.javaClass) return false
         val camera: Camera = other as Camera
-        if (java.lang.Double.compare(camera.latitude, latitude) != 0) return false
-        if (java.lang.Double.compare(camera.longitude, longitude) != 0) return false
-        if (java.lang.Double.compare(camera.altitude, altitude) != 0) return false
+        if (camera.latitude.compareTo(latitude) != 0) return false
+        if (camera.longitude.compareTo(longitude) != 0) return false
+        if (camera.altitude.compareTo(altitude) != 0) return false
         if (altitudeMode != camera.altitudeMode) return false
-        if (java.lang.Double.compare(camera.heading, heading) != 0) return false
-        return if (java.lang.Double.compare(camera.tilt, tilt) != 0) false else java.lang.Double.compare(
-            camera.roll,
-            roll
-        ) == 0
+        if (camera.heading.compareTo(heading) != 0) return false
+        return if (camera.tilt.compareTo(tilt) != 0) false else camera.roll.compareTo(roll) == 0
     }
 
     override fun hashCode(): Int {

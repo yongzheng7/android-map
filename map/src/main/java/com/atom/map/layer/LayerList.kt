@@ -4,7 +4,7 @@ import com.atom.map.layer.render.RenderContext
 import com.atom.map.util.Logger
 
 class LayerList() : Iterable<Layer> {
-    protected val layers = arrayListOf<Layer>()
+    private val layers = arrayListOf<Layer>()
 
     constructor(layers: Iterable<Layer>) : this() {
         this.addAllLayers(layers)

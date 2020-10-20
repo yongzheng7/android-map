@@ -1,4 +1,4 @@
-package com.atom.wyz
+package com.atom.wyz.base
 
 import android.os.Bundle
 import android.widget.FrameLayout

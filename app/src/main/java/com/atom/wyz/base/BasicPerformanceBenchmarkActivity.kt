@@ -1,8 +1,9 @@
-package com.atom.wyz
+package com.atom.wyz.base
 
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
+import android.util.Log
 import android.view.MotionEvent
 import androidx.annotation.NonNull
 import androidx.core.util.Pools
@@ -14,149 +15,147 @@ import com.atom.map.geom.Location
 import com.atom.map.geom.Position
 import com.atom.map.geom.observer.Camera
 import com.atom.map.layer.Layer
-import com.atom.map.layer.LayerList
 import com.atom.map.layer.RenderableLayer
 import com.atom.map.layer.render.ImageSource
 import com.atom.map.layer.render.Placemark
 import com.atom.map.layer.render.attribute.PlacemarkAttributes
-import com.atom.map.util.Logger
-import com.atom.map.util.WWMath
-import com.atom.map.util.WWUtil
+import com.atom.map.util.*
+import com.atom.wyz.BasicWorldWindActivity
 import com.atom.wyz.worldwind.R
 import java.io.BufferedReader
 import java.io.InputStreamReader
-import java.util.*
 import java.util.concurrent.Executor
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 
 class BasicPerformanceBenchmarkActivity : BasicWorldWindActivity() {
-    class ClearFrameMetricsCommand(wwd: WorldWindow) : Runnable {
-        protected var wwd: WorldWindow
+
+    companion object {
+
+        protected const val FRAME_INTERVAL = 67 // 67 millis; 15 frames per second
+
+        protected lateinit var activityHandler : Handler
+
+        protected var commandExecutor: ExecutorService = Executors.newSingleThreadExecutor()
+
+        fun getNewCommandExecutor(): ExecutorService {
+            return commandExecutor
+        }
+
+        fun runOnActivityThread(@NonNull command: Runnable) {
+            activityHandler.post(command)
+        }
+
+        fun isActivityThread(): Boolean {
+            return Thread.currentThread() === Looper.getMainLooper().thread
+        }
+    }
+
+    class FrameMetricsTask(private val wwd: WorldWindow, val isStart: Boolean = true) : Runnable {
         override fun run() {
+            // 统计时长
             if (!isActivityThread()) {
-                runOnActivityThread(
-                    this
-                )
+                runOnActivityThread(this)
             } else {
-                wwd.frameMetrics.reset()
+                isStart.yes {
+                    this.wwd.frameMetrics.reset()
+                }.otherwise {
+                    Log.e("BasicPerformance", wwd.frameMetrics.toString())
+                }
+            }
+        }
+    }
+
+    class SleepTask(var durationMillis: Long) : Runnable {
+        override fun run() {
+            try {
+                Thread.sleep(durationMillis)
+            } catch (ignored: InterruptedException) {
+            }
+        }
+    }
+
+    class SetCameraTask private constructor() : Runnable {
+
+        companion object {
+            private val pool = Pools.SynchronizedPool<SetCameraTask>(10)
+            fun obtain(wwd: WorldWindow, camera: Camera): SetCameraTask {
+                var command = pool.acquire()
+                if (command == null) {
+                    command = SetCameraTask()
+                }
+                return command.set(wwd, camera)
             }
         }
 
-        init {
-            this.wwd = wwd
-        }
-    }
-
-    class LogFrameMetricsCommand(wwd: WorldWindow) : Runnable {
-        protected var wwd: WorldWindow
-        override fun run() {
-            if (!isActivityThread()) {
-                runOnActivityThread(
-                    this
-                )
-            } else {
-                Logger.log(Logger.INFO, wwd.frameMetrics.toString())
-            }
-        }
-
-        init {
-            this.wwd = wwd
-        }
-    }
-
-    class SleepCommand(protected var durationMillis: Long) : Runnable {
-        override fun run() {
-            sleepQuietly(
-                durationMillis
-            )
-        }
-
-    }
-
-    class SetCameraCommand private constructor() : Runnable {
         private var wwd: WorldWindow? = null
-        private val camera: Camera =
-            Camera()
-        private operator fun set(wwd: WorldWindow?, camera: Camera?): SetCameraCommand? {
+        private val camera: Camera = Camera()
+
+        private operator fun set(wwd: WorldWindow, camera: Camera): SetCameraTask {
             this.wwd = wwd
             this.camera.set(camera)
             return this
         }
 
-        private fun reset(): SetCameraCommand {
+        private fun reset(): SetCameraTask {
             wwd = null
             return this
         }
 
         override fun run() {
-            wwd?.navigator?.setAsCamera(wwd!!.globe, camera)
-            wwd?.requestRender()
+            wwd?.also {
+                Log.e("BasicPerformance" , "SetCameraTask > $camera")
+                it.navigator.setAsCamera(it.globe, camera)
+                it.requestRedraw()
+            }
             pool.release(reset())
         }
 
-        companion object {
-            private val pool = Pools.SynchronizedPool<SetCameraCommand?>(10)
-            fun obtain(wwd: WorldWindow?, camera: Camera?): SetCameraCommand? {
-                var command = pool.acquire()
-                if (command == null) {
-                    command =
-                        SetCameraCommand()
-                }
-                return command.set(wwd, camera)
-            }
-        }
     }
 
-    class AnimateCameraCommand(wwd: WorldWindow, end: Camera, steps: Int) : Runnable {
-        protected var wwd: WorldWindow
-        protected var beginCamera: Camera =
-            Camera()
-        protected var endCamera: Camera =
-            Camera()
-        protected var curCamera: Camera =
-            Camera()
-        protected var beginPos: Position = Position()
-        protected var endPos: Position = Position()
-        protected var curPos: Position = Position()
-        protected var steps: Int
+    class AnimateCameraTask(wwd: WorldWindow, end: Camera, steps: Int) : Runnable {
+        private var wwd: WorldWindow = wwd
+        private var endCamera: Camera = Camera().set(end)
+        private var steps = steps
+        private var endPos: Position = Position().set(end.latitude, end.longitude, end.altitude)
+        private var beginCamera: Camera = Camera()
+        private var curCamera: Camera = Camera()
+        private var beginPos: Position = Position()
+        private var curPos: Position = Position()
+
+
         override fun run() {
             wwd.navigator.getAsCamera(wwd.globe, beginCamera)
             beginPos.set(beginCamera.latitude, beginCamera.longitude, beginCamera.altitude)
             for (i in 0 until steps) {
                 val amount = i.toDouble() / (steps - 1).toDouble()
-                beginPos.interpolateAlongPath( WorldWind.GREAT_CIRCLE, amount,endPos, curPos)
+                beginPos.interpolateAlongPath(WorldWind.GREAT_CIRCLE, amount, endPos, curPos)
                 curCamera.latitude = curPos.latitude
                 curCamera.longitude = curPos.longitude
                 curCamera.altitude = curPos.altitude
                 curCamera.heading =
                     WWMath.interpolateAngle360(amount, beginCamera.heading, endCamera.heading)
-                curCamera.tilt = WWMath.interpolateAngle180(amount, beginCamera.tilt, endCamera.tilt)
-                curCamera.roll = WWMath.interpolateAngle180(amount, beginCamera.roll, endCamera.roll)
-                val setCommand: Runnable? =
-                    SetCameraCommand.obtain(
+                curCamera.tilt =
+                    WWMath.interpolateAngle180(amount, beginCamera.tilt, endCamera.tilt)
+                curCamera.roll =
+                    WWMath.interpolateAngle180(amount, beginCamera.roll, endCamera.roll)
+
+                runOnActivityThread(
+                    SetCameraTask.obtain(
                         wwd,
                         curCamera
                     )
-                runOnActivityThread(
-                    setCommand
                 )
-                sleepQuietly(
-                    FRAME_INTERVAL.toLong()
-                )
+                try {
+                    Thread.sleep(FRAME_INTERVAL.toLong())
+                } catch (ignored: InterruptedException) {
+                }
             }
         }
 
-        init {
-            this.wwd = wwd
-            endCamera.set(end)
-            endPos.set(end.latitude, end.longitude, end.altitude)
-            this.steps = steps
-        }
     }
 
-    class NoOpWorldWindowController :
-        WorldWindowController {
+    class NoOpWorldWindowController : WorldWindowController {
         override var world: WorldHelper?
             get() = null
             set(wwd) {}
@@ -167,24 +166,26 @@ class BasicPerformanceBenchmarkActivity : BasicWorldWindActivity() {
 
     }
 
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        activityHandler = Handler(Looper.getMainLooper())
+        getWorldWindow().worldWindowController = (NoOpWorldWindowController())
+        // Add a layer containing a large number of placemarks.
+        getWorldWindow().layers.addLayer(createPlacemarksLayer())
+    }
+
+
     override fun onStart() {
         super.onStart()
-
-        // Create location objects for the places used in this test.
         val arc = Location(37.415229, -122.06265)
         val gsfc = Location(38.996944, -76.848333)
         val esrin = Location(41.826947, 12.674122)
-        // After a 1 second initial delay, clear the frame statistics associated with this test.
-        val exec: Executor = getNewCommandExecutor()!!
+        val exec: Executor = getNewCommandExecutor()
         exec.execute(
-            SleepCommand(
-                1000
-            )
+            SleepTask(1000)
         )
         exec.execute(
-            ClearFrameMetricsCommand(
-                wwd
-            )
+            FrameMetricsTask(getWorldWindow())
         )
         // After a 1/2 second delay, fly to NASA Ames Research Center over 100 frames.
         var cam = Camera(
@@ -197,14 +198,14 @@ class BasicPerformanceBenchmarkActivity : BasicWorldWindActivity() {
             0.0
         )
         exec.execute(
-            AnimateCameraCommand(
-                wwd,
+            AnimateCameraTask(
+                getWorldWindow(),
                 cam,
                 100
             )
         )
         // After a 1/2 second delay, rotate the camera to look at NASA Goddard Space Flight Center over 50 frames.
-        var azimuth: Double = arc.greatCircleAzimuth(gsfc)
+        var azimuth= arc.greatCircleAzimuth(gsfc)
         cam = Camera(
             arc.latitude,
             arc.longitude,
@@ -215,22 +216,22 @@ class BasicPerformanceBenchmarkActivity : BasicWorldWindActivity() {
             0.0
         )
         exec.execute(
-            SleepCommand(
+            SleepTask(
                 500
             )
         )
         exec.execute(
-            AnimateCameraCommand(
-                wwd,
+            AnimateCameraTask(
+                getWorldWindow(),
                 cam,
                 50
             )
         )
-        // After a 1/2 second delay, fly the camera to NASA Goddard Space Flight Center over 200 frames.
-        var midLoc: Location = arc.interpolateAlongPath(WorldWind.GREAT_CIRCLE, 0.5,gsfc,  Location())
+
+        var midLoc: Location = arc.interpolateAlongPath(WorldWind.GREAT_CIRCLE, 0.5, gsfc, Location())
         azimuth = midLoc.greatCircleAzimuth(gsfc)
         exec.execute(
-            SleepCommand(
+            SleepTask(
                 500
             )
         )
@@ -244,8 +245,8 @@ class BasicPerformanceBenchmarkActivity : BasicWorldWindActivity() {
             0.0
         )
         exec.execute(
-            AnimateCameraCommand(
-                wwd,
+            AnimateCameraTask(
+                getWorldWindow(),
                 cam,
                 100
             )
@@ -260,8 +261,8 @@ class BasicPerformanceBenchmarkActivity : BasicWorldWindActivity() {
             0.0
         )
         exec.execute(
-            AnimateCameraCommand(
-                wwd,
+            AnimateCameraTask(
+                getWorldWindow(),
                 cam,
                 100
             )
@@ -278,13 +279,13 @@ class BasicPerformanceBenchmarkActivity : BasicWorldWindActivity() {
             0.0
         )
         exec.execute(
-            SleepCommand(
+            SleepTask(
                 500
             )
         )
         exec.execute(
-            AnimateCameraCommand(
-                wwd,
+            AnimateCameraTask(
+                getWorldWindow(),
                 cam,
                 50
             )
@@ -292,7 +293,7 @@ class BasicPerformanceBenchmarkActivity : BasicWorldWindActivity() {
         // After a 1/2 second delay, fly the camera to ESA Centre for Earth Observation over 200 frames.
         midLoc = gsfc.interpolateAlongPath(WorldWind.GREAT_CIRCLE, 0.5, esrin, Location())
         exec.execute(
-            SleepCommand(
+            SleepTask(
                 500
             )
         )
@@ -306,8 +307,8 @@ class BasicPerformanceBenchmarkActivity : BasicWorldWindActivity() {
             0.0
         )
         exec.execute(
-            AnimateCameraCommand(
-                wwd,
+            AnimateCameraTask(
+                getWorldWindow(),
                 cam,
                 100
             )
@@ -322,8 +323,8 @@ class BasicPerformanceBenchmarkActivity : BasicWorldWindActivity() {
             0.0
         )
         exec.execute(
-            AnimateCameraCommand(
-                wwd,
+            AnimateCameraTask(
+                getWorldWindow(),
                 cam,
                 100
             )
@@ -339,55 +340,47 @@ class BasicPerformanceBenchmarkActivity : BasicWorldWindActivity() {
             0.0
         )
         exec.execute(
-            SleepCommand(
+            SleepTask(
                 500
             )
         )
         exec.execute(
-            AnimateCameraCommand(
-                wwd,
+            AnimateCameraTask(
+                getWorldWindow(),
                 cam,
                 100
             )
         )
         // After a 1 second delay, log the frame statistics associated with this test.
         exec.execute(
-            SleepCommand(
+            SleepTask(
                 1000
             )
         )
-        exec.execute(
-            LogFrameMetricsCommand(
-                wwd
-            )
-        )
+        exec.execute(FrameMetricsTask(getWorldWindow(), false))
     }
 
 
     override fun onStop() {
         super.onStop()
-        commandExecutor!!.shutdownNow()
-    }
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        wwd.worldWindowController = (NoOpWorldWindowController())
-        // Add a layer containing a large number of placemarks.
-        val layers: LayerList = getWorldWindow().layers
-        layers.addLayer(createPlacemarksLayer())
+        commandExecutor.shutdownNow()
     }
 
     protected fun createPlacemarksLayer(): Layer {
         val layer = RenderableLayer("Placemarks")
-        val attrs: Array<PlacemarkAttributes> = arrayOf<PlacemarkAttributes>(
+        val attrs: Array<PlacemarkAttributes> = arrayOf(
             PlacemarkAttributes.withImage(
-                ImageSource.fromResource(R.drawable.air_fixwing)),
+                ImageSource.fromResource(R.drawable.air_fixwing)
+            ),
             PlacemarkAttributes.withImage(
-                ImageSource.fromResource(R.drawable.airplane)),
+                ImageSource.fromResource(R.drawable.airplane)
+            ),
             PlacemarkAttributes.withImage(
-                ImageSource.fromResource(R.drawable.airport)),
+                ImageSource.fromResource(R.drawable.airport)
+            ),
             PlacemarkAttributes.withImage(
-                ImageSource.fromResource(R.drawable.airport_terminal))
+                ImageSource.fromResource(R.drawable.airport_terminal)
+            )
         )
         var reader: BufferedReader? = null
         try {
@@ -395,7 +388,7 @@ class BasicPerformanceBenchmarkActivity : BasicWorldWindActivity() {
             reader = BufferedReader(InputStreamReader(`in`))
 
             var line = reader.readLine()
-            val headers = Arrays.asList(*line.split(",").toTypedArray())
+            val headers = listOf(*line.split(",").toTypedArray())
             val LAT = headers.indexOf("LAT")
             val LON = headers.indexOf("LON")
             val NA3 = headers.indexOf("NA3")
@@ -420,35 +413,5 @@ class BasicPerformanceBenchmarkActivity : BasicWorldWindActivity() {
             WWUtil.closeSilently(reader)
         }
         return layer
-    }
-
-    companion object {
-
-        protected const val FRAME_INTERVAL = 67 // 67 millis; 15 frames per second
-
-        protected var activityHandler = Handler(Looper.getMainLooper())
-
-        protected var commandExecutor: ExecutorService? = null
-
-        fun getNewCommandExecutor(): ExecutorService? {
-            commandExecutor = Executors.newSingleThreadExecutor()
-            return commandExecutor
-        }
-
-        fun runOnActivityThread(@NonNull command: Runnable?) {
-            activityHandler.post(command)
-        }
-
-        fun isActivityThread(): Boolean {
-            return Thread.currentThread() === Looper.getMainLooper().thread
-        }
-
-        fun sleepQuietly(durationMillis: Long) {
-            try {
-                Thread.sleep(durationMillis)
-            } catch (ignored: InterruptedException) {
-            }
-        }
-
     }
 }

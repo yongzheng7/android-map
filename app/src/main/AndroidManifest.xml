@@ -71,7 +71,7 @@
         <activity android:name="com.atom.wyz.PlacemarksStressTestActivity"
                 android:theme="@style/AppTheme">
         </activity>
-        <activity android:name="com.atom.wyz.BasicPerformanceBenchmarkActivity"
+        <activity android:name="com.atom.wyz.base.BasicPerformanceBenchmarkActivity"
                 android:theme="@style/AppTheme">
         </activity>
         <activity android:name="com.atom.wyz.NavigatorEventActivity"
@@ -98,7 +98,7 @@
         <activity android:name="com.atom.wyz.PlacemarksDemoActivity"
                 android:theme="@style/AppTheme">
         </activity>
-        <activity android:name="com.atom.wyz.BasicGlobeActivity"
+        <activity android:name="com.atom.wyz.base.BasicGlobeActivity"
                 android:theme="@style/AppTheme">
         </activity>
         <activity android:name="com.atom.wyz.PathsExampleActivity"

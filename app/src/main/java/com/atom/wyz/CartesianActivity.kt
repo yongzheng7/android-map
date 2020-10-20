@@ -3,6 +3,7 @@ package com.atom.wyz
 import com.atom.map.WorldWindow
 import com.atom.map.layer.CartesianLayer
 import com.atom.map.layer.ShowTessellationLayer
+import com.atom.wyz.base.BasicGlobeActivity
 
 class CartesianActivity : BasicGlobeActivity(){
     override fun createWorldWindow(): WorldWindow {

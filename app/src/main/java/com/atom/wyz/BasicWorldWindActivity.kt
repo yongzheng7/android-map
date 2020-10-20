@@ -32,7 +32,7 @@ open class BasicWorldWindActivity : AppCompatActivity() {
     }
 
     protected var savedInstanceState: Bundle? = null
-    protected lateinit var wwd: WorldWindow
+    private lateinit var wwd: WorldWindow
     protected open var layoutResourceId: Int = R.layout.activity_main
     protected open fun getWorldWindow(): WorldWindow {
         return wwd

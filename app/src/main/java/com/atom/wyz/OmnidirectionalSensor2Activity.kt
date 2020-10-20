@@ -40,7 +40,7 @@ class OmnidirectionalSensor2Activity : BasicWorldWindActivity()  {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        wwd.layers.addLayer(ShowTessellationLayer())
+        getWorldWindow().layers.addLayer(ShowTessellationLayer())
         // Specify the bounding sector - provided by the WCS
         val coverageSector = Sector.fromDegrees(-83.0, -180.0, 173.0, 360.0)
         coverageSector.setFullSphere()
@@ -56,7 +56,7 @@ class OmnidirectionalSensor2Activity : BasicWorldWindActivity()  {
             coverage
         )
         // Add the coverage to the Globes elevation model
-        val addCoverage = wwd.globe.elevationModel.addCoverage(aster)
+        val addCoverage = getWorldWindow().globe.elevationModel.addCoverage(aster)
         Log.e("WcsElevationFragment","addCoverage > $addCoverage")
 
         // Initialize attributes for the OmnidirectionalSensor
@@ -97,13 +97,13 @@ class OmnidirectionalSensor2Activity : BasicWorldWindActivity()  {
         val sensorLayer = RenderableLayer()
         sensorLayer.addRenderable(sensor)
         sensorLayer.addRenderable(sensorPlacemark)
-        wwd.layers.addLayer(sensorLayer)
+        getWorldWindow().layers.addLayer(sensorLayer)
 
         // Override the WorldWindow's built-in navigation behavior with conditional dragging support.
         controller = SimpleSelectDragNavigateController()
-        wwd.worldWindowController = (controller)
+        getWorldWindow().worldWindowController = (controller)
         // And finally, for this demo, position the viewer to look at the sensor position
-        positionView(wwd)
+        positionView(getWorldWindow())
     }
     protected fun positionView(wwd: WorldWindow) {
         val lookAt: LookAt = LookAt()
@@ -117,7 +117,7 @@ class OmnidirectionalSensor2Activity : BasicWorldWindActivity()  {
             70.0 /*tilt*/,
             0.0 /*roll*/
         )
-        wwd.navigator.setAsLookAt(this.wwd.globe, lookAt)
+        wwd.navigator.setAsLookAt(this.getWorldWindow().globe, lookAt)
     }
    inner class SimpleSelectDragNavigateController : BasicWorldWindowController() {
         protected var isDragging = false
@@ -258,8 +258,8 @@ class OmnidirectionalSensor2Activity : BasicWorldWindActivity()  {
             screenY: Float,
             result: Position
         ): Boolean {
-            if (wwd.rayThroughScreenPoint(screenX, screenY, ray)) {
-                val globe: Globe = wwd.globe
+            if (getWorldWindow().rayThroughScreenPoint(screenX, screenY, ray)) {
+                val globe: Globe = getWorldWindow().globe
                 if (globe.intersect(ray, pickPoint)) {
                     globe.cartesianToGeographic(
                         pickPoint.x,

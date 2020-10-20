@@ -57,7 +57,6 @@ class Navigator {
         this.tilt = camera.tilt
         this.roll = camera.roll
 
-
         return this
     }
 

@@ -36,8 +36,8 @@ class PathsAndPolygonsActivity : BasicWorldWindActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        wwd.layers.addLayer(shapesLayer)
-        wwd.worldWindowController = PickController()
+        getWorldWindow().layers.addLayer(shapesLayer)
+        getWorldWindow().worldWindowController = PickController()
 
         CreateRenderablesTask().execute()
     }
@@ -341,7 +341,7 @@ class PathsAndPolygonsActivity : BasicWorldWindActivity() {
             if (!message.isEmpty()) {
                 Toast.makeText(getApplicationContext(), message, Toast.LENGTH_SHORT).show()
             }
-            wwd.requestRedraw()
+            getWorldWindow().requestRedraw()
         }
     }
 }

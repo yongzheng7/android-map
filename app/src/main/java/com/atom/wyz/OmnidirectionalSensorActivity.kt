@@ -15,6 +15,7 @@ import com.atom.map.layer.render.Placemark
 import com.atom.map.layer.render.attribute.ShapeAttributes
 import com.atom.map.ogc.Wcs100ElevationCoverage
 import com.atom.map.util.Logger
+import com.atom.wyz.base.BasicGlobeActivity
 import com.atom.wyz.worldwind.R
 
 class OmnidirectionalSensorActivity : BasicGlobeActivity() {

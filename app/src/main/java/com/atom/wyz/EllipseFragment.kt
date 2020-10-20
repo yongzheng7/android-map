@@ -7,6 +7,7 @@ import com.atom.map.geom.SimpleColor
 import com.atom.map.layer.RenderableLayer
 import com.atom.map.layer.render.attribute.ShapeAttributes
 import com.atom.map.layer.render.shape.Ellipse
+import com.atom.wyz.base.BasicGlobeActivity
 
 class EllipseFragment : BasicGlobeActivity() {
 

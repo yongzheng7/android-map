@@ -541,8 +541,8 @@ class PlacemarksSelectDragActivity : BasicWorldWindActivity() {
 
 
         fun screenPointToGroundPosition(screenX: Float, screenY: Float, result: Position): Boolean {
-            if (wwd.rayThroughScreenPoint(screenX, screenY, ray)) {
-                val globe = wwd.globe
+            if (getWorldWindow().rayThroughScreenPoint(screenX, screenY, ray)) {
+                val globe = getWorldWindow().globe
                 if (globe.intersect(ray, pickPoint)) {
                     globe.cartesianToGeographic(pickPoint.x, pickPoint.y, pickPoint.z, result)
                     return true

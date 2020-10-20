@@ -12,6 +12,7 @@ import com.atom.map.layer.RenderableLayer
 import com.atom.map.layer.render.Placemark
 import com.atom.map.layer.render.attribute.TextAttributes
 import com.atom.map.layer.render.shape.Label
+import com.atom.wyz.base.BasicGlobeActivity
 
 class LabelsFragment : BasicGlobeActivity() {
 

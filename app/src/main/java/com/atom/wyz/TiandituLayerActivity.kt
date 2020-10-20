@@ -15,6 +15,7 @@ import com.atom.map.layer.render.TiledSurfaceImage
 import com.atom.map.util.Level
 import com.atom.map.util.LevelSet
 import com.atom.map.util.LevelSetConfig
+import com.atom.wyz.base.BasicGlobeActivity
 import java.io.File
 
 /**
