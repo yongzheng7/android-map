@@ -4,8 +4,21 @@ import android.content.Intent
 import android.os.Bundle
 import android.view.View
 import androidx.appcompat.app.AppCompatActivity
-import com.atom.wyz.base.BasicGlobeActivity
-import com.atom.wyz.base.BasicPerformanceBenchmarkActivity
+import com.atom.wyz.base.*
+import com.atom.wyz.changelookat.CameraControlActivity
+import com.atom.wyz.changelookat.CameraViewActivity
+import com.atom.wyz.changelookat.LookAtViewActivity
+import com.atom.wyz.changelookat.NavigatorEventActivity
+import com.atom.wyz.changewindow.MultiGlobeActivity
+import com.atom.wyz.dynamic.OmnidirectionalSensor2Activity
+import com.atom.wyz.dynamic.OmnidirectionalSensorActivity
+import com.atom.wyz.layer.*
+import com.atom.wyz.math.BasicStressTestActivity
+import com.atom.wyz.math.CartesianActivity
+import com.atom.wyz.math.ShowTessellationActivity
+import com.atom.wyz.math.TextureStressTestActivity
+import com.atom.wyz.pick.*
+import com.atom.wyz.shape.*
 import com.atom.wyz.worldwind.R
 
 class MenuActivity : AppCompatActivity() {

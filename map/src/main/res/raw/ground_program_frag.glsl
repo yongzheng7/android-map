@@ -1,8 +1,3 @@
-/*
- * Copyright (c) 2016 United States Government as represented by the Administrator of the
- * National Aeronautics and Space Administration. All Rights Reserved.
- */
-
 precision mediump int;
 
 const int FRAGMODE_PRIMARY = 1;
@@ -25,6 +20,6 @@ void main () {
         vec4 texColor = texture2D(texSampler, texCoord);
         gl_FragColor = vec4(primaryColor + texColor.rgb * (1.0 - secondaryColor), 1.0);
     } else {
-        gl_FragColor = vec4(1.0); /* return opaque white fragments if fragMode is unrecognized */
+        gl_FragColor = vec4(1.0);
     }
 }

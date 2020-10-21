@@ -12,9 +12,6 @@ open class GpuProgram() : RenderResource {
 
     var programId = 0
     var programSources: Array<String>? = null
-        get() {
-            return field
-        }
         set(value) {
             field = value
             programLength = 0
@@ -24,9 +21,6 @@ open class GpuProgram() : RenderResource {
             }
         }
     var attribBindings: Array<String>? = null
-        get() {
-            return field
-        }
         set(value) {
             field = value
             mustBuildProgram = true
@@ -110,14 +104,13 @@ open class GpuProgram() : RenderResource {
         GLES20.glLinkProgram(program)
         GLES20.glGetProgramiv(program, GLES20.GL_LINK_STATUS, status, 0)
         if (status[0] != GLES20.GL_TRUE) {
-            val msg = GLES20.glGetProgramInfoLog(program)
+            Logger.logMessage(
+                Logger.ERROR, "GpuProgram  ${this.javaClass.simpleName}", "buildProgram",
+                "Error linking GL program \n${GLES20.glGetProgramInfoLog(program)}"
+            )
             GLES20.glDeleteProgram(program)
             GLES20.glDeleteShader(vs)
             GLES20.glDeleteShader(fs)
-            Logger.logMessage(
-                Logger.ERROR, "GpuProgram  ${this.javaClass.simpleName}", "buildProgram",
-                "Error linking GL program \n$msg"
-            )
             return
         }
         programId = program

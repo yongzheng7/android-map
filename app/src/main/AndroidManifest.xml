@@ -23,121 +23,121 @@
             </intent-filter>
         </activity>
 
-        <activity android:name="com.atom.wyz.CartesianActivity"
+        <activity android:name="com.atom.wyz.math.CartesianActivity"
                 android:theme="@style/AppTheme">
         </activity>
-        <activity android:name="com.atom.wyz.BasicWorldWindActivity"
+        <activity android:name="com.atom.wyz.base.BasicWorldWindActivity"
                 android:theme="@style/AppTheme">
         </activity>
-        <activity android:name="com.atom.wyz.OmnidirectionalSensorActivity"
+        <activity android:name="com.atom.wyz.dynamic.OmnidirectionalSensorActivity"
                 android:theme="@style/AppTheme">
         </activity>
-        <activity android:name="com.atom.wyz.OmnidirectionalSensor2Activity"
+        <activity android:name="com.atom.wyz.dynamic.OmnidirectionalSensor2Activity"
                 android:theme="@style/AppTheme">
         </activity>
-        <activity android:name="com.atom.wyz.EllipseFragment"
+        <activity android:name="com.atom.wyz.shape.EllipseFragment"
                 android:theme="@style/AppTheme">
         </activity>
-        <activity android:name="com.atom.wyz.CameraControlActivity"
+        <activity android:name="com.atom.wyz.changelookat.CameraControlActivity"
                 android:theme="@style/AppTheme">
         </activity>
-        <activity android:name="com.atom.wyz.CameraViewActivity"
+        <activity android:name="com.atom.wyz.changelookat.CameraViewActivity"
                 android:theme="@style/AppTheme">
         </activity>
-        <activity android:name="com.atom.wyz.LookAtViewActivity"
+        <activity android:name="com.atom.wyz.changelookat.LookAtViewActivity"
                 android:theme="@style/AppTheme">
         </activity>
-        <activity android:name="com.atom.wyz.DayNightCycleActivity"
+        <activity android:name="com.atom.wyz.base.DayNightCycleActivity"
                 android:theme="@style/AppTheme">
         </activity>
-        <activity android:name="com.atom.wyz.WcsElevationFragment"
+        <activity android:name="com.atom.wyz.layer.WcsElevationFragment"
                 android:theme="@style/AppTheme">
         </activity>
-        <activity android:name="com.atom.wyz.ShowTessellationActivity"
+        <activity android:name="com.atom.wyz.math.ShowTessellationActivity"
                 android:theme="@style/AppTheme">
         </activity>
-        <activity android:name="com.atom.wyz.SurfaceImageActivity"
+        <activity android:name="com.atom.wyz.base.SurfaceImageActivity"
                 android:theme="@style/AppTheme">
         </activity>
-        <activity android:name="com.atom.wyz.WmsLayerActivity"
+        <activity android:name="com.atom.wyz.layer.WmsLayerActivity"
                 android:theme="@style/AppTheme">
         </activity>
-        <activity android:name="com.atom.wyz.PlacemarksActivity"
+        <activity android:name="com.atom.wyz.pick.PlacemarksActivity"
                 android:theme="@style/AppTheme">
         </activity>
-        <activity android:name="com.atom.wyz.Placemarks2Activity"
+        <activity android:name="com.atom.wyz.pick.Placemarks2Activity"
                 android:theme="@style/AppTheme">
         </activity>
-        <activity android:name="com.atom.wyz.PlacemarksStressTestActivity"
+        <activity android:name="com.atom.wyz.pick.PlacemarksStressTestActivity"
                 android:theme="@style/AppTheme">
         </activity>
         <activity android:name="com.atom.wyz.base.BasicPerformanceBenchmarkActivity"
                 android:theme="@style/AppTheme">
         </activity>
-        <activity android:name="com.atom.wyz.NavigatorEventActivity"
+        <activity android:name="com.atom.wyz.changelookat.NavigatorEventActivity"
                 android:theme="@style/AppTheme">
         </activity>
-        <activity android:name="com.atom.wyz.PlacemarksSelectDragActivity"
+        <activity android:name="com.atom.wyz.pick.PlacemarksSelectDragActivity"
                 android:theme="@style/AppTheme">
         </activity>
-        <activity android:name="com.atom.wyz.PlacemarksPickingActivity"
+        <activity android:name="com.atom.wyz.pick.PlacemarksPickingActivity"
                 android:theme="@style/AppTheme">
         </activity>
-        <activity android:name="com.atom.wyz.BasicStressTestActivity"
+        <activity android:name="com.atom.wyz.math.BasicStressTestActivity"
                 android:theme="@style/AppTheme">
         </activity>
-        <activity android:name="com.atom.wyz.PlacemarksDraggerActivity"
+        <activity android:name="com.atom.wyz.pick.PlacemarksDraggerActivity"
                 android:theme="@style/AppTheme">
         </activity>
-        <activity android:name="com.atom.wyz.PlacemarksDragger2Activity"
+        <activity android:name="com.atom.wyz.pick.PlacemarksDragger2Activity"
                 android:theme="@style/AppTheme">
         </activity>
-        <activity android:name="com.atom.wyz.TextureStressTestActivity"
+        <activity android:name="com.atom.wyz.math.TextureStressTestActivity"
                 android:theme="@style/AppTheme">
         </activity>
-        <activity android:name="com.atom.wyz.PlacemarksDemoActivity"
+        <activity android:name="com.atom.wyz.pick.PlacemarksDemoActivity"
                 android:theme="@style/AppTheme">
         </activity>
         <activity android:name="com.atom.wyz.base.BasicGlobeActivity"
                 android:theme="@style/AppTheme">
         </activity>
-        <activity android:name="com.atom.wyz.PathsExampleActivity"
+        <activity android:name="com.atom.wyz.shape.PathsExampleActivity"
                 android:theme="@style/AppTheme">
         </activity>
-        <activity android:name="com.atom.wyz.PathsActivity"
+        <activity android:name="com.atom.wyz.shape.PathsActivity"
                 android:theme="@style/AppTheme">
         </activity>
-        <activity android:name="com.atom.wyz.PolygonsActivity"
+        <activity android:name="com.atom.wyz.shape.PolygonsActivity"
                 android:theme="@style/AppTheme">
         </activity>
-        <activity android:name="com.atom.wyz.PathsAndPolygonsActivity"
+        <activity android:name="com.atom.wyz.shape.PathsAndPolygonsActivity"
                 android:theme="@style/AppTheme">
         </activity>
-        <activity android:name="com.atom.wyz.MultiGlobeActivity"
+        <activity android:name="com.atom.wyz.changewindow.MultiGlobeActivity"
                 android:theme="@style/AppTheme">
         </activity>
-        <activity android:name="com.atom.wyz.LabelsFragment"
+        <activity android:name="com.atom.wyz.shape.LabelsFragment"
                 android:theme="@style/AppTheme">
         </activity>
-        <activity android:name="com.atom.wyz.ShapesDashAndFillFragment"
+        <activity android:name="com.atom.wyz.shape.ShapesDashAndFillFragment"
                 android:theme="@style/AppTheme">
         </activity>
-        <activity android:name="com.atom.wyz.WtmsLayerActivity"
+        <activity android:name="com.atom.wyz.layer.WtmsLayerActivity"
                 android:theme="@style/AppTheme">
         </activity>
-        <activity android:name="com.atom.wyz.TiandituLayerActivity"
+        <activity android:name="com.atom.wyz.layer.TiandituLayerActivity"
                 android:theme="@style/AppTheme">
         </activity>
-        <activity android:name="com.atom.wyz.Tianditu2LayerActivity"
+        <activity android:name="com.atom.wyz.layer.Tianditu2LayerActivity"
                 android:theme="@style/AppTheme">
         </activity>
-        <activity android:name="com.atom.wyz.Tianditu3LayerActivity"
+        <activity android:name="com.atom.wyz.layer.Tianditu3LayerActivity"
                 android:theme="@style/AppTheme">
         </activity>
-        <activity android:name="com.atom.wyz.Tianditu4LayerActivity"
+        <activity android:name="com.atom.wyz.layer.Tianditu4LayerActivity"
                 android:theme="@style/AppTheme">
         </activity>
-        <activity android:name="com.atom.wyz.GoogleLayerActivity"
+        <activity android:name="com.atom.wyz.layer.GoogleLayerActivity"
                 android:theme="@style/AppTheme">
         </activity>
 

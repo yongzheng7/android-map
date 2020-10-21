@@ -82,8 +82,15 @@ class Logger {
             "missingGlobe" to "The globe is null"
         )
 
+        protected var messageFilter = mutableListOf(
+            "RenderResourceCache" , "SetCameraTask"
+        )
+
         fun log(level: Int, message: String) {
             if (Log.isLoggable(TAG, level)) {
+                messageFilter.forEach {
+                    if(message.startsWith(it)) return
+                }
                 Log.println(level, TAG, message)
             }
         }

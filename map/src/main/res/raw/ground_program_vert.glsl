@@ -1,12 +1,3 @@
-/*
- * Copyright (c) 2016 United States Government as represented by the Administrator of the
- * National Aeronautics and Space Administration. All Rights Reserved.
- */
-
-const int FRAGMODE_PRIMARY = 1;
-const int FRAGMODE_SECONDARY = 2;
-const int FRAGMODE_PRIMARY_TEX_BLEND = 3;
-
 const int SAMPLE_COUNT = 2;
 const float SAMPLES = 2.0;
 
@@ -15,27 +6,26 @@ uniform mat4 mvpMatrix;
 uniform mat3 texCoordMatrix;
 uniform vec3 vertexOrigin;
 uniform vec3 eyePoint;
-uniform float eyeMagnitude;	        /* The eye point's magnitude */
-uniform float eyeMagnitude2;	    /* eyeMagnitude^2 */
-uniform vec3 lightDirection;	    /* The direction vector to the light source */
-uniform vec3 invWavelength;	        /* 1 / pow(wavelength, 4) for the red, green, and blue channels */
-uniform float atmosphereRadius;     /* The outer (atmosphere) radius */
-uniform float atmosphereRadius2;    /* atmosphereRadius^2 */
-uniform float globeRadius;		    /* The inner (planetary) radius */
-uniform float KrESun;			    /* Kr * ESun */
-uniform float KmESun;			    /* Km * ESun */
-uniform float Kr4PI;			    /* Kr * 4 * PI */
-uniform float Km4PI;			    /* Km * 4 * PI */
-uniform float scale;			    /* 1 / (atmosphereRadius - globeRadius) */
-uniform float scaleDepth;		    /* The scale depth (i.e. the altitude at which the atmosphere's average density is found) */
-uniform float scaleOverScaleDepth;	/* fScale / fScaleDepth */
+uniform float eyeMagnitude;
+uniform float eyeMagnitude2;
+uniform vec3 lightDirection;
+uniform vec3 invWavelength;
+uniform float atmosphereRadius;
+uniform float atmosphereRadius2;
+uniform float globeRadius;
+uniform float KrESun;
+uniform float KmESun;
+uniform float Kr4PI;
+uniform float Km4PI;
+uniform float scale;
+uniform float scaleDepth;
+uniform float scaleOverScaleDepth;
 
 attribute vec4 vertexPoint;
 attribute vec2 vertexTexCoord;
 
 varying vec3 primaryColor;
 varying vec3 secondaryColor;
-varying vec3 direction;
 varying vec2 texCoord;
 
 float scaleFunc(float cos) {
@@ -44,8 +34,6 @@ float scaleFunc(float cos) {
 }
 
 void main() {
-    /* Get the ray from the camera to the vertex and its length (which is the far point of the ray passing through the
-    atmosphere) */
     vec3 point = vertexPoint.xyz + vertexOrigin;
     vec3 ray = point - eyePoint;
     float far = length(ray);
@@ -55,14 +43,11 @@ void main() {
     if (eyeMagnitude < atmosphereRadius) {
         start = eyePoint;
     } else {
-        /* Calculate the closest intersection of the ray with the outer atmosphere (which is the near point of the ray
-        passing through the atmosphere) */
         float B = 2.0 * dot(eyePoint, ray);
         float C = eyeMagnitude2 - atmosphereRadius2;
         float det = max(0.0, B*B - 4.0 * C);
         float near = 0.5 * (-B - sqrt(det));
 
-        /* Calculate the ray's starting point, then calculate its scattering offset */
         start = eyePoint + ray * near;
         far -= near;
     }
@@ -75,13 +60,11 @@ void main() {
     float eyeOffset = depth*eyeScale;
     float temp = (lightScale + eyeScale);
 
-    /* Initialize the scattering loop variables */
     float sampleLength = far / SAMPLES;
     float scaledLength = sampleLength * scale;
     vec3 sampleRay = ray * sampleLength;
     vec3 samplePoint = start + sampleRay * 0.5;
 
-    /* Now loop through the sample rays */
     vec3 frontColor = vec3(0.0, 0.0, 0.0);
     vec3 attenuate = vec3(0.0, 0.0, 0.0);
     for(int i=0; i<SAMPLE_COUNT; i++)
@@ -95,13 +78,11 @@ void main() {
     }
 
     primaryColor = frontColor * (invWavelength * KrESun + KmESun);
-    secondaryColor = attenuate; /* Calculate the attenuation factor for the ground */
+    secondaryColor = attenuate;
 
-    /* Transform the vertex point by the modelview-projection matrix */
     gl_Position = mvpMatrix * vertexPoint;
 
-    if (fragMode == FRAGMODE_GROUND_PRIMARY_TEX_BLEND) {
-        /* Transform the vertex texture coordinate by the tex coord matrix */
+    if (fragMode == 3) {
         texCoord = (texCoordMatrix * vec3(vertexTexCoord, 1.0)).st;
     }
 }

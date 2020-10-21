@@ -20,7 +20,6 @@ import com.atom.map.layer.render.ImageSource
 import com.atom.map.layer.render.Placemark
 import com.atom.map.layer.render.attribute.PlacemarkAttributes
 import com.atom.map.util.*
-import com.atom.wyz.BasicWorldWindActivity
 import com.atom.wyz.worldwind.R
 import java.io.BufferedReader
 import java.io.InputStreamReader
@@ -104,7 +103,6 @@ class BasicPerformanceBenchmarkActivity : BasicWorldWindActivity() {
 
         override fun run() {
             wwd?.also {
-                Log.e("BasicPerformance" , "SetCameraTask > $camera")
                 it.navigator.setAsCamera(it.globe, camera)
                 it.requestRedraw()
             }

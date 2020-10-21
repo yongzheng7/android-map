@@ -2,45 +2,43 @@ package com.atom.map.layer
 
 import android.opengl.GLES20
 import com.atom.map.R
-import com.atom.map.layer.render.RenderContext
 import com.atom.map.WorldWind
-import com.atom.map.layer.draw.DrawableGroundAtmosphere
-import com.atom.map.layer.draw.DrawableSkyAtmosphere
-import com.atom.map.geom.Location
-import com.atom.map.geom.Sector
-import com.atom.map.geom.Vec3
-import com.atom.map.layer.render.ImageOptions
-import com.atom.map.layer.render.ImageSource
 import com.atom.map.core.shader.BufferObject
 import com.atom.map.core.shader.GroundProgram
 import com.atom.map.core.shader.SkyProgram
+import com.atom.map.geom.Location
+import com.atom.map.geom.Sector
+import com.atom.map.geom.Vec3
+import com.atom.map.layer.draw.DrawableGroundAtmosphere
+import com.atom.map.layer.draw.DrawableSkyAtmosphere
+import com.atom.map.layer.render.ImageOptions
+import com.atom.map.layer.render.ImageSource
+import com.atom.map.layer.render.RenderContext
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
 import java.util.*
 
-class AtmosphereLayer : AbstractLayer {
+open class AtmosphereLayer : AbstractLayer {
 
     companion object {
         private val VERTEX_POINTS_KEY = AtmosphereLayer::class.java.name + ".points"
         private val TRI_STRIP_ELEMENTS_KEY = AtmosphereLayer::class.java.name + ".triStripElements"
     }
 
-    var nightImageSource: ImageSource? = null
+    val nightImageSource: ImageSource
 
-    var nightImageOptions: ImageOptions? = null
+    val nightImageOptions: ImageOptions
 
     var lightLocation: Location? = null
 
-    var activeLightDirection = Vec3()
-
+    val activeLightDirection = Vec3()
 
     private val fullSphereSector: Sector = Sector().setFullSphere()
 
     constructor() : super("Atmosphere") {
         this.pickEnabled = false
         nightImageSource = ImageSource.fromResource(R.drawable.gov_nasa_worldwind_night)
-        nightImageOptions =
-            ImageOptions(WorldWind.RGB_565)
+        nightImageOptions = ImageOptions(WorldWind.RGB_565)
     }
 
     override fun doRender(rc: RenderContext) {
@@ -71,7 +69,6 @@ class AtmosphereLayer : AbstractLayer {
                 return  // no terrain surface to render on
             }
         } ?: return
-
         val drawable = DrawableGroundAtmosphere.obtain(rc.getDrawablePool(
             DrawableGroundAtmosphere::class.java))
 
@@ -85,10 +82,10 @@ class AtmosphereLayer : AbstractLayer {
         drawable.lightDirection.set(activeLightDirection)
         drawable.globeRadius = rc.globe.getEquatorialRadius()
 
-        if (nightImageSource != null && lightLocation != null) {
-            drawable.nightTexture = rc.getTexture(nightImageSource!!)
+        if (lightLocation != null) {
+            drawable.nightTexture = rc.getTexture(nightImageSource)
             if (drawable.nightTexture == null) {
-                drawable.nightTexture = rc.retrieveTexture(nightImageSource!!, nightImageOptions)
+                drawable.nightTexture = rc.retrieveTexture(nightImageSource, nightImageOptions)
             }
         } else {
             drawable.nightTexture = null
@@ -97,7 +94,7 @@ class AtmosphereLayer : AbstractLayer {
         rc.offerSurfaceDrawable(drawable, Double.POSITIVE_INFINITY)
     }
 
-    protected fun renderSky(rc: RenderContext) {
+    private fun renderSky(rc: RenderContext) {
         val drawable = DrawableSkyAtmosphere.obtain(rc.getDrawablePool(
             DrawableSkyAtmosphere::class.java))
         val size = 128
@@ -132,7 +129,7 @@ class AtmosphereLayer : AbstractLayer {
         rc.offerSurfaceDrawable(drawable, Double.POSITIVE_INFINITY)
     }
 
-    protected fun assembleVertexPoints(
+    private fun assembleVertexPoints(
         rc: RenderContext,
         numLat: Int,
         numLon: Int,
@@ -155,7 +152,7 @@ class AtmosphereLayer : AbstractLayer {
         )
     }
 
-    protected fun assembleTriStripElements(
+    private fun assembleTriStripElements(
         numLat: Int,
         numLon: Int
     ): BufferObject { // Allocate a buffer to hold the indices.

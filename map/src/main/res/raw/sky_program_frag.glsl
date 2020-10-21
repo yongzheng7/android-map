@@ -1,15 +1,10 @@
-/*
- * Copyright (c) 2016 United States Government as represented by the Administrator of the
- * National Aeronautics and Space Administration. All Rights Reserved.
- */
-
 #ifdef GL_FRAGMENT_PRECISION_HIGH
 precision highp float;
 #else
 precision mediump float;
 #endif
 
-uniform mediump vec3 lightDirection;
+uniform mediump vec3 lightDirection;/* The light direction vector is used in both shaders, so we must use a common precision. */
 uniform float g;
 uniform float g2;
 

@@ -182,7 +182,7 @@ class RenderResourceCache
             Logger.ERROR,
             "RenderResourceCache",
             "retrievalSucceeded",
-            "Image retrieval Success \'$key\'"
+            "Image retrieval Success $key"
         )
         if (!handler.hasMessages(TRIM_STALE_RETRIEVALS)) {
             handler.sendEmptyMessageDelayed(
@@ -202,21 +202,21 @@ class RenderResourceCache
                 Logger.ERROR,
                 "RenderResourceCache",
                 "retrievalFailed",
-                "Image retrieval Socket timeout retrieving image \'$key\' \n $ex \n"
+                "Image retrieval Socket timeout retrieving image $key \n $ex \n"
             )
         } else if (ex != null) {
             Logger.logMessage(
                 Logger.ERROR,
                 "RenderResourceCache",
                 "retrievalFailed",
-                "Image retrieval failed with exception \'$key\'  \n  $ex \n"
+                "Image retrieval failed with exception $key \n  $ex \n"
             )
         } else {
             Logger.logMessage(
                 Logger.ERROR,
                 "RenderResourceCache",
                 "retrievalFailed",
-                "Image retrieval failed \'$key\'  \n  $ex \n"
+                "Image retrieval failed $key  \n  $ex \n"
             )
         }
     }
