@@ -1,17 +1,23 @@
 package com.atom.wyz.base
 
 import android.os.Bundle
-import com.atom.wyz.base.BasicWorldWindActivity
-import com.atom.wyz.worldwind.R
 import com.atom.map.geom.Sector
 import com.atom.map.layer.RenderableLayer
 import com.atom.map.layer.render.ImageSource
 import com.atom.map.layer.render.SurfaceImage
+import com.atom.wyz.worldwind.R
+import com.vividsolutions.jts.geom.Coordinate
+import com.vividsolutions.jts.geom.GeometryFactory
+import com.vividsolutions.jts.geom.PrecisionModel
 
 class SurfaceImageActivity : BasicWorldWindActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        val factory = GeometryFactory(PrecisionModel(), 4326)
+        val createPoint = factory.createPoint(Coordinate(37.46, 15.5))
+
 
         var sector = Sector(37.46, 15.5, 0.5, 0.6)
         val surfaceImageResource =

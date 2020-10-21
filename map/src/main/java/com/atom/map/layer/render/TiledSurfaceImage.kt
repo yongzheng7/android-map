@@ -138,13 +138,13 @@ open class TiledSurfaceImage :
         val imageSource = tile.imageSource ?: return  // no image source indicates an empty level or an image missing from the tiled data store
         var texture = rc.getTexture(imageSource) // try to get the texture from the cache
         if (texture == null) {
-            texture = rc.retrieveTexture(imageSource, imageOptions) // puts retrieved textures in the cache
+            texture = rc.retrieveTexture(imageSource, imageOptions , tile.distanceToCamera.toInt()) // puts retrieved textures in the cache
         }
         if (texture != null) { // use the tile's own texture
             val pool: Pool<DrawableSurfaceTexture> =
                 rc.getDrawablePool(DrawableSurfaceTexture::class.java)
             val drawable = DrawableSurfaceTexture.obtain(pool)
-                .set(this.activeProgram, tile.sector, texture, texture!!.texCoordTransform)
+                .set(this.activeProgram, tile.sector, texture, texture.texCoordTransform)
             rc.offerSurfaceDrawable(drawable, 0.0 /*z-order*/)
         } else if (this.ancestorTile != null) {
             // use the ancestor tile's texture, transformed to fill the tile sector

@@ -1,0 +1,9 @@
+<component name="libraryTable">
+  <library name="Gradle: ./map/libs/gt-geojson-24.0.jar">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/map/libs/gt-geojson-24.0.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>
