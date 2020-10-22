@@ -1,9 +1,15 @@
 package com.atom.wyz.base
 
-import android.annotation.SuppressLint
+import android.Manifest
+import android.content.Context
+import android.content.pm.PackageManager
+import android.location.Location
+import android.location.LocationListener
+import android.location.LocationManager
 import android.os.Bundle
 import android.widget.FrameLayout
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContextCompat
 import com.atom.map.WorldWind
 import com.atom.map.WorldWindow
 import com.atom.map.geom.observer.Camera
@@ -12,7 +18,6 @@ import com.atom.map.layer.BackgroundLayer
 import com.atom.map.layer.BlueMarbleLandsatLayer
 import com.atom.wyz.worldwind.R
 
-@SuppressLint("Registered")
 open class BasicWorldWindActivity : AppCompatActivity() {
 
     companion object {
@@ -38,6 +43,21 @@ open class BasicWorldWindActivity : AppCompatActivity() {
         return wwd
     }
 
+    private var mLocationManager: LocationManager? = null
+    private val mLocationListener: LocationListener = object : LocationListener {
+        override fun onLocationChanged(p0: Location) {
+            val worldWindow = getWorldWindow()
+            worldWindow.post {
+                val camera  = Camera()
+                worldWindow.navigator().getAsCamera(worldWindow.globe() , camera)
+                camera.latitude = p0.latitude
+                camera.longitude = p0.longitude
+                worldWindow.navigator().setAsCamera(worldWindow.globe() , camera)
+                worldWindow.requestRedraw()
+            }
+        }
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         this.savedInstanceState = savedInstanceState
@@ -48,6 +68,7 @@ open class BasicWorldWindActivity : AppCompatActivity() {
         wwd.layers.addLayer(BackgroundLayer())
         wwd.layers.addLayer(BlueMarbleLandsatLayer())
         wwd.layers.addLayer(AtmosphereLayer())
+        mLocationManager = this.getSystemService(Context.LOCATION_SERVICE) as LocationManager
     }
 
     override fun onSaveInstanceState(savedInstanceState: Bundle) { // Save the WorldWindow's current navigator state
@@ -57,7 +78,8 @@ open class BasicWorldWindActivity : AppCompatActivity() {
 
     protected open fun saveNavigatorState(savedInstanceState: Bundle) {
         val wwd = getWorldWindow()
-        val camera = wwd.navigator.getAsCamera(wwd.globe,
+        val camera = wwd.navigator.getAsCamera(
+            wwd.globe,
             Camera()
         )
         // Write the camera data
@@ -105,10 +127,16 @@ open class BasicWorldWindActivity : AppCompatActivity() {
     override fun onPause() {
         super.onPause()
         wwd.onPause() // pauses the rendering thread
+        mLocationManager?.removeUpdates(mLocationListener)
     }
 
     override fun onResume() {
         super.onResume()
         wwd.onResume() // resumes a paused rendering thread
+        val hasLocationPermission = ContextCompat.checkSelfPermission(this , Manifest.permission.ACCESS_FINE_LOCATION)
+        if (hasLocationPermission == PackageManager.PERMISSION_GRANTED) {
+            mLocationManager?.requestLocationUpdates(LocationManager.GPS_PROVIDER, 1000, 0F, mLocationListener)
+           // mLocationManager?.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 1000,0F, mLocationListener)
+        }
     }
 }
