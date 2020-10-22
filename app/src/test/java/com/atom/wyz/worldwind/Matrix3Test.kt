@@ -1,7 +1,7 @@
 package com.atom.wyz.worldwind
 
-import com.atom.wyz.worldwind.geom.Matrix3
-import com.atom.wyz.worldwind.util.Logger
+import com.atom.map.geom.Matrix3
+import com.atom.map.util.Logger
 import org.junit.Assert
 import org.junit.Assert.*
 import org.junit.Before

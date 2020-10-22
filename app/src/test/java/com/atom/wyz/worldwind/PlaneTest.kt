@@ -1,10 +1,11 @@
 package com.atom.wyz.worldwind
 
-import com.atom.wyz.worldwind.geom.Matrix4
-import com.atom.wyz.worldwind.geom.Plane
-import com.atom.wyz.worldwind.geom.Vec3
-import com.atom.wyz.worldwind.util.Logger
-import com.atom.wyz.worldwind.util.WWMath
+
+import com.atom.map.geom.Matrix4
+import com.atom.map.geom.Plane
+import com.atom.map.geom.Vec3
+import com.atom.map.util.Logger
+import com.atom.map.util.WWMath
 import junit.framework.Assert.assertEquals
 import org.junit.Assert
 import org.junit.Before

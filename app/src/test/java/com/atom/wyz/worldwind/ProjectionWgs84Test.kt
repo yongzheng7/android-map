@@ -1,11 +1,12 @@
 package com.atom.wyz.worldwind
 
-import com.atom.wyz.worldwind.geom.Matrix4
-import com.atom.wyz.worldwind.geom.Position
-import com.atom.wyz.worldwind.geom.Vec3
-import com.atom.wyz.worldwind.globe.Globe
-import com.atom.wyz.worldwind.globe.ProjectionWgs84
-import com.atom.wyz.worldwind.util.Logger
+import com.atom.map.WorldWind
+import com.atom.map.geom.Matrix4
+import com.atom.map.geom.Position
+import com.atom.map.geom.Vec3
+import com.atom.map.globe.Globe
+import com.atom.map.globe.ProjectionWgs84
+import com.atom.map.util.Logger
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
