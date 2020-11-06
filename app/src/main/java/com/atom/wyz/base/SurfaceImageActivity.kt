@@ -18,7 +18,6 @@ class SurfaceImageActivity : BasicWorldWindActivity() {
         val factory = GeometryFactory(PrecisionModel(), 4326)
         val createPoint = factory.createPoint(Coordinate(37.46, 15.5))
 
-
         var sector = Sector(37.46, 15.5, 0.5, 0.6)
         val surfaceImageResource =
             SurfaceImage(

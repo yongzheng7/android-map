@@ -30,7 +30,6 @@ dependencies {
     implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
     implementation 'androidx.core:core-ktx:1.3.2'
     implementation 'androidx.appcompat:appcompat:1.2.0'
-    implementation files('libs\\jts-io-1.14.0.jar')
 
 
     testImplementation 'junit:junit:4.13'
@@ -38,8 +37,5 @@ dependencies {
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.3.0'
 
 
-    api "com.fasterxml.jackson.core:jackson-databind:2.8.7"
-    api files('libs/jts-1.13.jar')
-    api files('libs/jts-io-1.14.0.jar')
-    api files('libs/org.json.simple-0.4.jar')
+
 }

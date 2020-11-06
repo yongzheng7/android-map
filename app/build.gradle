@@ -31,6 +31,9 @@ android {
 
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
+    implementation files('libs/jts-core-1.14.0.jar')
+    implementation files('libs/jts-io-1.14.0.jar')
+    implementation files('libs/org.json.simple-0.4.jar')
 
     androidTestImplementation 'com.android.support:support-annotations:28.0.0'
     androidTestImplementation 'com.android.support.test:runner:1.0.2'
@@ -56,6 +59,8 @@ dependencies {
     implementation 'androidx.constraintlayout:constraintlayout:2.0.2'
     testImplementation 'junit:junit:4.13'
     implementation 'com.squareup.okhttp3:okhttp:3.12.10'
+
+    api "com.fasterxml.jackson.core:jackson-databind:2.8.7"
 
     implementation project(':map')
 }
