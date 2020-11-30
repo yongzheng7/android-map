@@ -9,9 +9,9 @@ import com.atom.map.geom.Offset
 import com.atom.map.geom.Position
 import com.atom.map.layer.RenderableLayer
 import com.atom.map.layer.ShowTessellationLayer
-import com.atom.map.layer.render.ImageSource
-import com.atom.map.layer.render.Placemark
-import com.atom.map.layer.render.attribute.PlacemarkAttributes
+import com.atom.map.renderable.ImageSource
+import com.atom.map.renderable.Placemark
+import com.atom.map.renderable.attribute.PlacemarkAttributes
 import com.atom.map.navigator.Navigator
 import com.atom.wyz.base.BasicWorldWindActivity
 import kotlin.math.asin
@@ -43,7 +43,9 @@ open class PlacemarksStressTestActivity : BasicWorldWindActivity(), FrameCallbac
         val origin: Placemark =
             Placemark(
                 Position.fromDegrees(0.0, 0.0, 1e5),
-                PlacemarkAttributes.withImageAndLabel(ImageSource.fromResource(R.drawable.air_fixwing))
+                PlacemarkAttributes.withImageAndLabel(
+                    ImageSource.fromResource(R.drawable.air_fixwing)
+                )
                     .apply {
                         this.imageOffset(Offset.center())
                     },
@@ -53,7 +55,9 @@ open class PlacemarksStressTestActivity : BasicWorldWindActivity(), FrameCallbac
         val northPole: Placemark =
             Placemark(
                 Position.fromDegrees(90.0, 0.0, 1e5),
-                PlacemarkAttributes.withImageAndLabelLeaderLine(ImageSource.fromResource(R.drawable.air_fixwing))
+                PlacemarkAttributes.withImageAndLabelLeaderLine(
+                    ImageSource.fromResource(R.drawable.air_fixwing)
+                )
                     .apply {
                         this.imageOffset(Offset.bottomCenter())
                     },
@@ -100,7 +104,13 @@ open class PlacemarksStressTestActivity : BasicWorldWindActivity(), FrameCallbac
                 Math.toDegrees(asin(random.nextDouble())) * if (random.nextBoolean()) 1 else -1
             val lon = 180.0 - random.nextDouble() * 360
             val pos: Position = Position.fromDegrees(lat, lon, 5000.0)
-            val placemark: Placemark = Placemark(pos, PlacemarkAttributes.defaults(attributes))
+            val placemark: Placemark =
+                Placemark(
+                    pos,
+                    PlacemarkAttributes.defaults(
+                        attributes
+                    )
+                )
 
             placemark.eyeDistanceScaling = true
             placemark.displayName = placemark.position.toString()

@@ -1,6 +1,6 @@
 package com.atom.map.layer
 
-import com.atom.map.layer.render.RenderContext
+import com.atom.map.renderable.RenderContext
 import java.util.*
 
 abstract class AbstractLayer : Layer {

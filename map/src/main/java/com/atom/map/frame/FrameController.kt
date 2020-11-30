@@ -1,7 +1,7 @@
 package com.atom.map.frame
 
-import com.atom.map.layer.draw.DrawContext
-import com.atom.map.layer.render.RenderContext
+import com.atom.map.drawable.DrawContext
+import com.atom.map.renderable.RenderContext
 
 /**
  * 帧控制

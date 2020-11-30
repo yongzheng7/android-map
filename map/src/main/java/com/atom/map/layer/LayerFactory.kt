@@ -6,7 +6,7 @@ import android.os.Looper
 import com.atom.map.WorldWind
 import com.atom.map.core.tile.TileFactory
 import com.atom.map.geom.Sector
-import com.atom.map.layer.render.TiledSurfaceImage
+import com.atom.map.renderable.TiledSurfaceImage
 import com.atom.map.ogc.WmsLayerConfig
 import com.atom.map.ogc.WmsTileFactory
 import com.atom.map.ogc.WmtsTileFactory

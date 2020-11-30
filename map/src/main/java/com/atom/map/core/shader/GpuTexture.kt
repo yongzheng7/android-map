@@ -5,7 +5,7 @@ import android.opengl.GLES20
 import android.opengl.GLUtils
 import android.util.SparseIntArray
 import com.atom.map.geom.Matrix3
-import com.atom.map.layer.draw.DrawContext
+import com.atom.map.drawable.DrawContext
 import com.atom.map.util.Logger
 import com.atom.map.util.WWMath
 

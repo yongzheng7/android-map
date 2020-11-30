@@ -1,7 +1,7 @@
 package com.atom.map.layer
 
-import com.atom.map.layer.render.RenderContext
-import com.atom.map.layer.render.Renderable
+import com.atom.map.renderable.RenderContext
+import com.atom.map.renderable.Renderable
 import com.atom.map.util.Logger
 
 open class RenderableLayer(displayName: String) : AbstractLayer(displayName), Iterable<Renderable> {

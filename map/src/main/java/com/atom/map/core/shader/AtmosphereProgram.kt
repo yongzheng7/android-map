@@ -5,7 +5,7 @@ import androidx.annotation.IntDef
 import com.atom.map.geom.Matrix3
 import com.atom.map.geom.Matrix4
 import com.atom.map.geom.Vec3
-import com.atom.map.layer.draw.DrawContext
+import com.atom.map.drawable.DrawContext
 import java.util.*
 
 open class AtmosphereProgram() : GpuProgram() {

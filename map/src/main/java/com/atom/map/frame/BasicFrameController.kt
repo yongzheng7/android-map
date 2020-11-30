@@ -1,14 +1,14 @@
 package com.atom.map.frame
 
 import android.opengl.GLES20
-import com.atom.map.layer.draw.DrawContext
-import com.atom.map.layer.render.RenderContext
-import com.atom.map.layer.draw.Drawable
-import com.atom.map.layer.draw.DrawableSurfaceColor
+import com.atom.map.drawable.DrawContext
+import com.atom.map.renderable.RenderContext
+import com.atom.map.drawable.Drawable
+import com.atom.map.drawable.DrawableSurfaceColor
 import com.atom.map.geom.Position
 import com.atom.map.geom.Vec3
 import com.atom.map.geom.SimpleColor
-import com.atom.map.layer.render.pick.PickedObject
+import com.atom.map.renderable.pick.PickedObject
 import com.atom.map.core.shader.BasicProgram
 import com.atom.map.util.Logger
 import com.atom.map.util.pool.Pool

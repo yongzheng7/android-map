@@ -2,8 +2,8 @@ package com.atom.map.navigator
 
 import com.atom.map.WorldWind
 import com.atom.map.geom.*
-import com.atom.map.geom.observer.Camera
-import com.atom.map.geom.observer.LookAt
+import com.atom.map.geom.Camera
+import com.atom.map.geom.LookAt
 import com.atom.map.globe.Globe
 
 /**

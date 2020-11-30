@@ -7,7 +7,7 @@ import android.view.InputEvent
 import android.view.MotionEvent
 import com.atom.map.WorldHelper
 import com.atom.map.WorldWind
-import com.atom.map.layer.render.RenderContext
+import com.atom.map.renderable.RenderContext
 import com.atom.map.geom.Matrix4
 import com.atom.map.util.Logger
 import java.util.*

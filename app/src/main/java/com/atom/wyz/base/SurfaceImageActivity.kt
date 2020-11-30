@@ -3,8 +3,8 @@ package com.atom.wyz.base
 import android.os.Bundle
 import com.atom.map.geom.Sector
 import com.atom.map.layer.RenderableLayer
-import com.atom.map.layer.render.ImageSource
-import com.atom.map.layer.render.SurfaceImage
+import com.atom.map.renderable.ImageSource
+import com.atom.map.renderable.SurfaceImage
 import com.atom.wyz.worldwind.R
 import com.vividsolutions.jts.geom.Coordinate
 import com.vividsolutions.jts.geom.GeometryFactory

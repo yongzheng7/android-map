@@ -10,10 +10,10 @@ import android.os.Message
 import com.atom.map.WorldWind
 import com.atom.map.core.shader.GpuTexture
 import com.atom.map.core.shader.RenderResource
-import com.atom.map.layer.draw.DrawContext
-import com.atom.map.layer.render.ImageOptions
-import com.atom.map.layer.render.ImageRetriever
-import com.atom.map.layer.render.ImageSource
+import com.atom.map.drawable.DrawContext
+import com.atom.map.renderable.ImageOptions
+import com.atom.map.renderable.ImageRetriever
+import com.atom.map.renderable.ImageSource
 import java.net.SocketTimeoutException
 import java.util.*
 import java.util.concurrent.ConcurrentLinkedQueue

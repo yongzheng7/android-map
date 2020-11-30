@@ -2,8 +2,8 @@ package com.atom.map.layer
 
 import com.atom.map.WorldWind
 import com.atom.map.geom.Sector
-import com.atom.map.layer.render.ImageOptions
-import com.atom.map.layer.render.TiledSurfaceImage
+import com.atom.map.renderable.ImageOptions
+import com.atom.map.renderable.TiledSurfaceImage
 import com.atom.map.ogc.WmsLayer
 import com.atom.map.ogc.WmsLayerConfig
 

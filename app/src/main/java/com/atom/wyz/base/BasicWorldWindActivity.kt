@@ -12,7 +12,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import com.atom.map.WorldWind
 import com.atom.map.WorldWindow
-import com.atom.map.geom.observer.Camera
+import com.atom.map.geom.Camera
 import com.atom.map.layer.AtmosphereLayer
 import com.atom.map.layer.BackgroundLayer
 import com.atom.map.layer.BlueMarbleLandsatLayer
@@ -127,7 +127,7 @@ open class BasicWorldWindActivity : AppCompatActivity() {
     override fun onPause() {
         super.onPause()
         wwd.onPause() // pauses the rendering thread
-        mLocationManager?.removeUpdates(mLocationListener)
+        //mLocationManager?.removeUpdates(mLocationListener)
     }
 
     override fun onResume() {
@@ -135,7 +135,7 @@ open class BasicWorldWindActivity : AppCompatActivity() {
         wwd.onResume() // resumes a paused rendering thread
         val hasLocationPermission = ContextCompat.checkSelfPermission(this , Manifest.permission.ACCESS_FINE_LOCATION)
         if (hasLocationPermission == PackageManager.PERMISSION_GRANTED) {
-            mLocationManager?.requestLocationUpdates(LocationManager.GPS_PROVIDER, 1000, 0F, mLocationListener)
+            //mLocationManager?.requestLocationUpdates(LocationManager.GPS_PROVIDER, 1000, 0F, mLocationListener)
            // mLocationManager?.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 1000,0F, mLocationListener)
         }
     }

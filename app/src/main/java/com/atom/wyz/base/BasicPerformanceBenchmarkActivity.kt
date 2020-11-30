@@ -13,12 +13,12 @@ import com.atom.map.WorldWindow
 import com.atom.map.controller.WorldWindowController
 import com.atom.map.geom.Location
 import com.atom.map.geom.Position
-import com.atom.map.geom.observer.Camera
+import com.atom.map.geom.Camera
 import com.atom.map.layer.Layer
 import com.atom.map.layer.RenderableLayer
-import com.atom.map.layer.render.ImageSource
-import com.atom.map.layer.render.Placemark
-import com.atom.map.layer.render.attribute.PlacemarkAttributes
+import com.atom.map.renderable.ImageSource
+import com.atom.map.renderable.Placemark
+import com.atom.map.renderable.attribute.PlacemarkAttributes
 import com.atom.map.util.*
 import com.atom.wyz.worldwind.R
 import java.io.BufferedReader
@@ -88,7 +88,8 @@ class BasicPerformanceBenchmarkActivity : BasicWorldWindActivity() {
         }
 
         private var wwd: WorldWindow? = null
-        private val camera: Camera = Camera()
+        private val camera: Camera =
+            Camera()
 
         private operator fun set(wwd: WorldWindow, camera: Camera): SetCameraTask {
             this.wwd = wwd
@@ -113,11 +114,14 @@ class BasicPerformanceBenchmarkActivity : BasicWorldWindActivity() {
 
     class AnimateCameraTask(wwd: WorldWindow, end: Camera, steps: Int) : Runnable {
         private var wwd: WorldWindow = wwd
-        private var endCamera: Camera = Camera().set(end)
+        private var endCamera: Camera = Camera()
+            .set(end)
         private var steps = steps
         private var endPos: Position = Position().set(end.latitude, end.longitude, end.altitude)
-        private var beginCamera: Camera = Camera()
-        private var curCamera: Camera = Camera()
+        private var beginCamera: Camera =
+            Camera()
+        private var curCamera: Camera =
+            Camera()
         private var beginPos: Position = Position()
         private var curPos: Position = Position()
 

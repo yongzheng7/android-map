@@ -6,7 +6,7 @@ import com.atom.map.R
 import com.atom.map.geom.Matrix3
 import com.atom.map.geom.Matrix4
 import com.atom.map.geom.SimpleColor
-import com.atom.map.layer.draw.DrawContext
+import com.atom.map.drawable.DrawContext
 import com.atom.map.util.Logger
 import com.atom.map.util.WWUtil
 

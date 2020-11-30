@@ -1,7 +1,7 @@
 package com.atom.map.core.shader
 
 import android.opengl.GLES20
-import com.atom.map.layer.draw.DrawContext
+import com.atom.map.drawable.DrawContext
 import com.atom.map.util.Logger
 
 open class GpuProgram() : RenderResource {

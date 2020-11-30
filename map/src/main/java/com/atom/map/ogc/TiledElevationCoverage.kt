@@ -8,7 +8,7 @@ import com.atom.map.WorldWind
 import com.atom.map.geom.Sector
 import com.atom.map.geom.TileMatrix
 import com.atom.map.geom.TileMatrixSet
-import com.atom.map.layer.render.ImageSource
+import com.atom.map.renderable.ImageSource
 import com.atom.map.util.Logger
 import com.atom.map.util.LruMemoryCache
 import com.atom.map.util.Retriever

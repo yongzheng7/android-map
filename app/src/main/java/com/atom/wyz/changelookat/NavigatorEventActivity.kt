@@ -15,8 +15,8 @@ import android.widget.TextView
 import com.atom.map.WorldHelper
 import com.atom.map.WorldWind
 import com.atom.map.geom.Location
-import com.atom.map.geom.observer.Camera
-import com.atom.map.geom.observer.LookAt
+import com.atom.map.geom.Camera
+import com.atom.map.geom.LookAt
 import com.atom.map.navigator.Navigator
 import com.atom.map.navigator.NavigatorEvent
 import com.atom.map.navigator.NavigatorListener

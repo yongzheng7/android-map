@@ -3,7 +3,7 @@ package com.atom.map.ogc.gpkg
 import com.atom.map.geom.Sector
 import com.atom.map.core.tile.Tile
 import com.atom.map.core.tile.TileFactory
-import com.atom.map.layer.render.ImageSource
+import com.atom.map.renderable.ImageSource
 import com.atom.map.core.tile.ImageTile
 import com.atom.map.util.Level
 import com.atom.map.util.Logger

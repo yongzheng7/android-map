@@ -9,11 +9,11 @@ import com.atom.map.core.shader.SkyProgram
 import com.atom.map.geom.Location
 import com.atom.map.geom.Sector
 import com.atom.map.geom.Vec3
-import com.atom.map.layer.draw.DrawableGroundAtmosphere
-import com.atom.map.layer.draw.DrawableSkyAtmosphere
-import com.atom.map.layer.render.ImageOptions
-import com.atom.map.layer.render.ImageSource
-import com.atom.map.layer.render.RenderContext
+import com.atom.map.drawable.DrawableGroundAtmosphere
+import com.atom.map.drawable.DrawableSkyAtmosphere
+import com.atom.map.renderable.ImageOptions
+import com.atom.map.renderable.ImageSource
+import com.atom.map.renderable.RenderContext
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
 import java.util.*
@@ -38,7 +38,8 @@ open class AtmosphereLayer : AbstractLayer {
     constructor() : super("Atmosphere") {
         this.pickEnabled = false
         nightImageSource = ImageSource.fromResource(R.drawable.gov_nasa_worldwind_night)
-        nightImageOptions = ImageOptions(WorldWind.RGB_565)
+        nightImageOptions =
+            ImageOptions(WorldWind.RGB_565)
     }
 
     override fun doRender(rc: RenderContext) {

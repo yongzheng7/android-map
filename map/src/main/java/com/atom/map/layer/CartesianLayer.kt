@@ -7,8 +7,8 @@ import com.atom.map.core.shader.BufferObject
 import com.atom.map.core.shader.CartesianProgram
 import com.atom.map.geom.SimpleColor
 import com.atom.map.geom.Vec3
-import com.atom.map.layer.draw.DrawableCartesian
-import com.atom.map.layer.render.RenderContext
+import com.atom.map.drawable.DrawableCartesian
+import com.atom.map.renderable.RenderContext
 import com.atom.map.util.pool.Pool
 import java.nio.ByteBuffer
 import java.nio.ByteOrder

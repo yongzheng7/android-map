@@ -1,8 +1,8 @@
 package com.atom.map.globe
 
 import android.opengl.GLES20
-import com.atom.map.layer.render.RenderContext
-import com.atom.map.layer.draw.BasicDrawableTerrain
+import com.atom.map.renderable.RenderContext
+import com.atom.map.drawable.BasicDrawableTerrain
 import com.atom.map.geom.Range
 import com.atom.map.geom.Sector
 import com.atom.map.geom.Vec3

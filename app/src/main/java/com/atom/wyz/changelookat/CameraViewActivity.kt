@@ -3,7 +3,7 @@ package com.atom.wyz.changelookat
 import android.os.Bundle
 import com.atom.map.WorldWind
 import com.atom.map.geom.Position
-import com.atom.map.geom.observer.Camera
+import com.atom.map.geom.Camera
 import com.atom.map.globe.Globe
 import com.atom.wyz.base.BasicWorldWindActivity
 

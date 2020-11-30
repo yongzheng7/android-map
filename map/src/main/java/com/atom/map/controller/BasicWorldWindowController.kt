@@ -4,7 +4,7 @@ import android.view.MotionEvent
 import com.atom.map.WorldHelper
 import com.atom.map.WorldWind
 import com.atom.map.geom.Location
-import com.atom.map.geom.observer.LookAt
+import com.atom.map.geom.LookAt
 import com.atom.map.gesture.*
 import com.atom.map.util.WWMath
 import java.util.*

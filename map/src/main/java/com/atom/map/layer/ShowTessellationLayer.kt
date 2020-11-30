@@ -1,8 +1,8 @@
 package com.atom.map.layer
 
 import android.graphics.Color
-import com.atom.map.layer.render.RenderContext
-import com.atom.map.layer.draw.DrawableTessellation
+import com.atom.map.renderable.RenderContext
+import com.atom.map.drawable.DrawableTessellation
 import com.atom.map.geom.SimpleColor
 import com.atom.map.core.shader.BasicProgram
 import com.atom.map.util.pool.Pool

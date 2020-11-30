@@ -1,7 +1,7 @@
 package com.atom.map.controller
 
 import com.atom.map.WorldWind
-import com.atom.map.geom.observer.Camera
+import com.atom.map.geom.Camera
 import com.atom.map.geom.Location
 import com.atom.map.gesture.GestureRecognizer
 import com.atom.map.gesture.PinchRecognizer

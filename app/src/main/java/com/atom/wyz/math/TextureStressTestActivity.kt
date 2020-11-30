@@ -10,8 +10,8 @@ import com.atom.map.geom.Sector
 import com.atom.map.layer.CartesianLayer
 import com.atom.map.layer.RenderableLayer
 import com.atom.map.layer.ShowTessellationLayer
-import com.atom.map.layer.render.ImageSource
-import com.atom.map.layer.render.SurfaceImage
+import com.atom.map.renderable.ImageSource
+import com.atom.map.renderable.SurfaceImage
 import com.atom.map.util.Logger
 import com.atom.wyz.base.BasicWorldWindActivity
 import java.lang.String

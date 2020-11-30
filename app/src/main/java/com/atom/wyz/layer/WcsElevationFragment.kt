@@ -5,7 +5,7 @@ import com.atom.map.WorldWind
 import com.atom.map.WorldWindow
 import com.atom.map.geom.Position
 import com.atom.map.geom.Sector
-import com.atom.map.geom.observer.Camera
+import com.atom.map.geom.Camera
 import com.atom.map.globe.Globe
 import com.atom.map.layer.CartesianLayer
 import com.atom.map.layer.ShowTessellationLayer

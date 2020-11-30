@@ -5,8 +5,8 @@ import com.atom.map.WorldWind
 import com.atom.map.geom.BoundingBox
 import com.atom.map.geom.Sector
 import com.atom.map.geom.Vec3
-import com.atom.map.geom.observer.Frustum
-import com.atom.map.layer.render.RenderContext
+import com.atom.map.geom.Frustum
+import com.atom.map.renderable.RenderContext
 import com.atom.map.util.Level
 import com.atom.map.util.Logger
 import com.atom.map.util.LruMemoryCache

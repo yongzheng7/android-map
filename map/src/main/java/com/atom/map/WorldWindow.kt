@@ -25,9 +25,9 @@ import com.atom.map.globe.Globe
 import com.atom.map.globe.ProjectionWgs84
 import com.atom.map.globe.Tessellator
 import com.atom.map.layer.LayerList
-import com.atom.map.layer.draw.DrawContext
-import com.atom.map.layer.render.RenderContext
-import com.atom.map.layer.render.pick.PickedObjectList
+import com.atom.map.drawable.DrawContext
+import com.atom.map.renderable.RenderContext
+import com.atom.map.renderable.pick.PickedObjectList
 import com.atom.map.navigator.Navigator
 import com.atom.map.navigator.NavigatorEventSupport
 import com.atom.map.navigator.NavigatorListener
@@ -43,7 +43,8 @@ import javax.microedition.khronos.egl.EGLConfig
 import javax.microedition.khronos.opengles.GL10
 import kotlin.math.roundToInt
 
-class WorldWindow : GLSurfaceView , GLSurfaceView.Renderer , MessageListener , FrameCallback , WorldHelper{
+class WorldWindow : GLSurfaceView, GLSurfaceView.Renderer, MessageListener, FrameCallback,
+    WorldHelper {
 
     companion object {
         const val MAX_FRAME_QUEUE_SIZE = 2
@@ -184,7 +185,6 @@ class WorldWindow : GLSurfaceView , GLSurfaceView.Renderer , MessageListener , F
         this.mainLoopHandler.removeMessages(MSG_ID_REQUEST_REDRAW)
         isWaitingForRedraw = false
     }
-
 
 
     @SuppressLint("ClickableViewAccessibility")
@@ -485,6 +485,7 @@ class WorldWindow : GLSurfaceView , GLSurfaceView.Renderer , MessageListener , F
         return navigator
     }
 
+    override fun getMapLayers(): LayerList = layers
 
     override fun onMessage(name: String?, sender: Any?, userProperties: Map<Any?, Any?>?) {
         if (name == WorldWind.REQUEST_REDRAW) {

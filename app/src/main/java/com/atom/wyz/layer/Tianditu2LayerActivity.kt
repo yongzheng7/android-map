@@ -1,6 +1,5 @@
 package com.atom.wyz.layer
 
-import android.util.Log
 import com.atom.map.WorldWind
 import com.atom.map.WorldWindow
 import com.atom.map.core.tile.ImageTile
@@ -10,9 +9,9 @@ import com.atom.map.geom.Sector
 import com.atom.map.layer.CartesianLayer
 import com.atom.map.layer.RenderableLayer
 import com.atom.map.layer.ShowTessellationLayer
-import com.atom.map.layer.render.ImageOptions
-import com.atom.map.layer.render.ImageSource
-import com.atom.map.layer.render.TiledSurfaceImage
+import com.atom.map.renderable.ImageOptions
+import com.atom.map.renderable.ImageSource
+import com.atom.map.renderable.TiledSurfaceImage
 import com.atom.map.util.Level
 import com.atom.map.util.LevelSet
 import com.atom.map.util.LevelSetConfig
@@ -42,7 +41,9 @@ open class Tianditu2LayerActivity : BasicGlobeActivity(), TileFactory {
         val surfaceImage = TiledSurfaceImage()
         surfaceImage.levelSet = (LevelSet(levelsConfig))
         surfaceImage.tileFactory = (this)
-        surfaceImage.imageOptions = (ImageOptions(WorldWind.RGBA_8888))
+        surfaceImage.imageOptions = (ImageOptions(
+            WorldWind.RGBA_8888
+        ))
         renderableLayer.addRenderable(surfaceImage)
         return renderableLayer
     }

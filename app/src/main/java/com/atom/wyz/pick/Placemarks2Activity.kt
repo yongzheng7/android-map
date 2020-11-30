@@ -8,11 +8,11 @@ import com.atom.map.WorldWind
 import com.atom.map.geom.Offset
 import com.atom.map.geom.Position
 import com.atom.map.geom.SimpleColor
-import com.atom.map.geom.observer.LookAt
+import com.atom.map.geom.LookAt
 import com.atom.map.layer.RenderableLayer
-import com.atom.map.layer.render.ImageSource
-import com.atom.map.layer.render.Placemark
-import com.atom.map.layer.render.attribute.PlacemarkAttributes
+import com.atom.map.renderable.ImageSource
+import com.atom.map.renderable.Placemark
+import com.atom.map.renderable.attribute.PlacemarkAttributes
 import com.atom.wyz.base.BasicWorldWindActivity
 import com.atom.wyz.worldwind.R
 

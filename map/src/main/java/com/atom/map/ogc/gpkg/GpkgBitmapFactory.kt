@@ -2,7 +2,7 @@ package com.atom.map.ogc.gpkg
 
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
-import com.atom.map.layer.render.ImageSource
+import com.atom.map.renderable.ImageSource
 import com.atom.map.util.Logger
 
 class GpkgBitmapFactory : ImageSource.BitmapFactory {

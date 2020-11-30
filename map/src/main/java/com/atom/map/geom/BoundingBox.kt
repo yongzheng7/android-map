@@ -1,6 +1,5 @@
 package com.atom.map.geom
 
-import com.atom.map.geom.observer.Frustum
 import com.atom.map.globe.Globe
 import java.util.*
 

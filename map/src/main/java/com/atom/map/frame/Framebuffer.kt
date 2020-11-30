@@ -2,7 +2,7 @@ package com.atom.map.frame
 
 import android.opengl.GLES20
 import android.util.SparseArray
-import com.atom.map.layer.draw.DrawContext
+import com.atom.map.drawable.DrawContext
 import com.atom.map.core.shader.GpuTexture
 import com.atom.map.core.shader.RenderResource
 

@@ -1,6 +1,6 @@
 package com.atom.map.core.shader
 
-import com.atom.map.layer.draw.DrawContext
+import com.atom.map.drawable.DrawContext
 
 interface RenderResource {
 

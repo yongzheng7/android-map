@@ -4,7 +4,7 @@ import com.atom.map.WorldWind
 import com.atom.map.geom.Sector
 import com.atom.map.globe.Globe
 import com.atom.map.layer.RenderableLayer
-import com.atom.map.layer.render.TiledSurfaceImage
+import com.atom.map.renderable.TiledSurfaceImage
 import com.atom.map.util.LevelSet
 import com.atom.map.util.LevelSetConfig
 import com.atom.map.util.Logger

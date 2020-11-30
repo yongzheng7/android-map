@@ -1,6 +1,6 @@
 package com.atom.map.layer
 
-import com.atom.map.layer.render.RenderContext
+import com.atom.map.renderable.RenderContext
 import com.atom.map.util.Logger
 
 class LayerList() : Iterable<Layer> {

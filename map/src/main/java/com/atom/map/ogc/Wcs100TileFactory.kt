@@ -1,7 +1,7 @@
 package com.atom.map.ogc
 
 import com.atom.map.geom.TileMatrix
-import com.atom.map.layer.render.ImageSource
+import com.atom.map.renderable.ImageSource
 import java.util.*
 
 class Wcs100TileFactory : TiledElevationCoverage.TileFactory {

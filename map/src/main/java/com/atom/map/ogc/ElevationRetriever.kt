@@ -2,7 +2,7 @@ package com.atom.map.ogc
 
 import com.atom.map.tiff.Subfile
 import com.atom.map.tiff.Tiff
-import com.atom.map.layer.render.ImageSource
+import com.atom.map.renderable.ImageSource
 import com.atom.map.util.Logger
 import com.atom.map.util.Retriever
 import com.atom.map.util.WWUtil

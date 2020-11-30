@@ -6,8 +6,8 @@ import com.atom.map.WorldWind
 import com.atom.map.geom.Position
 import com.atom.map.geom.SimpleColor
 import com.atom.map.layer.RenderableLayer
-import com.atom.map.layer.render.attribute.ShapeAttributes
-import com.atom.map.layer.render.shape.Polygon
+import com.atom.map.renderable.attribute.ShapeAttributes
+import com.atom.map.renderable.shape.Polygon
 import com.atom.wyz.base.BasicWorldWindActivity
 import java.util.*
 

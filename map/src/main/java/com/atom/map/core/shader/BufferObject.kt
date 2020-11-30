@@ -2,7 +2,7 @@ package com.atom.map.core.shader
 
 import android.opengl.GLES20
 import android.util.SparseArray
-import com.atom.map.layer.draw.DrawContext
+import com.atom.map.drawable.DrawContext
 import com.atom.map.geom.Range
 import com.atom.map.util.Logger
 import java.nio.Buffer

@@ -3,7 +3,7 @@ package com.atom.map.core.shader
 import android.content.res.Resources
 import android.opengl.GLES20
 import com.atom.map.R
-import com.atom.map.layer.draw.DrawContext
+import com.atom.map.drawable.DrawContext
 import com.atom.map.geom.Matrix3
 import com.atom.map.geom.Matrix4
 import com.atom.map.geom.SimpleColor

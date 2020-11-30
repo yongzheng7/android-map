@@ -7,8 +7,8 @@ import android.util.Log
 import com.atom.map.WorldWind
 import com.atom.map.geom.Position
 import com.atom.map.layer.RenderableLayer
-import com.atom.map.layer.render.attribute.ShapeAttributes
-import com.atom.map.layer.render.shape.Path
+import com.atom.map.renderable.attribute.ShapeAttributes
+import com.atom.map.renderable.shape.Path
 import com.atom.map.util.Logger
 import com.atom.map.util.WWUtil
 import com.atom.wyz.base.BasicGlobeActivity

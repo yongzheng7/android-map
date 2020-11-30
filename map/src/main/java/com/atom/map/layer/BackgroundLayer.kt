@@ -3,9 +3,9 @@ package com.atom.map.layer
 import com.atom.map.R
 import com.atom.map.WorldWind
 import com.atom.map.geom.Sector
-import com.atom.map.layer.render.ImageOptions
-import com.atom.map.layer.render.ImageSource
-import com.atom.map.layer.render.SurfaceImage
+import com.atom.map.renderable.ImageOptions
+import com.atom.map.renderable.ImageSource
+import com.atom.map.renderable.SurfaceImage
 import com.atom.map.util.Logger
 
 class BackgroundLayer : RenderableLayer {

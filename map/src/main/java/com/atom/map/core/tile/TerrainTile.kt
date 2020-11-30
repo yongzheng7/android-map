@@ -4,7 +4,7 @@ import android.opengl.GLES20
 import com.atom.map.core.shader.BufferObject
 import com.atom.map.geom.Sector
 import com.atom.map.geom.Vec3
-import com.atom.map.layer.render.RenderContext
+import com.atom.map.renderable.RenderContext
 import com.atom.map.util.Level
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
