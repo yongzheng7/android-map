@@ -6,9 +6,9 @@ import android.view.MotionEvent
 import com.atom.map.WorldWind
 import com.atom.map.WorldWindow
 import com.atom.map.controller.BasicWorldWindowController
+import com.atom.map.geom.LookAt
 import com.atom.map.geom.Offset
 import com.atom.map.geom.Position
-import com.atom.map.geom.LookAt
 import com.atom.map.layer.RenderableLayer
 import com.atom.map.renderable.ImageSource
 import com.atom.map.renderable.Placemark
@@ -96,7 +96,7 @@ class PlacemarksPickingActivity : BasicWorldWindActivity() {
 
     }
 
-    inner class PickNavigateController() : BasicWorldWindowController() {
+        inner class PickNavigateController() : BasicWorldWindowController() {
 
         protected var pickedObject : Any? = null
 

@@ -7,7 +7,6 @@ import com.atom.map.core.tile.ImageTile
 import com.atom.map.core.tile.Tile
 import com.atom.map.core.tile.TileFactory
 import com.atom.map.geom.Sector
-import com.atom.map.layer.CartesianLayer
 import com.atom.map.layer.RenderableLayer
 import com.atom.map.layer.ShowTessellationLayer
 import com.atom.map.renderable.ImageOptions
@@ -28,7 +27,6 @@ open class Tianditu3LayerActivity : BasicGlobeActivity(), TileFactory {
     override fun createWorldWindow(): WorldWindow {
         val wwd: WorldWindow = super.createWorldWindow()
         wwd.layers.clearLayers()
-        wwd.layers.addLayer(CartesianLayer())
         wwd.layers.addLayer(ShowTessellationLayer())
         wwd.layers.addLayer(createRenderableLayer())
         return wwd
@@ -56,7 +54,8 @@ open class Tianditu3LayerActivity : BasicGlobeActivity(), TileFactory {
         val tile = ImageTile(sector, level, row, column)
         val tileUrl = tileUrl(key, name, column, y, z)
         val cachePath: String = cachePath(name, column, y, z)
-        tile.imageSource = (ImageSource.fromUrl(tileUrl))
+//        tile.imageSource = (ImageSource.fromUrl(tileUrl))
+        tile.imageSource = ImageSource.fromBitmap(drawText("z=${level.levelNumber}| 行=$row| 列=$column" , 256 , 256))
         return tile
     }
 

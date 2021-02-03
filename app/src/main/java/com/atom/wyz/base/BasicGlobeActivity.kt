@@ -1,5 +1,6 @@
 package com.atom.wyz.base
 
+import android.graphics.*
 import android.os.Bundle
 import android.widget.FrameLayout
 import androidx.appcompat.app.AppCompatActivity
@@ -25,6 +26,30 @@ open class BasicGlobeActivity :  AppCompatActivity(){
         wwd.layers.addLayer(BackgroundLayer())
         wwd.layers.addLayer(BlueMarbleLandsatLayer())
         return wwd
+    }
+
+    protected fun drawText(text: String, width : Int, height : Int): Bitmap {
+        val canvas = Canvas()
+        val scratchBounds = Rect()
+        val paint = Paint().apply {
+            this.isAntiAlias = true
+            this.textAlign  = Paint.Align.LEFT
+            this.style = Paint.Style.FILL
+            this.color = Color.YELLOW
+        }
+        val p = Paint().apply {
+            this.style = (Paint.Style.STROKE)
+            this.color = Color.GREEN
+            this.isAntiAlias = true
+        }
+        paint.getTextBounds(text, 0, text.length, scratchBounds)
+
+        val bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_4444)
+        canvas.setBitmap(bitmap)
+        canvas.drawRect(RectF(0f, 0f, width.toFloat(), height.toFloat()) , p )
+        canvas.drawText(text, (width/2)-(scratchBounds.width()/2).toFloat(), (height/2)-(scratchBounds.height()/2).toFloat(), paint)
+        canvas.setBitmap(null)
+        return bitmap
     }
 
 }

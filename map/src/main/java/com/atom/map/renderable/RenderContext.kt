@@ -6,17 +6,15 @@ import com.atom.map.WorldWind
 import com.atom.map.core.shader.BufferObject
 import com.atom.map.core.shader.GpuProgram
 import com.atom.map.core.shader.GpuTexture
+import com.atom.map.drawable.Drawable
+import com.atom.map.drawable.DrawableQueue
+import com.atom.map.drawable.DrawableTerrain
 import com.atom.map.geom.*
-import com.atom.map.geom.Camera
-import com.atom.map.geom.Frustum
 import com.atom.map.globe.Globe
 import com.atom.map.globe.Terrain
 import com.atom.map.globe.Tessellator
 import com.atom.map.layer.Layer
 import com.atom.map.layer.LayerList
-import com.atom.map.drawable.Drawable
-import com.atom.map.drawable.DrawableQueue
-import com.atom.map.drawable.DrawableTerrain
 import com.atom.map.renderable.attribute.TextAttributes
 import com.atom.map.renderable.pick.PickedObject
 import com.atom.map.renderable.pick.PickedObjectList
@@ -383,8 +381,7 @@ open class RenderContext {
     }
 
     open fun renderText(text: String, attributes: TextAttributes): GpuTexture {
-        val key = TextCacheKey()
-            .set(text, attributes)
+        val key = TextCacheKey().set(text, attributes)
         textRenderer.textColor = (attributes.textColor)
         textRenderer.textSize = (attributes.textSize)
         attributes.typeface?.also { textRenderer.typeface = it }

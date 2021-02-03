@@ -169,6 +169,9 @@ class MenuActivity : AppCompatActivity() {
             R.id.google_Activity -> {
                 startActivity(Intent(this, GoogleLayerActivity::class.java))
             }
+            R.id.opencycle_Activity -> {
+                startActivity(Intent(this, OpenCycleLayerActivity::class.java))
+            }
             R.id.tianditu2_Activity -> {
                 startActivity(Intent(this, Tianditu2LayerActivity::class.java))
             }

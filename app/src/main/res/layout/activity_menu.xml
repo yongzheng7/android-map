@@ -384,7 +384,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:orientation="vertical"
-                        android:visibility="gone"
+                        android:visibility="visible"
                         android:layout_marginStart="20dp">
 
                     <Button
@@ -417,6 +417,14 @@
                             android:layout_height="wrap_content"
                             android:onClick="menuButton"
                             android:text="Google_影像底图_Activity"
+                            android:textAllCaps="false" />
+
+                    <Button
+                            android:id="@+id/opencycle_Activity"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:onClick="menuButton"
+                            android:text="OpenCycle_影像底图_Activity"
                             android:textAllCaps="false" />
 
                     <Button

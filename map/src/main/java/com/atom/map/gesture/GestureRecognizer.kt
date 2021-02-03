@@ -53,7 +53,7 @@ open class GestureRecognizer {
     fun addListener(listener: GestureListener) = this.listenerList.add(listener)
     fun removeListener(listener: GestureListener) = this.listenerList.remove(listener)
     fun getListeners(): ArrayList<GestureListener> = this.listenerList
-    protected fun notifyListeners(event: MotionEvent) {
+    protected open fun notifyListeners(event: MotionEvent) {
         for (listener in listenerList) {
             listener.gestureStateChanged(event, this)
         }
@@ -62,7 +62,7 @@ open class GestureRecognizer {
     /**
      * 重置
      */
-    open protected fun reset() {
+    protected open fun reset() {
         this.state = WorldWind.POSSIBLE
         this.stateSequence = 0
         this.x = 0f
@@ -116,7 +116,7 @@ open class GestureRecognizer {
         }
     }
 
-    open protected fun prepareToRecognize(event: MotionEvent) {}
+    protected open fun prepareToRecognize(event: MotionEvent) {}
 
     fun onTouchEvent(event: MotionEvent): Boolean {
         if (!enabled) return false
@@ -151,7 +151,7 @@ open class GestureRecognizer {
     /**
      * 初次点击按下
      */
-    protected fun handleActionDown(event: MotionEvent) {
+    protected open fun handleActionDown(event: MotionEvent) {
         val index = event.actionIndex
         x = event.getX(index)
         y = event.getY(index)
@@ -170,7 +170,7 @@ open class GestureRecognizer {
     /**
      * 其次手指按下
      */
-    protected fun handleActionPointerDown(event: MotionEvent) {
+    protected open fun handleActionPointerDown(event: MotionEvent) {
         centroidChanged(event)
         actionDown(event)
     }
@@ -178,7 +178,7 @@ open class GestureRecognizer {
     /**
      * 手指进行移动
      */
-    protected fun handleActionMove(event: MotionEvent) {
+    protected open fun handleActionMove(event: MotionEvent) {
         eventCentroid(event, centroidArray)
 
 
@@ -197,7 +197,7 @@ open class GestureRecognizer {
     /**
      * 手指取消
      */
-    protected fun handleActionCancel(event: MotionEvent) {
+    protected open fun handleActionCancel(event: MotionEvent) {
         actionCancel(event)
         val state: Int = this.state
         if (state == WorldWind.POSSIBLE ) {
@@ -211,7 +211,7 @@ open class GestureRecognizer {
     /**
      * 手指抬起
      */
-    protected fun handleActionPointerUp(event: MotionEvent) {
+    protected open fun handleActionPointerUp(event: MotionEvent) {
         centroidChanged(event)
         actionUp(event)
     }
@@ -219,7 +219,7 @@ open class GestureRecognizer {
     /**
      * 最后一个抬起
      */
-    protected fun handleActionUp(event: MotionEvent) {
+    protected open fun handleActionUp(event: MotionEvent) {
         actionUp(event)
         val state = this.state
         if (state == WorldWind.POSSIBLE) {
@@ -233,7 +233,7 @@ open class GestureRecognizer {
     /**
      * 中心位置改变
      */
-    protected fun centroidChanged(event: MotionEvent) {
+    protected open fun centroidChanged(event: MotionEvent) {
         centroidShiftX += x //第一个手指的xy 保存到中心点
         centroidShiftY += y
         eventCentroid(event, centroidArray)
@@ -246,7 +246,7 @@ open class GestureRecognizer {
     /**
      * 计算多指触控重心位置
      */
-    protected fun eventCentroid(event: MotionEvent, result: FloatArray) {
+    protected open fun eventCentroid(event: MotionEvent, result: FloatArray) {
         val index = event.actionIndex //获取手指索引
         val action = event.actionMasked //获取对应状态
         var x = 0f
@@ -273,11 +273,11 @@ open class GestureRecognizer {
         return value * (1 - w) + newValue * w
     }
 
-    open protected fun actionDown(event: MotionEvent) {}
+    protected open fun actionDown(event: MotionEvent) {}
 
-    open protected fun actionMove(event: MotionEvent) {}
+    protected open fun actionMove(event: MotionEvent) {}
 
-    open protected fun actionCancel(event: MotionEvent) {}
+    protected open fun actionCancel(event: MotionEvent) {}
 
-    open protected fun actionUp(event: MotionEvent) {}
+    protected open fun actionUp(event: MotionEvent) {}
 }

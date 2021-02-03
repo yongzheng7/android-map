@@ -22,7 +22,6 @@ import java.io.File
  * 谷歌影像底图
  */
 open class GoogleLayerActivity : BasicGlobeActivity(), TileFactory {
-    private val key: String = "05f9d29cd248ba2fe566446ef123775c"
     private val name: String = "y"
     override fun createWorldWindow(): WorldWindow {
         val wwd: WorldWindow = super.createWorldWindow()

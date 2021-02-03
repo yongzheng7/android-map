@@ -3,10 +3,10 @@ package com.atom.map.renderable.shape
 import com.atom.map.WorldWind
 import com.atom.map.core.shader.BasicProgram
 import com.atom.map.core.shader.GpuTexture
-import com.atom.map.geom.*
-import com.atom.map.globe.Globe
 import com.atom.map.drawable.DrawableLines
 import com.atom.map.drawable.DrawableScreenTexture
+import com.atom.map.geom.*
+import com.atom.map.globe.Globe
 import com.atom.map.renderable.AbstractRenderable
 import com.atom.map.renderable.RenderContext
 import com.atom.map.renderable.attribute.TextAttributes
@@ -65,8 +65,7 @@ open class Label : AbstractRenderable,
     }
 
     override fun doRender(rc: RenderContext) {
-
-        this.text?.also { if (it.isEmpty()) return } ?: let { return }
+        this.text.also { if (it.isEmpty()) return }
         // 计算经纬度换算成笛卡尔的坐标
         rc.geographicToCartesian(
             position.latitude,
@@ -173,10 +172,6 @@ open class Label : AbstractRenderable,
                 )
             )
         }
-    }
-
-    private fun <T1, T2> isTwoNotNull(a: T1?, b: T2?, block: (T1, T2) -> Unit) {
-        if (a != null && b != null) block(a, b)
     }
 
     protected open fun mustDrawLeader(dc: RenderContext): Boolean {

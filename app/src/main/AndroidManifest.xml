@@ -146,6 +146,9 @@
         <activity android:name="com.atom.wyz.layer.GoogleLayerActivity"
                 android:theme="@style/AppTheme">
         </activity>
+        <activity android:name="com.atom.wyz.layer.OpenCycleLayerActivity"
+                android:theme="@style/AppTheme">
+        </activity>
 
     </application>
 
